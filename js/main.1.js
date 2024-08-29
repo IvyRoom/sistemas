@@ -4,25 +4,24 @@
 
 // Declara as variáveis necessárias.
 var FormulárioLogin = document.getElementById('Formulário-Login')
-var EmailUsuário = document.getElementById('E-mail').value;
-var SenhaUsuário = document.getElementById('Senha').value;
+var EmailUsuário = document.getElementById('E-mail');
+var SenhaUsuário = document.getElementById('Senha');
 
 FormulárioLogin.addEventListener('submit', function(event) {
     event.preventDefault();
 
-    fetch('plataforma-backend-evamawanhpe4ccaw.eastus-01.azurewebsites.net/login', { // Replace with your backend URL
+    fetch('https://plataforma-backend-evamawanhpe4ccaw.brazilsouth-01.azurewebsites.net/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email: EmailUsuário, senha: SenhaUsuário })
+        body: JSON.stringify({ email: EmailUsuário.value, senha: SenhaUsuário.value })
     })
     .then(response => response.json())
     .then(data => console.log(data))
     .catch(error => console.error('Error:', error));
 
 });
-
 
 
 
