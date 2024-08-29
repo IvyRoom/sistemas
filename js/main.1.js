@@ -3,13 +3,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 // Declara as variáveis necessárias.
-var BotãoEntrar = document.getElementById("Entrar");
+var FormulárioLogin = document.getElementById('Formulário-Login')
 
-BotãoEntrar.addEventListener("click", async function(event) {
-
-    console.log("Teste")
-
-})
+FormulárioLogin.addEventListener('submit', function(event) {
+    event.preventDefault();
+    alert('Formulário enviado com sucesso!');
+});
 
 
 
