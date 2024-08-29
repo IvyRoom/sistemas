@@ -15,7 +15,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ email: email, senha: senha })
+        body: JSON.stringify({ email: EmailUsuário, senha: SenhaUsuário })
     })
     .then(response => response.json())
     .then(data => console.log(data))
