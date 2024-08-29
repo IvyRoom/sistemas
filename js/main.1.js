@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 // Declara as variáveis necessárias.
-var BotãoEntrar = document.getElementById("BotãoEntrar");
+var BotãoEntrar = document.getElementById("Entrar");
 
 BotãoEntrar.addEventListener("click", async function(event) {
 
