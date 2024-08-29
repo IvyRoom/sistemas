@@ -1,0 +1,40 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// PROCESSA MENSAGENS DE ENTRADA
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Importa a biblioteca para comunicação com variáveis de ambiente.
+const dotenv = require('dotenv');
+dotenv.config();
+
+// Importa a biblioteca da OpenAI e gera a conexão com o API.
+const OpenAI = require('openai');
+const apiKey = process.env.OPENAI_API_KEY;
+const openai = new OpenAI({apiKey});
+var Thread_ID_OpenAI;
+
+// Importa a biblioteca para comunicação HTTP Posts e cria o endpoint no servidor.
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+app.listen(port);
+app.use(express.json());
+
+// Importa as bibliotecas de comunicação com o Microsoft Graph API e renova o acesso (AccessToken e Client) a cada 30min.
+const { Client } = require('@microsoft/microsoft-graph-client');
+const { ConfidentialClientApplication } = require('@azure/msal-node');
+var accessToken;
+var Microsoft_Graph_API_Client;
+
+Conecta_ao_Microsoft_Graph_API();
+
+async function Conecta_ao_Microsoft_Graph_API() {
+    const cca = new ConfidentialClientApplication({ auth: { clientId: process.env.CLIENT_ID, authority: `https://login.microsoftonline.com/${process.env.TENANT_ID}`, clientSecret: process.env.CLIENT_SECRET } });
+    accessToken = (await cca.acquireTokenByClientCredential({scopes: ['https://graph.microsoft.com/.default']})).accessToken;
+    Microsoft_Graph_API_Client = Client.init({authProvider:(done)=>{done(null, accessToken)}});
+}
+
+setInterval(Conecta_ao_Microsoft_Graph_API, 1800000);
