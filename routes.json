@@ -1,0 +1,17 @@
+{
+    "routes": [
+      {
+        "route": "/checkout/*",
+        "rewrite": "/checkout/index.html"
+      },
+      {
+        "route": "/linkbio/*",
+        "rewrite": "/linkbio/index.html"
+      },
+      {
+        "route": "/plataforma/*",
+        "rewrite": "/plataforma/index.html"
+      }
+    ]
+  }
+  
