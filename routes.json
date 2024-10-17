@@ -9,9 +9,29 @@
         "rewrite": "/linkbio/index.html"
       },
       {
-        "route": "/plataforma/*",
-        "rewrite": "/plataforma/index.html"
+        "route": "/plataforma/login/*",
+        "rewrite": "/plataforma/login/index.html"
+      },
+      {
+        "route": "/plataforma/painel/*",
+        "rewrite": "/plataforma/painel/index.html"
+      },
+      {
+        "route": "/plataforma/extensão/*",
+        "rewrite": "/plataforma/extensão/index.html"
+      },
+      {
+        "route": "/plataforma/estudo/*",
+        "rewrite": "/plataforma/estudo/index.html"
+      },
+      {
+        "route": "/plataforma/conhecer/*",
+        "rewrite": "/plataforma/conhecer/index.html"
+      },
+      {
+        "route": "/plataforma/aviso/*",
+        "rewrite": "/plataforma/aviso/index.html"
       }
     ]
-  }
+}
   
