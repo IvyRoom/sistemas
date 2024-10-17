@@ -1,0 +1,2977 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family:sans-serif;
+}
+
+/**********************************************Versão Celular***********************************************/
+
+#Sessão_Pagamento {
+    width: 100%;
+    overflow: auto;
+    background: linear-gradient(#fff 30%,rgb(206, 206, 206));
+    display: block;
+}
+
+#Logo-Ivy-Room {
+    height: auto;
+    width: 120px;
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Container-Pagamento{
+    height: auto;
+    width: 95%;
+    margin-top: 10px;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 15px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    color: rgb(58, 58, 58);
+}
+
+#Nome_Produto{
+    font-size:20px;
+    color: #790d26;
+    margin-bottom: 5px;
+}
+
+#Nome_Empresa{
+    font-size: 14px;
+}
+
+#Container_Valor_Produto_à_Vista{
+    display: inline-flex;
+}
+
+#Valor_Produto_à_Vista{
+    font-size:20px;
+    color: #790d26;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+#Detalhamento_Valor_Produto_à_Vista{
+    font-size:14px;
+    color: #790d26;
+    margin-top: 15px;
+    margin-left: 3px;
+}
+
+#Valor_Produto_a_Prazo{
+    font-size:13px;
+    color: #790d26;
+}
+
+.Cabeçalhos{
+    color: #790d26;
+    font-size:15px;
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                    Dados do Cliente
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Cliente {
+    height: auto;
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: rgb(58, 58, 58);
+    display: block;
+}
+
+.Títulos_de_Preenchimento{
+    font-size:13px;
+    margin-top: 10px;
+}
+
+.Campos_de_Preenchimento_Grandes{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 0px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso_de_Inconsistência_Email_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 5px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+#CPF_e_Celular{
+    display: block;
+}
+
+#CPF{
+    margin-right: 10px;
+    width: 100%;
+}
+
+#Celular{
+    margin-right: 10px;
+    width: 100%;
+}
+
+#Campo_de_Preenchimento_CPF{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 30px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso_de_Inconsistência_CPF_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 5px;
+    margin-bottom: 4px;
+    display: none; 
+}
+
+#DDD_Celular{
+    width: 100%;
+    display: inline-flex
+}
+
+#Campo_de_Preenchimento_DDD{
+    width: 35px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Campo_de_Preenchimento_Celular{
+    width: calc(100% - 120px);
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+    Dados do Endereço de Envio dos Materiais da Ivy Room
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Endereço{
+    height: auto;
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: rgb(58, 58, 58);
+    display: block;
+}
+
+#Rua_e_Número{
+    display: inline-flex;
+    width: 100%;
+}
+
+#Container_Endereço_Rua{
+    display: block;
+    width: 100%;
+}
+
+#Container_Endereço_Número{
+    display: block;
+    margin-left: 10px;
+    margin-top: 31px;
+}
+
+.Subtítulos_de_Preenchimento{
+    width: 190px;
+    font-size: 12px;
+    color: rgb(100, 100, 100);
+    margin-top: 3px;
+}
+
+#Endereço_Rua{
+    width: 100%;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Endereço_Número{
+    width: 65px;
+    display: block;
+    padding: 8px;
+    margin-top: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Complemento_e_Bairro{
+    display: inline-flex;
+    width: 100%;
+}
+
+#Container_Endereço_Complemento{
+    width: 100%;
+}
+
+#Endereço_Complemento{
+    width: 100%;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Container_Endereço_Bairro{
+    margin-left: 10px;
+}
+
+#Endereço_Bairro{
+    width: 110px;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Cidade_Estado_CEP{
+    display: block;
+    width: 100%;
+}
+
+#Cidade_Estado{
+    display: inline-flex;
+    width: 100%;
+}
+
+#Container_Endereço_Cidade{
+    width: 100%;
+}
+
+#Endereço_Cidade{
+    width: 100%;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Container_Endereço_Estado{
+    margin-left: 10px;
+}
+
+#Endereço_Estado{
+    width: 55px;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Container_Endereço_CEP{
+    width: 100%;
+}
+
+#Endereço_CEP{
+    width: 100%;
+    padding: 8px;
+    margin-top:5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso_de_Inconsistência_CEP_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 5px;
+    margin-bottom: 4px;
+    display: none; 
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                Botões: Formas de Pagamento
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Formas_de_Pagamento{
+    display: block;
+}
+
+#Tipo_de_Pagamento_UM_CARTAO{
+    border: 2px solid #790d26;
+    width: 100%;
+    height: 55px;
+    margin-bottom:10px;
+    margin-right: 5px;
+    border-radius: 5px;
+    text-align: center;
+    padding: 10px;
+    background-color: #ffebef;
+}
+
+#Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO,#Tipo_de_Pagamento_DOIS_CARTOES,#Tipo_de_Pagamento_PAGAMENTO_RECORRENTE{
+    border: 1px solid rgb(146, 146, 146);
+    width: 100%;
+    height: 55px;
+    margin-bottom:10px;
+    margin-right: 5px;
+    border-radius: 5px;
+    text-align: center;
+    padding: 5px;
+}
+
+#Tipo_de_Pagamento_UM_CARTAO:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#Tipo_de_Pagamento_PIX:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#Tipo_de_Pagamento_BOLETO:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#Tipo_de_Pagamento_PIX_CARTAO:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#Tipo_de_Pagamento_DOIS_CARTOES:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#Tipo_de_Pagamento_PAGAMENTO_RECORRENTE:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#UM_CARTAO{
+    height:18px;
+}
+
+#PIX{
+    height:18px;
+    margin-top: 5px;
+}
+
+#BOLETO{
+    height:18px;
+    margin-top: 5px;
+}
+
+#PIX_CARTAO{
+    height:18px;
+    margin-top: 5px;
+}
+
+#DOIS_CARTOES{
+    height:18px;
+    margin-top: 5px;
+}
+
+#PAGAMENTO_RECORRENTE{
+    height:18px;
+}
+
+.Descrição_Pagamento{
+    color: rgb(146, 146, 146);
+    font-size: 12px;
+    text-align: center;
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+        Meio de Pagamento: Um Cartão de Crédito
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Pagamento_UM_CARTAO{
+    height: auto;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: rgb(58, 58, 58);
+    display: block;
+}
+
+#Dados_Cartão_Crédito_e_Imagem{
+    display: inline-flex;
+    width: 100%;
+}
+
+#Dados_Cartão_Crédito{
+    width: 100%;
+}
+
+.Campos_de_Preenchimento_Médios{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso_de_Inconsistência_Número_do_Cartão_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 5px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+#Imagem_Cartão_Crédito{
+    display: none;
+}
+
+#Mes_Ano_CVV{
+    display: inline-flex;
+    width: 100%;
+}
+
+#Campo_de_Preenchimento_Mês_Cartão{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Campo_de_Preenchimento_Ano_Cartão{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Campo_de_Preenchimento_CVV_Cartão{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Aviso_de_Inconsistência_CVV_Cartão_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 5px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+#Número_de_Parcelas_Cartão_do_UM_CARTAO{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                Meio de Pagamento: PIX
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Pagamento_PIX{
+    height: auto;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: none;
+}
+
+#Detalhamento_Dados_Pagamento_PIX{
+    height: auto;
+    width: 100%;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: block;
+}
+
+#QR_Code{
+    height: 20px;
+    width: 20px;
+}
+
+#Manchete_Como_Funciona_PIX{
+    font-size:15px;
+    color: #790d26; 
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#Explicação_Como_Funciona_PIX{
+    font-size:14px;
+    color: "black";
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                Meio de Pagamento: Boleto
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Pagamento_BOLETO{
+    height: auto;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: none;
+}
+
+#Detalhamento_Dados_Pagamento_BOLETO{
+    height: auto;
+    width: 100%;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: block;
+}
+
+#Código_de_Barras{
+    height: 18px;
+    width: 23px;
+}
+
+#Manchete_Como_Funciona_BOLETO{
+    font-size:15px;
+    color: #790d26; 
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#Explicação_Como_Funciona_BOLETO{
+    font-size:14px;
+    color: "black";
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                Meio de Pagamento: Pix e Cartão
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Pagamento_PIX_CARTAO{
+    height: auto;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: none;
+}
+
+#Detalhamento_Dados_Pagamento_PIX_CARTAO{
+    height: auto;
+    width: 100%;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#Pix_Cartão_Bordô{
+    height: 22px;
+    width: 26px;
+}
+
+#Manchete_Como_Funciona_PIX_CARTAO{
+    font-size:15px;
+    color: #790d26; 
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#Explicação_Como_Funciona_PIX_CARTAO{
+    font-size:14px;
+    color: "black";
+}
+
+#Container_Dados_Cartão_Crédito_e_Pix_do_PIX_CARTÃO{
+    display: block;
+}
+
+#Dados_Cartão_Crédito_do_PIX_CARTÃO{
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid rgb(222, 222, 222);
+    padding: 15px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+}
+
+#Dados_PIX_do_PIX_CARTÃO{
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid rgb(222, 222, 222);
+    padding: 15px;
+    height: 155px;
+}
+
+#Identificação_Cartão_Crédito_do_PIX_CARTÃO,#Identificação_PIX_do_PIX_CARTÃO{
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    background-color: rgb(243, 243, 243);
+    border-radius: 5px;
+    display: inline-flex;
+}
+
+#Imagem_Cartão_Crédito_do_PIX_CARTÃO{
+    width: 25px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+#Imagem_PIX_do_PIX_CARTÃO{
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+#Texto_Cartão_Crédito_do_PIX_CARTÃO,#Texto_PIX_do_PIX_CARTÃO{
+    vertical-align: middle;
+}
+
+#Valor_no_Cartão_do_PIX_CARTÃO,#Valor_no_PIX_do_PIX_CARTÃO{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Valor_no_PIX_do_PIX_CARTÃO{
+    cursor: no-drop;
+}
+
+.Observações_de_Preenchimento{
+    font-size:12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    color: rgb(128, 128, 128);
+}
+
+#Número_do_Cartão_do_PIX_CARTÃO{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: -10px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+#Nome_do_Titular_do_Cartão_do_PIX_CARTÃO{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Mes_Ano_CVV_Cartão_do_PIX_CARTÃO{
+    display: inline-flex;
+    margin-bottom: 5px;
+}
+
+#Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    margin-left: -10px;
+    display: none;
+}
+
+#Número_de_Parcelas_Cartão_do_PIX_CARTÃO{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: black;
+}
+
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+        Meio de Pagamento: Dois Cartões de Crédito
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Container_Dados_Pagamento_DOIS_CARTOES{
+    display: none;
+    width: 100%;
+}
+
+#Dados_Pagamento_DOIS_CARTOES{
+    display: block;
+    padding-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+#Dados_Cartão_Crédito_1{
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid rgb(222, 222, 222);
+    padding: 15px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+}
+
+#Dados_Cartão_Crédito_2{
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid rgb(222, 222, 222);
+    padding: 15px;
+}
+
+#Identificação_Cartão_Crédito_1,#Identificação_Cartão_Crédito_2{
+    width: 100%;
+    height: 40px;
+    padding: 10px;
+    background-color: rgb(243, 243, 243);
+    border-radius: 5px;
+    display: inline-flex;
+}
+
+#Imagem_Cartão_Crédito_1,#Imagem_Cartão_Crédito_2{
+    width: 25px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+#Texto_Cartão_Crédito_1,#Texto_Cartão_Crédito_2{
+    vertical-align: middle;
+}
+
+#Valor_no_Cartão_1,#Valor_no_Cartão_2{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Valor_no_Cartão_2{
+    cursor: no-drop;
+}
+
+.Observações_de_Preenchimento{
+    font-size:12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    color: rgb(128, 128, 128);
+}
+
+#Número_do_Cartão_1,#Número_do_Cartão_2{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso_de_Inconsistência_Número_do_Cartão_1_Campo, #Aviso_de_Inconsistência_Número_do_Cartão_2_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: -10px;
+    margin-bottom: 4px;
+    display: none;
+}
+
+#Nome_do_Titular_do_Cartão_1,#Nome_do_Titular_do_Cartão_2{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 15px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Mes_Ano_CVV_Cartão_1,#Mes_Ano_CVV_Cartão_2{
+    display: inline-flex;
+    margin-bottom: 5px;
+}
+
+#Campo_de_Preenchimento_Mês_Cartão_1,#Campo_de_Preenchimento_Mês_Cartão_2{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Campo_de_Preenchimento_Ano_Cartão_1,#Campo_de_Preenchimento_Ano_Cartão_2{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Campo_de_Preenchimento_CVV_Cartão_1,#Campo_de_Preenchimento_CVV_Cartão_2{
+    width: 70px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-right: 20px;
+    margin-bottom: 5px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: rgb(128, 128, 128);
+}
+
+#Aviso_de_Inconsistência_CVV_Cartão_1_Campo,#Aviso_de_Inconsistência_CVV_Cartão_2_Campo{
+    font-size: 11px;
+    color: #db0b3c;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    display: none;
+}
+
+#Número_de_Parcelas_Cartão_1,#Número_de_Parcelas_Cartão_2{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    color: black;
+}
+
+/*Resumo da Compra*/
+#Texto_Resumo_Compra{
+    margin-top: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgb(146, 146, 146);
+    font-size: 15px;
+    color: #790d26;
+}
+
+#Detalhes_Resumo_Compra{
+    display: block;
+}
+
+#Nome_Produto_Comprado{
+    margin-top: 10px;
+    font-size: 15px;
+    color: rgb(0, 0, 0);
+}
+
+#Valor_Produto_Comprado{
+    float: right;
+    margin-top: 15px;
+}
+
+#Comprar{
+    cursor: pointer;
+    display: block;
+    font-size: 18px;
+    text-decoration: none;
+    text-align: center;
+    color: #fff;
+    padding: 13px;
+    background-color: #0aa15b;
+    height: 45px;
+    width: 230px;
+    margin-top: 55px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border-width: 0px;
+    box-shadow: 1px 1px 5px black;
+    transition-duration: 0.1s;
+}
+
+#Comprar:hover{
+    background-color: #0ab666; 
+    box-shadow: 2px 2px 8px black;
+}
+
+#Aviso_de_Inconsistência_Email_Botão{
+    font-size: 11px;
+    color: #db0b3c;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 230px;
+    display: none;
+}
+
+#Aviso_de_Inconsistência_CPF_Botão{
+    font-size: 11px;
+    color: #db0b3c;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 230px;
+    display: none;
+}
+
+#Aviso_de_Inconsistência_CEP_Botão{
+    font-size: 11px;
+    color: #db0b3c;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 230px;
+    display: none;
+}
+
+#Aviso_de_Inconsistência_Número_do_Cartão_Botão,#Aviso_de_Inconsistência_CVV_Cartão_Botão,#Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão,#Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão,#Aviso_de_Inconsistência_Número_do_Cartão_1_Botão,#Aviso_de_Inconsistência_Número_do_Cartão_2_Botão,#Aviso_de_Inconsistência_CVV_Cartão_1_Botão,#Aviso_de_Inconsistência_CVV_Cartão_2_Botão{
+    font-size: 11px;
+    color: #db0b3c;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 230px;
+    display: none;
+}
+
+/*Informações de Segurança*/
+#Informações_de_Segurança{
+    width: 100%;
+    padding-left: 0px;
+    text-align: left;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#Container_Precisa_de_Ajudar_e_Aviso_de_Juros{
+    width: 100%;
+    display: block;
+    margin-top: 15px;
+}
+
+#Precisa_de_Ajuda{
+    display: inline-flex;
+    width: 195px;
+}
+
+#Entre_em_Contato{
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 11px;
+    color: rgb(78, 78, 176);
+    width: 200px;
+}
+
+#Aviso_de_Juros{
+    font-size: 11px;
+    color: rgb(128, 128, 128);
+    margin-top: 10px;
+}
+
+.Rodapé_Informações_de_Segurança{
+    font-size: 11px;
+    color: rgb(128, 128, 128);
+    margin-right: 3px;
+    text-align: justify;
+    width: 100%;
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                Contrato de Prestação de Serviços
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Rodapé_Informações_de_Segurança{
+    position: absolute;
+}
+
+#Botão_Contrato_de_Prestação_de_Serviço{
+    cursor: wait;
+    color: rgb(78, 78, 176);
+    text-decoration: underline;
+}
+
+#Aviso_Botão_Contrato {
+    width: 340px;
+    margin-top: -60px;
+    margin-left: 0px;
+    background-color: white;
+    color: black;
+    border-color: black;
+    border-style: inset;
+    border-width: 1px;
+    padding: 5px;
+    font-size: 12px;
+    display: none;
+    z-index: 1;
+    position: absolute;
+}
+
+/* LightBox */
+#Background_Contrato_de_Prestação_de_Serviço {
+    background-color: rgb(0, 0, 0, 0.6);
+    width: 100%;
+    overflow: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+}
+
+#LightBox_Contrato_de_Prestação_de_Serviço{
+    height: auto;
+    width: 98%;
+    background-color: white;
+    margin-top: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    margin-bottom: 1200px;
+    position: relative;
+    box-shadow: 0px 0px 10px black;
+}
+
+#Auxiliar_Espaçamento_LightBox_Contrato_de_Prestação_de_Serviço {
+    padding-bottom: 20px;
+}
+
+#Botão_Fechar_Contrato{
+    width: 23px;
+    height: 23px;
+    border-style: solid;
+    border-color: rgb(128, 128, 128);
+    border-radius: 14px;
+    padding-top: 3px;
+    text-align: center;
+    top: 10px;
+    right: 10px;
+    position: absolute;
+    font-size: 12px;
+    color: rgb(118, 118, 118);
+    cursor: pointer;  
+}
+
+/* Setas e Páginas do Contrato */
+
+#Container_Setas_e_Páginas_Contrato{
+    display: inline-flex;
+    margin: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    width: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#Seta_Esquerda{
+    height: 50px;
+    width: 20px;
+    background-color: white;
+    border-radius: 10px;
+    margin: 490px 8px;
+    text-align: center;
+    padding-top: 15px;
+    color: white;
+    font-size: 16px;
+    cursor: default;
+}
+
+#Seta_Direita{
+    height: 50px;
+    width: 20px;
+    background: linear-gradient(135deg, #fff 10%,rgb(206, 206, 206));
+    border-radius: 10px;
+    margin: 490px 8px;
+    text-align: center;
+    padding-top: 15px;
+    color: #790d26;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#Páginas_do_Contrato{
+    width: 100%;
+    height: auto;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-color: black;
+    border-style: inset;
+    border-width: 1px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    text-align: left;
+}
+
+#Título_Contrato{
+    color: black;
+    margin-top: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#Conteúdo_Página_1_Contrato{
+    color: black;
+    display: block;
+}
+
+#Conteúdo_Página_2_Contrato{
+    color: black;
+    display: none;
+}
+
+#Conteúdo_Página_3_Contrato{
+    color: black;
+    display: none;
+}
+
+#Conteúdo_Página_4_Contrato{
+    color: black;
+    display: none;
+}
+
+#Conteúdo_Página_5_Contrato{
+    color: black;
+    display: none;
+}
+
+.Títulos_Cláusulas{
+    text-decoration: underline;
+}
+
+.Textos_Recuados{
+    margin-left: 10px;
+}
+
+.Auxiliar_Inserção_de_Variáveis_no_Contrato{
+    display: inline-flex;
+}
+
+.Assinaturas_Digitais{
+    display: inline-flex;
+}
+
+#Símbolo_Check{
+    height: 25px;
+    width: 25px;
+    margin-right: 10px;
+}
+
+#Símbolo_Pendente{
+    height: 25px;
+    width: 25px;
+    margin-right: 10px;
+}
+
+.Nome_Assinatura_Digital{
+    color: rgb(75, 75, 75);
+    font-size: 20px;
+}
+
+.Detalhamento_Assinatura_Digital{
+    color: rgb(75, 75, 75);
+    font-size: 15px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+#Container_Logo_Ivy_Room_Contrato_e_Informações_de_Criação_do_Log_Assinaturas_Digitais{
+    display: block;
+    width: 100%;
+}
+
+#Logo_Ivy_Room_Contrato{
+    width: 160px;
+    height: auto;
+}
+
+#Informações_de_Criação_do_Log_Assinaturas_Digitais{
+    text-align: right;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    color: rgb(170, 170, 170);
+    font-size: 13px;
+}
+
+.Títulos_Assinaturas_Digitais{
+    color: rgb(75, 75, 75);
+    font-size: 18px;
+    margin-bottom: -10px;
+    border-top: 1px dotted rgb(75, 75, 75);
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+#Subtítulos_do_Contrato{
+    font-size: 15px;
+}
+
+.Registros_Assinaturas_Digitais{
+    display: inline-flex;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#Registro_da_Assinatura_Digital_04{
+    border-bottom: 1px dotted rgb(75, 75, 75);
+    padding-bottom: 20px;
+}
+
+.Datas_dos_Registros_das_Assinaturas_Digitais{
+    color: rgb(160, 160, 160);
+    width: 90px;
+    font-size: 15px;
+    overflow-wrap: break-word;
+}
+
+.Explicações_dos_Registros{
+    color: rgb(100, 100, 100);
+    width: 100%;
+    margin-left: 5px;
+}
+
+#Aviso_de_Validade_Jurídica_das_Assinaturas_Digitais{
+    display: inline-flex;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#Explicação_Aviso_de_Validade_Jurídica_das_Assinaturas_Digitais{
+    color: rgb(100, 100, 100);
+    font-size: 16px;
+}
+
+#Logo_ICP_Brasil{
+    width: 60px;
+    height: 70px;
+    margin-right: 20px;
+}
+
+#Contador_da_Página_do_Contrato{
+    text-align: center;
+    color: #790d26;
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+        Identificação Ivy Room e Aviso de Segurança
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+
+#AmbienteSeguro_e_Container_PagarMe{
+    display: inline-flex;
+    margin-top: 20px;
+    width: 100%;
+    justify-content: center;
+}
+
+#Identificação_Ivy_Room{
+    font-size: 8px;
+    color: rgb(170, 170, 170);
+    width: 100px;
+    height: auto;
+    margin-right: auto;
+    vertical-align: middle;
+    padding-top: 7px;
+}
+
+#AmbienteSeguro{
+    display: inline-flex;
+    padding-top: 7px;
+}
+
+#LogoCadeado{
+    width: 15px;
+    height: 15px;
+    margin-top: 5px;
+    margin-right: 5px;
+}
+
+#Texto_AmbienteSeguro {
+    font-size: 12px;
+    margin-top: 7px;
+    width: 100px;
+    color: rgb(109, 109, 109);
+}
+
+#Container_PagarMe{
+    float: right;
+    display: block;
+    text-align: center;
+    margin-left: auto;
+    padding-left: 5px;
+}
+
+#PoweredBy{
+    font-size: 10px;
+    color: rgb(109, 109, 109);
+    margin-left: -8px;
+}
+
+#LogoPagarMe{
+    width: 80px;
+    height: auto;
+    margin-top: 2px;
+}
+
+/**********************************************Versão Desktop***********************************************/
+
+@media (min-width: 670px) {
+
+    #Sessão_Pagamento {
+        width: 100%;
+        overflow: auto;
+        background: linear-gradient(#fff 30%,rgb(206, 206, 206));
+        display: block;
+    }
+
+    #Logo-Ivy-Room {
+        height: auto;
+        width: 160px;
+        display: block;
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #Container-Pagamento{
+        height: auto;
+        width: 650px;
+        margin-top: 10px;
+        margin-bottom: 30px;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: #fff;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 15px;
+        padding-top: 30px;
+        padding-bottom: 30px;
+        padding-left: 30px;
+        padding-right: 30px;
+        color: rgb(58, 58, 58);
+    }
+
+    #Nome_Produto{
+        font-size:22px;
+        color: #790d26;
+        margin-bottom: 5px;
+    }
+
+    #Nome_Empresa{
+        font-size: 16px;
+    }
+
+    #Container_Valor_Produto_à_Vista{
+        display: inline-flex;
+    }
+
+    #Valor_Produto_à_Vista{
+        font-size:20px;
+        color: #790d26;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+
+    #Detalhamento_Valor_Produto_à_Vista{
+        font-size:14px;
+        color: #790d26;
+        margin-top: 15px;
+        margin-left: 3px;
+    }
+
+    #Valor_Produto_a_Prazo{
+        font-size:13px;
+        color: #790d26;
+    }
+
+    .Cabeçalhos{
+        color: #790d26;
+        font-size:15px;
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                        Dados do Cliente
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Dados_Cliente {
+        height: auto;
+        width: 590px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        color: rgb(58, 58, 58);
+        display: block;
+    }
+
+    .Títulos_de_Preenchimento{
+        font-size:13px;
+        margin-top: 10px;
+    }
+
+    .Campos_de_Preenchimento_Grandes{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-bottom: 0px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Aviso_de_Inconsistência_Email_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 5px;
+        margin-bottom: 4px;
+        display: none;
+    }
+
+    #CPF_e_Celular{
+        display: inline-flex;
+    }
+
+    #CPF,#Celular{
+        margin-right: 10px;
+        width: 290px;
+    }
+
+    #Campo_de_Preenchimento_CPF{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 30px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Aviso_de_Inconsistência_CPF_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 5px;
+        margin-bottom: 4px;
+        display: none; 
+    }
+
+    #DDD_Celular{
+        display: inline-flex;
+    }
+
+    #Campo_de_Preenchimento_DDD{
+        width: 35px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Campo_de_Preenchimento_Celular{
+        width: 218px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+        Dados do Endereço de Envio dos Materiais da Ivy Room
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Dados_Endereço{
+        height: auto;
+        width: 590px;
+        margin-top: 15px;
+        margin-bottom: 20px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        color: rgb(58, 58, 58);
+        display: block;
+    }
+
+    #Rua_e_Número{
+        display: inline-flex;
+    }
+
+    #Container_Endereço_Rua{
+        display: block;
+    }
+
+    #Container_Endereço_Número{
+        display: block;
+        margin-left: 10px;
+        margin-top: 17px;
+    }
+
+    .Subtítulos_de_Preenchimento{
+        font-size: 12px;
+        color: rgb(100, 100, 100);
+        margin-top: 3px;
+        width: 100%;
+    }
+
+    #Endereço_Rua{
+        width: 450px;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Endereço_Número{
+        width: 95px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Complemento_e_Bairro{
+        display: inline-flex;
+    }
+
+    #Endereço_Complemento{
+        width: 330px;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Container_Endereço_Bairro{
+        margin-left: 10px;
+    }
+
+    #Endereço_Bairro{
+        width: 216px;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Cidade_Estado_CEP{
+        display: inline-flex;
+    }
+
+    #Cidade_Estado{
+        display: inline-flex;
+    }
+
+    #Endereço_Cidade{
+        width: 250px;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Container_Endereço_Estado{
+        margin-left: 10px;
+    }
+
+    #Endereço_Estado{
+        width: 70px;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Container_Endereço_CEP{
+        margin-left: 10px;
+    }
+
+    #Endereço_CEP{
+        width: 216px;
+        padding: 8px;
+        margin-top:5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Aviso_de_Inconsistência_CEP_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 5px;
+        margin-bottom: 4px;
+        display: none; 
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                    Botões: Formas de Pagamento
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Formas_de_Pagamento{
+        display: inline-flex;
+    }
+
+    #Tipo_de_Pagamento_UM_CARTAO{
+        border: 2px solid #790d26;
+        width: 114px;
+        height: 70px;
+        margin-bottom:10px;
+        margin-right: 5px;
+        border-radius: 5px;
+        text-align: center;
+        padding: 10px;
+        background-color: #ffebef;
+    }
+
+    #Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO,#Tipo_de_Pagamento_DOIS_CARTOES,#Tipo_de_Pagamento_PAGAMENTO_RECORRENTE{
+        border: 1px solid rgb(146, 146, 146);
+        width: 114px;
+        height: 70px;
+        margin-bottom:10px;
+        margin-right: 5px;
+        border-radius: 5px;
+        text-align: center;
+        padding: 10px;
+    }
+
+    #Tipo_de_Pagamento_UM_CARTAO:hover{
+        box-shadow: 1px 1px 3px black;
+        border: 1px solid #ffc6d3;
+        background-color: #fff7f9;
+    }
+
+    #Tipo_de_Pagamento_PIX:hover{
+        box-shadow: 1px 1px 3px black;
+        border: 1px solid #ffc6d3;
+        background-color: #fff7f9;
+    }
+
+    #Tipo_de_Pagamento_BOLETO:hover{
+        box-shadow: 1px 1px 3px black;
+        border: 1px solid #ffc6d3;
+        background-color: #fff7f9;
+    }
+
+    #Tipo_de_Pagamento_PIX_CARTAO:hover{
+        box-shadow: 1px 1px 3px black;
+        border: 1px solid #ffc6d3;
+        background-color: #fff7f9;
+    }
+
+    #Tipo_de_Pagamento_DOIS_CARTOES:hover{
+        box-shadow: 1px 1px 3px black;
+        border: 1px solid #ffc6d3;
+        background-color: #fff7f9;
+    }
+
+    #Tipo_de_Pagamento_PAGAMENTO_RECORRENTE:hover{
+        box-shadow: 1px 1px 3px black;
+        border: 1px solid #ffc6d3;
+        background-color: #fff7f9;
+    }
+
+    #UM_CARTAO{
+        height:18px;
+    }
+
+    #PIX{
+        height:18px;
+        margin-top: 7px;
+    }
+
+    #BOLETO{
+        height:18px;
+        margin-top: 7px;
+    }
+
+    #PIX_CARTAO{
+        height:18px;
+        margin-top: 7px;
+    }
+
+    #DOIS_CARTOES{
+        height:18px;
+        margin-top: 7px;
+    }
+
+    #PAGAMENTO_RECORRENTE{
+        height:18px;
+    }
+
+    .Descrição_Pagamento{
+        color: rgb(146, 146, 146);
+        font-size: 12px;
+        text-align: center;
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+            Meio de Pagamento: Um Cartão de Crédito
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Dados_Pagamento_UM_CARTAO{
+        height: auto;
+        width: 590px;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 15px;
+        padding-right: 15px;
+        color: rgb(58, 58, 58);
+        display: block;
+    }
+
+    #Dados_Cartão_Crédito_e_Imagem{
+        display: inline-flex;
+    }
+
+    .Campos_de_Preenchimento_Médios{
+        width: 290px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Aviso_de_Inconsistência_Número_do_Cartão_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 5px;
+        margin-bottom: 4px;
+        display: none;
+    }
+
+    #Imagem_Cartão_Crédito{
+        width: 252px;
+        margin-top: 30px;
+        margin-left: 0px;
+        display: block;
+    }
+
+    #Mes_Ano_CVV{
+        display: inline-flex;
+    }
+
+    #Campo_de_Preenchimento_Mês_Cartão{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Campo_de_Preenchimento_Ano_Cartão{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Campo_de_Preenchimento_CVV_Cartão{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Aviso_de_Inconsistência_CVV_Cartão_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 5px;
+        margin-bottom: 4px;
+        display: none;
+    }
+
+    #Número_de_Parcelas_Cartão_do_UM_CARTAO{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-bottom: 10px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                    Meio de Pagamento: PIX
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Dados_Pagamento_PIX{
+        height: auto;
+        width: 590px;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        display: none;
+    }
+
+    #Detalhamento_Dados_Pagamento_PIX{
+        height: auto;
+        width: 560px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        display: block;
+    }
+
+    #QR_Code{
+        height: 20px;
+        width: 20px;
+    }
+
+    #Manchete_Como_Funciona_PIX{
+        font-size:15px;
+        color: #790d26; 
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    #Explicação_Como_Funciona_PIX{
+        font-size:14px;
+        color: "black";
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                    Meio de Pagamento: Boleto
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Dados_Pagamento_BOLETO{
+        height: auto;
+        width: 590px;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        display: none;
+    }
+
+    #Detalhamento_Dados_Pagamento_BOLETO{
+        height: auto;
+        width: 560px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        display: block;
+    }
+
+    #Código_de_Barras{
+        height: 18px;
+        width: 23px;
+    }
+
+    #Manchete_Como_Funciona_BOLETO{
+        font-size:15px;
+        color: #790d26; 
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    #Explicação_Como_Funciona_BOLETO{
+        font-size:14px;
+        color: "black";
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                    Meio de Pagamento: Pix e Cartão
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Dados_Pagamento_PIX_CARTAO{
+        height: auto;
+        width: 590px;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        display: none;
+    }
+
+    #Detalhamento_Dados_Pagamento_PIX_CARTAO{
+        height: auto;
+        width: 560px;
+        border: 1px solid rgb(222, 222, 222);
+        border-radius: 5px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    #Pix_Cartão_Bordô{
+        height: 22px;
+        width: 26px;
+    }
+
+    #Manchete_Como_Funciona_PIX_CARTAO{
+        font-size:15px;
+        color: #790d26; 
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    #Explicação_Como_Funciona_PIX_CARTAO{
+        font-size:14px;
+        color: "black";
+    }
+
+    #Container_Dados_Cartão_Crédito_e_Pix_do_PIX_CARTÃO{
+        display: inline-flex;
+    }
+
+    #Dados_Cartão_Crédito_do_PIX_CARTÃO{
+        width: 275px;
+        border-radius: 5px;
+        border: 1px solid rgb(222, 222, 222);
+        padding: 15px;
+        margin-right: 10px;
+        margin-bottom: 0px;
+    }
+
+    #Dados_PIX_do_PIX_CARTÃO{
+        width: 275px;
+        border-radius: 5px;
+        border: 1px solid rgb(222, 222, 222);
+        padding: 15px;
+        height: 155px;
+    }
+
+    #Identificação_Cartão_Crédito_do_PIX_CARTÃO,#Identificação_PIX_do_PIX_CARTÃO{
+        width: 100%;
+        height: 40px;
+        padding: 10px;
+        background-color: rgb(243, 243, 243);
+        border-radius: 5px;
+        display: inline-flex;
+    }
+
+    #Imagem_Cartão_Crédito_do_PIX_CARTÃO{
+        width: 25px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+    #Imagem_PIX_do_PIX_CARTÃO{
+        width: 20px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+    #Texto_Cartão_Crédito_do_PIX_CARTÃO,#Texto_PIX_do_PIX_CARTÃO{
+        vertical-align: middle;
+    }
+
+    #Valor_no_Cartão_do_PIX_CARTÃO,#Valor_no_PIX_do_PIX_CARTÃO{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Valor_no_PIX_do_PIX_CARTÃO{
+        cursor: no-drop;
+    }
+
+    .Observações_de_Preenchimento{
+        font-size:12px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Número_do_Cartão_do_PIX_CARTÃO{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        margin-bottom: 15px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: -10px;
+        margin-bottom: 4px;
+        display: none;
+    }
+
+    #Nome_do_Titular_do_Cartão_do_PIX_CARTÃO{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Mes_Ano_CVV_Cartão_do_PIX_CARTÃO{
+        display: inline-flex;
+        margin-bottom: 5px;
+    }
+
+    #Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        margin-left: -10px;
+        display: none;
+    }
+
+    #Número_de_Parcelas_Cartão_do_PIX_CARTÃO{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-bottom: 0px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: black;
+    }
+
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+            Meio de Pagamento: Dois Cartões de Crédito
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Container_Dados_Pagamento_DOIS_CARTOES{
+        display: none;
+    }
+
+    #Dados_Pagamento_DOIS_CARTOES{
+        display: inline-flex;
+        padding-top: 10px;
+        margin-bottom: 10px;
+        height: auto;
+    }
+
+    #Dados_Cartão_Crédito_1{
+        width: 290px;
+        border-radius: 5px;
+        border: 1px solid rgb(222, 222, 222);
+        padding: 15px;
+        margin-right: 10px;
+        margin-bottom: 0px;
+    }
+
+    #Dados_Cartão_Crédito_2{
+        width: 290px;
+        border-radius: 5px;
+        border: 1px solid rgb(222, 222, 222);
+        padding: 15px;
+        margin-bottom: 0px;
+    }
+
+    #Identificação_Cartão_Crédito_1,#Identificação_Cartão_Crédito_2{
+        width: 100%;
+        height: 40px;
+        padding: 10px;
+        background-color: rgb(243, 243, 243);
+        border-radius: 5px;
+        display: inline-flex;
+    }
+
+    #Imagem_Cartão_Crédito_1,#Imagem_Cartão_Crédito_2{
+        width: 25px;
+        height: 20px;
+        margin-right: 8px;
+    }
+
+    #Texto_Cartão_Crédito_1,#Texto_Cartão_Crédito_2{
+        vertical-align: middle;
+    }
+
+    #Valor_no_Cartão_1,#Valor_no_Cartão_2{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Valor_no_Cartão_2{
+        cursor: no-drop;
+    }
+
+    .Observações_de_Preenchimento{
+        font-size:12px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Número_do_Cartão_1,#Número_do_Cartão_2{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        margin-bottom: 15px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Aviso_de_Inconsistência_Número_do_Cartão_1_Campo, #Aviso_de_Inconsistência_Número_do_Cartão_2_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: -10px;
+        margin-bottom: 4px;
+        display: none;
+    }
+
+    #Nome_do_Titular_do_Cartão_1,#Nome_do_Titular_do_Cartão_2{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 15px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+    }
+
+    #Mes_Ano_CVV_Cartão_1,#Mes_Ano_CVV_Cartão_2{
+        display: inline-flex;
+        margin-bottom: 5px;
+    }
+
+    #Campo_de_Preenchimento_Mês_Cartão_1,#Campo_de_Preenchimento_Mês_Cartão_2{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Campo_de_Preenchimento_Ano_Cartão_1,#Campo_de_Preenchimento_Ano_Cartão_2{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Campo_de_Preenchimento_CVV_Cartão_1,#Campo_de_Preenchimento_CVV_Cartão_2{
+        width: 70px;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-right: 20px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: rgb(128, 128, 128);
+    }
+
+    #Aviso_de_Inconsistência_CVV_Cartão_1_Campo,#Aviso_de_Inconsistência_CVV_Cartão_2_Campo{
+        font-size: 11px;
+        color: #db0b3c;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        display: none;
+    }
+
+    #Número_de_Parcelas_Cartão_1,#Número_de_Parcelas_Cartão_2{
+        width: 100%;
+        display: block;
+        padding: 8px;
+        margin-top:5px;
+        margin-bottom: 5px;
+        font-size: 13px;
+        border: 1px solid rgb(146, 146, 146);
+        border-radius: 5px;
+        color: black;
+    }
+
+    /*Resumo da Compra*/
+    #Texto_Resumo_Compra{
+        margin-top: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid rgb(146, 146, 146);
+        font-size: 15px;
+        color: #790d26;
+    }
+
+    #Detalhes_Resumo_Compra{
+        display: inline;
+    }
+
+    #Nome_Produto_Comprado{
+        float: left;
+        margin-top: 10px;
+        font-size: 15px;
+        color: rgb(0, 0, 0);
+    }
+
+    #Valor_Produto_Comprado{
+        float: right;
+        margin-top: 10px;
+    }
+
+    #Comprar{
+        display: block;
+        font-size: 18px;
+        text-decoration: none;
+        text-align: center;
+        color: #fff;
+        padding: 13px;
+        background-color: #0aa15b;
+        height: 45px;
+        width: 230px;
+        margin-top: 50px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        border-width: 0px;
+        box-shadow: 1px 1px 5px black;
+        transition-duration: 0.1s;
+    }
+
+    #Comprar:hover{
+        background-color: #0ab666; 
+        box-shadow: 2px 2px 8px black;
+    }
+
+    #Aviso_de_Inconsistência_Email_Botão{
+        font-size: 11px;
+        color: #db0b3c;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: 230px;
+        display: none;
+    }
+
+    #Aviso_de_Inconsistência_CPF_Botão{
+        font-size: 11px;
+        color: #db0b3c;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: 230px;
+        display: none;
+    }
+
+    #Aviso_de_Inconsistência_CEP_Botão{
+        font-size: 11px;
+        color: #db0b3c;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: 230px;
+        display: none;
+    }
+
+    #Aviso_de_Inconsistência_Número_do_Cartão_Botão,#Aviso_de_Inconsistência_CVV_Cartão_Botão,#Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão,#Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão,#Aviso_de_Inconsistência_Número_do_Cartão_1_Botão,#Aviso_de_Inconsistência_Número_do_Cartão_2_Botão,#Aviso_de_Inconsistência_CVV_Cartão_1_Botão,#Aviso_de_Inconsistência_CVV_Cartão_2_Botão{
+        font-size: 11px;
+        color: #db0b3c;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        width: 230px;
+        display: none;
+    }
+
+    /*Informações de Segurança*/
+    #Informações_de_Segurança{
+        width: 590px;
+        padding-left: 0px;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    #Container_Precisa_de_Ajuda_e_Aviso_de_Juros{
+        display: inline-flex;
+        width: 100%;
+        margin-top: 15px;
+        justify-content: space-between;
+    }
+
+    #Precisa_de_Ajuda{
+        display: inline-flex;
+    }
+
+    #Entre_em_Contato{
+        font-size: 11px;
+        color: rgb(78, 78, 176);
+    }
+
+    #Aviso_de_Juros{
+        font-size: 11px;
+        margin-top: 0px;
+        color: rgb(128, 128, 128);
+    }
+
+    .Rodapé_Informações_de_Segurança{
+        font-size: 11px;
+        color: rgb(128, 128, 128);
+        margin-right: 3px;
+        text-align: justify;
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                    Contrato de Prestação de Serviços
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+    #Rodapé_Informações_de_Segurança{
+        position: absolute;
+    }
+
+    #Botão_Contrato_de_Prestação_de_Serviço{
+        cursor: wait;
+        color: rgb(78, 78, 176);
+        text-decoration: underline;
+    }
+
+    #Aviso_Botão_Contrato {
+        width: 340px;
+        margin-top: -30px;
+        margin-left: 50px;
+        background-color: white;
+        color: black;
+        border-color: black;
+        border-style: inset;
+        border-width: 1px;
+        padding: 5px;
+        font-size: 12px;
+        display: none;
+        z-index: 1;
+        position: absolute;
+    }
+
+    /* LightBox */
+    #Background_Contrato_de_Prestação_de_Serviço {
+        background-color: rgb(0, 0, 0, 0.6);
+        width: 100%;
+        overflow: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: none;
+    }
+
+    #LightBox_Contrato_de_Prestação_de_Serviço{
+        height: 1350px;
+        width: 1020px;
+        background-color: white;
+        margin-top: 40px;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 10px;
+        position: relative;
+        box-shadow: 0px 0px 10px black;
+    }
+
+    #Auxiliar_Espaçamento_LightBox_Contrato_de_Prestação_de_Serviço {
+        padding-bottom: 10px;
+    }
+
+    #Botão_Fechar_Contrato{
+        width: 24px;
+        height: 24px;
+        border-style: solid;
+        border-color: rgb(128, 128, 128);
+        border-radius: 14px;
+        padding-top: 3px;
+        text-align: center;
+        top: 10px;
+        right: 10px;
+        position: absolute;
+        font-size: 12px;
+        color: rgb(118, 118, 118);
+        cursor: pointer;  
+    }
+
+    /* Setas e Páginas do Contrato */
+
+    #Container_Setas_e_Páginas_Contrato{
+        display: inline-flex;
+        margin: 20px;
+        margin-left: 35px;
+        margin-right: 35px;
+        width: 950px;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    #Seta_Esquerda{
+        height: 50px;
+        width: 20px;
+        background-color: white;
+        border-radius: 10px;
+        margin: 490px 10px;
+        text-align: center;
+        padding-top: 15px;
+        color: white;
+        font-size: 16px;
+        cursor: default;
+    }
+
+    #Seta_Direita{
+        height: 50px;
+        width: 20px;
+        background: linear-gradient(135deg, #fff 10%,rgb(206, 206, 206));
+        border-radius: 10px;
+        margin: 490px 10px;
+        text-align: center;
+        padding-top: 15px;
+        color: #790d26;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    #Páginas_do_Contrato{
+        width: 900px;
+        height: 1200px;
+        margin-top: 40px;
+        padding: 50px;
+        border-color: black;
+        border-style: inset;
+        border-width: 1px;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        text-align: justify;
+    }
+
+    #Título_Contrato{
+        color: black;
+        margin-top: 30px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #Conteúdo_Página_1_Contrato{
+        color: black;
+        display: block;
+    }
+
+    #Conteúdo_Página_2_Contrato{
+        color: black;
+        display: none;
+    }
+
+    #Conteúdo_Página_3_Contrato{
+        color: black;
+        display: none;
+    }
+
+    #Conteúdo_Página_4_Contrato{
+        color: black;
+        display: none;
+    }
+
+    #Conteúdo_Página_5_Contrato{
+        color: black;
+        display: none;
+    }
+
+    .Títulos_Cláusulas{
+        text-decoration: underline;
+    }
+
+    .Textos_Recuados{
+        margin-left: 40px;
+    }
+
+    .Auxiliar_Inserção_de_Variáveis_no_Contrato{
+        display: inline-flex;
+    }
+
+    .Assinaturas_Digitais{
+        display: inline-flex;
+    }
+
+    #Símbolo_Check{
+        height: 25px;
+        width: 25px;
+        margin-right: 10px;
+    }
+
+    #Símbolo_Pendente{
+        height: 25px;
+        width: 25px;
+        margin-left: 30px;
+        margin-right: 10px;
+    }
+
+    .Nome_Assinatura_Digital{
+        color: rgb(75, 75, 75);
+        font-size: 20px;
+    }
+
+    .Detalhamento_Assinatura_Digital{
+        color: rgb(75, 75, 75);
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+
+    #Container_Logo_Ivy_Room_Contrato_e_Informações_de_Criação_do_Log_Assinaturas_Digitais{
+        display: inline-flex;
+    }
+
+    #Logo_Ivy_Room_Contrato{
+        width: 200px;
+        height: auto;
+    }
+
+    #Informações_de_Criação_do_Log_Assinaturas_Digitais{
+        text-align: right;
+        margin-left: 248px;
+        margin-top: 15px;
+        color: rgb(170, 170, 170);
+    }
+
+    .Títulos_Assinaturas_Digitais{
+        color: rgb(75, 75, 75);
+        font-size: 24px;
+        margin-bottom: -20px;
+        border-top: 1px dotted rgb(75, 75, 75);
+        padding-top: 20px;
+        margin-top: 10px;
+    }
+
+    .Registros_Assinaturas_Digitais{
+        display: inline-flex;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    #Registro_da_Assinatura_Digital_04{
+        border-bottom: 1px dotted rgb(75, 75, 75);
+        padding-bottom: 20px;
+    }
+
+    .Datas_dos_Registros_das_Assinaturas_Digitais{
+        color: rgb(160, 160, 160);
+        width: 260px;
+    }
+
+    .Explicações_dos_Registros{
+        color: rgb(100, 100, 100);
+        width: 100%;
+        margin-left: 0px;
+    }
+
+    #Aviso_de_Validade_Jurídica_das_Assinaturas_Digitais{
+        display: inline-flex;
+        margin-top: 20px;
+    }
+
+    #Explicação_Aviso_de_Validade_Jurídica_das_Assinaturas_Digitais{
+        color: rgb(100, 100, 100);
+        font-size: 16px;
+    }
+
+    #Logo_ICP_Brasil{
+        width: 60px;
+        height: 70px;
+        margin-right: 20px;
+    }
+
+    #Contador_da_Página_do_Contrato{
+        margin-bottom: 200px;
+        text-align: center;
+        color: #790d26;
+    }
+
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+            Identificação Ivy Room e Aviso de Segurança
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+
+    #AmbienteSeguro_e_Container_PagarMe{
+        display: inline-flex;
+        margin-top: 20px;
+        justify-content: space-between;
+    }
+
+    #Identificação_Ivy_Room{
+        font-size: 10px;
+        color: rgb(170, 170, 170);
+        width: 220px;
+        height: auto;
+    }
+
+    #AmbienteSeguro{
+        display: inline-flex;
+        margin-left: -60px;
+    }
+
+    #LogoCadeado{
+        width: 15px;
+        height: 15px;
+        margin-top: 5px;
+        margin-right: 5px;
+    }
+
+    #Texto_AmbienteSeguro {
+        font-size: 12px;
+        margin-top: 6px;
+        width: 100px;
+        color: rgb(109, 109, 109);
+    }
+
+    #Container_PagarMe{
+        display: inline-flex;
+    }
+
+    #PoweredBy{
+        margin-top: 15px;
+        margin-right: 5px;
+        font-size: 10px;
+        color: rgb(109, 109, 109);
+        width: 60px;
+    }
+
+    #LogoPagarMe{
+        width: 80px;
+        height: auto;
+    }
+
+}

@@ -1,0 +1,260 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////////////// Cabeçalho /////////////////////////////////////*/
+
+#Cabeçalho{
+    height: 80px;
+    background-color: #ebebeb;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#Logo-Ivy{
+    height: 50px;
+    margin-left: 20px;
+    user-select: none;
+}
+
+#Container-Usuário-Logado{
+    display:flex;
+    margin-right: 20px;
+}
+
+#Usuário-Logado-Nome{
+    color: #a41034;
+    margin-right: 8px;
+    user-select: none;
+}
+
+#Botão-Sair{
+    background-color: #a41034;
+    color: #ffffff;
+    height: 20px;
+    width: 30px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 2px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#Botão-Sair:hover {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: #424242;
+    cursor: pointer;
+}
+
+#Container-Externo-Preparatórios{
+    height: calc(100vh - 120px);
+    align-content: center;
+}
+
+#Container-Interno-Preparatórios{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/*///////////////////////// Card Preparatório 1 //////////////////////////*/
+
+#Container-Interno-Preparatório-01{
+    width: 300px;
+    height: auto;
+}
+
+#Preparatório-01-Cabeçalho{
+    height: 150px;
+    background-color: #ebebeb;
+    padding: 10px;
+    margin-bottom: 0px;
+    text-align: left;
+}
+
+#Preparatório-01-Status-Símbolo-Original{
+    height: 15px;
+    width: 15px;
+    margin-top: 3px;
+    margin-left: 5px;
+    user-select: none;
+}
+
+/*/// Configura div substituída pelo JS. ///*/
+#Preparatório-01-Status-Símbolo-Substituído{
+    background-color: #0a983e;
+    height: 10px;
+    width: 10px;
+    border: 1px, solid , #000000;
+    border-radius: 5px;
+    margin-top: 6px;
+    margin-left: 5px;
+    user-select: none;
+}
+
+#Preparatório-01-Botão-Principal{
+    background-color: #858585;
+    color: #ffffff;
+    font-size: 17px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 30px;
+    width: 100px;
+    border-width: 0px;
+    margin-top: 20px;
+    margin-bottom: 25px;
+    margin-left: calc(50% - 50px);
+    text-align: center;
+    user-select: none;
+}
+
+#Preparatório-01-Botão-Principal:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+#Preparatório-01-Container-Prazo-Acesso{
+    display: flex;
+    justify-content: space-between;
+}
+
+#Preparatório-01-Prazo-Acesso{
+    width: auto;
+    color: #3f3f3f;
+    font-size: 15px;
+    user-select: none;
+}
+
+/*/// Configura div inserida pelo JS. ///*/
+#Preparatório-01-Botão-Estender-Acesso{
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 12px;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 30px;
+    border-width: 0px;
+    user-select: none;
+}
+
+/*/// Configura div inserida pelo JS. ///*/
+#Preparatório-01-Botão-Estender-Acesso:hover {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+#Preparatório-01-Ilustração{
+    height: 300px;
+    width: 300px;
+    user-select: none;
+}
+
+/*///////////////////////// Card Preparatório 2 //////////////////////////*/
+
+#Container-Interno-Preparatório-02{
+    width: 300px;
+    height: auto;
+    margin-left: 40px;
+}
+
+#Preparatório-02-Cabeçalho{
+    height: 150px;
+    background-color: #ebebeb;
+    padding: 10px;
+    margin-bottom: 0px;
+    text-align: left;
+}
+
+#Preparatório-02-Status-Símbolo-Original{
+    height: 15px;
+    width: 15px;
+    margin-top: 3px;
+    margin-left: 5px;
+    user-select: none;
+}
+
+#Preparatório-02-Botão-Principal{
+    background-color: #858585;
+    color: #fff;
+    font-size: 17px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 30px;
+    width: 100px;
+    border-width: 0px;
+    margin-top: 20px;
+    margin-bottom: 25px;
+    margin-left: calc(50% - 50px);
+    text-align: center;
+    user-select: none;
+}
+
+#Preparatório-02-Botão-Principal:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+#Preparatório-02-Container-Prazo-Acesso{
+    display: flex;
+    justify-content: space-between;
+}
+
+#Preparatório-02-Prazo-Acesso{
+    width: auto;
+    color: #3f3f3f;
+    font-size: 15px;
+    user-select: none;
+}
+
+/*/// Configura div inserida pelo JS. ///*/
+#Preparatório-02-Botão-Estender-Acesso{
+    background-color: #000000;
+    color: #ffffff;
+    font-size: 12px;
+    padding-top: 3px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 30px;
+    border-width: 0px;
+    user-select: none;
+}
+
+/*/// Configura div inserida pelo JS. ///*/
+#Preparatório-02-Botão-Estender-Acesso:hover {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+#Preparatório-02-Ilustração{
+    height: 300px;
+    width: 300px;
+    user-select: none;
+}
+
+/*/////////////////////////////////////// Rodapé /////////////////////////////////////*/
+
+#Rodapé{
+    height: 40px;
+    background-color: #ebebeb;
+    color: #a41034;
+    text-align: center;
+    padding-top: 12px;
+    font-size: 14px;
+    user-select: none;
+}

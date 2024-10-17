@@ -1,0 +1,86 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Cabeçalho ///////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Principal{
+    background: linear-gradient(120deg, #ffffff, #ebebeb);
+    display: block;
+    padding-top: 20px;
+    padding-left: 20px;
+}
+
+#Botão-Voltar{
+    cursor: pointer;
+    height: 20px;
+    width: 60px;
+    margin-bottom: -40px;
+}
+
+#Container-Externo-Manchete-Explicações-Botão{
+    text-align: center;
+    height: calc(100vh - 40px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#Manchete{
+    font-size: 22px;
+    color: #6e0c24;
+}
+
+#Explicação-01{
+    margin-top: 40px;
+    font-size: 18px;
+    line-height: 1.1;
+    color: #202020;
+    margin-bottom: 0px;
+}
+
+#Explicação-02{
+    margin-top: 0px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-size: 18px;
+    line-height: 1.1;
+    background-color: #6e0c24;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+#Explicação-03{
+    margin-top: 0px;
+    font-size: 18px;
+    line-height: 1.1;
+    color: #202020;
+    margin-bottom: 40px;
+}
+
+#Botão-Entrar-Lista-Espera{
+    width: 250px;
+    background-color: #d7d7d7;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 15px;
+    border-radius: 10px;
+    color: #ffffff;
+    cursor: auto;
+    user-select: none;
+}
+
+#Rodapé{
+    height: 40px;
+    background-color: #ebebeb;
+    color: #a41034;
+    text-align: center;
+    padding-top: 12px;
+    font-size: 14px;
+    user-select: none;
+}

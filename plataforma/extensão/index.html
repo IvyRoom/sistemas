@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extensão de Acesso</title>
+    <link async rel="stylesheet" href="css/style.1.css">
+    
+</head>
+
+<body>
+
+    <!-- Seção-Principal -->
+    <section id="Seção-Principal">
+
+        <div id="Cabeçalho">
+
+            <div id="Container-Logo-Ivy-e-Botão-Voltar">
+                
+                <img id="Logo-Ivy" src="img/LOGO_IVY.png" draggable="false"></img>
+
+                <div id="Botão-Voltar">&laquo; voltar</div>
+            
+            </div>
+
+            <div id="Container-Usuário-Logado">
+
+                <div id="Usuário-Logado-Nome">-</div>
+
+                <div id="Botão-Sair">Sair</div>
+
+            </div>
+
+        </div>
+
+        <div id="Container_Externo" >
+            
+            <form id="Formulário">
+
+                <div id="Extensão_Acesso"><b>Extensão de Acesso</b></div>
+                
+                <div id="Preparatório-Nome"><b>Preparatório em Gestão Generalista<br>(Hard Skills)</b></div>
+
+                <div id="Instruções_Iniciais">Utilize esta ferramenta para estender seu acesso ao Preparatório. Ao selecionar o período desejado e realizar o pagamento, seu acesso será renovado automaticamente.</div>
+
+                <div id="Tabela_Preços">
+
+                    <div class="Container_Linhas">
+
+                        <div class="Títulos_Tabelas"><b>Período</b></div>
+                        <div class="Títulos_Tabelas"><b>Valor</b></div>
+
+                    </div>
+
+                    <div class="Container_Linhas">
+
+                        <div class="Dados_Tabelas">90 dias</div>
+                        <div class="Dados_Tabelas">R$ 650</div>
+
+                    </div>
+
+                    <div class="Container_Linhas">
+
+                        <div class="Dados_Tabelas">180 dias</div>
+                        <div class="Dados_Tabelas">R$ 850</div>
+
+                    </div>
+
+                    <div class="Container_Linhas">
+
+                        <div class="Dados_Tabelas">365 dias</div>
+                        <div class="Dados_Tabelas">R$ 1000</div>
+
+                    </div>
+
+                </div>
+
+                <p class="Títulos_de_Preenchimento">Período Desejado:</p>
+                <select id="Período_Desejado" type="text" required>
+                    <option value="" disabled selected hidden>-</option>
+                    <option value="90">90 dias</option>
+                    <option value="180">180 dias</option>
+                    <option value="365">365 dias</option>    
+                </select>
+
+                <button id="Ir_Pagamento" type="Submit"></button>
+                
+            </form>
+
+        </div>
+
+        <div id="Rodapé">
+
+            <div id="Texto-Rodapé">Ivy Room Ltda. | Todos os direitos reservados.</div>
+
+        </div>
+ 
+    <script async src="js/main.1.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,35 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Seção-Principal /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Sessão-Principal{
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(120deg, #ffffff, #ebebeb);
+    justify-content: center;
+    align-items: center;
+}
+
+#Container-Logo-Ivy-e-Aviso{
+    display: block;
+    text-align: center;
+    width: 250px;
+}
+
+#Logo-Ivy{
+    height: 44px;
+    width: 130px;
+    margin-bottom: 20px;
+}
+
+#Aviso{
+    font-size: 18px;
+}

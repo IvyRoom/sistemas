@@ -1,0 +1,176 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////////////// Cabeçalho /////////////////////////////////////*/
+
+#Cabeçalho{
+    height: 80px;
+    background-color: #ebebeb;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#Container-Logo-Ivy-e-Botão-Voltar{
+    display: flex;
+    align-items: center;
+}
+
+#Logo-Ivy{
+    height: 50px;
+    margin-left: 20px;
+    user-select: none;
+}
+
+#Botão-Voltar{
+    margin-left: 20px;
+    cursor: pointer;
+}
+
+#Container-Usuário-Logado{
+    display:flex;
+    margin-right: 20px;
+}
+
+#Usuário-Logado-Nome{
+    color: #a41034;
+    margin-right: 8px;
+    user-select: none;
+}
+
+#Botão-Sair{
+    background-color: #a41034;
+    color: #ffffff;
+    height: 20px;
+    width: 30px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 2px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#Botão-Sair:hover {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: #424242;
+    cursor: pointer;
+}
+
+/*/////////////////////////////////////// Formulário /////////////////////////////////////*/
+
+#Container_Externo{
+    display: flex;
+    align-items: center;
+    height: calc(100vh - 80px - 20px - 40px);
+}
+
+#Formulário{
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Extensão_Acesso{
+    font-size:28px;
+    color: #790d26;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#Preparatório-Nome{
+    font-size: 20px;
+    color: #343434;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    user-select: none;
+    text-align: center;
+}
+
+#Instruções_Iniciais{
+    font-size:18px;
+    color: #790d26;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#Tabela_Preços{
+    width: 90%;
+    margin-left: 5%;
+}
+
+.Container_Linhas{
+    display: flex;
+}
+
+.Títulos_Tabelas{
+    background-color: #790d26;
+    padding: 5px;
+    color: #fff;
+    width: 50%;
+    text-align: center;
+}
+
+.Dados_Tabelas{
+    padding: 5px;
+    color: #790d26;
+    border-color: #790d26;
+    border-width: 1px;
+    border-style: dotted;
+    width: 50%;
+    text-align: center;
+}
+
+.Títulos_de_Preenchimento{
+    font-size:16px;
+    margin-top: 20px;
+    margin-left: 5%;
+}
+
+
+#Período_Desejado{
+    width: 90%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 0px;
+    margin-left: 5%;
+    font-size: 16px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Ir_Pagamento{
+    height: 60px;
+    width: 90%;
+    color: #fff;
+    margin-top: 30px;
+    margin-left: 5%;
+    margin-right: 5%;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+}
+
+/*/////////////////////////////////////// Rodapé /////////////////////////////////////*/
+
+#Rodapé{
+    height: 40px;
+    background-color: #ebebeb;
+    color: #a41034;
+    text-align: center;
+    padding-top: 12px;
+    font-size: 14px;
+    user-select: none;
+}

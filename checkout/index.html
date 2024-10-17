@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Ivy</title>
+    <link defer rel="stylesheet" href="css/style.css">
+</head>
+    
+    <body>
+
+        <section id="Sessão_Pagamento">
+
+            <img id= "Logo-Ivy-Room" src="img/LOGO_IVY.png" alt="logo: escola de gestão">
+
+            <div id="Container-Pagamento" >
+
+                <p id="Nome_Produto"></p>
+                <p id="Nome_Empresa">Ivy Room | Graduate School of Management</p>
+                
+                <div id="Container_Valor_Produto_à_Vista">
+                    <p id="Valor_Produto_à_Vista"> <b></b></p>
+                    <p id="Detalhamento_Valor_Produto_à_Vista"> <b>à vista</b></p>
+                </div>
+                
+                <p id="Valor_Produto_a_Prazo"></p>
+
+                <form id="Formulário_de_Pagamento">
+                    
+                    <!-- Dados do Cliente -->
+                    <div id="Dados_Cliente">  
+                        
+                        <p class="Cabeçalhos"> Dados Pessoais</p>
+
+                        <p class="Títulos_de_Preenchimento"> Nome Completo</p>
+                        <input class="Campos_de_Preenchimento_Grandes" id="NomeCompleto" type="text" placeholder="Digite seu nome completo" name="Nome_Completo_do_Cliente" required>
+                        
+                        <p class="Títulos_de_Preenchimento"> E-mail</p>
+                        <input id="Email_do_Cliente" class="Campos_de_Preenchimento_Grandes" type="email" placeholder="Digite seu e-mail" name="Email_do_Cliente" required>
+                        
+                        <p class="Títulos_de_Preenchimento"> Confirmação E-mail</p>
+                        <input id="Confirmação_do_Email_do_Cliente" class="Campos_de_Preenchimento_Grandes" type="email" placeholder="Confirme seu e-mail" name="Confirmação_do_Email_do_Cliente" required>
+                        <p id="Aviso_de_Inconsistência_Email_Campo"> <b>ⓧ</b> Confirmação de e-mail não corresponde.</p>
+                        
+                        <div id="CPF_e_Celular">
+                            
+                            <div id="CPF">
+                                <p class="Títulos_de_Preenchimento"> CPF</p>
+                                <input id="Campo_de_Preenchimento_CPF" autocomplete="off" maxlength="14" type="text" placeholder="Digite somente números" name="CPF_do_Cliente" required>
+                                <p id="Aviso_de_Inconsistência_CPF_Campo"> <b>ⓧ</b> CPF não é válido.</p>
+                            </div>
+
+                            <div id="Celular">
+                                <p class="Títulos_de_Preenchimento"> Celular</p>
+
+                                <div id="DDD_Celular">
+                                    <input id="Campo_de_Preenchimento_DDD" autocomplete="off" type="text" maxlength="2" placeholder="11" name="DDD_do_Celular_do_Cliente" required>
+                                    <input id="Campo_de_Preenchimento_Celular" autocomplete="off" type="text" maxlength="10" placeholder="999999999" name="Celular_do_Cliente" required>
+                                </div>
+
+                            </div>
+
+                        </div>
+                        
+                    </div>
+
+                    <!-- Dados do Endereço de Envio dos Materiais da Ivy Room -->
+                    <div id="Dados_Endereço">
+                        
+                        <p class="Cabeçalhos"> Endereço</p>
+                        
+                        <div id="Rua_e_Número">
+
+                            <div id="Container_Endereço_Rua">
+                                <p class="Títulos_de_Preenchimento">Rua</p>
+                                <p class="Subtítulos_de_Preenchimento">Preencher com o "R." de "Rua". Ex.: "R. João Alencar".</p>
+                                <input id="Endereço_Rua" type="text" placeholder="Digite a rua" name="Endereço_Rua" required>
+                            </div>
+
+                            <div id="Container_Endereço_Número">
+                                <p class="Títulos_de_Preenchimento">Número</p>
+                                <input id="Endereço_Número" type="text" placeholder="1234" maxlength="6" name="Endereço_Número" required>
+                            </div>
+
+                        </div>
+
+                        <div id="Complemento_e_Bairro">
+
+                            <div id="Container_Endereço_Complemento">
+                                <p class="Títulos_de_Preenchimento">Complemento</p>
+                                <input id="Endereço_Complemento" type="text" placeholder="Digite o complemento" name="Endereço_Complemento" required>
+                            </div>
+
+                            <div id="Container_Endereço_Bairro">
+                                <p class="Títulos_de_Preenchimento">Bairro</p>
+                                <input id="Endereço_Bairro" type="text" placeholder="Digite o bairro" name="Endereço_Bairro" required>
+                            </div>
+
+                        </div>
+
+                        <div id="Cidade_Estado_CEP">
+                            
+                            <div id="Cidade_Estado">
+
+                                <div id="Container_Endereço_Cidade">
+                                    <p class="Títulos_de_Preenchimento">Cidade</p>
+                                    <input id="Endereço_Cidade" type="text" placeholder="Digite a cidade" name="Endereço_Cidade" required>
+                                </div>
+
+                                <div id="Container_Endereço_Estado">
+                                    <p class="Títulos_de_Preenchimento">Estado</p>
+                                    <select id="Endereço_Estado" type="text" name="Endereço_Estado" required>
+                                        <option value="" disabled selected hidden>-</option>
+                                        <option value="AC">AC</option>
+                                        <option value="AL">AL</option>
+                                        <option value="AP">AP</option>
+                                        <option value="AM">AM</option>
+                                        <option value="BA">BA</option>
+                                        <option value="CE">CE</option>
+                                        <option value="DF">DF</option>
+                                        <option value="ES">ES</option>
+                                        <option value="GO">GO</option>
+                                        <option value="MA">MA</option>
+                                        <option value="MT">MT</option>
+                                        <option value="MS">MS</option>
+                                        <option value="MG">MG</option>
+                                        <option value="PA">PA</option>
+                                        <option value="PB">PB</option>
+                                        <option value="PR">PR</option>
+                                        <option value="PE">PE</option>
+                                        <option value="PI">PI</option>
+                                        <option value="RJ">RJ</option>
+                                        <option value="RN">RN</option>
+                                        <option value="RS">RS</option>
+                                        <option value="RO">RO</option>
+                                        <option value="RR">RR</option>
+                                        <option value="SC">SC</option>
+                                        <option value="SP">SP</option>
+                                        <option value="SE">SE</option>
+                                        <option value="TO">TO</option>      
+                                    </select>
+                                </div>
+                            
+                            </div>
+
+                            <div id="Container_Endereço_CEP">
+                                <p class="Títulos_de_Preenchimento">CEP</p>
+                                <input id="Endereço_CEP" autocomplete="off" type="text" placeholder="Digite somente números" name="Endereço_CEP" maxlength="9" required>
+                                <p id="Aviso_de_Inconsistência_CEP_Campo"> <b>ⓧ</b> CEP não é válido.</p>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- ---------------------------------------
+                    --------------------------------------------
+                            Botões: Formas de Pagamento
+                    --------------------------------------------    
+                    -------------------------------------------->
+                    <div id="Formas_de_Pagamento">
+
+                        <div id="Tipo_de_Pagamento_UM_CARTAO" style="cursor: pointer">
+                            <img id="UM_CARTAO" src="img/UM_CARTAO_CINZA_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">Cartão de Crédito</p>
+                        </div>
+
+                        <div id="Tipo_de_Pagamento_PIX" style="cursor: pointer">
+                            <img id="PIX" src="img/PIX_CINZA_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">PIX</p>
+                        </div>
+
+                        <div id="Tipo_de_Pagamento_BOLETO" style="cursor: pointer">
+                            <img id="BOLETO" src="img/BOLETO_CINZA_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">Boleto</p>
+                        </div>
+
+                        <div id="Tipo_de_Pagamento_PIX_CARTAO" style="cursor: pointer">
+                            <img id="PIX_CARTAO" src="img/PIX_CARTAO_CINZA_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">PIX e Cartão</p>
+                        </div>
+                        
+                        <div id="Tipo_de_Pagamento_DOIS_CARTOES" style="cursor: pointer">
+                            <img id="DOIS_CARTOES" src="img/DOIS_CARTOES_CINZA_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">Dois Cartões</p>
+                        </div>
+
+                    </div>
+
+
+                    <!-- ---------------------------------------
+                    --------------------------------------------
+                       Meio de Pagamento: Um Cartão de Crédito
+                    --------------------------------------------    
+                    -------------------------------------------->
+
+                    <div id="Dados_Pagamento_UM_CARTAO">
+
+                        <div id="Dados_Cartão_Crédito_e_Imagem">
+
+                            <div id="Dados_Cartão_Crédito">
+                                
+                                <p class="Títulos_de_Preenchimento"> Número do Cartão</p>
+                                <input class="Campos_de_Preenchimento_Médios" id="Número_do_Cartão" autocomplete="off" type="text" placeholder="Digite somente números" name="Número_do_Cartão" maxlength="19" required>
+                                <p id="Aviso_de_Inconsistência_Número_do_Cartão_Campo"> <b>ⓧ</b> Número inconsistente.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Nome do Titular</p>
+                                <input class="Campos_de_Preenchimento_Médios" id="Nome_do_Titular_do_Cartão" type="text" placeholder="Nome do Titular" name="Nome_do_Titular_do_Cartão" required>
+                                
+                                <div id="Mes_Ano_CVV">
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Mês</p>
+                                        <select id="Campo_de_Preenchimento_Mês_Cartão" type="text" name="Mês_de_Validade_do_Cartão" required>
+                                            <option value="" disabled selected hidden>MM</option>
+                                            <option value="1">01</option>
+                                            <option value="2">02</option>
+                                            <option value="3">03</option>
+                                            <option value="4">04</option>
+                                            <option value="5">05</option>
+                                            <option value="6">06</option>
+                                            <option value="7">07</option>
+                                            <option value="8">08</option>
+                                            <option value="9">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Ano</p>
+                                        <select id="Campo_de_Preenchimento_Ano_Cartão" type="text" name="Ano_de_Validade_do_Cartão" required>
+                                            <option value="" disabled selected hidden>AA</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                            <option value="29">29</option>
+                                            <option value="30">30</option>
+                                            <option value="31">31</option>
+                                            <option value="32">32</option>
+                                            <option value="33">33</option>
+                                            <option value="34">34</option>
+                                            <option value="35">35</option>
+                                            <option value="36">36</option>
+                                            <option value="37">37</option>
+                                            <option value="38">38</option>
+                                            <option value="39">39</option>
+                                            <option value="40">40</option>
+                                            <option value="41">41</option>
+                                            <option value="42">42</option>
+                                            <option value="43">43</option>
+                                            <option value="44">44</option>
+                                            <option value="45">45</option>
+                                            <option value="46">46</option>
+                                            <option value="47">47</option>
+                                            <option value="48">48</option>
+                                            <option value="49">49</option>
+                                            <option value="50">50</option>
+                                            <option value="51">51</option>
+                                            <option value="52">52</option>
+                                            <option value="53">53</option>
+                                            <option value="54">54</option>
+                                            <option value="55">55</option>
+                                            <option value="56">56</option>
+                                            <option value="57">57</option>
+                                            <option value="58">58</option>
+                                            <option value="59">59</option>
+                                            <option value="60">60</option>
+                                            <option value="61">61</option>
+                                            <option value="62">62</option>
+                                            <option value="63">63</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> CVV</p>
+                                        <input id="Campo_de_Preenchimento_CVV_Cartão" type="text" placeholder="CVV" name="CVV_do_Cartão" maxlength="4" required>
+                                        <p id="Aviso_de_Inconsistência_CVV_Cartão_Campo"> <b>ⓧ</b> Valor inconsistente.</p>
+                                    </div>
+                                
+                                </div>
+                            
+                            </div>
+
+                            <img id="Imagem_Cartão_Crédito" src="img/CARTÃOGRANDE.webp" alt="">
+
+                        </div>
+
+                        <p class="Títulos_de_Preenchimento"> Número de Parcelas</p>
+                        <select id="Número_de_Parcelas_Cartão_do_UM_CARTAO" type="text" name="Número_de_Parcelas_Cartão_do_UM_CARTAO" required>
+                            <option value="" disabled selected hidden>Número de Parcelas</option>
+                            <option value="1"></option>
+                            <option value="2"></option>
+                            <option value="3"></option>
+                            <option value="4"></option>
+                            <option value="5"></option>
+                            <option value="6"></option>
+                            <option value="7"></option>
+                            <option value="8"></option>
+                            <option value="9"></option>
+                            <option value="10"></option>
+                            <option value="11"></option>
+                            <option value="12"></option>   
+                        </select>
+
+                    </div>
+
+
+                    <!-- -----------------------------------------
+                    ----------------------------------------------
+                                Meio de Pagamento: PIX
+                    ----------------------------------------------    
+                    ---------------------------------------------->
+                    
+                    <div id="Dados_Pagamento_PIX">
+
+                        <div id="Detalhamento_Dados_Pagamento_PIX">
+                            <img id="QR_Code" src="img/QR CODE.webp">
+                            <p id="Manchete_Como_Funciona_PIX"> Como funciona?</p>
+                            <p id="Explicação_Como_Funciona_PIX">Ao clicar em "Gerar PIX", você receberá um QR Code por e-mail. Basta escaneá-lo utilizando o aplicativo do seu banco e realizar o pagamento em até 30min. Feito isto, você receberá todas instruções de acesso ao serviço. Tudo simples, ágil e seguro.</p>
+                        </div>
+
+                    </div>
+
+                    <!-- -----------------------------------------
+                    ----------------------------------------------
+                               Meio de Pagamento: Boleto
+                    ----------------------------------------------    
+                    ---------------------------------------------->
+                    
+                    <div id="Dados_Pagamento_BOLETO">
+
+                        <div id="Detalhamento_Dados_Pagamento_BOLETO">
+                            <img id="Código_de_Barras" src="img/CÓDIGO DE BARRAS.webp">
+                            <p id="Manchete_Como_Funciona_BOLETO"> Como funciona?</p>
+                            <p id="Explicação_Como_Funciona_BOLETO">Ao clicar em "Gerar Boleto", você receberá o documento por e-mail. Basta escanear o código de barras utilizando o app do seu banco e fazer o pagamento em até 24h. <br> <br> O pagamento via boleto pode levar <b>até 3 dias úteis</b> para ser compensado. Na sequência, você recebará as instruções de acesso ao serviço. <br> <br> Para <b>acesso imediato</b>, faça o pagamento via PIX.</p>
+                        </div>
+
+                    </div>
+
+                    <!-- -----------------------------------------
+                    ----------------------------------------------
+                            Meio de Pagamento: PIX e Cartão
+                    ----------------------------------------------    
+                    ---------------------------------------------->
+                    
+                    <div id="Dados_Pagamento_PIX_CARTAO">
+
+                        <div id="Detalhamento_Dados_Pagamento_PIX_CARTAO">
+                            <img id="Pix_Cartão_Bordô" src="img/PIX_CARTAO_BORDO_REDUZIDO.webp">
+                            <p id="Manchete_Como_Funciona_PIX_CARTAO"> Como funciona?</p>
+                            <p id="Explicação_Como_Funciona_PIX_CARTAO">Ao clicar em "Comprar", o pagamento via cartão de crédito será processado e você receberá um QR Code por e-mail para realizar o PIX. Basta escanear o QR Code utilizando o app do seu banco e fazer o pagamento em até 30min. Com isto, você receberá todas as instruções de acesso ao serviço. Tudo simples, ágil e seguro. </p>
+                        </div>
+
+                        <div id="Container_Dados_Cartão_Crédito_e_Pix_do_PIX_CARTÃO">
+                        
+                            <div id="Dados_Cartão_Crédito_do_PIX_CARTÃO">
+                                
+                                <div id="Identificação_Cartão_Crédito_do_PIX_CARTÃO">
+                                    <img id="Imagem_Cartão_Crédito_do_PIX_CARTÃO" src="img/UM_CARTAO_CINZA_REDUZIDO.webp">
+                                    <p id="Texto_Cartão_Crédito_do_PIX_CARTÃO"> <b>Cartão</b></p>
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Valor no Cartão</p>
+                                <input id="Valor_no_Cartão_do_PIX_CARTÃO" type="text" placeholder="R$ 100,00" value="R$ 100,00" name="Valor_no_Cartão_do_PIX_CARTÃO">
+                                <p class="Observações_de_Preenchimento"> O valor mínimo é R$100,00.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Número do Cartão</p>
+                                <input id="Número_do_Cartão_do_PIX_CARTÃO" autocomplete="off" type="text" placeholder="Digite somente números" name="Número_do_Cartão_do_PIX_CARTÃO" maxlength="19">
+                                <p id="Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo"> <b>ⓧ</b> Número inconsistente.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Nome do Titular</p>
+                                <input id="Nome_do_Titular_do_Cartão_do_PIX_CARTÃO" type="text" placeholder="Nome do Titular" name="Nome_do_Titular_do_Cartão_do_PIX_CARTÃO">
+                                
+                                <div id="Mes_Ano_CVV_Cartão_do_PIX_CARTÃO">
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Mês</p>
+                                        <select id="Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO" type="text" name="Mês_de_Validade_do_Cartão_do_PIX_CARTÃO">
+                                            <option value="" disabled selected hidden>MM</option>
+                                            <option value="1">01</option>
+                                            <option value="2">02</option>
+                                            <option value="3">03</option>
+                                            <option value="4">04</option>
+                                            <option value="5">05</option>
+                                            <option value="6">06</option>
+                                            <option value="7">07</option>
+                                            <option value="8">08</option>
+                                            <option value="9">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Ano</p>
+                                        <select id="Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO" type="text" name="Ano_de_Validade_do_Cartão_do_PIX_CARTÃO">
+                                            <option value="" disabled selected hidden>AA</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                            <option value="29">29</option>
+                                            <option value="30">30</option>
+                                            <option value="31">31</option>
+                                            <option value="32">32</option>
+                                            <option value="33">33</option>
+                                            <option value="34">34</option>
+                                            <option value="35">35</option>
+                                            <option value="36">36</option>
+                                            <option value="37">37</option>
+                                            <option value="38">38</option>
+                                            <option value="39">39</option>
+                                            <option value="40">40</option>
+                                            <option value="41">41</option>
+                                            <option value="42">42</option>
+                                            <option value="43">43</option>
+                                            <option value="44">44</option>
+                                            <option value="45">45</option>
+                                            <option value="46">46</option>
+                                            <option value="47">47</option>
+                                            <option value="48">48</option>
+                                            <option value="49">49</option>
+                                            <option value="50">50</option>
+                                            <option value="51">51</option>
+                                            <option value="52">52</option>
+                                            <option value="53">53</option>
+                                            <option value="54">54</option>
+                                            <option value="55">55</option>
+                                            <option value="56">56</option>
+                                            <option value="57">57</option>
+                                            <option value="58">58</option>
+                                            <option value="59">59</option>
+                                            <option value="60">60</option>
+                                            <option value="61">61</option>
+                                            <option value="62">62</option>
+                                            <option value="63">63</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> CVV</p>
+                                        <input id="Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO" type="text" placeholder="CVV" name="CVV_do_Cartão_do_PIX_CARTÃO" maxlength="4">
+                                        <p id="Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo"> <b>ⓧ</b> Inconsistente.</p>
+                                    </div>
+                                
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Número de Parcelas</p>
+                                <select id="Número_de_Parcelas_Cartão_do_PIX_CARTÃO" type="text" name="Número_de_Parcelas_Cartão_do_PIX_CARTÃO">
+                                    <option value="1" selected></option>
+                                    <option value="2"></option>
+                                    <option value="3"></option>
+                                    <option value="4"></option>
+                                    <option value="5"></option>
+                                    <option value="6"></option>
+                                    <option value="7"></option>
+                                    <option value="8"></option>
+                                    <option value="9"></option>
+                                    <option value="10"></option>
+                                    <option value="11"></option>
+                                    <option value="12"></option>  
+                                </select>
+                            
+                            </div>
+
+                            <div id="Dados_PIX_do_PIX_CARTÃO">
+                                
+                                <div id="Identificação_PIX_do_PIX_CARTÃO">
+                                    <img id="Imagem_PIX_do_PIX_CARTÃO" src="img/PIX_CINZA_REDUZIDO.webp">
+                                    <p id="Texto_PIX_do_PIX_CARTÃO"> <b>Pix</b></p>
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Valor no PIX</p>
+                                <input id="Valor_no_PIX_do_PIX_CARTÃO" type="text" placeholder="R$ 2.890,00" value="R$ 2.890,00" name="Valor_no_PIX_do_PIX_CARTÃO" disabled>
+                                <p class="Observações_de_Preenchimento"> O valor mínimo é R$100,00.</p>
+                            
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- -----------------------------------------
+                    ----------------------------------------------
+                       Meio de Pagamento: Dois Cartões de Crédito
+                    ----------------------------------------------    
+                    ---------------------------------------------->
+                    
+                    <div id="Container_Dados_Pagamento_DOIS_CARTOES">
+
+                        <div id="Dados_Pagamento_DOIS_CARTOES">
+                            
+                            <!--------------------------------------------
+                                            Cartão_Crédito_1    
+                            ---------------------------------------------->
+
+                            <div id="Dados_Cartão_Crédito_1">
+                                
+                                <div id="Identificação_Cartão_Crédito_1">
+                                    <img id="Imagem_Cartão_Crédito_1" src="img/UM_CARTAO_CINZA_REDUZIDO.webp">
+                                    <p id="Texto_Cartão_Crédito_1"> <b>Cartão 1</b></p>
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Valor no Cartão</p>
+                                <input id="Valor_no_Cartão_1" type="text" name="Valor_no_Cartão_1">
+                                <p class="Observações_de_Preenchimento"> O menor valor para cada cartão é R$100,00.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Número do Cartão</p>
+                                <input id="Número_do_Cartão_1" autocomplete="off" type="text" placeholder="Digite somente números" name="Número_do_Cartão_1" maxlength="19">
+                                <p id="Aviso_de_Inconsistência_Número_do_Cartão_1_Campo"> <b>ⓧ</b> Número inconsistente.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Nome do Titular</p>
+                                <input id="Nome_do_Titular_do_Cartão_1" type="text" placeholder="Nome do Titular" name="Nome_do_Titular_do_Cartão_1">
+                                
+                                <div id="Mes_Ano_CVV_Cartão_1">
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Mês</p>
+                                        <select id="Campo_de_Preenchimento_Mês_Cartão_1" type="text" name="Mês_de_Validade_do_Cartão_1">
+                                            <option value="" disabled selected hidden>MM</option>
+                                            <option value="1">01</option>
+                                            <option value="2">02</option>
+                                            <option value="3">03</option>
+                                            <option value="4">04</option>
+                                            <option value="5">05</option>
+                                            <option value="6">06</option>
+                                            <option value="7">07</option>
+                                            <option value="8">08</option>
+                                            <option value="9">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Ano</p>
+                                        <select id="Campo_de_Preenchimento_Ano_Cartão_1" type="text" name="Ano_de_Validade_do_Cartão_1">
+                                            <option value="" disabled selected hidden>AA</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                            <option value="29">29</option>
+                                            <option value="30">30</option>
+                                            <option value="31">31</option>
+                                            <option value="32">32</option>
+                                            <option value="33">33</option>
+                                            <option value="34">34</option>
+                                            <option value="35">35</option>
+                                            <option value="36">36</option>
+                                            <option value="37">37</option>
+                                            <option value="38">38</option>
+                                            <option value="39">39</option>
+                                            <option value="40">40</option>
+                                            <option value="41">41</option>
+                                            <option value="42">42</option>
+                                            <option value="43">43</option>
+                                            <option value="44">44</option>
+                                            <option value="45">45</option>
+                                            <option value="46">46</option>
+                                            <option value="47">47</option>
+                                            <option value="48">48</option>
+                                            <option value="49">49</option>
+                                            <option value="50">50</option>
+                                            <option value="51">51</option>
+                                            <option value="52">52</option>
+                                            <option value="53">53</option>
+                                            <option value="54">54</option>
+                                            <option value="55">55</option>
+                                            <option value="56">56</option>
+                                            <option value="57">57</option>
+                                            <option value="58">58</option>
+                                            <option value="59">59</option>
+                                            <option value="60">60</option>
+                                            <option value="61">61</option>
+                                            <option value="62">62</option>
+                                            <option value="63">63</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> CVV</p>
+                                        <input id="Campo_de_Preenchimento_CVV_Cartão_1" type="text" placeholder="CVV" name="CVV_do_Cartão_1" maxlength="4">
+                                        <p id="Aviso_de_Inconsistência_CVV_Cartão_1_Campo"> <b>ⓧ</b> Inconsistente.</p>
+                                    </div>
+                                
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Número de Parcelas</p>
+                                <select id="Número_de_Parcelas_Cartão_1" type="text" name="Número_de_Parcelas_Cartão_1">
+                                    <option value="1" selected></option>
+                                    <option value="2"></option>
+                                    <option value="3"></option>
+                                    <option value="4"></option>
+                                    <option value="5"></option>
+                                    <option value="6"></option>
+                                    <option value="7"></option>
+                                    <option value="8"></option>
+                                    <option value="9"></option>
+                                    <option value="10"></option>
+                                    <option value="11"></option>
+                                    <option value="12"></option>  
+                                </select>
+                            
+                            </div>
+
+
+                            <!-- -----------------------------------------
+                                            Cartão_Crédito_2    
+                            ---------------------------------------------->
+
+                            <div id="Dados_Cartão_Crédito_2">
+                                
+                                <div id="Identificação_Cartão_Crédito_2">
+                                    <img id="Imagem_Cartão_Crédito_2" src="img/UM_CARTAO_CINZA_REDUZIDO.webp">
+                                    <p id="Texto_Cartão_Crédito_2"><b>Cartão 2</b></p>
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Valor no Cartão</p>
+                                <input id="Valor_no_Cartão_2" type="text" name="Valor_no_Cartão_2" maxlength="19" disabled>
+                                <p class="Observações_de_Preenchimento"> O menor valor para cada cartão é R$100,00.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Número do Cartão</p>
+                                <input id="Número_do_Cartão_2" autocomplete="off" type="text" placeholder="Digite somente números" name="Número_do_Cartão_2" maxlength="19">
+                                <p id="Aviso_de_Inconsistência_Número_do_Cartão_2_Campo"> <b>ⓧ</b> Valor inconsistente.</p>
+
+                                <p class="Títulos_de_Preenchimento"> Nome do Titular</p>
+                                <input id="Nome_do_Titular_do_Cartão_2" type="text" placeholder="Nome do Titular" name="Nome_do_Titular_do_Cartão_2">
+                                
+                                <div id="Mes_Ano_CVV_Cartão_2">
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Mês</p>
+                                        <select id="Campo_de_Preenchimento_Mês_Cartão_2" type="text" name="Mês_de_Validade_do_Cartão_2">
+                                            <option value="" disabled selected hidden>MM</option>
+                                            <option value="1">01</option>
+                                            <option value="2">02</option>
+                                            <option value="3">03</option>
+                                            <option value="4">04</option>
+                                            <option value="5">05</option>
+                                            <option value="6">06</option>
+                                            <option value="7">07</option>
+                                            <option value="8">08</option>
+                                            <option value="9">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> Ano</p>
+                                        <select id="Campo_de_Preenchimento_Ano_Cartão_2" type="text" name="Ano_de_Validade_do_Cartão_2">
+                                            <option value="" disabled selected hidden>AA</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                            <option value="29">29</option>
+                                            <option value="30">30</option>
+                                            <option value="31">31</option>
+                                            <option value="32">32</option>
+                                            <option value="33">33</option>
+                                            <option value="34">34</option>
+                                            <option value="35">35</option>
+                                            <option value="36">36</option>
+                                            <option value="37">37</option>
+                                            <option value="38">38</option>
+                                            <option value="39">39</option>
+                                            <option value="40">40</option>
+                                            <option value="41">41</option>
+                                            <option value="42">42</option>
+                                            <option value="43">43</option>
+                                            <option value="44">44</option>
+                                            <option value="45">45</option>
+                                            <option value="46">46</option>
+                                            <option value="47">47</option>
+                                            <option value="48">48</option>
+                                            <option value="49">49</option>
+                                            <option value="50">50</option>
+                                            <option value="51">51</option>
+                                            <option value="52">52</option>
+                                            <option value="53">53</option>
+                                            <option value="54">54</option>
+                                            <option value="55">55</option>
+                                            <option value="56">56</option>
+                                            <option value="57">57</option>
+                                            <option value="58">58</option>
+                                            <option value="59">59</option>
+                                            <option value="60">60</option>
+                                            <option value="61">61</option>
+                                            <option value="62">62</option>
+                                            <option value="63">63</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <p class="Títulos_de_Preenchimento"> CVV</p>
+                                        <input id="Campo_de_Preenchimento_CVV_Cartão_2" type="text" placeholder="CVV" name="CVV_do_Cartão_2" maxlength="4">
+                                        <p id="Aviso_de_Inconsistência_CVV_Cartão_2_Campo"> <b>ⓧ</b> Inconsistente.</p>
+                                    </div>
+                                
+                                </div>
+
+                                <p class="Títulos_de_Preenchimento"> Número de Parcelas</p>
+                                <select id="Número_de_Parcelas_Cartão_2" type="text" name="Número_de_Parcelas_Cartão_2">
+                                    <option value="1" selected></option>
+                                    <option value="2"></option>
+                                    <option value="3"></option>
+                                    <option value="4"></option>
+                                    <option value="5"></option>
+                                    <option value="6"></option>
+                                    <option value="7"></option>
+                                    <option value="8"></option>
+                                    <option value="9"></option>
+                                    <option value="10"></option>
+                                    <option value="11"></option>
+                                    <option value="12"></option>  
+                                </select>
+                            
+                            </div>
+
+
+                        </div>
+
+                    </div>    
+
+                    <!-- Resumo da Compra -->
+                    <p id="Texto_Resumo_Compra"> <b>Resumo da compra</b></p>
+                    <div id="Detalhes_Resumo_Compra">
+                        <p id="Nome_Produto_Comprado"> Extensão de Acesso</p>
+                        <p id="Valor_Produto_Comprado">-</p>
+                    </div>
+
+                    <!-- Botão "Comprar"-->
+                    <button id="Comprar" type="Submit"> Comprar </button>
+                    <p id="Aviso_de_Inconsistência_Email_Botão"><b>ⓧ</b> Confirmação de e-mail não corresponde.</p>
+                    <p id="Aviso_de_Inconsistência_CPF_Botão"><b>ⓧ</b> CPF não é válido.</p>
+                    <p id="Aviso_de_Inconsistência_CEP_Botão"> <b>ⓧ</b> CEP não é válido.</p>
+                    <p id="Aviso_de_Inconsistência_Número_do_Cartão_Botão"> <b>ⓧ</b> Número do Cartão inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_CVV_Cartão_Botão"> <b>ⓧ</b> Valor CVV inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão"> <b>ⓧ</b> Número do Cartão inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão"> <b>ⓧ</b> Valor CVV Inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_Número_do_Cartão_1_Botão"> <b>ⓧ</b> Número do Cartão 1 inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_Número_do_Cartão_2_Botão"> <b>ⓧ</b> Número do Cartão 2 inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_CVV_Cartão_1_Botão"> <b>ⓧ</b> Valor CVV Cartão 1 inconsistente.</p>
+                    <p id="Aviso_de_Inconsistência_CVV_Cartão_2_Botão"> <b>ⓧ</b> Valor CVV Cartão 2 inconsistente.</p>
+
+                </form>
+
+                <!-- Informações de Segurança -->
+
+                <div id="Informações_de_Segurança">
+                    
+                    <div id="Container_Precisa_de_Ajuda_e_Aviso_de_Juros">
+
+                        <div id="Precisa_de_Ajuda">
+
+                            <p class="Rodapé_Informações_de_Segurança"> <b>Precisa de ajuda?</b></p>
+                            
+                            <!-- Botão "Entre em Contato"-->
+                            <a id="Entre_em_Contato">Entre em contato</a>
+
+                        </div>
+                        
+                        <p id="Aviso_de_Juros"> *Valores parcelados incidem juros.</p>
+                    
+                    </div>
+
+                    <p class="Rodapé_Informações_de_Segurança"> <br> Ao clicar em "Comprar", eu (i) autorizo a Pagar.me a processar este pedido em nome da Ivy Room Ltda., (ii) atesto que sou maior de idade ou autorizado e acompanhado por um tutor legal e (iii) autorizo a Pagar.me e a Ivy Room Ltda. a armazenarem e processarem meus dados em conformidade com a Lei nº 13.853/2019 - Lei Geral de Proteção de Dados Pessoais (LGPD) - e com o PCI Compliance (Certificação Nível 1 com Atestado de Conformidade e Antifraude Integrado).</p>
+
+                    <div id="Aviso_Botão_Contrato"> Para acessar o contrato, primeiro preencha todo o formulário. </div>
+
+                    <div id="AmbienteSeguro_e_Container_PagarMe">
+                        
+                        <p id="Identificação_Ivy_Room">® Ivy Room Ltda. | Todos os direitos reservados. <br> CNPJ: 39.794.363/0001-81</p>
+                                               
+                        <div id="AmbienteSeguro">
+                            <img id="LogoCadeado" src="img/CADEADO.webp" alt="">
+                            <p id="Texto_AmbienteSeguro"> Ambiente seguro.</p>
+                        </div>
+
+                        <div id="Container_PagarMe">
+                            <p id="PoweredBy"> Powered by</p>
+                            <img id="LogoPagarMe" src="img/PAGARME.webp" alt="">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <script async src="js/main.js"></script>
+    
+    </body>
+
+</html>

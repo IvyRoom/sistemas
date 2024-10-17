@@ -1,0 +1,1229 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Container-Seções{
+    display: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Seção-Navegação /////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Navegação{
+    width: 400px;
+    height: 100vh;
+    background-color: #ebebeb;
+    text-align: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+}
+
+#Botão-Voltar{
+    text-align: left;
+    margin-left: 25px;
+    margin-top: 10px;
+    cursor: pointer;
+    color: #343434;
+    width: 55px;
+    user-select: none;
+}
+
+#Logo-Ivy{
+    height: auto;
+    width: 150px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    user-select: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// Resumo-Preparatório-01 /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Preparatório-01-Nome{
+    font-size: 20px;
+    color: #343434;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    user-select: none;
+}
+
+#Preparatório-01-Container-Símbolo-Status-Prazo-Acesso-e-Botão-Estender-Acesso{
+    display: flex;
+    width: 350px;
+    text-align: left;
+    justify-content: space-between;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#Preparatório-01-Container-Símbolo-Status-e-Prazo-Acesso{
+    display: flex;
+    align-items: center;
+}
+
+#Preparatório-01-Status-Símbolo-Original{
+    height: 15px;
+    width: 15px;
+    user-select: none;
+}
+
+/*/// Configura div substituída pelo JS. ///*/
+#Preparatório-01-Status-Símbolo-Substituído{
+    background-color: #0a983e;
+    height: 10px;
+    width: 10px;
+    border: 1px, solid , #000000;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-left: 5px;
+    user-select: none;
+}
+
+#Preparatório-01-Prazo-Acesso{
+    margin-left: 8px;
+    color: #343434;
+    user-select: none;    
+}
+
+#Preparatório-01-Botão-Principal{
+    background-color: #a41034;
+    color: #ffffff;
+    font-size: 15px;
+    padding-top: 4px;
+    padding-bottom: 5px;
+    padding-right: 10px;
+    padding-left: 10px;
+    border-radius: 10px;
+    user-select: none;
+    animation: Pulso-Preparatórios-Botão-Principal 3s ease-out infinite;
+}
+
+@keyframes Pulso-Preparatórios-Botão-Principal {
+    
+    0% {
+      box-shadow: 0 0 0px 0 rgba(139, 0, 0, 1);
+    }
+    
+    25% {
+      box-shadow: 0 0 0px 5px rgba(139, 0, 0, 0.5);
+    }
+    
+    50% {
+      box-shadow: 0 0 0px 10px rgba(139, 0, 0, 0);
+    }
+
+    50.001% {
+        box-shadow: 0 0 0px 0 rgba(139, 0, 0, 1);
+      }
+
+    75% {
+        box-shadow: 0 0 0px 5px rgba(139, 0, 0, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 0px 10px rgba(139, 0, 0, 0);
+    }
+
+}
+
+#Preparatório-01-Botão-Principal:hover{
+    background-color: #6e0c24;
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+#Preparatório-01-Container-Régua-Avanço{
+    height: 4px;
+    border-radius: 2px;
+    width: 350px;
+    background-color: #d4d4d4;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Preparatório-01-Régua-Avanço{
+    height: 4px;
+    border-radius: 2px;
+    background-color: #a41034;
+    margin-top: 10px;
+}
+
+#Preparatório-01-Percentual-Concluído{
+    width: 350px;
+    text-align: left;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    user-select: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Módulos Preparatório 01 /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////////////// Container /////////////////////////////////////*/
+
+.Container-Módulo{
+    display: flex;
+    width: 350px;
+    margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    border-bottom: 1px solid black;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.Container-Anel-Avanço-e-Nome{
+    display: flex;
+    align-items: center;
+}
+
+.Container-Fração-Avanço-e-Seta-Baixo{
+    display: flex;
+    align-items: center;
+}
+
+/*/////////////////////////////////// Anel de Avanço ///////////////////////////////////*/
+
+.Módulo-Anel-Avanço{
+    width: 30px;
+    height: 30px;
+    transform: rotate(-90deg);
+    margin-right: 10px;
+}
+
+.Módulo-Anel-Avanço-Fundo,.Módulo-Anel-Avanço-Progresso {
+    stroke-width: 4;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.Módulo-Anel-Avanço-Fundo {
+    stroke: #d4d4d4;
+}
+
+.Módulo-Anel-Avanço-Progresso {
+    stroke: #a41034;
+    stroke-dasharray: 94.2;
+    stroke-dashoffset: 94.2;
+    transition: stroke-dashoffset 0.3s;
+}
+
+/*/////////////////////////////////// Nome, Fração e Seta ////////////////////////////////*/
+
+.Nome-Módulo{
+    font-size: 18px;
+    color: #343434;
+}
+
+.Fração-Avanço-Módulo{
+    font-size: 17px;
+    color: #343434;
+    margin-right: 10px;
+}
+
+.Seta-Auxiliar-Módulo{
+    fill: #343434;
+    stroke: #343434;
+    stroke-width: 1px;
+    margin-top: 2px;
+    margin-right: 10px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Tópicos Preparatório 01 /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*//////////////////////////////////////// Geral ////////////////////////////////////////*/
+
+.Container-Tópico-Concluído,.Container-Tópico-Aberto,.Container-Tópico-Fechado{
+    height: 50px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.Container-Tópico-Concluído:hover {
+    background-color: #d4d4d4;
+    cursor: pointer;
+}
+
+.Container-Tópico-Aberto:hover{
+    background-color: #d4d4d4;
+    cursor: pointer;
+}
+
+.Símbolo-Check-Concluído{
+    height: 16px;
+    width: 16px;
+    border: 1px solid #343434;
+    background-color: #a41034;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-left: 25px;
+    font-size: 10px;
+    padding-left: 3px;
+    color: #ebebeb;
+}
+
+.Símbolo-Check-Aberto{
+    height: 16px;
+    width: 16px;
+    border: 1px solid #343434;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-left: 25px;
+    font-size: 11px;
+    padding-left: 3px;
+    color: #ebebeb;
+}
+
+.Símbolo-Check-Fechado{
+    height: 16px;
+    width: 16px;
+    border: 1px solid #343434;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-left: 25px;
+    font-size: 11px;
+    padding-left: 3px;
+    color: #d4d4d4;
+    background-color: #d4d4d4;
+}
+
+/*//////////////////////////////////////// Módulo 1 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-1{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 2 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-2{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 3 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-3{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 4 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-4{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 5 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-5{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 6 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-6{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 7 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-7{
+    display: none;
+}
+
+
+/*//////////////////////////// Botão Desempenho e Certificado ///////////////////////////*/
+
+
+#Preparatório-01-Botão-Desempenho-e-Certificado{
+    background-color: #343434;
+    color: #ffffff;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 350px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    user-select: none;
+    cursor: pointer;
+}
+
+#Preparatório-01-Botão-Desempenho-e-Certificado:hover{
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// Resumo-Preparatório-02 /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Preparatório-02-Nome{
+    width: 350px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    padding-top: 20px;
+    font-size: 20px;
+    color: #343434;
+    border-top: 1px dashed black;
+    user-select: none;
+}
+
+#Preparatório-02-Container-Símbolo-Status-Prazo-Acesso-e-Botão-Estender-Acesso{
+    display: flex;
+    width: 350px;
+    text-align: left;
+    justify-content: space-between;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#Preparatório-02-Container-Símbolo-Status-e-Prazo-Acesso{
+    display: flex;
+    align-items: center;
+}
+
+#Preparatório-02-Status-Símbolo-Original{
+    height: 15px;
+    width: 15px;
+    user-select: none;
+}
+
+/*/// Configura div substituída pelo JS. ///*/
+#Preparatório-02-Status-Símbolo-Substituído{
+    background-color: #0a983e;
+    height: 10px;
+    width: 10px;
+    border: 1px, solid , #000000;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-left: 5px;
+    user-select: none;
+}
+
+#Preparatório-02-Prazo-Acesso{
+    margin-left: 8px;
+    color: #343434;
+    user-select: none;    
+}
+
+#Preparatório-02-Botão-Principal{
+    background-color: #a41034;
+    color: #ffffff;
+    font-size: 15px;
+    padding-top: 4px;
+    padding-bottom: 5px;
+    padding-right: 10px;
+    padding-left: 10px;
+    border-radius: 10px;
+    user-select: none;
+    animation: Pulso-Preparatórios-Botão-Principal 3s ease-out infinite;
+}
+
+#Preparatório-02-Botão-Principal:hover{
+    background-color: #6e0c24;
+    cursor: pointer;
+}
+
+#Preparatório-02-Container-Régua-Avanço{
+    height: 4px;
+    border-radius: 2px;
+    width: 350px;
+    background-color: #d4d4d4;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Preparatório-02-Régua-Avanço{
+    height: 4px;
+    border-radius: 2px;
+    background-color: #a41034;
+    margin-top: 10px;
+    width: 0%;
+}
+
+#Preparatório-02-Percentual-Concluído{
+    width: 350px;
+    text-align: left;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    user-select: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Módulos Preparatório 02 /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////////////// Container /////////////////////////////////////*/
+
+.Container-Módulo-Cadeado{
+    display: flex;
+    width: 350px;
+    margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    border-bottom: 1px solid black;
+    justify-content: space-between;
+    padding-top: 4px;
+    padding-bottom: 15px;
+    cursor: auto;
+    user-select: none;
+    pointer-events: none;
+}
+
+/*/////////////////////////////////// Anel de Avanço ///////////////////////////////////*/
+
+.Módulo-Anel-Avanço-Cadeado{
+    width: 15px;
+    height: 15px;
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+/*//////////////////////////// Botão Desempenho e Certificado ///////////////////////////*/
+
+
+#Preparatório-02-Botão-Desempenho-e-Certificado{
+    background-color: #d4d4d4;
+    color: #ffffff;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 350px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    user-select: none;
+    cursor: auto;
+}
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Seção-Conteúdo //////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Conteúdo{
+    width: calc(100vw - 400px);
+    height: 100vh;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// Faixa Superior /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Faixa-Superior{
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #d4d4d4;
+    width: 100%;
+    height: 35px;
+    align-items: center;
+}
+
+#Nome-Tópico{
+    margin-left: 20px;
+    font-size: 16px;
+    color: #343434;
+    user-select: none;
+}
+
+#Botão-Conhecer-Preparatório-de-Soft-Skills {
+    margin-right: 20px;
+    font-size: 15px;
+    padding: 10px;
+    background-color: #a41034;
+    color: #ffffff;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 0px 0px 15px 15px;
+    animation: Pulso-Botão-Conhecer-Preparatório-de-Soft-Skills 30s ease-out infinite;
+}
+
+@keyframes Pulso-Botão-Conhecer-Preparatório-de-Soft-Skills {
+    
+    0% {
+      box-shadow: 0 0 0px 0 rgba(139, 0, 0, 1);
+    }
+    
+    2.5% {
+      box-shadow: 0 0 0px 5px rgba(139, 0, 0, 0.5);
+    }
+    
+    5% {
+      box-shadow: 0 0 0px 10px rgba(139, 0, 0, 0);
+    }
+
+    5.001% {
+        box-shadow: 0 0 0px 0 rgba(139, 0, 0, 1);
+      }
+
+    7.5% {
+        box-shadow: 0 0 0px 5px rgba(139, 0, 0, 0.5);
+    }
+
+    10% {
+        box-shadow: 0 0 0px 10px rgba(139, 0, 0, 0);
+    }
+  
+    100% {
+      box-shadow: 0 0 0 0 rgba(139, 0, 0, 0);
+    }
+
+}
+  
+#Botão-Conhecer-Preparatório-de-Soft-Skills:hover{
+    background-color: #6e0c24;
+    cursor: pointer;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// Container Conteúdo ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Container-Externo-Conteúdo{
+    height: calc(100vh - 35px - 50px);
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+}
+
+#Container-Interno-Conteúdo{
+    width: 80%;
+    display: block;
+}
+
+#Display-Vídeo{
+    width: 100%;
+    height: auto;
+}
+
+#Aviso-Especial-Tópico{
+    display: none;
+    text-align: center;
+    justify-content: center;
+    color: #343434;
+    height: 30px;
+    margin-top: 10px;
+}
+
+#Container-Download-Arquivo-1,#Container-Download-Arquivo-2,#Container-Download-Arquivo-3,#Container-Download-Arquivo-4{
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    width: 60%;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #ebebeb;
+    border: 1px solid #d4d4d4;
+}
+
+#Nome-Arquivo-1,#Nome-Arquivo-2,#Nome-Arquivo-3,#Nome-Arquivo-4{
+    color: #343434;
+    font-size: 16px;
+    font-weight: 500;
+    user-select: none;
+}
+
+#Botão-Download-1,#Botão-Download-2,#Botão-Download-3,#Botão-Download-4{
+    padding: 10px;
+    background-color: #343434;
+    border-radius: 5px;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    user-select: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Containers Teste ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+.Container-Externo-Teste{
+    display: none;
+    height: calc(100vh - 35px - 50px);
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.Container-Interno-Teste{
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 40px;
+}
+
+.Container-Externo-Aviso-Revisão{
+    display: none;
+    margin-bottom: 40px;
+}
+
+.Manchete-Aviso-Revisão{
+    display: flex;
+    height: 50px;
+    background-color: #a41034;
+    color: #ffffff;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+.Aviso-Revisão{
+    display: block;
+    padding: 20px;
+    background-color: #ecb6c3;
+    color: #343434;
+    text-align: center;
+    font-weight: 400;
+    user-select: none;
+}
+
+
+.Container-Externo-Nota-e-Percentil{
+    display: none;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.Container-Nota{
+    width: 47%;
+    margin-right: 3%;
+}
+
+.Container-Percentil{
+    width: 47%;
+    margin-left: 3%;
+}
+
+.Manchete-Nota-e-Percentil{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #343434;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    text-align: center;
+    user-select: none;
+}
+
+.Nota{
+    border: 1px solid #d4d4d4;
+    font-size: 70px;
+    font-weight: 700;
+    user-select: none;
+}
+
+.Percentil{
+    border: 1px solid #d4d4d4;
+    font-size: 70px;
+    font-weight: 700;
+    user-select: none;
+}
+
+.Explicação-Nota-e-Percentil{
+    display: flex;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: #d4d4d4;
+    color: #343434;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 0px 0px 10px 10px;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+}
+
+.Containers-Questões{
+    margin-bottom: 40px;
+}
+
+.Títulos{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #343434;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+.Perguntas{
+    display: flex;
+    padding: 20px;
+    background-color: #d4d4d4;
+    color: #343434;
+    align-items: center;
+    font-weight: 500;
+    user-select: none;
+}
+
+.Opção {
+    display: block;
+    padding: 20px;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+}
+
+.Opção input[type="radio"] {
+    margin-right: 5px;
+}
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Desempenho e Certificado ////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*////////////////////////////////////// Desempenho /////////////////////////////////////*/
+
+#Container-Externo-Desempenho-e-Certificado{
+    height: calc(100vh - 35px);
+    overflow-y: auto;
+    display: none;
+    padding-top: 40px;
+}
+
+#Container-Externo-Gráficos-Desempenho{
+    width: 1200px;
+    border: 1px solid #343434;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    border-radius: 20px 20px 20px 20px;
+}
+
+#Manchete-Gráficos-Desempenho{
+    background-color: #343434;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+#Container-Interno-Gráficos-Desempenho{
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 30px;
+}
+
+#Container-Externo-Realizado-Gráficos-Desempenho{
+    display: block;
+    border: 1px solid #343434;
+    border-radius: 20px;
+}
+
+#Manchete-Realizado-Desempenho{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 20px 20px 0px 0px;
+    margin-bottom: 10px;
+    width: 750px;
+}
+
+#Container-Interno-Realizado-Gráficos-Desempenho{
+    display: flex;
+    justify-content: space-between;
+    padding: 25px;
+}
+
+#Container-Barras-Notas-Testes-Módulos{
+    display: flex;
+    border-bottom: 1px solid #696969;
+    margin-bottom: 5px;
+    height: 420px;
+    align-items: flex-end;
+}
+
+.Percentual-Nota-Teste-Módulo{
+    text-align: center;
+    font-weight: 400;
+    margin-bottom: 5px;
+}
+
+.Barra-Nota-Teste-Módulos{
+    width: 65px;
+    height: 0px;
+    background-color: #0a983e;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#Container-Títulos-Notas-Testes-Módulos{
+    display: flex;
+}
+
+.Título-Nota-Testes-Módulos{
+    width: 85px;
+    text-align: center;
+}
+
+#Container-Barra-Nota-Testes-Acumulado{
+    display: flex;
+    border-bottom: 1px solid #696969;
+    margin-bottom: 5px;
+    height: 420px;
+    align-items: flex-end;
+}
+
+#Percentual-Nota-Testes-Acumulado{
+    text-align: center;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+#Barra-Nota-Testes-Acumulado{
+    width: 65px;
+    height: 0px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#Título-Nota-Testes-Acumulado{
+    width: 85px;
+    text-align: center;
+    font-weight: 700;
+}
+
+#Meta-Desempenho-Acumulado{
+    width: 360px;
+    border: 1px solid #696969;
+    border-radius: 20px;
+}
+
+#Manchete-Metas-Desempenho{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+#Container-Externo-Explicação-Inicial-e-Metas-Desempenho{
+    padding-top: 10px;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+#Explicação-Inicial-Metas-Desempenho{
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#Container-Meta-Potencial-Contratação-100{
+    display: flex;
+}
+
+#Container-Meta-Potencial-Contratação-95{
+    display: flex;
+}
+
+#Container-Meta-Potencial-Contratação-90{
+    display: flex;
+}
+
+#Container-Meta-Potencial-Contratação-70{
+    display: flex;
+    margin-top: 58px;
+}
+
+.Traço-Meta-Potencial-Contratação{
+    margin-right: 5px;
+}
+
+/*////////////////////////////////////// Certificado ////////////////////////////////////*/
+
+#Container-Externo-Orientações-Certificado{
+    width: 1200px;
+    border: 1px solid #343434;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 40px;
+    border-radius: 20px 20px 20px 20px;
+}
+
+#Manchete-Orientações-Certificado{
+    background-color: #343434;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+    margin-bottom: 20px;
+}
+
+#Status-Certificado{
+    margin-left: 25px;
+    margin-bottom: 25px;
+}
+
+#Container-Interno-Orientações-Certificado{
+    display: flex;
+    justify-content: space-between;
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-bottom: 25px;
+}
+
+#Container-Externo-Certificado-Digital{
+    width: 555px;
+    border: 1px solid #696969;
+    border-radius: 20px 20px 20px 20px;
+}
+
+#Manchete-Certificado-Digital{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+    width: 555px;
+}
+
+#Orientações-Certificado-Digital{
+    padding: 20px;
+}
+
+#Container-Externo-Certificado-Impresso{
+    width: 555px;
+    border: 1px solid #696969;
+    border-radius: 20px 20px 20px 20px;
+    height: 190px;
+    margin-bottom: 30px;
+}
+
+#Manchete-Certificado-Impresso{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+    width: 555px;
+}
+
+#Orientações-Certificado-Impresso{
+    padding: 20px;
+}
+
+#Botão-Download-Certificado-Impresso{
+    background-color: #a41034;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #ffffff;
+    width: 120px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px 10px 10px 10px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#Container-Externo-Cartas-Recomendação{
+    width: 555px;
+    border: 1px solid #696969;
+    border-radius: 20px 20px 20px 20px;
+    height: 570px;
+}
+
+#Manchete-Cartas-Recomendação{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+    width: 555px;
+}
+
+#Orientações-Cartas-Recomendação{
+    padding: 20px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// Faixa Inferior /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Faixa-Inferior{
+    display: flex;
+    width: 100%;
+    height: 50px;
+    border-top: 1px solid #d4d4d4;
+    justify-content: center;
+    align-items: center;
+}
+
+/*///////////////////////////////// Tópicos de Conteúdo ////////////////////////////////*/
+
+#Botão-Completar-e-Continuar{
+    background-color: #a41034;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Completar-e-Continuar:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Botão-Finalizar-Preparatório{
+    background-color: #a41034;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Finalizar-Preparatório:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Aviso-Tópico-Concluído{
+    background-color: #ffffff;
+    color: #343434;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ededed;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+}
+
+/*/////////////////////////////////// Tópicos de Teste //////////////////////////////////*/
+
+#Botão-Enviar-Respostas{
+    background-color: #a41034;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Enviar-Respostas:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Botão-Continuar{
+    background-color: #a41034;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Continuar:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Aviso-Teste-Concluído{
+    background-color: #ffffff;
+    color: #343434;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ededed;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+}
