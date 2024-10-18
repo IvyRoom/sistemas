@@ -20,7 +20,7 @@ function LevaàPáginaAviso() {
 
     if (window.innerWidth <= 1350) {
     
-        window.location.href = "../aviso";
+        window.location.href = "/plataforma/aviso";
     
     }
 
