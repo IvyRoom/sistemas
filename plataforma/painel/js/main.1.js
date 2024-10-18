@@ -127,7 +127,7 @@ window.addEventListener('load', function() {
 
                 } else {
 
-                    window.location.href = '../../linkbio';
+                    window.location.href = '../../';
                 
                 }
 
@@ -187,7 +187,7 @@ window.addEventListener('load', function() {
 
         Preparatório01BotãoPrincipal.addEventListener('click', function(){
 
-                window.location.href = '../../linkbio';
+                window.location.href = '../../';
 
         });
 
