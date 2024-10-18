@@ -1359,8 +1359,10 @@ window.addEventListener('load', function() {
         
                 var BotãoDownloadCertificadoImpresso = document.getElementById('Botão-Download-Certificado-Impresso');
         
-                BotãoDownloadCertificadoImpresso.addEventListener('click', function(){
+                BotãoDownloadCertificadoImpresso.addEventListener('click', function(event){
                     
+                    event.preventDefault();
+
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
         
