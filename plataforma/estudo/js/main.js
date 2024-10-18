@@ -530,7 +530,7 @@ window.addEventListener('load', function() {
                     // Atualiza o vídeo.
         
                     var NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
-                    DisplayVídeo.src = "videos/" + MóduloAberto + "/" + NomeVídeo + ".mp4";
+                    DisplayVídeo.src = "/plataforma/estudo/videos/" + MóduloAberto + "/" + NomeVídeo + ".mp4";
         
                     // Atualiza o Aviso Especial Tópico e o arquivo para download.
         
@@ -555,7 +555,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
                         
                         NomeArquivo1.innerHTML = "BASE DE DADOS GG.01";
-                        BotãoDownload1.href = "files/Módulo 1/BASE DE DADOS GG.01.xlsx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 1/BASE DE DADOS GG.01.xlsx";
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
                         ContainerDownloadArquivo3.style.display = "none";
@@ -566,7 +566,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "BASE DE DADOS GG.02";
-                        BotãoDownload1.href = "files/Módulo 1/BASE DE DADOS GG.02.xlsx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 1/BASE DE DADOS GG.02.xlsx";
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
                         ContainerDownloadArquivo3.style.display = "none";
@@ -577,7 +577,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "BASE DE DADOS GG.02";
-                        BotãoDownload1.href = "files/Módulo 1/BASE DE DADOS GG.02.xlsx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 1/BASE DE DADOS GG.02.xlsx";
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
                         ContainerDownloadArquivo3.style.display = "none";
@@ -588,7 +588,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "BASE DE DADOS GG.03";
-                        BotãoDownload1.href = "files/Módulo 1/BASE DE DADOS GG.03.xlsx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 1/BASE DE DADOS GG.03.xlsx";
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
                         ContainerDownloadArquivo3.style.display = "none";
@@ -603,7 +603,7 @@ window.addEventListener('load', function() {
                         AvisoEspecialTópico.innerHTML = "Note que trabalhamos numa cópia da base de dados original, a aba&nbsp;<b>BD - GG.04 ORIGINAL</b>.";
                         
                         NomeArquivo1.innerHTML = "BASE DE DADOS GG.04";
-                        BotãoDownload1.href = "files/Módulo 2/BASE DE DADOS GG.04.xlsx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 2/BASE DE DADOS GG.04.xlsx";
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
                         ContainerDownloadArquivo3.style.display = "none";
@@ -618,7 +618,7 @@ window.addEventListener('load', function() {
                         AvisoEspecialTópico.innerHTML = "Note que trabalhamos numa cópia da base de dados original, a aba&nbsp;<b>BD - GG.05 ORIGINAL</b>.";
                         
                         NomeArquivo1.innerHTML = "BASE DE DADOS GG.05";
-                        BotãoDownload1.href = "files/Módulo 2/BASE DE DADOS GG.05.xlsx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 2/BASE DE DADOS GG.05.xlsx";
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
                         ContainerDownloadArquivo3.style.display = "none";
@@ -642,7 +642,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "TO DO SIMPLIFICADO";
-                        BotãoDownload1.href = "files/Módulo 3/TO DO SIMPLIFICADO.xlsm";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 3/TO DO SIMPLIFICADO.xlsm";
                         
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
@@ -654,11 +654,11 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "TO DO (TATIANA)";
-                        BotãoDownload1.href = "files/Módulo 3/TO DO (TATIANA).xlsm";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 3/TO DO (TATIANA).xlsm";
                         ContainerDownloadArquivo1.style.display = "flex";
         
                         NomeArquivo2.innerHTML = "TO DO (LUCAS)";
-                        BotãoDownload2.href = "files/Módulo 3/TO DO (LUCAS).xlsm";
+                        BotãoDownload2.href = "/plataforma/estudo/files/Módulo 3/TO DO (LUCAS).xlsm";
                         ContainerDownloadArquivo2.style.display = "flex";
         
                         ContainerDownloadArquivo3.style.display = "none";
@@ -669,7 +669,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "FERRAMENTA CONTROLE RESULTADOS";
-                        BotãoDownload1.href = "files/Módulo 3/FERRAMENTA CONTROLE DE RESULTADOS.xlsm";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 3/FERRAMENTA CONTROLE DE RESULTADOS.xlsm";
                         
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
@@ -681,7 +681,7 @@ window.addEventListener('load', function() {
                         ContainerInternoConteúdo.style.height = "auto";
         
                         NomeArquivo1.innerHTML = "TO DO AVANÇADO";
-                        BotãoDownload1.href = "files/Módulo 3/TO DO AVANÇADO.xlsm";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 3/TO DO AVANÇADO.xlsm";
         
                         ContainerDownloadArquivo1.style.display = "flex";
                         ContainerDownloadArquivo2.style.display = "none";
@@ -697,19 +697,19 @@ window.addEventListener('load', function() {
                         AvisoEspecialTópico.innerHTML = "Estudo de Caso extra! Estes conceitos não serão cobrados no teste.";
                         
                         NomeArquivo1.innerHTML = "TO DO AVANÇADO GG.06";
-                        BotãoDownload1.href = "files/Módulo 3/TO DO AVANÇADO GG.06.xlsm";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 3/TO DO AVANÇADO GG.06.xlsm";
                         ContainerDownloadArquivo1.style.display = "flex";
         
                         NomeArquivo2.innerHTML = "BASE DE DADOS GG.06";
-                        BotãoDownload2.href = "files/Módulo 3/BASE DE DADOS GG.06.xlsx";
+                        BotãoDownload2.href = "/plataforma/estudo/files/Módulo 3/BASE DE DADOS GG.06.xlsx";
                         ContainerDownloadArquivo2.style.display = "flex";
         
                         NomeArquivo3.innerHTML = "FERRAMENTA CONTROLE DE RESULTADOS GG.06";
-                        BotãoDownload3.href = "files/Módulo 3/FERRAMENTA CONTROLE DE RESULTADOS GG.06.xlsm";
+                        BotãoDownload3.href = "/plataforma/estudo/files/Módulo 3/FERRAMENTA CONTROLE DE RESULTADOS GG.06.xlsm";
                         ContainerDownloadArquivo3.style.display = "flex";
         
                         NomeArquivo4.innerHTML = "FERRAMENTA CONTROLE DE RESULTADOS";
-                        BotãoDownload4.href = "files/Módulo 3/FERRAMENTA CONTROLE DE RESULTADOS.pbix";
+                        BotãoDownload4.href = "/plataforma/estudo/files/Módulo 3/FERRAMENTA CONTROLE DE RESULTADOS.pbix";
                         ContainerDownloadArquivo4.style.display = "flex";
                         
                         
@@ -746,19 +746,19 @@ window.addEventListener('load', function() {
                         AvisoEspecialTópico.style.display = "none";
                         
                         NomeArquivo1.innerHTML = "SIMBOLOGIA FLUXOGRAMAS (BPMN)";
-                        BotãoDownload1.href = "files/Módulo 5/SIMBOLOGIA FLUXOGRAMAS (BPMN).vssx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 5/SIMBOLOGIA FLUXOGRAMAS (BPMN).vssx";
                         ContainerDownloadArquivo1.style.display = "flex";
         
                         NomeArquivo2.innerHTML = "TEMPLATE FOP (A3)";
-                        BotãoDownload2.href = "files/Módulo 5/TEMPLATE FOP (A3).vsdx";
+                        BotãoDownload2.href = "/plataforma/estudo/files/Módulo 5/TEMPLATE FOP (A3).vsdx";
                         ContainerDownloadArquivo2.style.display = "flex";
         
                         NomeArquivo3.innerHTML = "TEMPLATE FOP (A4)";
-                        BotãoDownload3.href = "files/Módulo 5/TEMPLATE FOP (A4).vsdx";
+                        BotãoDownload3.href = "/plataforma/estudo/files/Módulo 5/TEMPLATE FOP (A4).vsdx";
                         ContainerDownloadArquivo3.style.display = "flex";
         
                         NomeArquivo4.innerHTML = "TEMPLATE POP";
-                        BotãoDownload4.href = "files/Módulo 5/TEMPLATE POP.xlsx";
+                        BotãoDownload4.href = "/plataforma/estudo/files/Módulo 5/TEMPLATE POP.xlsx";
                         ContainerDownloadArquivo4.style.display = "flex";
         
                     } else if (NomeVídeo === "1.7 ESTUDO DE CASO INTERNO"){
@@ -770,11 +770,11 @@ window.addEventListener('load', function() {
                         AvisoEspecialTópico.innerHTML = 'Observe que nós enviamos uma cópia impressa do FOP que construímos para você. Consulte o caderno "Estudos de Caso".';
                         
                         NomeArquivo1.innerHTML = "TO DO (LUCAS)";
-                        BotãoDownload1.href = "files/Módulo 5/TO DO (LUCAS).xlsm";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 5/TO DO (LUCAS).xlsm";
                         ContainerDownloadArquivo1.style.display = "flex";
         
                         NomeArquivo2.innerHTML = "TO DO (TATIANA)";
-                        BotãoDownload2.href = "files/Módulo 5/TO DO (TATIANA).xlsm";
+                        BotãoDownload2.href = "/plataforma/estudo/files/Módulo 5/TO DO (TATIANA).xlsm";
                         ContainerDownloadArquivo2.style.display = "flex";
         
                         ContainerDownloadArquivo3.style.display = "none";
@@ -802,15 +802,15 @@ window.addEventListener('load', function() {
                         AvisoEspecialTópico.innerHTML = 'Código de Auxílio (Power Automate): &lt;img src="data:image/jpeg;base64,@{body(&#39;Get_file_content_using_path&#39;)[&#39;$content&#39;]}" alt="" /&gt;';
                         
                         NomeArquivo1.innerHTML = "FOP (MONTAGEM E ENVIO DE RELATÓRIOS CONTÁBEIS)";
-                        BotãoDownload1.href = "files/Módulo 6/FOP (MONTAGEM E ENVIO DE RELATÓRIOS CONTÁBEIS).vsdx";
+                        BotãoDownload1.href = "/plataforma/estudo/files/Módulo 6/FOP (MONTAGEM E ENVIO DE RELATÓRIOS CONTÁBEIS).vsdx";
                         ContainerDownloadArquivo1.style.display = "flex";
         
                         NomeArquivo2.innerHTML = "RELATÓRIO CONTÁBIL";
-                        BotãoDownload2.href = "files/Módulo 6/RELATÓRIO CONTÁBIL.pdf";
+                        BotãoDownload2.href = "/plataforma/estudo/files/Módulo 6/RELATÓRIO CONTÁBIL.pdf";
                         ContainerDownloadArquivo2.style.display = "flex";
         
                         NomeArquivo3.innerHTML = "ASSINATURA E-MAIL";
-                        BotãoDownload3.href = "files/Módulo 6/ASSINATURA E-MAIL.png";
+                        BotãoDownload3.href = "/plataforma/estudo/files/Módulo 6/ASSINATURA E-MAIL.png";
                         ContainerDownloadArquivo3.style.display = "flex";
                         
                         ContainerDownloadArquivo4.style.display = "none";
