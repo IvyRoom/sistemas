@@ -19,7 +19,7 @@ window.addEventListener('load', function() {
 
         if (window.innerWidth <= 1350) {
         
-            window.location.href = "../aviso";
+            window.location.href = "/plataforma/aviso";
         
         }
 
@@ -98,7 +98,7 @@ window.addEventListener('load', function() {
                 // Dá funcionalidade ao Botão de Extensão de Acesso.
                 Preparatório01BotãoEstenderAcesso.addEventListener('click', function(){
                     
-                    window.location.href = '../extensão';
+                    window.location.href = '/plataforma/extensão';
 
                 })
 
@@ -123,11 +123,11 @@ window.addEventListener('load', function() {
 
                 if (Usuário_Preparatório1_Status === 'Ativo') {
 
-                    window.location.href = '../estudo';
+                    window.location.href = '/plataforma/estudo';
 
                 } else {
 
-                    window.location.href = '../../';
+                    window.location.href = '/';
                 
                 }
 
@@ -141,7 +141,7 @@ window.addEventListener('load', function() {
 
             Preparatório02BotãoPrincipal.addEventListener('click', function(){
 
-                window.location.href = '../conhecer';
+                window.location.href = '/plataforma/conhecer';
 
             });
 
@@ -163,7 +163,7 @@ window.addEventListener('load', function() {
 
                 sessionStorage.clear();
                 
-                window.location.href = '../login';
+                window.location.href = '/plataforma/login';
                 
             });
         
@@ -187,7 +187,7 @@ window.addEventListener('load', function() {
 
         Preparatório01BotãoPrincipal.addEventListener('click', function(){
 
-                window.location.href = '../../';
+                window.location.href = '/';
 
         });
 
@@ -221,7 +221,7 @@ window.addEventListener('load', function() {
 
             sessionStorage.clear();
             
-            window.location.href = '../login';
+            window.location.href = '/plataforma/login';
             
         });
 

@@ -46,7 +46,7 @@ function LevaàPáginaAviso() {
 
     if (window.innerWidth <= 1350) {
     
-        window.location.href = "../aviso";
+        window.location.href = "/plataforma/aviso";
     
     }
 
@@ -158,7 +158,7 @@ Ir_Pagamento.addEventListener("click", function(event) {
     };
 
     localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
-    window.location.href = "../../checkout/";
+    window.location.href = "/checkout";
 })
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ BotãoSair.addEventListener('click', function() {
 
     sessionStorage.clear();
     
-    window.location.href = '../login';
+    window.location.href = '/plataforma/login';
     
 });
 

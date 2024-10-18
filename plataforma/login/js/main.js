@@ -42,7 +42,7 @@ window.addEventListener('load', function() {
     
     if (localStorage.getItem('Usuário_Logado') === 'Sim' || sessionStorage.getItem('Usuário_Logado') === 'Sim') {
     
-        window.location.href = '../painel';
+        window.location.href = '/plataforma/painel';
     
     } else {
 
@@ -96,7 +96,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
             TipoArmazenamento.setItem('Usuário_Preparatório1_Status', data.Usuário_Preparatório1_Status);
             TipoArmazenamento.setItem('Usuário_Preparatório1_PrazoAcesso', data.Usuário_Preparatório1_PrazoAcesso);
             
-            window.location.href = '../painel';
+            window.location.href = '/plataforma/painel';
 
         } else {
             

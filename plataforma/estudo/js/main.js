@@ -20,7 +20,7 @@ window.addEventListener('load', function() {
 
             if (window.innerWidth <= 1350) {
             
-                window.location.href = "../aviso";
+                window.location.href = "/plataforma/aviso";
             
             }
 
@@ -118,7 +118,7 @@ window.addEventListener('load', function() {
 
             } else {
 
-                window.location.href = '../painel';
+                window.location.href = '/plataforma/painel';
 
             }
 
@@ -136,7 +136,7 @@ window.addEventListener('load', function() {
         
             BotãoVoltar.addEventListener("click", function(){
         
-                window.location.href = '../painel';
+                window.location.href = '/plataforma/painel';
         
             })
         
@@ -160,7 +160,7 @@ window.addEventListener('load', function() {
         
             Preparatório01BotãoPrincipal.addEventListener('click', function(){
         
-                window.location.href = '../extensão';
+                window.location.href = '/plataforma/extensão';
     
             })
             
@@ -1511,7 +1511,7 @@ window.addEventListener('load', function() {
         
             Preparatório02BotãoPrincipal.addEventListener('click', function(){
 
-                window.location.href = '../conhecer';
+                window.location.href = '/plataforma/conhecer';
             
             });
 
@@ -1538,7 +1538,7 @@ window.addEventListener('load', function() {
         
             BotãoConhecerPreparatóriodeSoftSkills.addEventListener('click', function(){
 
-                window.location.href = '../conhecer';
+                window.location.href = '/plataforma/conhecer';
             
             });
 
@@ -1546,7 +1546,7 @@ window.addEventListener('load', function() {
     
     } else {
 
-        window.location.href = '../painel';
+        window.location.href = '/plataforma/painel';
 
     }
 
