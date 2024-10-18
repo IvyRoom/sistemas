@@ -1364,7 +1364,7 @@ window.addEventListener('load', function() {
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
         
-                    doc.addImage('img/LOGO_IVY.png', 'PNG', 20, 15, 51, 17);
+                    doc.addImage('/plataforma/estudo/img/LOGO_IVY.png', 'PNG', 20, 15, 51, 17);
         
                     doc.setTextColor(130, 130, 130);
                     doc.setFontSize(14);
@@ -1415,7 +1415,7 @@ window.addEventListener('load', function() {
                     doc.text('CURITIBA, PARANÁ', 20, 200);
                     doc.text('____________________________', 20, 210);
         
-                    doc.addImage('img/ASSINATURA.png', 'PNG', 20, 203, 55, 8);
+                    doc.addImage('/plataforma/estudo/img/ASSINATURA.png', 'PNG', 20, 203, 55, 8);
         
                     doc.setFontSize(10);
                     doc.text('L. B. MACHADO', 20, 215);
@@ -1423,7 +1423,7 @@ window.addEventListener('load', function() {
                     doc.text('Gestão Generalista Hard Skills', 20, 225);
                     doc.text('Ivy | Escola de Gestão', 20, 230);
         
-                    doc.addImage('img/ATLAS.png', 'PNG', 140, 185, 50, 50);
+                    doc.addImage('/plataforma/estudo/img/ATLAS.png', 'PNG', 140, 185, 50, 50);
         
                     doc.setTextColor(0, 0, 0);
                     doc.setFontSize(16);
