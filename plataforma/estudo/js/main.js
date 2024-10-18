@@ -32,7 +32,7 @@ window.addEventListener('load', function() {
 
         var IndexVerificado = TipoArmazenamento.getItem('IndexVerificado');
         
-        fetch('http://localhost:3000/refresh', { //https://plataforma-backend-v3.azurewebsites.net/refresh
+        fetch('https://plataforma-backend-v3.azurewebsites.net/refresh', { //http://localhost:3000/refresh //https://plataforma-backend-v3.azurewebsites.net/refresh
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ IndexVerificado: IndexVerificado })
@@ -875,7 +875,7 @@ window.addEventListener('load', function() {
     
                             Usuário_Preparatório1_NúmeroTópicosConcluídos += 1;
     
-                            fetch('http://localhost:3000/updates', { //https://plataforma-backend-v3.azurewebsites.net/atualizações
+                            fetch('https://plataforma-backend-v3.azurewebsites.net/atualizações', { //http://localhost:3000/updates //https://plataforma-backend-v3.azurewebsites.net/atualizações
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json'},
                                 body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos-e-NotaTeste', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Preparatório1_NúmeroTópicosConcluídos, NúmeroMódulo: NúmeroMóduloContémTópicoSelecionado, NotaTeste: PercentualAcerto, Preparatório2_Interesse: 'n/a' })
@@ -1062,7 +1062,7 @@ window.addEventListener('load', function() {
         
                                 Usuário_Preparatório1_NúmeroTópicosConcluídos += 1;
         
-                                fetch('http://localhost:3000/updates', { //https://plataforma-backend-v3.azurewebsites.net/atualizações
+                                fetch('https://plataforma-backend-v3.azurewebsites.net/atualizações', { //http://localhost:3000/updates //https://plataforma-backend-v3.azurewebsites.net/atualizações
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json'},
                                     body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Preparatório1_NúmeroTópicosConcluídos, NúmeroMódulo: 'n/a', NotaTeste: 'n/a', Preparatório2_Interesse: 'n/a' })
@@ -1134,7 +1134,7 @@ window.addEventListener('load', function() {
         
                                 Usuário_Preparatório1_NúmeroTópicosConcluídos += 1;
         
-                                fetch('http://localhost:3000/updates', { //https://plataforma-backend-v3.azurewebsites.net/atualizações
+                                fetch('https://plataforma-backend-v3.azurewebsites.net/atualizações', { //http://localhost:3000/updates //https://plataforma-backend-v3.azurewebsites.net/atualizações
                                     method: 'POST',
                                     headers: {'Content-Type': 'application/json'},
                                     body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Preparatório1_NúmeroTópicosConcluídos, NúmeroMódulo: 'n/a', NotaTeste: 'n/a', Preparatório2_Interesse: 'n/a' })

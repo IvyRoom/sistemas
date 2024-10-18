@@ -58,7 +58,7 @@ window.addEventListener('load', function() {
         
         var IndexVerificado = TipoArmazenamento.getItem('IndexVerificado');
         
-        fetch('http://localhost:3000/refresh', { //https://plataforma-backend-v3.azurewebsites.net/refresh
+        fetch('https://plataforma-backend-v3.azurewebsites.net/refresh', { //http://localhost:3000/refresh //https://plataforma-backend-v3.azurewebsites.net/refresh
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ IndexVerificado: IndexVerificado })

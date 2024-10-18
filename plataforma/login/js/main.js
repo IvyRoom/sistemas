@@ -72,7 +72,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
     ////////////////////////////////////////////////////////////////////////////////////////
     // Envia o Usuário_Login e a Usuário_Senha ao backend.
     
-    fetch('http://localhost:3000/login', { //https://plataforma-backend-v3.azurewebsites.net/login
+    fetch('https://plataforma-backend-v3.azurewebsites.net/login', { //http://localhost:3000/login //https://plataforma-backend-v3.azurewebsites.net/login
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ login: Usuário_Login, senha: Usuário_Senha })

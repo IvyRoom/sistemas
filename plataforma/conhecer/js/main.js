@@ -34,7 +34,7 @@ window.addEventListener('load', function() {
 
         var IndexVerificado = TipoArmazenamento.getItem('IndexVerificado');
         
-        fetch('http://localhost:3000/refresh', { //https://plataforma-backend-v3.azurewebsites.net/refresh
+        fetch('https://plataforma-backend-v3.azurewebsites.net/refresh', { //http://localhost:3000/refresh //https://plataforma-backend-v3.azurewebsites.net/refresh
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ IndexVerificado: IndexVerificado })
@@ -80,7 +80,7 @@ window.addEventListener('load', function() {
 
                     BotãoEntrarListaEspera.style.display = 'none';
                     
-                    fetch('http://localhost:3000/updates', { //https://plataforma-backend-v3.azurewebsites.net/updates
+                    fetch('https://plataforma-backend-v3.azurewebsites.net/updates', { //http://localhost:3000/updates //https://plataforma-backend-v3.azurewebsites.net/updates
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ TipoAtualização: 'Preparatório2_Interesse', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: 'n/a', NúmeroMódulo: 'n/a', NotaTeste: 'n/a', Preparatório2_Interesse: 'SIM' })
