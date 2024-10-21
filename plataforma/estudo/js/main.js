@@ -527,10 +527,10 @@ window.addEventListener('load', function() {
         
                     ContainersExternosTesteMódulos.forEach(ContainerExternoTesteMódulo => ContainerExternoTesteMódulo.style.display = "none");
         
-                    // Atualiza o vídeo.
+                    // Atualiza o vídeo a partir do Microsoft Azure Storage Account Container.
         
                     var NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
-                    DisplayVídeo.src = "/plataforma/estudo/videos/" + MóduloAberto + "/" + NomeVídeo + ".mp4";
+                    DisplayVídeo.src = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/" + MóduloAberto + "/" + NomeVídeo + ".mp4";
         
                     // Atualiza o Aviso Especial Tópico e o arquivo para download.
         
