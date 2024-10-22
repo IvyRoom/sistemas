@@ -61,6 +61,8 @@ window.addEventListener('load', function() {
 FormulárioLogin.addEventListener('submit', function(event) {
     
     Entrar.style.display = "none";
+
+    document.body.style.cursor = 'wait';
     
     event.preventDefault();
     
@@ -101,6 +103,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
         } else {
             
             Entrar.style.display = "block";
+            document.body.style.cursor = 'default';
             AvisoInconsistência.style.display = 'block';
             Usuário_Login.value = '';
             Usuário_Senha.value = '';

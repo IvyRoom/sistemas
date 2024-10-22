@@ -7,6 +7,9 @@
 
 window.addEventListener('load', function() {
 
+    // Deixa o cursor em espera.
+    document.body.style.cursor = 'wait';
+    
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
     // Leva à página de aviso se a largura da tela ficar <= 1350.
@@ -77,6 +80,9 @@ window.addEventListener('load', function() {
 
             if (Usuário_Preparatório1_Status === 'Ativo') {
 
+                // Retorna o cursor para "default".
+                document.body.style.cursor = 'default';
+                
                 // Substitui o Status de "Cadeado" para "Check Verde".
                 var Preparatório01StatusSímboloSubstituído = document.createElement('div');
                 Preparatório01StatusSímboloSubstituído.id = 'Preparatório-01-Status-Símbolo-Substituído';
