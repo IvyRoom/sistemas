@@ -8,7 +8,7 @@ window.addEventListener('resize', LevaàPáginaAviso);
 
 function LevaàPáginaAviso() {
 
-    if (window.innerWidth <= 1350) {
+    if (window.innerWidth <= 1024) {
     
         window.location.href = "/plataforma/aviso";
     

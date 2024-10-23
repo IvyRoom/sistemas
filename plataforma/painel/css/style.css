@@ -58,7 +58,8 @@
 }
 
 #Container-Externo-Preparatórios{
-    height: calc(100vh - 120px);
+    min-height: calc(100vh - 120px);
+    height: auto;
     align-content: center;
 }
 
@@ -68,6 +69,8 @@
     text-align: center;
     margin-left: auto;
     margin-right: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 /*///////////////////////// Card Preparatório 1 //////////////////////////*/
@@ -123,7 +126,6 @@
 
 #Preparatório-01-Botão-Principal:hover{
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
 }
 
 #Preparatório-01-Container-Prazo-Acesso{
@@ -206,7 +208,6 @@
 
 #Preparatório-02-Botão-Principal:hover{
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
 }
 
 #Preparatório-02-Container-Prazo-Acesso{

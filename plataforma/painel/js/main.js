@@ -7,9 +7,6 @@
 
 window.addEventListener('load', function() {
 
-    // Deixa o cursor em espera.
-    document.body.style.cursor = 'wait';
-    
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
     // Leva à página de aviso se a largura da tela ficar <= 1350.
@@ -20,7 +17,7 @@ window.addEventListener('load', function() {
 
     function LevaàPáginaAviso() {
 
-        if (window.innerWidth <= 1350) {
+        if (window.innerWidth <= 1024) {
         
             window.location.href = "/plataforma/aviso";
         
@@ -54,6 +51,11 @@ window.addEventListener('load', function() {
     ////////////////////////////////////////////////////////////////////////////////////////
     
     if (localStorage.getItem('Usuário_Logado') === 'Sim' || sessionStorage.getItem('Usuário_Logado') === 'Sim') {
+        
+        // Deixa o cursor em espera.
+        document.body.style.cursor = 'wait';
+        Preparatório01BotãoPrincipal.style.cursor = "wait"
+        Preparatório02BotãoPrincipal.style.cursor = "wait"
         
         var TipoArmazenamento;
 
@@ -91,6 +93,7 @@ window.addEventListener('load', function() {
                 // Configura o Botão Principal.
                 Preparatório01BotãoPrincipal.textContent = 'Entrar';
                 Preparatório01BotãoPrincipal.style.backgroundColor = "#a41034";
+                Preparatório01BotãoPrincipal.style.cursor = "pointer"
 
                 // Configura o Prazo de Acesso.
                 Preparatório01PrazoAcesso.textContent = "Expira: " + Usuário_Preparatório1_PrazoAcesso;
@@ -112,6 +115,9 @@ window.addEventListener('load', function() {
 
             //////////////////////////////////////////////////////////////////////////////////////////
             // Configura o card do Preparatório 02.
+
+            // Configura o Botão Principal.
+            Preparatório02BotãoPrincipal.style.cursor = "pointer";
 
             //////////////////////////////////////////////////////////////////////////////////////////
             // Configura o Nome do Usuário no cabeçalho.
@@ -191,6 +197,8 @@ window.addEventListener('load', function() {
         ////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////
 
+        Preparatório01BotãoPrincipal.style.cursor = "pointer";
+
         Preparatório01BotãoPrincipal.addEventListener('click', function(){
 
                 window.location.href = '/';
@@ -203,9 +211,11 @@ window.addEventListener('load', function() {
         ////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////
 
+        Preparatório02BotãoPrincipal.style.cursor = "pointer";
+
         Preparatório02BotãoPrincipal.addEventListener('click', function(){
 
-            window.location.href = '../conhecer';
+            window.location.href = '/plataforma/conhecer';
 
         });
 

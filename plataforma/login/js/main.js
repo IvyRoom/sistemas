@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 
 var FormulárioLogin = document.getElementById('Formulário-Login');
-var AvisoInconsistência = document.getElementById('Aviso-Inconsistência');
 var Entrar = document. getElementById('Entrar');
+var AvisoInconsistência = document.getElementById('Aviso-Inconsistência');
+var AvisoInicializando = document.getElementById('Aviso-Inicializando');
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +19,7 @@ window.addEventListener('resize', LevaàPáginaAviso);
 
 function LevaàPáginaAviso() {
 
-    if (window.innerWidth <= 1350) {
+    if (window.innerWidth <= 1024) {
     
         window.location.href = "/plataforma/aviso";
     
@@ -61,7 +62,7 @@ window.addEventListener('load', function() {
 FormulárioLogin.addEventListener('submit', function(event) {
     
     Entrar.style.display = "none";
-
+    AvisoInicializando.style.display = "block";
     document.body.style.cursor = 'wait';
     
     event.preventDefault();
@@ -103,6 +104,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
         } else {
             
             Entrar.style.display = "block";
+            AvisoInicializando.style.display = "none";
             document.body.style.cursor = 'default';
             AvisoInconsistência.style.display = 'block';
             Usuário_Login.value = '';
