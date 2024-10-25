@@ -1,3 +1,7 @@
+var SeçãoBlackFriday = document.getElementById("Seção-Black-Friday");
+
+var SeçãoInicial = document.getElementById("Seção-Inicial");
+
 var ContainerVídeoPrincipal = document.getElementById("Container-Vídeo-Principal");
 var BotãoTelaCheia1 = document.getElementById("Botão-Tela-Cheia-1");
 var TextoTelaCheia1 = document.getElementById("Texto-Tela-Cheia-1");
@@ -111,7 +115,7 @@ observer.observe(ContainerVídeoPrincipal);
 BotãoTelaCheia1.addEventListener("click", function(event) {
     
     if (TextoTelaCheia1.innerHTML !== 'Tela Padrão') {
-
+ 
         ContainerVídeoPrincipal.style.width = 'calc(var(--considered-screen-width) * 0.95)';
         ContainerVídeoPrincipal.style.height = 'calc(var(--considered-screen-width) * 1.68858)';
 
@@ -125,6 +129,8 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
         TextoTelaCheia1.innerHTML = 'Tela Padrão';
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
+
+        ControlaPosição_ContainerBotãoCadastro();
 
     } else {
         
@@ -142,6 +148,8 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
+        ControlaPosição_ContainerBotãoCadastro();
+
     }
 
 })
@@ -150,35 +158,51 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 /*///////////////////// Controla as posições do Itens Dinâmicos ///////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-window.onscroll = function() {
+/*////////////////////// Controla a posição do Container-Botão-Cadastro ///////////////////////*/
 
-    var Posição_Seção1 = Seção1.offsetTop;
 
-    /*////////////////////// Controla a posição do Container-Botão-Cadastro ///////////////////////*/
+function ControlaPosição_ContainerBotãoCadastro (){
 
-    if (window.scrollY + window.innerHeight >= Posição_Seção1){
+    if (window.scrollY + window.innerHeight < SeçãoInicial.offsetTop) {
 
+        ContainerBotãoCadastro.style.position = 'fixed';
+        ContainerBotãoCadastro.style.top = '';
+        ContainerBotãoCadastro.style.bottom = '0px';
+        
+    } else if (window.scrollY + window.innerHeight >= SeçãoInicial.offsetTop && window.scrollY < SeçãoInicial.offsetTop) {
+    
+        ContainerBotãoCadastro.style.position = 'absolute';
+        ContainerBotãoCadastro.style.top = SeçãoInicial.offsetTop - 150 + 'px';
+    
+    } else if (window.scrollY + window.innerHeight >= Seção1.offsetTop) {
+    
         ContainerBotãoCadastro.style.display = 'block';
         EspaçoFinalContainerBotãoCadastro.style.height = ContainerBotãoCadastro.offsetHeight + 'px';
-
-        if (window.scrollY + window.innerHeight < Posição_Seção1 + ContainerBotãoCadastro.offsetHeight){
-
+    
+        if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoCadastro.offsetHeight){
+    
             ContainerBotãoCadastro.style.position = 'absolute';
-            ContainerBotãoCadastro.style.top = Posição_Seção1 + 'px';
+            ContainerBotãoCadastro.style.top = Seção1.offsetTop + 'px';
             ContainerBotãoCadastro.style.bottom = '';
-
+    
         } else {
-
+    
             ContainerBotãoCadastro.style.position = 'fixed';
             ContainerBotãoCadastro.style.top = '';
             ContainerBotãoCadastro.style.bottom = '0px';
-
+    
         }
- 
+    
     }
 
-    /*////////////////////// Controla a posição das Setas de Fechamento das Seções ///////////////////////*/
+}
 
+window.onscroll = function() {
+
+    ControlaPosição_ContainerBotãoCadastro();
+
+    /*////////////////////// Controla a posição das Setas de Fechamento das Seções ///////////////////////*/
+    var Posição_Seção1 = Seção1.offsetTop;
     var Posição_Seção2 = Seção2.offsetTop;
     var Posição_Seção3 = Seção3.offsetTop;
     var Posição_Seção4 = Seção4.offsetTop;

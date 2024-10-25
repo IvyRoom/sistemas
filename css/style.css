@@ -42,6 +42,172 @@
     }
 
 }
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Seção-Black-Friday ///////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Subseção-Black-Friday-1{
+    padding-top: 60px;
+    background: linear-gradient(177deg, #000000 0%, #790D25 100%);
+    width: var(--considered-screen-width);
+    margin-left: var(--considered-margin-left);
+    color: #ffffff;
+}
+
+#Ivy-Escola-Gestão{
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 40px;
+}
+
+#Logo-Black-Friday{
+    display: flex;
+    width: calc(var(--considered-screen-width) * 0.85);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Container-Atenção{
+    display: flex;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 40px;
+    margin-bottom: 60px;
+}
+
+#Manchete-Atenção{
+    font-size: 28px;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-weight: 630;
+}
+
+.Triângulos-Exclamações{
+    margin-top: 3px;
+    fill: #e0c40e;
+    stroke: #000000;
+}
+
+.Exclamações{
+    text-align: center;
+    color: #000000;
+    margin-top: -30px;
+    font-size: 20px;
+}
+
+#Manchete-Abertura-Turma{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 22px;
+    font-weight: 630;
+    width: calc(var(--considered-screen-width) * 0.90);
+}
+
+#Complemento-Manchete-Abertura-Turma{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 60px;
+    font-size: 22px;
+    width: calc(var(--considered-screen-width) * 0.80);
+}
+
+#Manchete-Receba-Como-Bônus{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 18px;
+    margin-bottom: 60px;
+    width: calc(var(--considered-screen-width) * 0.80);
+}
+
+#Manchete-Bônus-1{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 22px;
+    width: calc(var(--considered-screen-width) * 0.90);
+}
+
+#Imagem-Bônus-1{
+    display: block;
+    width: calc(var(--considered-screen-width));
+    margin-left: var(--considered-margin-left);
+}
+
+#Subseção-Black-Friday-2{
+    background-color: #000000;
+    width: calc(var(--considered-screen-width));
+    margin-left: var(--considered-margin-left);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#Manchete-Bônus-2{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 22px;
+    width: calc(var(--considered-screen-width) * 0.90);
+    color: #ffffff;
+}
+
+#Imagem-Bônus-2{
+    display: block;
+    width: calc(var(--considered-screen-width));
+    margin-left: var(--considered-margin-left);
+}
+
+#Subseção-Black-Friday-3{
+    background-color: #790D25;
+    width: calc(var(--considered-screen-width));
+    margin-left: var(--considered-margin-left);
+    padding-top: 10px;
+    padding-bottom: 40px;
+}
+
+#Manchete-Bônus-3{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    font-size: 22px;
+    width: calc(var(--considered-screen-width) * 0.90);
+    color: #ffffff;
+}
+
+#Submanchete-Bônus-3{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px;
+    font-size: 18px;
+    width: calc(var(--considered-screen-width) * 0.90);
+    color: #ffffff;
+}
+
+#Explicação-Bônus-3{
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 18px;
+    width: calc(var(--considered-screen-width) * 0.90);
+    color: #ffffff;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////// Espaço-Intermediário-Container-Botão-Cadastro //////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Espaço-Intermediário-Container-Botão-Cadastro{
+    display: block;
+    height: 150px;
+    background-color: #790D25;
+    width: var(--considered-screen-width);
+    margin-left: var(--considered-margin-left);
+}
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////// Seção-Inicial //////////////////////////////////////
@@ -1128,19 +1294,7 @@
     background-color: #790D25;
 }
 
-#Texto-Interno-Grande-Branco-4-7{
-    color: #fff;
-    width: calc(var(--considered-screen-width) * 0.90);
-    font-size: 28px;
-    margin-top: 0px;
-    margin-bottom: 60px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    font-family: 'Segoe UI Light';
-}
-
-#Texto-Interno-Grande-Vermelho-4-8{
+#Texto-Interno-Grande-Vermelho-4-6{
     color: #790D25;
     width: calc(var(--considered-screen-width) * 0.90);
     font-size: 28px;
@@ -1476,13 +1630,16 @@
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
 #Container-Botão-Cadastro{
-    height: auto;
+    display: block;
+    height: 150px;
     border-radius: 50px 50px 0px 0px;
     background: linear-gradient(165deg, #fff, #ddd);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
     padding-top: 10px;
     padding-bottom: 20px;
+    position: fixed;
+    bottom: 0px;
 }
 
 #Explicação-Cadastro{

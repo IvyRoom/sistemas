@@ -44,13 +44,21 @@ NomeCompleto.addEventListener("change", function() {
 
 var Formulário_de_Cadastro = document.getElementById('Formulário_de_Cadastro');
 var Receber_Convite = document.getElementById('Receber_Convite');
+var Status_EmSubmissão = false;
 
 Formulário_de_Cadastro.addEventListener('submit', (event) => {
     
     event.preventDefault();
 
-    // Desativa o botão Receber_Convite para evitar envio duplicado ou triplicado dos dados do Potencial Aluno.
+    //////////////////////////////////////////////////////////////////////
+    // Evita envio duplicado ou triplicado dos dados do Potencial Aluno:
+
+    // a) Desativando o botão "Receber Convite"
     Receber_Convite.disabled = true;
+
+    // b) Cancelando a função se o Status_Submissão já for "true".
+    if (Status_EmSubmissão) return;
+    Status_EmSubmissão = true;
 
     //Manda as informações ao Power Automate.
     const payload = {
@@ -67,9 +75,17 @@ Formulário_de_Cadastro.addEventListener('submit', (event) => {
       },
       body: JSON.stringify(payload)
     })
+    
     .then(response => {
-        window.location.href = "../confirmação/";
+        window.location.href = "/confirmação";
         console.log ("Infos enviadas ao Power Automate.");
     })
+
+    // Reseta o Status_EmSubmissão e o botão Receber_Convite caso haja erro no fetch:
+    .catch(error => {
+      console.error("Erro ao enviar os dados ao Power Automate:", error);
+      Status_EmSubmissão = false; 
+      Receber_Convite.disabled = false;
+    });
 
 });
