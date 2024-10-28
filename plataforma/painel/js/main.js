@@ -123,7 +123,6 @@ window.addEventListener('load', function() {
             // Configura o Nome do Usuário no cabeçalho.
 
             UsuárioLogadoNome.textContent = Usuário_PrimeiroNome;
-            console.log(Usuário_PrimeiroNome);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////
