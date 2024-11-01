@@ -166,12 +166,30 @@ var configurações_momento_de_agora = { day: '2-digit', month: 'short', year: '
 var data_de_hoje = momento_de_agora_original.toLocaleDateString('pt-BR', configurações_data_de_hoje).replace(/de/g,'/').replace('.','').replace(/ /g,'');
 var momento_de_agora = momento_de_agora_original.toLocaleDateString('pt-BR', configurações_momento_de_agora).replace(/de/g,'/').replace('.','').replace(/ /g,'');
 
-/*////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-        Puxa variáveis da Página de Vendas p/ Checkout
-//////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-var data = JSON.parse(localStorage.getItem('Dados-Enviados-ao-Checkout')) || {};
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    Puxa variáveis da página de origem, via localStorage, se o usuário estiver navegando dentro dos Sistemas.
+    Caso contrário, processa o Preparatório.
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+
+const urlParams = new URLSearchParams(window.location.search);
+const origem = urlParams.get("origem");
+
+if (origem === "externa") {
+
+    var data = {
+        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
+        Nome_Produto_Título: "<b> Prep. Gestão Generalista: Contratação Padrão </b>",
+        Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação Padrão"        
+    };
+
+} else {
+
+    var data = JSON.parse(localStorage.getItem('Dados-Enviados-ao-Checkout'));
+
+}
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
