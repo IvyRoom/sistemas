@@ -2308,7 +2308,7 @@ Formulário_de_Pagamento.addEventListener('submit', (event) => {
     
     .then(response => {
     
-        window.location.href = "confirmação";
+        window.location.href = "/checkout/confirmação";
     
     });
 
