@@ -221,16 +221,6 @@
     margin-left: var(--considered-margin-left);
 }
 
-#Ivy-Escola-de-Gestão{
-    text-align: center;
-    color: #790D25;
-    font-size: 13px;
-    margin-bottom: 40px;
-    margin-left: auto;
-    margin-right: auto;
-    width: calc(var(--considered-screen-width) * 0.90);
-}
-
 #Manchete-Seção-Inicial{
     text-align: center;
     color: #790D25;

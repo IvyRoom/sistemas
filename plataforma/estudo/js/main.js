@@ -530,8 +530,10 @@ window.addEventListener('load', function() {
                     // Atualiza o vídeo a partir do Microsoft Azure Storage Account Container.
         
                     var NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
-                    DisplayVídeo.src = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/" + MóduloAberto + "/" + NomeVídeo + ".mp4";
-        
+                    
+                    //DisplayVídeo.src: note que o Azure Storage Account Container SAS token com validade até 01-01-2050 foi incluído ao final da URL para permitir "video seeking".
+                    DisplayVídeo.src = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/" + MóduloAberto + "/" + NomeVídeo + ".mp4" + "?sp=r&st=2024-11-01T11:00:00Z&se=2050-01-01T03:00:00Z&spr=https&sv=2022-11-02&sr=c&sig=o%2FEOtQQlRp4%2F0Iu4Pbn4EghosVs6DoYgIkr4kUfclIc%3D";
+
                     // Atualiza o Aviso Especial Tópico e o arquivo para download.
         
                     var ContainerDownloadArquivo1 = document.getElementById("Container-Download-Arquivo-1");
@@ -1055,7 +1057,13 @@ window.addEventListener('load', function() {
                                 ////////////////////////////////////////////////////////////////////////////////////////
             
                                 FaixaInferior.innerHTML = '';
+
+                                ////////////////////////////////////////////////////////////////////////////////////////
+                                // Atualiza o cursor para "wait".
+                                ////////////////////////////////////////////////////////////////////////////////////////
                                 
+                                document.body.style.cursor = 'wait';
+
                                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 // Atualiza o Usuário_Preparatório1_PercentualCumprimento junto ao backend, para atualizar a BD - PLATAFORMA.
                                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1071,7 +1079,13 @@ window.addEventListener('load', function() {
                                 .then(response => {
                                     
                                     if (response.status === 200) {
+
+                                        ////////////////////////////////////////////////////////////////////////////////////////
+                                        // Atualiza o cursor para "default".
+                                        ////////////////////////////////////////////////////////////////////////////////////////
         
+                                        document.body.style.cursor = 'default';
+                                        
                                         AtualizaAvançoPreparatório(Usuário_Preparatório1_NúmeroTópicosConcluídos);
                                         
                                         ////////////////////////////////////////////////////////////////////////////////////////
@@ -1128,6 +1142,12 @@ window.addEventListener('load', function() {
             
                                 FaixaInferior.innerHTML = '';
 
+                                ////////////////////////////////////////////////////////////////////////////////////////
+                                // Atualiza o cursor para "wait".
+                                ////////////////////////////////////////////////////////////////////////////////////////
+                                
+                                document.body.style.cursor = 'wait';
+
                                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                 // Atualiza o Usuário_Preparatório1_PercentualCumprimento junto ao backend, para atualizar a BD - PLATAFORMA.
                                 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1143,6 +1163,12 @@ window.addEventListener('load', function() {
                                 .then(response => {
                                     
                                     if (response.status === 200) {
+
+                                        ////////////////////////////////////////////////////////////////////////////////////////
+                                        // Atualiza o cursor para "default".
+                                        ////////////////////////////////////////////////////////////////////////////////////////
+                                        
+                                        document.body.style.cursor = 'default';
         
                                         AtualizaAvançoPreparatório(Usuário_Preparatório1_NúmeroTópicosConcluídos);
                                         
