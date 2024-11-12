@@ -2295,8 +2295,8 @@ Formulário_de_Pagamento.addEventListener('submit', (event) => {
     
     };
   
-    // Envia as informações ao Power Automate.
-    fetch('https://prod2-08.brazilsouth.logic.azure.com:443/workflows/7bfe5d8767cb4868b3900be4ef9dbfe2/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=g4i319-ByinYLIxwIT5aGI82yJG47SwkpwmL8_Gj2IU', {
+    // Envia as informações ao Power Automate (Checkout #1: Processa Cobranças_v2).
+    fetch('https://prod-28.brazilsouth.logic.azure.com:443/workflows/74d477074b034bf4b87ece9b46539b49/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5tir7xFkZmn3ZJrHD-GZzjrzgNKoBDCdiJ6GPlNUuHU', {
 
       method: 'POST',
       headers: {
