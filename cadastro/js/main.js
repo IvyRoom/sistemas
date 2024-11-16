@@ -5,7 +5,9 @@
 ////////////////////////////////////////////////////////////*/
 
 var NomeCompleto = document.getElementById("NomeCompleto"); 
-var PerfilInstagram = document.getElementById("PerfilInstagram");
+var Email = document.getElementById("Email");
+var AvisoProcessando = document.getElementById("Aviso_Processando");
+var AvisoEmailInválido = document.getElementById("Aviso_Email_Inválido");
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -35,6 +37,13 @@ NomeCompleto.addEventListener("change", function() {
 
 })
 
+Email.addEventListener("change", function() {
+
+  Email.value = Email.value.replace(/\s+$/, "");
+  AvisoEmailInválido.style.display = "none";
+
+})
+
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -48,44 +57,39 @@ var Status_EmSubmissão = false;
 
 Formulário_de_Cadastro.addEventListener('submit', (event) => {
     
+    //////////////////////////////////////////////////////////////////////
+    // Evita envio duplicado ou triplicado dos dados do Potencial Aluno:
+    
+    Receber_Convite.style.display = "none";
+    AvisoProcessando.style.display = "flex";
+    document.body.style.cursor = 'wait';
+    
     event.preventDefault();
 
     //////////////////////////////////////////////////////////////////////
-    // Evita envio duplicado ou triplicado dos dados do Potencial Aluno:
+    // Manda as informações do lead ao backend.
 
-    // a) Desativando o botão "Receber Convite"
-    Receber_Convite.disabled = true;
-
-    // b) Cancelando a função se o Status_Submissão já for "true".
-    if (Status_EmSubmissão) return;
-    Status_EmSubmissão = true;
-
-    //Manda as informações ao Power Automate.
-    const payload = {
-      
-      NomeCompleto: NomeCompleto.value,
-      PerfilInstagram: PerfilInstagram.value,
-
-    };
-
-    fetch('https://prod2-08.brazilsouth.logic.azure.com:443/workflows/735473bec8274c41aa3657e631956e10/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=RD7BFuMbFbATUQHwzjEpyxT4lYYDmVX7hP056xLRfqQ', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
+    fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/cadastro', { //http://localhost:3000/landingpage/cadastro //https://plataforma-backend-v3.azurewebsites.net/landingpage/cadastro
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ NomeCompleto: NomeCompleto.value, Email: Email.value })
     })
     
     .then(response => {
-        window.location.href = "/confirmação";
-        console.log ("Infos enviadas ao Power Automate.");
-    })
+        
+        if (response.status === 200) {
+            
+            window.location.href = "https://www.instagram.com/channel/AbaebGO_wVnsawoW/";
+        
+        } else {
 
-    // Reseta o Status_EmSubmissão e o botão Receber_Convite caso haja erro no fetch:
-    .catch(error => {
-      console.error("Erro ao enviar os dados ao Power Automate:", error);
-      Status_EmSubmissão = false; 
-      Receber_Convite.disabled = false;
-    });
+            Receber_Convite.style.display = "block";
+            AvisoProcessando.style.display = "none";
+            document.body.style.cursor = 'default';
+            AvisoEmailInválido.style.display = "flex";
+
+        }
+
+    })
 
 });

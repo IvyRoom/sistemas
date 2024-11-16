@@ -34,6 +34,7 @@
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
     padding-bottom: 80px;
+    min-height: 100vh;
 }
 
 #Ivy-Escola-de-Gestão{
@@ -65,16 +66,16 @@
     color: #790d26;
     text-align: center;
     margin-top: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 #Instruções_Iniciais{
-    font-size:16px;
+    font-size:18px;
     width: 95%;
     margin-left: 2.5%;
     color: #790d26;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
 .Títulos_de_Preenchimento{
@@ -111,4 +112,26 @@
     border: none;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
     background-color: #056839;
+}
+
+#Aviso_Processando{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Aviso_Email_Inválido{
+    color: #790d26;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    height: 20px;
+    margin-top: -20px;
+    margin-left: auto;
+    margin-right: auto;
 }
