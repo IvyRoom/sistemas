@@ -47,7 +47,7 @@ Email.addEventListener("change", function() {
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-      Envia os dados do checkout para o Power Automate.
+      Envia os dados de cadastro para o backend.
 //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
@@ -58,7 +58,7 @@ var Status_EmSubmissão = false;
 Formulário_de_Cadastro.addEventListener('submit', (event) => {
     
     //////////////////////////////////////////////////////////////////////
-    // Evita envio duplicado ou triplicado dos dados do Potencial Aluno:
+    // Evita envio duplicado dos dados do Potencial Aluno:
     
     Receber_Convite.style.display = "none";
     AvisoProcessando.style.display = "flex";
