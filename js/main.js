@@ -60,7 +60,7 @@ var BotãoCadastro = document.getElementById("Botão-Cadastro");
 var userAgent = navigator.userAgent;
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*////////////////////// Dispara o evento de PageView do Pixel - Ivy Room 01 ///////////////////////////*/
+/*////////////////////// Dispara o evento de "PageView" do Pixel - Ivy Room 01 ///////////////////////////*/
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 !function(f,b,e,v,n,t,s)
@@ -73,6 +73,17 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '916097029235819');
 fbq('track', 'PageView');
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*//// Armazena os dados do fbclid para o evento de "Lead" do Pixel - Ivy Room 01: Conversion API //////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+const fbclid = new URLSearchParams(window.location.search).get('fbclid') || "";
+const fbclid_momento_registro = new Date().toISOString();
+
+localStorage.setItem('fbclid', fbclid);
+localStorage.setItem('fbclid_momento_registro', fbclid_momento_registro);
+
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*/// Retira os botões de girar os vídeos se o usuário não estiver usando o Instagram In-App Browser. //*/

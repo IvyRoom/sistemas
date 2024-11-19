@@ -55,6 +55,21 @@ var Formulário_de_Cadastro = document.getElementById('Formulário_de_Cadastro')
 var Receber_Convite = document.getElementById('Receber_Convite');
 var Status_EmSubmissão = false;
 
+////////////////////////////////////////////////////////////////////////////
+// Obtém o IP do Lead.
+
+var EndereçoIP = "";
+
+fetch('https://api.ipify.org?format=json')
+  .then(response => response.json())
+  .then(data => { EndereçoIP = data.ip })
+  .catch(error => { EndereçoIP = "" });
+
+////////////////////////////////////////////////////////////////////////////
+// Obtém o User_Agent do Lead.
+
+var UserAgent = navigator.userAgent;
+
 Formulário_de_Cadastro.addEventListener('submit', (event) => {
     
     //////////////////////////////////////////////////////////////////////
@@ -67,12 +82,28 @@ Formulário_de_Cadastro.addEventListener('submit', (event) => {
     event.preventDefault();
 
     //////////////////////////////////////////////////////////////////////
+    // Cria o Lead_fbclid_Tratado, conforme orientações presentes em https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc#2--format-clickid
+
+    var fbclid = localStorage.getItem('fbclid');
+    var fbclid_momento_registro = localStorage.getItem('fbclid_momento_registro');
+    var fbclid_tratado;
+    
+    if (fbclid === "") {
+        
+        fbclid_tratado = "";
+    
+    } else {
+        
+        fbclid_tratado = "fb.1." + (Date.now() - new Date(fbclid_momento_registro).getTime()) + "." + fbclid;
+    }
+    
+    //////////////////////////////////////////////////////////////////////
     // Manda as informações do lead ao backend.
 
     fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/cadastro', { //http://localhost:3000/landingpage/cadastro //https://plataforma-backend-v3.azurewebsites.net/landingpage/cadastro
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ NomeCompleto: NomeCompleto.value, Email: Email.value })
+        body: JSON.stringify({ NomeCompleto: NomeCompleto.value, Email: Email.value, EndereçoIP: EndereçoIP, UserAgent: UserAgent, fbclid_tratado: fbclid_tratado })
     })
     
     .then(response => {
@@ -82,14 +113,14 @@ Formulário_de_Cadastro.addEventListener('submit', (event) => {
             window.location.href = "https://www.instagram.com/channel/AbaebGO_wVnsawoW/";
         
         } else {
-
+    
             Receber_Convite.style.display = "block";
             AvisoProcessando.style.display = "none";
             document.body.style.cursor = 'default';
             AvisoEmailInválido.style.display = "flex";
-
+    
         }
-
-    })
+    
+    });
 
 });
