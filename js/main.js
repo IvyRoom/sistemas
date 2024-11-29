@@ -53,9 +53,9 @@ var ContainerExternoSubseção43 = document.getElementById("Container-Externo-Su
 var ContainerInternoSubseção43 = document.getElementById("Container-Interno-Subseção-4-3");
 var SetaFechamentoSubseção43 = document.getElementById("Seta-Fechamento-Subseção-4-3");
 
-var EspaçoFinalContainerBotãoCadastro = document.getElementById("Espaço-Final-Container-Botão-Cadastro");
-var ContainerBotãoCadastro = document.getElementById("Container-Botão-Cadastro");
-var BotãoCadastro = document.getElementById("Botão-Cadastro");
+var EspaçoFinalContainerBotãoCompra = document.getElementById("Espaço-Final-Container-Botão-Compra");
+var ContainerBotãoCompra = document.getElementById("Container-Botão-Compra");
+var BotãoCompra = document.getElementById("Botão-Compra");
 
 var userAgent = navigator.userAgent;
 
@@ -156,7 +156,7 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
-        ControlaPosição_ContainerBotãoCadastro();
+        ControlaPosição_ContainerBotãoCompra();
 
     } else {
         
@@ -174,7 +174,7 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
-        ControlaPosição_ContainerBotãoCadastro();
+        ControlaPosição_ContainerBotãoCompra();
 
     }
 
@@ -184,38 +184,38 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 /*///////////////////// Controla as posições do Itens Dinâmicos ///////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-/*////////////////////// Controla a posição do Container-Botão-Cadastro ///////////////////////*/
+/*////////////////////// Controla a posição do Container-Botão-Compra ///////////////////////*/
 
 
-function ControlaPosição_ContainerBotãoCadastro (){
+function ControlaPosição_ContainerBotãoCompra (){
 
     if (window.scrollY + window.innerHeight < SeçãoInicial.offsetTop) {
 
-        ContainerBotãoCadastro.style.position = 'fixed';
-        ContainerBotãoCadastro.style.top = '';
-        ContainerBotãoCadastro.style.bottom = '0px';
+        ContainerBotãoCompra.style.position = 'fixed';
+        ContainerBotãoCompra.style.top = '';
+        ContainerBotãoCompra.style.bottom = '0px';
         
     } else if (window.scrollY + window.innerHeight >= SeçãoInicial.offsetTop && window.scrollY < SeçãoInicial.offsetTop) {
     
-        ContainerBotãoCadastro.style.position = 'absolute';
-        ContainerBotãoCadastro.style.top = SeçãoInicial.offsetTop - 150 + 'px';
+        ContainerBotãoCompra.style.position = 'absolute';
+        ContainerBotãoCompra.style.top = SeçãoInicial.offsetTop - 150 + 'px';
     
     } else if (window.scrollY + window.innerHeight >= Seção1.offsetTop) {
     
-        ContainerBotãoCadastro.style.display = 'block';
-        EspaçoFinalContainerBotãoCadastro.style.height = ContainerBotãoCadastro.offsetHeight + 'px';
+        ContainerBotãoCompra.style.display = 'block';
+        EspaçoFinalContainerBotãoCompra.style.height = ContainerBotãoCompra.offsetHeight + 'px';
     
-        if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoCadastro.offsetHeight){
+        if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoCompra.offsetHeight){
     
-            ContainerBotãoCadastro.style.position = 'absolute';
-            ContainerBotãoCadastro.style.top = Seção1.offsetTop + 'px';
-            ContainerBotãoCadastro.style.bottom = '';
+            ContainerBotãoCompra.style.position = 'absolute';
+            ContainerBotãoCompra.style.top = Seção1.offsetTop + 'px';
+            ContainerBotãoCompra.style.bottom = '';
     
         } else {
     
-            ContainerBotãoCadastro.style.position = 'fixed';
-            ContainerBotãoCadastro.style.top = '';
-            ContainerBotãoCadastro.style.bottom = '0px';
+            ContainerBotãoCompra.style.position = 'fixed';
+            ContainerBotãoCompra.style.top = '';
+            ContainerBotãoCompra.style.bottom = '0px';
     
         }
     
@@ -225,14 +225,14 @@ function ControlaPosição_ContainerBotãoCadastro (){
 
 window.onscroll = function() {
 
-    ControlaPosição_ContainerBotãoCadastro();
+    ControlaPosição_ContainerBotãoCompra();
 
     /*////////////////////// Controla a posição das Setas de Fechamento das Seções ///////////////////////*/
     var Posição_Seção1 = Seção1.offsetTop;
     var Posição_Seção2 = Seção2.offsetTop;
     var Posição_Seção3 = Seção3.offsetTop;
     var Posição_Seção4 = Seção4.offsetTop;
-    var Posição_EspaçoFinalContainerBotãoCadastro = EspaçoFinalContainerBotãoCadastro.offsetTop;
+    var Posição_EspaçoFinalContainerBotãoCompra = EspaçoFinalContainerBotãoCompra.offsetTop;
 
     /* Seção 1 */
 
@@ -240,17 +240,17 @@ window.onscroll = function() {
     
         SetaFechamentoSeção1.style.display = 'none';
     
-    } else if (window.scrollY > Posição_Seção1 && window.scrollY <= (Posição_Seção2 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção1 && window.scrollY <= (Posição_Seção2 - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         SubseçãoCadastro1.style.marginBottom = '20px';
         
         SetaFechamentoSeção1.style.display = 'flex';
         SetaFechamentoSeção1.style.position = 'fixed';
-        SetaFechamentoSeção1.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção1.style.bottom = ContainerBotãoCompra.offsetHeight + 15 + 'px';
         SetaFechamentoSeção1.style.marginBottom = '0px';
         SetaFechamentoSeção1.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_Seção2 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_Seção2 - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         SubseçãoCadastro1.style.marginBottom = '15px';
 
@@ -268,17 +268,17 @@ window.onscroll = function() {
 
         SetaFechamentoSeção2.style.display = 'none';
     
-    } else if (window.scrollY > Posição_Seção2 && window.scrollY <= (Posição_Seção3 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção2 && window.scrollY <= (Posição_Seção3 - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         SubseçãoCadastro2.style.marginBottom = '20px';
         
         SetaFechamentoSeção2.style.display = 'flex';
         SetaFechamentoSeção2.style.position = 'fixed';
-        SetaFechamentoSeção2.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção2.style.bottom = ContainerBotãoCompra.offsetHeight + 15 + 'px';
         SetaFechamentoSeção2.style.marginBottom = '0px';
         SetaFechamentoSeção2.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_Seção3 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_Seção3 - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         SubseçãoCadastro2.style.marginBottom = '15px';
 
@@ -296,17 +296,17 @@ window.onscroll = function() {
 
         SetaFechamentoSeção3.style.display = 'none';
     
-    } else if (window.scrollY > Posição_Seção3 && window.scrollY <= (Posição_Seção4 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção3 && window.scrollY <= (Posição_Seção4 - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         SubseçãoCadastro3.style.marginBottom = '20px';
         
         SetaFechamentoSeção3.style.display = 'flex';
         SetaFechamentoSeção3.style.position = 'fixed';
-        SetaFechamentoSeção3.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção3.style.bottom = ContainerBotãoCompra.offsetHeight + 15 + 'px';
         SetaFechamentoSeção3.style.marginBottom = '0px';
         SetaFechamentoSeção3.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_Seção4 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_Seção4 - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         SubseçãoCadastro3.style.marginBottom = '15px';
 
@@ -325,7 +325,7 @@ window.onscroll = function() {
         SetaFechamentoSeção4.style.display = 'none';
         BotãoInstagramDirect.style.display = 'none';
 
-    } else if (window.scrollY > Posição_Seção4 && window.scrollY <= (Posição_EspaçoFinalContainerBotãoCadastro - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção4 && window.scrollY <= (Posição_EspaçoFinalContainerBotãoCompra - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         ContainerCondiçõesComerciais3.style.marginBottom = '20px';
     
@@ -337,11 +337,11 @@ window.onscroll = function() {
 
         SetaFechamentoSeção4.style.display = 'flex';
         SetaFechamentoSeção4.style.position = 'fixed';
-        SetaFechamentoSeção4.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção4.style.bottom = ContainerBotãoCompra.offsetHeight + 15 + 'px';
         SetaFechamentoSeção4.style.marginBottom = '0px';
         SetaFechamentoSeção4.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_EspaçoFinalContainerBotãoCadastro - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_EspaçoFinalContainerBotãoCompra - window.innerHeight + ContainerBotãoCompra.offsetHeight)) {
 
         ContainerCondiçõesComerciais3.style.marginBottom = '15px';
 
@@ -355,10 +355,20 @@ window.onscroll = function() {
 
 }
 
-/*Abre o Cadastro*/
-BotãoCadastro.addEventListener("click", function(event){
+/*/////////////////////////////////////////////////////////////////////////////////////*/
+/*///////////////////////////////// Abre o checkout ///////////////////////////////////*/
+/*/////////////////////////////////////////////////////////////////////////////////////*/
+
+BotãoCompra.addEventListener("click", function(event){
     event.preventDefault();
-    window.location.href = "cadastro/";
+    var data = {
+        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
+        Nome_Produto_Título: "<b> Prep. Gestão Generalista: Contratação Padrão </b>",
+        Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação Padrão"        
+    };
+
+    localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
+    window.location.href = "checkout/";
 })
 
 
