@@ -46,6 +46,92 @@
 //////////////////////////////////// Seção-Black-Friday ///////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
+/*//////////////////////////// Container-Contagem-Regressiva ////////////////////////////*/
+
+#Container-Externo-Contagem-Regressiva{
+    padding-top: 30px;
+    background: #000000;
+    width: var(--considered-screen-width);
+    margin-left: var(--considered-margin-left);
+    text-align: center;
+}
+
+#Manchete-Contagem-Regressiva{
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+#Container-Interno-Contagem-Regressiva{
+    display: flex;
+    justify-content: center;
+}
+
+#Container-Interno-Horas-Contagem-Regressiva{
+    color: #ffffff;
+    background-color: #292929;
+    height: 80px;
+    width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 500;
+    border-radius: 10px;
+    border: 1px solid #ffffff;
+}
+
+#Manchete-Interna-Horas-Contagem-Regressiva{
+    color: #ffffff;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+#Container-Interno-Minutos-Contagem-Regressiva{
+    color: #ffffff;
+    background-color: #292929;
+    height: 80px;
+    width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 500;
+    border-radius: 10px;
+    margin-left: 20px;
+    margin-right: 20px;
+    border: 1px solid #ffffff;
+}
+
+#Manchete-Interna-Minutos-Contagem-Regressiva{
+    color: #ffffff;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+#Container-Interno-Segundos-Contagem-Regressiva{
+    color: #ffffff;
+    background-color: #292929;
+    height: 80px;
+    width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 500;
+    border-radius: 10px;
+    border: 1px solid #ffffff;
+}
+
+#Manchete-Interna-Segundos-Contagem-Regressiva{
+    color: #ffffff;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/*///////////////////////////////// Seção-Black-Friday ////////////////////////////////*/
+
 #Subseção-Black-Friday-1{
     padding-top: 60px;
     background: linear-gradient(177deg, #000000 0%, #790D25 100%);

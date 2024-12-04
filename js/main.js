@@ -1,3 +1,7 @@
+var ContainerInternoHorasContagemRegressiva = document.getElementById("Container-Interno-Horas-Contagem-Regressiva");
+var ContainerInternoMinutosContagemRegressiva = document.getElementById("Container-Interno-Minutos-Contagem-Regressiva");
+var ContainerInternoSegundosContagemRegressiva = document.getElementById("Container-Interno-Segundos-Contagem-Regressiva");
+
 var SeçãoBlackFriday = document.getElementById("Seção-Black-Friday");
 
 var SeçãoInicial = document.getElementById("Seção-Inicial");
@@ -84,6 +88,27 @@ const fbclid_momento_registro = new Date().toISOString();
 localStorage.setItem('fbclid', fbclid);
 localStorage.setItem('fbclid_momento_registro', fbclid_momento_registro);
 
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+var DataEncerramentoInscrições = new Date("December 4, 2024 23:59:59").getTime();
+
+var ContagemRegressiva = setInterval(function() {
+
+    var TempoRestante = DataEncerramentoInscrições - new Date().getTime();
+
+    if (TempoRestante < 0) {
+        clearInterval(ContagemRegressiva);
+        TempoRestante = 0;
+    }
+
+    ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
+    ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
+    ContainerInternoSegundosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60)) / 1000)).slice(-2);
+
+}, 1000);
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*/// Retira os botões de girar os vídeos se o usuário não estiver usando o Instagram In-App Browser. //*/
