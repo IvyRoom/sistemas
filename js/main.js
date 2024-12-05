@@ -380,21 +380,21 @@ window.onscroll = function() {
 
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////*/
-/*///////////////////////////////// Abre o checkout ///////////////////////////////////*/
-/*/////////////////////////////////////////////////////////////////////////////////////*/
+// /*/////////////////////////////////////////////////////////////////////////////////////*/
+// /*///////////////////////////////// Abre o checkout ///////////////////////////////////*/
+// /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-BotãoCompra.addEventListener("click", function(event){
-    event.preventDefault();
-    var data = {
-        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
-        Nome_Produto_Título: "<b> Prep. Gestão Generalista: Contratação Padrão </b>",
-        Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação Padrão"        
-    };
+// BotãoCompra.addEventListener("click", function(event){
+//     event.preventDefault();
+//     var data = {
+//         Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
+//         Nome_Produto_Título: "<b> Prep. Gestão Generalista: Contratação Padrão </b>",
+//         Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação Padrão"        
+//     };
 
-    localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
-    window.location.href = "checkout/";
-})
+//     localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
+//     window.location.href = "checkout/";
+// })
 
 
 /*/////////////////////////////////////////////////////////////////////////////////////*/
