@@ -185,6 +185,14 @@ if (origem === "externa") {
         Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação Padrão"        
     };
 
+} if (origem === "pessoa-jurídica") {
+
+    var data = {
+        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 2990,
+        Nome_Produto_Título: "<b> Prep. Gestão Generalista: Versão Pessoa Jurídica </b>",
+        Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação PJ"        
+    };
+
 } else {
 
     var data = JSON.parse(localStorage.getItem('Dados-Enviados-ao-Checkout'));
