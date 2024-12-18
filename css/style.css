@@ -42,258 +42,6 @@
     }
 
 }
-/*/////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////// Seção-Black-Friday ///////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
-
-/*//////////////////////////// Container-Contagem-Regressiva ////////////////////////////*/
-
-#Container-Externo-Contagem-Regressiva{
-    padding-top: 30px;
-    background: #000000;
-    width: var(--considered-screen-width);
-    margin-left: var(--considered-margin-left);
-    text-align: center;
-}
-
-#Manchete-Contagem-Regressiva{
-    font-size: 20px;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 20px;
-}
-
-#Container-Interno-Contagem-Regressiva{
-    display: flex;
-    justify-content: center;
-}
-
-#Container-Interno-Horas-Contagem-Regressiva{
-    color: #ffffff;
-    background-color: #292929;
-    height: 80px;
-    width: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 500;
-    border-radius: 10px;
-    border: 1px solid #ffffff;
-}
-
-#Manchete-Interna-Horas-Contagem-Regressiva{
-    color: #ffffff;
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-#Container-Interno-Minutos-Contagem-Regressiva{
-    color: #ffffff;
-    background-color: #292929;
-    height: 80px;
-    width: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 500;
-    border-radius: 10px;
-    margin-left: 20px;
-    margin-right: 20px;
-    border: 1px solid #ffffff;
-}
-
-#Manchete-Interna-Minutos-Contagem-Regressiva{
-    color: #ffffff;
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-#Container-Interno-Segundos-Contagem-Regressiva{
-    color: #ffffff;
-    background-color: #292929;
-    height: 80px;
-    width: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    font-weight: 500;
-    border-radius: 10px;
-    border: 1px solid #ffffff;
-}
-
-#Manchete-Interna-Segundos-Contagem-Regressiva{
-    color: #ffffff;
-    margin-top: 5px;
-    font-size: 14px;
-}
-
-/*///////////////////////////////// Seção-Black-Friday ////////////////////////////////*/
-
-#Subseção-Black-Friday-1{
-    padding-top: 60px;
-    background: linear-gradient(177deg, #000000 0%, #790D25 100%);
-    width: var(--considered-screen-width);
-    margin-left: var(--considered-margin-left);
-    color: #ffffff;
-}
-
-#Ivy-Escola-Gestão{
-    text-align: center;
-    font-size: 14px;
-    margin-bottom: 40px;
-}
-
-#Logo-Black-Friday{
-    display: flex;
-    width: calc(var(--considered-screen-width) * 0.85);
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#Container-Atenção{
-    display: flex;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 40px;
-    margin-bottom: 60px;
-}
-
-#Manchete-Inscrições-Abertas{
-    font-size: 22px;
-    margin-left: 10px;
-    margin-right: 10px;
-    font-weight: 630;
-}
-
-.Triângulos-Exclamações{
-    margin-top: 0px;
-    fill: #e0c40e;
-    stroke: #000000;
-}
-
-.Exclamações{
-    text-align: center;
-    color: #000000;
-    margin-top: -30px;
-    font-size: 20px;
-}
-
-#Manchete-Abertura-Turma{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 22px;
-    font-weight: 630;
-    width: calc(var(--considered-screen-width) * 0.90);
-}
-
-#Complemento-Manchete-Abertura-Turma{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 60px;
-    font-size: 22px;
-    width: calc(var(--considered-screen-width) * 0.80);
-}
-
-#Manchete-Receba-Como-Bônus{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 18px;
-    margin-bottom: 60px;
-    width: calc(var(--considered-screen-width) * 0.80);
-}
-
-#Manchete-Bônus-1{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 22px;
-    width: calc(var(--considered-screen-width) * 0.90);
-}
-
-#Imagem-Bônus-1{
-    display: block;
-    width: calc(var(--considered-screen-width));
-    margin-left: var(--considered-margin-left);
-}
-
-#Subseção-Black-Friday-2{
-    background-color: #000000;
-    width: calc(var(--considered-screen-width));
-    margin-left: var(--considered-margin-left);
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
-#Manchete-Bônus-2{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 22px;
-    width: calc(var(--considered-screen-width) * 0.90);
-    color: #ffffff;
-}
-
-#Imagem-Bônus-2{
-    display: block;
-    width: calc(var(--considered-screen-width));
-    margin-left: var(--considered-margin-left);
-}
-
-#Subseção-Black-Friday-3{
-    background-color: #790D25;
-    width: calc(var(--considered-screen-width));
-    margin-left: var(--considered-margin-left);
-    padding-top: 10px;
-    padding-bottom: 40px;
-}
-
-#Manchete-Bônus-3{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 10px;
-    font-size: 22px;
-    width: calc(var(--considered-screen-width) * 0.90);
-    color: #ffffff;
-}
-
-#Submanchete-Bônus-3{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 30px;
-    font-size: 18px;
-    width: calc(var(--considered-screen-width) * 0.90);
-    color: #ffffff;
-}
-
-#Explicação-Bônus-3{
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 18px;
-    width: calc(var(--considered-screen-width) * 0.90);
-    color: #ffffff;
-}
-
-/*/////////////////////////////////////////////////////////////////////////////////////////
-////////////////////// Espaço-Intermediário-Container-Botão-Cadastro //////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
-
-#Espaço-Intermediário-Container-Botão-Cadastro{
-    display: block;
-    height: 150px;
-    background-color: #790D25;
-    width: var(--considered-screen-width);
-    margin-left: var(--considered-margin-left);
-}
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////// Seção-Inicial //////////////////////////////////////
@@ -305,6 +53,13 @@
     background: linear-gradient(165deg, #fff, #ddd);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
+}
+
+#Ivy-Escola-Gestão{
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 40px;
+    color: #790D25;
 }
 
 #Manchete-Seção-Inicial{
@@ -1691,10 +1446,10 @@
 
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
-////////////////////// Espaço-Final-Container-Botão-Compra //////////////////////////////
+////////////////////// Espaço-Final-Container-Botão-Cadastro //////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Espaço-Final-Container-Botão-Compra{
+#Espaço-Final-Container-Botão-Cadastro{
     background: linear-gradient(165deg, #fff, #ddd);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
@@ -1702,10 +1457,10 @@
 
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////// Container-Botão-Compra //////////////////////////////////
+/////////////////////////////// Container-Botão-Cadastro //////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Botão-Compra{
+#Container-Botão-Cadastro{
     display: block;
     height: 150px;
     border-radius: 50px 50px 0px 0px;
@@ -1718,7 +1473,7 @@
     bottom: 0px;
 }
 
-#Explicação-Compra{
+#Explicação-Cadastro{
     display: block;
     color: #790D25;
     width: 85%;
@@ -1728,7 +1483,7 @@
     text-align: center;
 }
 
-#Botão-Compra{
+#Botão-Cadastro{
     display: block;
     height: 60px;
     width: 85%;
@@ -1742,5 +1497,5 @@
     border-radius: 10px;
     border: none;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
-    background-color: #a5a5a5;
+    background-color: #0aa15b;
 }
