@@ -531,9 +531,8 @@ window.addEventListener('load', function() {
         
                     var NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
                     
-                    //Puxa o vídeo do Azure Storage Account (videospreparatoriosv2) por meio do Azure CDN (plataformaCDN).
-                    
-                    DisplayVídeo.src = "https://plataformaCDN.azureedge.net/videosv3/" + MóduloAberto + "/" + NomeVídeo + ".mp4";
+                    //DisplayVídeo.src: note que o Azure Storage Account Container SAS token com validade até 01-01-2050 foi incluído ao final da URL para permitir "video seeking".
+                    DisplayVídeo.src = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/" + MóduloAberto + "/" + NomeVídeo + ".mp4" + "?sp=r&st=2024-11-01T11:00:00Z&se=2050-01-01T03:00:00Z&spr=https&sv=2022-11-02&sr=c&sig=o%2FEOtQQlRp4%2F0Iu4Pbn4EghosVs6DoYgIkr4kUfclIc%3D";
 
                     // Atualiza o Aviso Especial Tópico e o arquivo para download.
         
