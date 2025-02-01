@@ -1,10 +1,5 @@
-var ContainerInternoHorasContagemRegressiva = document.getElementById("Container-Interno-Horas-Contagem-Regressiva");
-var ContainerInternoMinutosContagemRegressiva = document.getElementById("Container-Interno-Minutos-Contagem-Regressiva");
-var ContainerInternoSegundosContagemRegressiva = document.getElementById("Container-Interno-Segundos-Contagem-Regressiva");
-
-var SeçãoBlackFriday = document.getElementById("Seção-Black-Friday");
-
-var SeçãoInicial = document.getElementById("Seção-Inicial");
+////////////////////////////////////////////////////////////////////////////////////////
+// Puxa as variáveis do HTML.
 
 var ContainerVídeoPrincipal = document.getElementById("Container-Vídeo-Principal");
 var BotãoTelaCheia1 = document.getElementById("Botão-Tela-Cheia-1");
@@ -64,51 +59,107 @@ var BotãoCadastro = document.getElementById("Botão-Cadastro");
 var userAgent = navigator.userAgent;
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*////////////////////// Dispara o evento de "PageView" do Pixel - Ivy Room 01 ///////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*////////////////////////// Aciona o evento de "ViewContent" junto à Meta /////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '916097029235819');
-fbq('track', 'PageView');
+//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// Cria a variável de comunicação com o Pixel.
+
+let Meta_Dataset_ID;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// Cria os Server Event Parameters.
+
+let Meta_Server_Event_Parameter_Event_Name = 'ViewContent';
+let Meta_Server_Event_Parameter_Event_Time = Math.floor(Date.now() / 1000);
+let Meta_Server_Event_Parameter_Event_Source_Url = window.location.href;
+let Meta_Server_Event_Parameter_Opt_Out = false;
+let Meta_Server_Event_Parameter_Event_ID = Math.floor(100000000000 + Math.random() * 900000000000).toString();
+let Meta_Server_Event_Parameter_Action_Source = 'website';
+let Meta_Server_Event_Parameter_Data_Processing_Options = [];
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// Cria os Customer Information Parameters.
+
+let Meta_Customer_Information_Parameter_Country_NotHashed = 'br';
+let Meta_Customer_Information_Parameter_External_ID_NotHashed = localStorage.getItem('Meta_Customer_Information_Parameter_External_ID_NotHashed') || (localStorage.setItem('Meta_Customer_Information_Parameter_External_ID_NotHashed', crypto.randomUUID()), localStorage.getItem('Meta_Customer_Information_Parameter_External_ID_NotHashed'));
+let Meta_Customer_Information_Parameter_Client_IP_Address;
+let Meta_Customer_Information_Parameter_Client_User_Agent = navigator.userAgent;
+let Meta_Customer_Information_Parameter_fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc')).split('=')[1];
+let Meta_Customer_Information_Parameter_fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp')).split('=')[1];
+let Meta_Customer_Information_Parameter_Facebook_Page_ID;
+
+localStorage.setItem('Meta_Customer_Information_Parameter_fbc', Meta_Customer_Information_Parameter_fbc);
+localStorage.setItem('Meta_Customer_Information_Parameter_fbp', Meta_Customer_Information_Parameter_fbp);
+
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*//// Armazena os dados do fbclid para o evento de "Lead" do Pixel - Ivy Room 01: Conversion API //////*/
+/*//////// Envia as informações ao backend para acionamento duplicado via Meta Conversions API. ////////*/
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-const fbclid = new URLSearchParams(window.location.search).get('fbclid') || "";
-const fbclid_momento_registro = new Date().toISOString();
+fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcontent', { //http://localhost:3000/landingpage/meta/viewcontent //https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcontent
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+        Meta_Server_Event_Parameter_Event_Name: Meta_Server_Event_Parameter_Event_Name, 
+        Meta_Server_Event_Parameter_Event_Time: Meta_Server_Event_Parameter_Event_Time,
+        Meta_Server_Event_Parameter_Event_Source_Url: Meta_Server_Event_Parameter_Event_Source_Url,
+        Meta_Server_Event_Parameter_Opt_Out: Meta_Server_Event_Parameter_Opt_Out, 
+        Meta_Server_Event_Parameter_Event_ID: Meta_Server_Event_Parameter_Event_ID, 
+        Meta_Server_Event_Parameter_Action_Source: Meta_Server_Event_Parameter_Action_Source, 
+        Meta_Server_Event_Parameter_Data_Processing_Options: Meta_Server_Event_Parameter_Data_Processing_Options,
+        Meta_Customer_Information_Parameter_Country_NotHashed: Meta_Customer_Information_Parameter_Country_NotHashed,
+        Meta_Customer_Information_Parameter_External_ID_NotHashed: Meta_Customer_Information_Parameter_External_ID_NotHashed,
+        Meta_Customer_Information_Parameter_Client_User_Agent: Meta_Customer_Information_Parameter_Client_User_Agent,
+        Meta_Customer_Information_Parameter_fbc: Meta_Customer_Information_Parameter_fbc,
+        Meta_Customer_Information_Parameter_fbp: Meta_Customer_Information_Parameter_fbp
+    })
+})
 
-localStorage.setItem('fbclid', fbclid);
-localStorage.setItem('fbclid_momento_registro', fbclid_momento_registro);
+.then(response => response.json()).then(data =>  {
+        
+        Meta_Dataset_ID = data.Meta_Dataset_ID;
+
+        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+        /*/////////// Aciona o "ViewContent" via Meta Dataset 01 (acionamento via Pixel / browser). ////////////*/
+        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', Meta_Dataset_ID);
+        fbq('track', Meta_Server_Event_Parameter_Event_Name, {external_id: Meta_Customer_Information_Parameter_External_ID_NotHashed}, {eventID: Meta_Server_Event_Parameter_Event_ID});
+
+});
 
 
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// /*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/
+// /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-var DataEncerramentoInscrições = new Date("December 4, 2024 23:59:59").getTime();
+// var DataEncerramentoInscrições = new Date("December 4, 2024 23:59:59").getTime();
 
-var ContagemRegressiva = setInterval(function() {
+// var ContagemRegressiva = setInterval(function() {
 
-    var TempoRestante = DataEncerramentoInscrições - new Date().getTime();
+//     var TempoRestante = DataEncerramentoInscrições - new Date().getTime();
 
-    if (TempoRestante < 0) {
-        clearInterval(ContagemRegressiva);
-        TempoRestante = 0;
-    }
+//     if (TempoRestante < 0) {
+//         clearInterval(ContagemRegressiva);
+//         TempoRestante = 0;
+//     }
 
-    ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
-    ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
-    ContainerInternoSegundosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60)) / 1000)).slice(-2);
+//     ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
+//     ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
+//     ContainerInternoSegundosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60)) / 1000)).slice(-2);
 
-}, 1000);
+// }, 1000);
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*/// Retira os botões de girar os vídeos se o usuário não estiver usando o Instagram In-App Browser. //*/
@@ -181,7 +232,7 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
-        ControlaPosição_ContainerBotãoCompra();
+        ControlaPosição_ContainerBotãoCadastro();
 
     } else {
         
@@ -199,7 +250,7 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
-        ControlaPosição_ContainerBotãoCompra();
+        ControlaPosição_ContainerBotãoCadastro();
 
     }
 

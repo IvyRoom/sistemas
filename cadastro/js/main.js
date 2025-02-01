@@ -33,13 +33,13 @@ NomeCompleto.addEventListener("keydown", function(event) {
 
 NomeCompleto.addEventListener("change", function() {
 
-    NomeCompleto.value = NomeCompleto.value.replace(/\s+$/, "");
+    NomeCompleto.value = NomeCompleto.value.replace(/\s+$/, "").toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
 })
 
 Email.addEventListener("change", function() {
 
-  Email.value = Email.value.replace(/\s+$/, "");
+  Email.value = Email.value.replace(/\s+/g, "").toLowerCase();
   AvisoEmailInválido.style.display = "none";
 
 })
@@ -78,7 +78,9 @@ Formulário_de_Cadastro.addEventListener('submit', (event) => {
     .then(response => {
         
         if (response.status === 200) {
-            
+
+            localStorage.setItem('NomeCompleto', NomeCompleto.value);
+            localStorage.setItem('Email', Email.value);
             window.location.href = "../confirmação/";
         
         } else {
