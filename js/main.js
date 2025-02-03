@@ -67,7 +67,7 @@ var userAgent = navigator.userAgent;
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
 // Cria a variável de comunicação com o Pixel.
 
-let Meta_Dataset_ID;
+let Meta_Dataset_ID = "1258615121284107";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
 // Cria os Server Event Parameters.
@@ -81,19 +81,39 @@ let Meta_Server_Event_Parameter_Action_Source = 'website';
 let Meta_Server_Event_Parameter_Data_Processing_Options = [];
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
-// Cria os Customer Information Parameters.
+// Cria os Customer Information Parameters (exceto _fbc e _fbp que são extraídos do cookie armazenado pelo Pixel).
 
 let Meta_Customer_Information_Parameter_Country_NotHashed = 'br';
 let Meta_Customer_Information_Parameter_External_ID_NotHashed = localStorage.getItem('Meta_Customer_Information_Parameter_External_ID_NotHashed') || (localStorage.setItem('Meta_Customer_Information_Parameter_External_ID_NotHashed', crypto.randomUUID()), localStorage.getItem('Meta_Customer_Information_Parameter_External_ID_NotHashed'));
 let Meta_Customer_Information_Parameter_Client_IP_Address;
 let Meta_Customer_Information_Parameter_Client_User_Agent = navigator.userAgent;
-let Meta_Customer_Information_Parameter_fbc = document.cookie.split('; ').find(row => row.startsWith('_fbc')).split('=')[1];
-let Meta_Customer_Information_Parameter_fbp = document.cookie.split('; ').find(row => row.startsWith('_fbp')).split('=')[1];
 let Meta_Customer_Information_Parameter_Facebook_Page_ID;
+
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*/////////// Aciona o "ViewContent" via Meta Dataset 01 (acionamento via Pixel / browser). ////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', Meta_Dataset_ID);
+fbq('track', Meta_Server_Event_Parameter_Event_Name, {external_id: Meta_Customer_Information_Parameter_External_ID_NotHashed}, {eventID: Meta_Server_Event_Parameter_Event_ID});
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// Cria os Customer Information Parameters (_fbc e _fbp) a partir do cookie armazenado pelo Pixel,
+// deixando as variáveis como "undefined" caso não sejam lidas (para não travar o .js).
+
+let Meta_Customer_Information_Parameter_fbc = document.cookie ? document.cookie.split('; ').find(row => row.startsWith('_fbc'))?.split('=')[1] : undefined;
+let Meta_Customer_Information_Parameter_fbp = document.cookie ? document.cookie.split('; ').find(row => row.startsWith('_fbp'))?.split('=')[1] : undefined;
 
 localStorage.setItem('Meta_Customer_Information_Parameter_fbc', Meta_Customer_Information_Parameter_fbc);
 localStorage.setItem('Meta_Customer_Information_Parameter_fbp', Meta_Customer_Information_Parameter_fbp);
-
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*//////// Envia as informações ao backend para acionamento duplicado via Meta Conversions API. ////////*/
@@ -118,27 +138,13 @@ fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcont
     })
 })
 
-.then(response => response.json()).then(data =>  {
-        
-        Meta_Dataset_ID = data.Meta_Dataset_ID;
+.then(response => {
+    console.log(response.status);
+})
 
-        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-        /*/////////// Aciona o "ViewContent" via Meta Dataset 01 (acionamento via Pixel / browser). ////////////*/
-        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', Meta_Dataset_ID);
-        fbq('track', Meta_Server_Event_Parameter_Event_Name, {external_id: Meta_Customer_Information_Parameter_External_ID_NotHashed}, {eventID: Meta_Server_Event_Parameter_Event_ID});
-
+.catch(error => {
+    console.error(error);
 });
-
 
 // /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 // /*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/

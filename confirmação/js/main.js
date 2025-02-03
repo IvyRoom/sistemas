@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
 // Cria a variável de comunicação com o Pixel.
 
-let Meta_Dataset_ID;
+let Meta_Dataset_ID = "1258615121284107";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////*/
 // Cria os Server Event Parameters.
@@ -34,11 +34,25 @@ let Meta_Customer_Information_Parameter_fbc = localStorage.getItem('Meta_Custome
 let Meta_Customer_Information_Parameter_fbp = localStorage.getItem('Meta_Customer_Information_Parameter_fbp');
 let Meta_Customer_Information_Parameter_Facebook_Page_ID;
 
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*//////////// Aciona o "Lead" via Meta Dataset 01 (acionamento via Pixel / browser). //////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', Meta_Dataset_ID);
+fbq('track', Meta_Server_Event_Parameter_Event_Name, {external_id: Meta_Customer_Information_Parameter_External_ID_NotHashed}, {eventID: Meta_Server_Event_Parameter_Event_ID});
+
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*//////// Envia as informações ao backend para acionamento duplicado via Meta Conversions API. ////////*/
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-
 
 fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/lead', { //http://localhost:3000/landingpage/meta/lead //https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/lead
     method: 'POST',
@@ -62,25 +76,12 @@ fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/lead', {
     })
 })
 
-.then(response => response.json()).then(data =>  {
-        
-        Meta_Dataset_ID = data.Meta_Dataset_ID;
+.then(response => {
+    console.log(response.status);
+})
 
-        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-        /*//////////// Aciona o "PageView" via Meta Dataset 01 (acionamento via Pixel / browser). //////////////*/
-        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', Meta_Dataset_ID);
-        fbq('track', Meta_Server_Event_Parameter_Event_Name, {external_id: Meta_Customer_Information_Parameter_External_ID_NotHashed}, {eventID: Meta_Server_Event_Parameter_Event_ID});
-
+.catch(error => {
+    console.error(error);
 });
 
 /*////////////////////////////////////////////////////////////
