@@ -104,47 +104,69 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('init', Meta_Dataset_ID);
 fbq('track', Meta_Server_Event_Parameter_Event_Name, {external_id: Meta_Customer_Information_Parameter_External_ID_NotHashed}, {eventID: Meta_Server_Event_Parameter_Event_ID});
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-// Cria os Customer Information Parameters (_fbc e _fbp) a partir do cookie armazenado pelo Pixel,
-// deixando as variáveis como "undefined" caso não sejam lidas (para não travar o .js).
-
-let Meta_Customer_Information_Parameter_fbc = document.cookie ? document.cookie.split('; ').find(row => row.startsWith('_fbc'))?.split('=')[1] : undefined;
-let Meta_Customer_Information_Parameter_fbp = document.cookie ? document.cookie.split('; ').find(row => row.startsWith('_fbp'))?.split('=')[1] : undefined;
-
-localStorage.setItem('Meta_Customer_Information_Parameter_fbc', Meta_Customer_Information_Parameter_fbc);
-localStorage.setItem('Meta_Customer_Information_Parameter_fbp', Meta_Customer_Information_Parameter_fbp);
-
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*//////// Envia as informações ao backend para acionamento duplicado via Meta Conversions API. ////////*/
+/*/////////// Obtém os Customer Information Parameters (_fbc e _fbp) a partir do cookie gerado /////////*/
+/*/////////// pelo Meta Pixel, armazena estas variáveis no sessionStorage e então apaga o      /////////*/
+/*/////////// cookie para garantir que o _fbc e o _fbp sejam atualizados a cada nova visita    /////////*/
+/*/////////// do potencial aluno à Landing Page.                                               /////////*/
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcontent', { //http://localhost:3000/landingpage/meta/viewcontent //https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcontent
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-        Meta_Server_Event_Parameter_Event_Name: Meta_Server_Event_Parameter_Event_Name, 
-        Meta_Server_Event_Parameter_Event_Time: Meta_Server_Event_Parameter_Event_Time,
-        Meta_Server_Event_Parameter_Event_Source_Url: Meta_Server_Event_Parameter_Event_Source_Url,
-        Meta_Server_Event_Parameter_Opt_Out: Meta_Server_Event_Parameter_Opt_Out, 
-        Meta_Server_Event_Parameter_Event_ID: Meta_Server_Event_Parameter_Event_ID, 
-        Meta_Server_Event_Parameter_Action_Source: Meta_Server_Event_Parameter_Action_Source, 
-        Meta_Server_Event_Parameter_Data_Processing_Options: Meta_Server_Event_Parameter_Data_Processing_Options,
-        Meta_Customer_Information_Parameter_Country_NotHashed: Meta_Customer_Information_Parameter_Country_NotHashed,
-        Meta_Customer_Information_Parameter_External_ID_NotHashed: Meta_Customer_Information_Parameter_External_ID_NotHashed,
-        Meta_Customer_Information_Parameter_Client_User_Agent: Meta_Customer_Information_Parameter_Client_User_Agent,
-        Meta_Customer_Information_Parameter_fbc: Meta_Customer_Information_Parameter_fbc,
-        Meta_Customer_Information_Parameter_fbp: Meta_Customer_Information_Parameter_fbp
-    })
-})
+let Meta_Customer_Information_Parameter_fbc;
+let Meta_Customer_Information_Parameter_fbp;
 
-.then(response => {
-    console.log(response.status);
-})
+let Número_Tentativa = 1;
+let Limite_Tentativas = 10;
 
-.catch(error => {
-    console.error(error);
-});
+function Processa_fbc_fbp() {
+    
+    Meta_Customer_Information_Parameter_fbc = document.cookie ? document.cookie.split('; ').find(row => row.startsWith('_fbc'))?.split('=')[1] : undefined;
+    Meta_Customer_Information_Parameter_fbp = document.cookie ? document.cookie.split('; ').find(row => row.startsWith('_fbp'))?.split('=')[1] : undefined;
+
+    sessionStorage.setItem('Meta_Customer_Information_Parameter_fbc', Meta_Customer_Information_Parameter_fbc);
+    sessionStorage.setItem('Meta_Customer_Information_Parameter_fbp', Meta_Customer_Information_Parameter_fbp);
+
+    if (Meta_Customer_Information_Parameter_fbp || Número_Tentativa === Limite_Tentativas) {
+
+        document.cookie.split(";").forEach(cookie => { document.cookie = cookie.split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT" });
+
+        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+        /*//////// Envia as informações ao backend para acionamento duplicado via Meta Conversions API. ////////*/
+        /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+        fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcontent', { //http://localhost:3000/landingpage/meta/viewcontent //https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/viewcontent
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                Meta_Server_Event_Parameter_Event_Name: Meta_Server_Event_Parameter_Event_Name, 
+                Meta_Server_Event_Parameter_Event_Time: Meta_Server_Event_Parameter_Event_Time,
+                Meta_Server_Event_Parameter_Event_Source_Url: Meta_Server_Event_Parameter_Event_Source_Url,
+                Meta_Server_Event_Parameter_Opt_Out: Meta_Server_Event_Parameter_Opt_Out, 
+                Meta_Server_Event_Parameter_Event_ID: Meta_Server_Event_Parameter_Event_ID, 
+                Meta_Server_Event_Parameter_Action_Source: Meta_Server_Event_Parameter_Action_Source, 
+                Meta_Server_Event_Parameter_Data_Processing_Options: Meta_Server_Event_Parameter_Data_Processing_Options,
+                Meta_Customer_Information_Parameter_Country_NotHashed: Meta_Customer_Information_Parameter_Country_NotHashed,
+                Meta_Customer_Information_Parameter_External_ID_NotHashed: Meta_Customer_Information_Parameter_External_ID_NotHashed,
+                Meta_Customer_Information_Parameter_Client_User_Agent: Meta_Customer_Information_Parameter_Client_User_Agent,
+                Meta_Customer_Information_Parameter_fbc: Meta_Customer_Information_Parameter_fbc,
+                Meta_Customer_Information_Parameter_fbp: Meta_Customer_Information_Parameter_fbp
+            })
+        })
+
+        .then(response => {console.log(response.status)})
+
+        .catch(error => {console.error(error)});
+
+    } else {
+    
+        if (Número_Tentativa <= Limite_Tentativas) {
+            Número_Tentativa++;
+            setTimeout(Processa_fbc_fbp, 500);
+        }
+    
+    }
+}
+
+window.addEventListener('load', Processa_fbc_fbp);
 
 // /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 // /*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/

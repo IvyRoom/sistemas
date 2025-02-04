@@ -30,8 +30,8 @@ let Meta_Customer_Information_Parameter_Country_NotHashed = 'br';
 let Meta_Customer_Information_Parameter_External_ID_NotHashed = localStorage.getItem('Meta_Customer_Information_Parameter_External_ID_NotHashed');
 let Meta_Customer_Information_Parameter_Client_IP_Address;
 let Meta_Customer_Information_Parameter_Client_User_Agent = navigator.userAgent;
-let Meta_Customer_Information_Parameter_fbc = localStorage.getItem('Meta_Customer_Information_Parameter_fbc');
-let Meta_Customer_Information_Parameter_fbp = localStorage.getItem('Meta_Customer_Information_Parameter_fbp');
+let Meta_Customer_Information_Parameter_fbc = sessionStorage.getItem('Meta_Customer_Information_Parameter_fbc');
+let Meta_Customer_Information_Parameter_fbp = sessionStorage.getItem('Meta_Customer_Information_Parameter_fbp');
 let Meta_Customer_Information_Parameter_Facebook_Page_ID;
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
@@ -76,13 +76,9 @@ fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/meta/lead', {
     })
 })
 
-.then(response => {
-    console.log(response.status);
-})
+.then(response => { console.log(response.status) })
 
-.catch(error => {
-    console.error(error);
-});
+.catch(error => { console.error(error) });
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
