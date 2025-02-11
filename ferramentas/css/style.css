@@ -1,0 +1,181 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*///////////////////////// Card Postar Reels //////////////////////////*/
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#Formulário_Postar_Reel{
+    display: block;
+    justify-content: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+    padding: 30px;
+    background-color: #ebebeb;
+    border-radius: 20px;
+}
+
+#Manchete_Postar_Reel{
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+#Container_Reel_Código{
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+#Manchete_Reel_Código{
+    margin-right: 20px;
+}
+
+#Reel_Código{
+    width: 80px;
+    height: 30px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+#Container_Reel_Legenda{
+    width: 100%;
+    text-align: left;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#Manchete_Reel_Legenda{
+    margin-right: 10px;
+}
+
+#Reel_Legenda{
+    width: 100%;
+    height: 30px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+#Manchete_Incluir_Stories{
+    display: block;
+    margin-bottom: 20px;
+}
+
+#Botão_Postar_Reel{
+    height: 60px;
+    width: 200px;
+    color: #fff;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
+    background-color: #056839;
+    cursor: pointer;
+}
+
+#Manchete_Atualizações_Postagem{
+    margin-bottom: 10px;
+}
+
+#Atualizações_Postagem{
+    height: 400px;
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    background-color: #f4f4f4;
+    text-align: left;
+    padding: 15px;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-y: auto;
+}
+
+/*///////////////////////// Card Criar Campanha RL //////////////////////////*/
+
+#Formulário_Criar_Campanha_RL{
+    display: block;
+    justify-content: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+    padding: 30px;
+    background-color: #ebebeb;
+    border-radius: 20px;
+}
+
+#Manchete_Criar_Campanha_RL{
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+#Container_Reel_Código_Campanha_RL{
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+#Manchete_Reel_Código_Campanha_RL{
+    margin-right: 20px;
+}
+
+#Reel_Código_Campanha_RL{
+    width: 80px;
+    height: 30px;
+    padding: 5px;
+    font-size: 14px;
+}
+
+#Botão_Criar_Campanha_RL{
+    height: 60px;
+    width: 200px;
+    color: #fff;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
+    background-color: #056839;
+    cursor: pointer;
+}
+
+#Manchete_Atualizações_Campanha_RL{
+    margin-bottom: 10px;
+}
+
+#Atualizações_Campanha_RL{
+    height: 400px;
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    background-color: #f4f4f4;
+    text-align: left;
+    padding: 15px;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-y: auto;
+}
