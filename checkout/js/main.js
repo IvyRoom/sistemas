@@ -5,10 +5,10 @@
 ////////////////////////////////////////////////////////////*/
 
 /* Cabeçalho Checkout */
-var Formulário_de_Pagamento = document.getElementById("Formulário_de_Pagamento");
 var Nome_Produto = document.getElementById("Nome_Produto");
 var Valor_Produto_à_Vista = document.getElementById("Valor_Produto_à_Vista");
 var Valor_Produto_a_Prazo = document.getElementById("Valor_Produto_a_Prazo");
+var Formulário_de_Pagamento = document.getElementById("Formulário_de_Pagamento");
 
 /* Dados Pessoais */
 var NomeCompleto = document.getElementById("NomeCompleto"); 
@@ -17,6 +17,8 @@ var Confirmação_do_Email_do_Cliente = document.getElementById("Confirmação_d
 var Aviso_de_Inconsistência_Email_Campo = document.getElementById("Aviso_de_Inconsistência_Email_Campo");
 var Aviso_de_Inconsistência_Email_Botão = document.getElementById("Aviso_de_Inconsistência_Email_Botão");
 var Campo_de_Preenchimento_CPF = document.getElementById("Campo_de_Preenchimento_CPF");
+var Aviso_de_Inconsistência_CPF_Campo = document.getElementById("Aviso_de_Inconsistência_CPF_Campo");
+var Aviso_de_Inconsistência_CPF_Botão = document.getElementById("Aviso_de_Inconsistência_CPF_Botão");
 var Campo_de_Preenchimento_DDD = document.getElementById("Campo_de_Preenchimento_DDD");
 var Campo_de_Preenchimento_Celular = document.getElementById("Campo_de_Preenchimento_Celular");
 
@@ -101,59 +103,8 @@ var Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão = document.queryS
 var Valor_no_PIX_do_PIX_CARTÃO = document.getElementById("Valor_no_PIX_do_PIX_CARTÃO");
 var Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos;
 
-/* Tipo de Pagamento: DOIS_CARTOES */
-var Container_Dados_Pagamento_DOIS_CARTOES = document.getElementById("Container_Dados_Pagamento_DOIS_CARTOES");
-var Valor_no_Cartão_1 = document.getElementById("Valor_no_Cartão_1");
-var Número_de_Parcelas_Cartão_1 = document.getElementById("Número_de_Parcelas_Cartão_1"); 
-var Número_de_Parcelas_Cartão_1_Opção_1 = document.getElementById("Número_de_Parcelas_Cartão_1").options[0];
-var Número_de_Parcelas_Cartão_1_Opção_2 = document.getElementById("Número_de_Parcelas_Cartão_1").options[1];
-var Número_de_Parcelas_Cartão_1_Opção_3 = document.getElementById("Número_de_Parcelas_Cartão_1").options[2];
-var Número_de_Parcelas_Cartão_1_Opção_4 = document.getElementById("Número_de_Parcelas_Cartão_1").options[3];
-var Número_de_Parcelas_Cartão_1_Opção_5 = document.getElementById("Número_de_Parcelas_Cartão_1").options[4];
-var Número_de_Parcelas_Cartão_1_Opção_6 = document.getElementById("Número_de_Parcelas_Cartão_1").options[5];
-var Número_de_Parcelas_Cartão_1_Opção_7 = document.getElementById("Número_de_Parcelas_Cartão_1").options[6];
-var Número_de_Parcelas_Cartão_1_Opção_8 = document.getElementById("Número_de_Parcelas_Cartão_1").options[7];
-var Número_de_Parcelas_Cartão_1_Opção_9 = document.getElementById("Número_de_Parcelas_Cartão_1").options[8];
-var Número_de_Parcelas_Cartão_1_Opção_10 = document.getElementById("Número_de_Parcelas_Cartão_1").options[9];
-var Número_de_Parcelas_Cartão_1_Opção_11 = document.getElementById("Número_de_Parcelas_Cartão_1").options[10];
-var Número_de_Parcelas_Cartão_1_Opção_12 = document.getElementById("Número_de_Parcelas_Cartão_1").options[11];
-var Número_do_Cartão_1 = document.getElementById("Número_do_Cartão_1");
-var Aviso_de_Inconsistência_Número_do_Cartão_1_Campo = document.getElementById("Aviso_de_Inconsistência_Número_do_Cartão_1_Campo");
-var Aviso_de_Inconsistência_Número_do_Cartão_1_Botão = document.getElementById("Aviso_de_Inconsistência_Número_do_Cartão_1_Botão");
-var Nome_do_Titular_do_Cartão_1 = document.getElementById("Nome_do_Titular_do_Cartão_1");
-var Campo_de_Preenchimento_Mês_Cartão_1 = document.getElementById("Campo_de_Preenchimento_Mês_Cartão_1");
-var Campo_de_Preenchimento_Ano_Cartão_1 = document.getElementById("Campo_de_Preenchimento_Ano_Cartão_1");
-var Campo_de_Preenchimento_CVV_Cartão_1 = document.getElementById("Campo_de_Preenchimento_CVV_Cartão_1");
-var Aviso_de_Inconsistência_CVV_Cartão_1_Campo = document.getElementById("Aviso_de_Inconsistência_CVV_Cartão_1_Campo");
-var Aviso_de_Inconsistência_CVV_Cartão_1_Botão = document.getElementById("Aviso_de_Inconsistência_CVV_Cartão_1_Botão");
-var Valor_com_Juros_no_Cartão_1_Dígitos;
-
-var Valor_no_Cartão_2 = document.getElementById("Valor_no_Cartão_2");
-var Número_de_Parcelas_Cartão_2 = document.getElementById("Número_de_Parcelas_Cartão_2");
-var Número_de_Parcelas_Cartão_2_Opção_1 = document.getElementById("Número_de_Parcelas_Cartão_2").options[0];
-var Número_de_Parcelas_Cartão_2_Opção_2 = document.getElementById("Número_de_Parcelas_Cartão_2").options[1];
-var Número_de_Parcelas_Cartão_2_Opção_3 = document.getElementById("Número_de_Parcelas_Cartão_2").options[2];
-var Número_de_Parcelas_Cartão_2_Opção_4 = document.getElementById("Número_de_Parcelas_Cartão_2").options[3];
-var Número_de_Parcelas_Cartão_2_Opção_5 = document.getElementById("Número_de_Parcelas_Cartão_2").options[4];
-var Número_de_Parcelas_Cartão_2_Opção_6 = document.getElementById("Número_de_Parcelas_Cartão_2").options[5];
-var Número_de_Parcelas_Cartão_2_Opção_7 = document.getElementById("Número_de_Parcelas_Cartão_2").options[6];
-var Número_de_Parcelas_Cartão_2_Opção_8 = document.getElementById("Número_de_Parcelas_Cartão_2").options[7];
-var Número_de_Parcelas_Cartão_2_Opção_9 = document.getElementById("Número_de_Parcelas_Cartão_2").options[8];
-var Número_de_Parcelas_Cartão_2_Opção_10 = document.getElementById("Número_de_Parcelas_Cartão_2").options[9];
-var Número_de_Parcelas_Cartão_2_Opção_11 = document.getElementById("Número_de_Parcelas_Cartão_2").options[10];
-var Número_de_Parcelas_Cartão_2_Opção_12 = document.getElementById("Número_de_Parcelas_Cartão_2").options[11];
-var Número_do_Cartão_2 = document.getElementById("Número_do_Cartão_2");
-var Aviso_de_Inconsistência_Número_do_Cartão_2_Campo = document.getElementById("Aviso_de_Inconsistência_Número_do_Cartão_2_Campo");
-var Aviso_de_Inconsistência_Número_do_Cartão_2_Botão = document.getElementById("Aviso_de_Inconsistência_Número_do_Cartão_2_Botão");
-var Nome_do_Titular_do_Cartão_2 = document.getElementById("Nome_do_Titular_do_Cartão_2");
-var Campo_de_Preenchimento_Mês_Cartão_2 = document.getElementById("Campo_de_Preenchimento_Mês_Cartão_2");
-var Campo_de_Preenchimento_Ano_Cartão_2 = document.getElementById("Campo_de_Preenchimento_Ano_Cartão_2");
-var Campo_de_Preenchimento_CVV_Cartão_2 = document.getElementById("Campo_de_Preenchimento_CVV_Cartão_2");
-var Aviso_de_Inconsistência_CVV_Cartão_2_Campo = document.getElementById("Aviso_de_Inconsistência_CVV_Cartão_2_Campo");
-var Aviso_de_Inconsistência_CVV_Cartão_2_Botão = document.getElementById("Aviso_de_Inconsistência_CVV_Cartão_2_Botão");
-var Valor_com_Juros_no_Cartão_2_Dígitos = document.getElementById("Valor_com_Juros_no_Cartão_2_Dígitos");
-
 /* Compra e Rodapé */
+var Nome_Produto_Comprado = document.getElementById("Nome_Produto_Comprado");
 var Valor_Produto_Comprado = document.getElementById("Valor_Produto_Comprado");
 var Comprar = document.getElementById("Comprar");
 var Entre_em_Contato = document.getElementById("Entre_em_Contato");
@@ -181,15 +132,15 @@ if (origem === "externa") {
 
     var data = {
         Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
-        Nome_Produto_Título: "<b> Prep. Gestão Generalista: Contratação Padrão </b>",
-        Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação Padrão"        
+        Nome_Produto_Título: "Preparatório em Gestão Generalista",
+        Nome_Produto_Valor: "Preparatório em Gestão Generalista"        
     };
 
-} if (origem === "pessoa-jurídica") {
+} else if (origem === "pessoa-jurídica") {
 
     var data = {
         Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 2990,
-        Nome_Produto_Título: "<b> Prep. Gestão Generalista: Versão Pessoa Jurídica </b>",
+        Nome_Produto_Título: "Prep. Gestão Generalista: Versão PJ",
         Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação PJ"        
     };
 
@@ -207,7 +158,7 @@ if (origem === "externa") {
 
 /*Atenção: Estas são as variáveis mestras do checkout.*/
 /*Lembrar que é necessário também alterar / customizar o Contrato de Prestação de Serviços.*/
-Nome_Produto.innerHTML = data.Nome_Produto_Título; /* Alterar aqui o Nome do Produto que fica no topo do checkout. */
+Nome_Produto.innerHTML = "<b>" + data.Nome_Produto_Título + "</b>"; /* Alterar aqui o Nome do Produto que fica no topo do checkout. */
 Nome_Produto.value = data.Nome_Produto_Valor; /* Alterar aqui o Nome do Produto que será processado pela Pagar.Me. */
 var Código_do_Produto = "ivyroom";  /* Alterar aqui o Código do Produto que será processado pela Pagar.Me e aparecerá na fatura do cartão do cliente. Máximo de 22 caracteres, sem caracteres especiais. */
 var Variável_Mestra_Valor_Total_do_Serviço_à_Vista = parseFloat(data.Variável_Mestra_Valor_Total_do_Serviço_à_Vista); /* Alterar aqui o Valor Total do Produto. Deve ser >= 2x o Valor Mínimo por Tipo de Pagamento*/
@@ -267,36 +218,8 @@ Número_de_Parcelas_Cartão_do_PIX_CARTÃO_Opção_11.innerHTML = "11x de " + pa
 Número_de_Parcelas_Cartão_do_PIX_CARTÃO_Opção_12.innerHTML = "12x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 12 * Juros_Parcelamento_12x).toLocaleString('pt-BR', configuração_BRL) + "*";
 Valor_no_PIX_do_PIX_CARTÃO.value = parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento).toLocaleString('pt-BR', configuração_BRL);
 
-/*DOIS_CARTOES*/
-Valor_no_Cartão_1.value = parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento).toLocaleString('pt-BR', configuração_BRL);
-Valor_com_Juros_no_Cartão_1_Dígitos = Valor_no_Cartão_1.value.replace("R$","").trim().replace(".","").replace(",","");
-Número_de_Parcelas_Cartão_1_Opção_1.innerHTML = "1x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento).toLocaleString('pt-BR', configuração_BRL);
-Número_de_Parcelas_Cartão_1_Opção_2.innerHTML = "2x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 2 * Juros_Parcelamento_2x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_3.innerHTML = "3x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 3 * Juros_Parcelamento_3x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_4.innerHTML = "4x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 4 * Juros_Parcelamento_4x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_5.innerHTML = "5x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 5 * Juros_Parcelamento_5x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_6.innerHTML = "6x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 6 * Juros_Parcelamento_6x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_7.innerHTML = "7x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 7 * Juros_Parcelamento_7x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_8.innerHTML = "8x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 8 * Juros_Parcelamento_8x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_9.innerHTML = "9x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 9 * Juros_Parcelamento_9x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_10.innerHTML = "10x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 10 * Juros_Parcelamento_10x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_11.innerHTML = "11x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 11 * Juros_Parcelamento_11x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_1_Opção_12.innerHTML = "12x de " + parseFloat(Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento / 12 * Juros_Parcelamento_12x).toLocaleString('pt-BR', configuração_BRL) + "*";
-
-Valor_no_Cartão_2.value = parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento).toLocaleString('pt-BR', configuração_BRL);
-Valor_com_Juros_no_Cartão_2_Dígitos = Valor_no_Cartão_2.value.replace("R$","").trim().replace(".","").replace(",","");
-Número_de_Parcelas_Cartão_2_Opção_1.innerHTML = "1x de " + parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento).toLocaleString('pt-BR', configuração_BRL);
-Número_de_Parcelas_Cartão_2_Opção_2.innerHTML = "2x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 2 * Juros_Parcelamento_2x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_3.innerHTML = "3x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 3 * Juros_Parcelamento_3x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_4.innerHTML = "4x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 4 * Juros_Parcelamento_4x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_5.innerHTML = "5x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 5 * Juros_Parcelamento_5x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_6.innerHTML = "6x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 6 * Juros_Parcelamento_6x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_7.innerHTML = "7x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 7 * Juros_Parcelamento_7x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_8.innerHTML = "8x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 8 * Juros_Parcelamento_8x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_9.innerHTML = "9x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 9 * Juros_Parcelamento_9x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_10.innerHTML = "10x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 10 * Juros_Parcelamento_10x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_11.innerHTML = "11x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 11 * Juros_Parcelamento_11x).toLocaleString('pt-BR', configuração_BRL) + "*";
-Número_de_Parcelas_Cartão_2_Opção_12.innerHTML = "12x de " + parseFloat((Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) / 12 * Juros_Parcelamento_12x).toLocaleString('pt-BR', configuração_BRL) + "*";
+/*RESUMO DA COMPRA*/
+Nome_Produto_Comprado.innerHTML = data.Nome_Produto_Título;
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -332,6 +255,8 @@ b) Coloca e retira o alerta de inconsistência embaixo do campo de confirmação
 c) Coloca e retira o alerta de inconsistência embaixo do botão de compra;
 d) Desabilita e habilita o botão de compra; */
 
+let Botão_Compra_Status_Email_do_Cliente = "liberado";
+
 Email_do_Cliente.addEventListener("blur", function() {
     
     Email_do_Cliente.value = Email_do_Cliente.value.replace(/\s+$/, "");
@@ -339,11 +264,13 @@ Email_do_Cliente.addEventListener("blur", function() {
     if (Email_do_Cliente.value == Confirmação_do_Email_do_Cliente.value) {
         Aviso_de_Inconsistência_Email_Campo.style.display = "none";
         Aviso_de_Inconsistência_Email_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Email_do_Cliente = "liberado";
+        AtualizaStatusBotãoCompra();
     } else {
         Aviso_de_Inconsistência_Email_Campo.style.display = "block";
         Aviso_de_Inconsistência_Email_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Email_do_Cliente = "travado";
+        AtualizaStatusBotãoCompra();
     }
 
 })
@@ -359,11 +286,13 @@ Confirmação_do_Email_do_Cliente.addEventListener("blur", function() {
     if (Email_do_Cliente.value == Confirmação_do_Email_do_Cliente.value) {
         Aviso_de_Inconsistência_Email_Campo.style.display = "none";
         Aviso_de_Inconsistência_Email_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Email_do_Cliente = "liberado";
+        AtualizaStatusBotãoCompra();
     } else {
         Aviso_de_Inconsistência_Email_Campo.style.display = "block";
         Aviso_de_Inconsistência_Email_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Email_do_Cliente = "travado";
+        AtualizaStatusBotãoCompra();
     }
 
 })
@@ -375,6 +304,8 @@ c) Adiciona os "." e o "-".
 d) Coloca e retira o alerta de inconsistência embaixo do campo;
 e) Coloca e retira o alerta de inconsistência embaixo do botão de compra;
 f) Desabilita e habilita o botão de compra; */
+
+let Botão_Compra_Status_Campo_de_Preenchimento_CPF = "liberado";
 
 Campo_de_Preenchimento_CPF.setAttribute('autocomplete', 'off');
 
@@ -408,11 +339,13 @@ Campo_de_Preenchimento_CPF.addEventListener("blur", function() {
     if (Campo_de_Preenchimento_CPF.value.length == 14) {
         Aviso_de_Inconsistência_CPF_Campo.style.display = "none";
         Aviso_de_Inconsistência_CPF_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Campo_de_Preenchimento_CPF = "liberado";
+        AtualizaStatusBotãoCompra();
     } else {
         Aviso_de_Inconsistência_CPF_Campo.style.display = "block";
         Aviso_de_Inconsistência_CPF_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Campo_de_Preenchimento_CPF = "travado";
+        AtualizaStatusBotãoCompra();
     }
 })
 
@@ -561,6 +494,8 @@ d) Coloca e retira o alerta de inconsistência embaixo do campo;
 e) Coloca e retira o alerta de inconsistência embaixo do botão de compra;
 f) Desabilita e habilita o botão de compra; */
 
+let Botão_Compra_Status_Endereço_CEP = "liberado";
+
 Endereço_CEP.setAttribute('autocomplete', 'off');
 
 Endereço_CEP.addEventListener("keydown", function(event) {
@@ -591,11 +526,13 @@ Endereço_CEP.addEventListener("blur", function() {
     if (Endereço_CEP.value.length == 9) {
         Aviso_de_Inconsistência_CEP_Campo.style.display = "none";
         Aviso_de_Inconsistência_CEP_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Endereço_CEP = "liberado";
+        AtualizaStatusBotãoCompra();
     } else {
         Aviso_de_Inconsistência_CEP_Campo.style.display = "block";
         Aviso_de_Inconsistência_CEP_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Endereço_CEP = "travado";
+        AtualizaStatusBotãoCompra();
     }
 })
 
@@ -631,9 +568,6 @@ Tipo_de_Pagamento_UM_CARTAO.addEventListener("click", () => {
     Tipo_de_Pagamento_PIX_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_PIX_CARTAO.style.backgroundColor = " #ffffff";
 
-    Tipo_de_Pagamento_DOIS_CARTOES.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_DOIS_CARTOES.style.backgroundColor = " #ffffff";
-
 
     /*/////// Configuração dos Dados de Pagamento ////////*/
 
@@ -666,23 +600,6 @@ Tipo_de_Pagamento_UM_CARTAO.addEventListener("click", () => {
         Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.required = false;
         Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.required = false;
 
-    Container_Dados_Pagamento_DOIS_CARTOES.style.display = "none";
-
-        Valor_no_Cartão_1.required = false;
-        Número_de_Parcelas_Cartão_1.required = false;
-        Número_do_Cartão_1.required = false;
-        Nome_do_Titular_do_Cartão_1.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_1.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_1.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_1.required = false;
-        
-        Número_de_Parcelas_Cartão_2.required = false;
-        Número_do_Cartão_2.required = false;
-        Nome_do_Titular_do_Cartão_2.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_2.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_2.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_2.required = false;
-
     /*/////// Reseta os Campos Internos, Avisos de Inconsistência e Desabilitação do Botão de Compra dos Dados de Pagamento ////////*/
     
     /*PIX_CARTAO*/
@@ -699,43 +616,12 @@ Tipo_de_Pagamento_UM_CARTAO.addEventListener("click", () => {
 
     Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
     Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "liberado";
     Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
     Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-    Comprar.disabled = false;
-
-    /*DOIS_CARTOES*/
-    Valor_no_Cartão_1.value = "";
-    configura_valores_e_parcelas_do_DOIS_CARTOES ();
-    Número_de_Parcelas_Cartão_1.value = "1";  
-    Número_do_Cartão_1.value = "";
-    Nome_do_Titular_do_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_1.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_1.value = "";
-
-    Número_de_Parcelas_Cartão_2.value = "1";
-    Número_do_Cartão_2.value = "";
-    Nome_do_Titular_do_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_2.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_2.value = "";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Botão.style.display = "none";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Botão.style.display = "none";
-
-    Comprar.disabled = false;
-
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "liberado";
+    AtualizaStatusBotãoCompra();
+    
     /*/////// Configuração do Botão de Compra ////////*/
 
     /*Atualiza o texto do botão de compra.*/
@@ -769,9 +655,6 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
     Tipo_de_Pagamento_PIX_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_PIX_CARTAO.style.backgroundColor = " #ffffff";
 
-    Tipo_de_Pagamento_DOIS_CARTOES.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_DOIS_CARTOES.style.backgroundColor = " #ffffff";
-
     /*/////// Configuração dos Dados de Pagamento ////////*/
 
     /*Aciona os dados de pagamento relativos ao botão clicado.*/
@@ -801,23 +684,6 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
         Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.required = false;
         Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.required = false;
 
-    Container_Dados_Pagamento_DOIS_CARTOES.style.display = "none";
-
-        Valor_no_Cartão_1.required = false;
-        Número_de_Parcelas_Cartão_1.required = false;
-        Número_do_Cartão_1.required = false;
-        Nome_do_Titular_do_Cartão_1.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_1.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_1.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_1.required = false;
-        
-        Número_de_Parcelas_Cartão_2.required = false;
-        Número_do_Cartão_2.required = false;
-        Nome_do_Titular_do_Cartão_2.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_2.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_2.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_2.required = false;
-
     /*/////// Reseta os Campos Internos, Avisos de Inconsistência e Desabilitação do Botão de Compra dos Dados de Pagamento ////////*/
     
     /*UM_CARTAO*/
@@ -833,9 +699,10 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
 
     Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "none";
     Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão = "liberado";
     Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "none";
     Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "none";
-    Comprar.disabled = false;
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "liberado";
 
     /*PIX_CARTAO*/
     Valor_no_Cartão_do_PIX_CARTÃO.value = "";
@@ -851,42 +718,11 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
 
     Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
     Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "liberado";
     Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
     Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-    Comprar.disabled = false;
-
-    /*DOIS_CARTOES*/
-    Valor_no_Cartão_1.value = "";
-    configura_valores_e_parcelas_do_DOIS_CARTOES ();
-    Número_de_Parcelas_Cartão_1.value = "1";  
-    Número_do_Cartão_1.value = "";
-    Nome_do_Titular_do_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_1.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_1.value = "";
-
-    Número_de_Parcelas_Cartão_2.value = "1";
-    Número_do_Cartão_2.value = "";
-    Nome_do_Titular_do_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_2.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_2.value = "";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Botão.style.display = "none";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Botão.style.display = "none";
-
-    Comprar.disabled = false;
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "liberado";
+    AtualizaStatusBotãoCompra();
 
     /*/////// Configuração do Botão de Compra ////////*/
 
@@ -921,9 +757,6 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
     Tipo_de_Pagamento_PIX_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_PIX_CARTAO.style.backgroundColor = " #ffffff";
 
-    Tipo_de_Pagamento_DOIS_CARTOES.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_DOIS_CARTOES.style.backgroundColor = " #ffffff";
-
 
     /*/////// Configuração dos Dados de Pagamento ////////*/
 
@@ -954,23 +787,6 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
         Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.required = false;
         Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.required = false;
     
-    Container_Dados_Pagamento_DOIS_CARTOES.style.display = "none";
-
-        Valor_no_Cartão_1.required = false;
-        Número_de_Parcelas_Cartão_1.required = false;
-        Número_do_Cartão_1.required = false;
-        Nome_do_Titular_do_Cartão_1.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_1.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_1.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_1.required = false;
-        
-        Número_de_Parcelas_Cartão_2.required = false;
-        Número_do_Cartão_2.required = false;
-        Nome_do_Titular_do_Cartão_2.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_2.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_2.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_2.required = false;
-
     /*/////// Reseta os Campos Internos, Avisos de Inconsistência e Desabilitação do Botão de Compra dos Dados de Pagamento ////////*/
     
     /*UM_CARTÃO*/
@@ -986,9 +802,10 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
 
     Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "none";
     Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão = "liberado";
     Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "none";
     Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "none";
-    Comprar.disabled = false;
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "liberado";
 
     /*PIX_CARTAO*/
     Valor_no_Cartão_do_PIX_CARTÃO.value = "";
@@ -1004,42 +821,11 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
 
     Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
     Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "liberado";
     Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
     Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-    Comprar.disabled = false;
-
-    /*DOIS_CARTOES*/
-    Valor_no_Cartão_1.value = "";
-    configura_valores_e_parcelas_do_DOIS_CARTOES ();
-    Número_de_Parcelas_Cartão_1.value = "1";  
-    Número_do_Cartão_1.value = "";
-    Nome_do_Titular_do_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_1.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_1.value = "";
-
-    Número_de_Parcelas_Cartão_2.value = "1";
-    Número_do_Cartão_2.value = "";
-    Nome_do_Titular_do_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_2.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_2.value = "";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Botão.style.display = "none";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Botão.style.display = "none";
-
-    Comprar.disabled = false;
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "liberado";
+    AtualizaStatusBotãoCompra();
 
     /*/////// Configuração do Botão de Compra ////////*/
 
@@ -1047,8 +833,6 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
     Comprar.innerText = "Gerar Boleto";
 
 })
-
-
 
 /*////////////////////// 
     Botão PIX_CARTAO 
@@ -1074,9 +858,6 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
 
     Tipo_de_Pagamento_BOLETO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_BOLETO.style.backgroundColor = " #ffffff";
-
-    Tipo_de_Pagamento_DOIS_CARTOES.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_DOIS_CARTOES.style.backgroundColor = " #ffffff";
 
     /*/////// Configuração dos Dados de Pagamento ////////*/
 
@@ -1107,23 +888,6 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
 
     Dados_Pagamento_BOLETO.style.display = "none";
 
-    Container_Dados_Pagamento_DOIS_CARTOES.style.display = "none";
-
-        Valor_no_Cartão_1.required = false;
-        Número_de_Parcelas_Cartão_1.required = false;
-        Número_do_Cartão_1.required = false;
-        Nome_do_Titular_do_Cartão_1.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_1.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_1.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_1.required = false;
-        
-        Número_de_Parcelas_Cartão_2.required = false;
-        Número_do_Cartão_2.required = false;
-        Nome_do_Titular_do_Cartão_2.required = false;
-        Campo_de_Preenchimento_Mês_Cartão_2.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_2.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_2.required = false;
-
     /*/////// Reseta os Campos Internos, Avisos de Inconsistência e Desabilitação do Botão de Compra dos Dados de Pagamento ////////*/
     
     /*UM_CARTÃO*/
@@ -1139,42 +903,11 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
 
     Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "none";
     Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão = "liberado";
     Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "none";
     Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "none";
-    Comprar.disabled = false;
-
-    /*DOIS_CARTOES*/
-    Valor_no_Cartão_1.value = "";
-    configura_valores_e_parcelas_do_DOIS_CARTOES ();
-    Número_de_Parcelas_Cartão_1.value = "1";  
-    Número_do_Cartão_1.value = "";
-    Nome_do_Titular_do_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_1.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_1.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_1.value = "";
-
-    Número_de_Parcelas_Cartão_2.value = "1";
-    Número_do_Cartão_2.value = "";
-    Nome_do_Titular_do_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_2.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_2.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_2.value = "";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_1_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_1_Botão.style.display = "none";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_2_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_2_Botão.style.display = "none";
-
-    Comprar.disabled = false;
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "liberado";
+    AtualizaStatusBotãoCompra();
 
     /*/////// Configuração do Botão de Compra ////////*/
 
@@ -1182,127 +915,6 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
     Comprar.innerText = "Comprar";
 
 })
-
-
-/*////////////////////// 
-   Botão DOIS_CARTOES
-//////////////////////*/
-
-Tipo_de_Pagamento_DOIS_CARTOES.addEventListener("click", () => {
-    
-    /*/////// Define o Tipo de Pagamento Escolhido ////////*/ 
-    Tipo_de_Pagamento_Escolhido = "DOIS_CARTOES";
-
-    /*/////// Layout ////////*/        
-
-    /*Muda o layout do botão clicado.*/
-    Tipo_de_Pagamento_DOIS_CARTOES.style.border = "2px solid #790d26";
-    Tipo_de_Pagamento_DOIS_CARTOES.style.backgroundColor = " #ffebef";
-
-    /*Muda o layout dos demais botões.*/
-    Tipo_de_Pagamento_UM_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_UM_CARTAO.style.backgroundColor = " #ffffff";
-
-    Tipo_de_Pagamento_PIX.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_PIX.style.backgroundColor = " #ffffff";
-
-    Tipo_de_Pagamento_BOLETO.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_BOLETO.style.backgroundColor = " #ffffff";
-
-    Tipo_de_Pagamento_PIX_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_PIX_CARTAO.style.backgroundColor = " #ffffff";
-
-    /*/////// Configuração dos Dados de Pagamento ////////*/
-
-    /*Aciona os dados de pagamento relativos ao botão clicado.*/
-    
-    Container_Dados_Pagamento_DOIS_CARTOES.style.display = "inline-flex";
-
-        Valor_no_Cartão_1.required = true;
-        Número_de_Parcelas_Cartão_1.required = true;
-        Número_do_Cartão_1.required = true;
-        Nome_do_Titular_do_Cartão_1.required = true;
-        Campo_de_Preenchimento_Mês_Cartão_1.required = true;
-        Campo_de_Preenchimento_Ano_Cartão_1.required = true;
-        Campo_de_Preenchimento_CVV_Cartão_1.required = true;
-        
-        Número_de_Parcelas_Cartão_2.required = true;
-        Número_do_Cartão_2.required = true;
-        Nome_do_Titular_do_Cartão_2.required = true;
-        Campo_de_Preenchimento_Mês_Cartão_2.required = true;
-        Campo_de_Preenchimento_Ano_Cartão_2.required = true;
-        Campo_de_Preenchimento_CVV_Cartão_2.required = true;
-
-    Valor_Produto_Comprado.innerHTML = Número_de_Parcelas_Cartão_1.options[Número_de_Parcelas_Cartão_1.selectedIndex].text + " + " + Número_de_Parcelas_Cartão_2.options[Número_de_Parcelas_Cartão_2.selectedIndex].text;;
-
-    /*Desaciona os dados de pagamento relativos aos demais botões.*/
-    Dados_Pagamento_UM_CARTAO.style.display = "none";
-
-        Número_do_Cartão.required = false;
-        Nome_do_Titular_do_Cartão.required = false;
-        Campo_de_Preenchimento_Mês_Cartão.required = false;
-        Campo_de_Preenchimento_Ano_Cartão.required = false;
-        Campo_de_Preenchimento_CVV_Cartão.required = false;
-        Número_de_Parcelas_Cartão_do_UM_CARTAO.required = false;
-
-    Dados_Pagamento_BOLETO.style.display = "none";
-
-    Dados_Pagamento_PIX.style.display = "none";
-
-    Dados_Pagamento_PIX_CARTAO.style.display = "none";
-
-        Valor_no_Cartão_do_PIX_CARTÃO.required = false;
-        Número_de_Parcelas_Cartão_do_PIX_CARTÃO.required = false;
-        Número_do_Cartão_do_PIX_CARTÃO.required = false;
-        Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.required = false; 
-        Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.required = false;
-        Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.required = false;
-        Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.required = false;
-
-    /*/////// Reseta os Campos Internos, Avisos de Inconsistência e Desabilitação do Botão de Compra dos Dados de Pagamento ////////*/
-    
-    /*UM_CARTÃO*/
-    Número_do_Cartão.value = "";
-    Nome_do_Titular_do_Cartão.value = "";
-    Campo_de_Preenchimento_Mês_Cartão.value = "";
-    Campo_de_Preenchimento_Mês_Cartão.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão.value = "";
-    Campo_de_Preenchimento_Ano_Cartão.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão.value = "";
-    Número_de_Parcelas_Cartão_do_UM_CARTAO.value = "";
-    Número_de_Parcelas_Cartão_do_UM_CARTAO.style.color = "rgb(128, 128, 128)";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "none";
-    Comprar.disabled = false;
-
-    /*PIX_CARTAO*/
-    Valor_no_Cartão_do_PIX_CARTÃO.value = "";
-    configura_valor_e_parcelas_do_PIX_CARTÃO ();
-    Número_de_Parcelas_Cartão_do_PIX_CARTÃO.value = "1"; 
-    Número_do_Cartão_do_PIX_CARTÃO.value = "";
-    Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.value = "";
-    Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.value = "";
-    Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.style.color = "rgb(128, 128, 128)";
-    Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.value = "";
-
-    Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
-    Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
-    Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-    Comprar.disabled = false;
-
-    /*/////// Configuração do Botão de Compra ////////*/
-
-    /*Atualiza o texto do botão de compra.*/
-    Comprar.innerText = "Comprar";
-
-})
-
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -1314,7 +926,10 @@ Tipo_de_Pagamento_DOIS_CARTOES.addEventListener("click", () => {
 a) Não permite o "autocomplete".
 b) Não permitir qualquer caracter que não seja " " ou números.
 c) Adiciona os " ". 
-d) Dá o alerta se o formato não for exatamente #### #### #### ####.*/
+d) Dá o alerta se o formato não for exatamente #### #### #### ####.
+e) Trava o botão de compra.*/
+
+let Botão_Compra_Status_Número_do_Cartão = "liberado";
 
 Número_do_Cartão.setAttribute('autocomplete', 'off');
 
@@ -1343,11 +958,15 @@ Número_do_Cartão.addEventListener("change", function(event) {
     if (!pattern.test(Número_do_Cartão.value)) {
         Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "block";
         Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Número_do_Cartão = "travado";
+        AtualizaStatusBotãoCompra();
+
     } else {
         Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "none";
         Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Número_do_Cartão = "liberado";
+        AtualizaStatusBotãoCompra();
+
     }
 
 })
@@ -1386,7 +1005,9 @@ Campo_de_Preenchimento_Ano_Cartão.addEventListener("change", function(event) {
 /*Configura a digitação do Campo_de_Preenchimento_CVV_Cartão para:
 a) Não permitir qualquer caracter que não seja números.
 b) Muda a cor dos para preto, após as seleções serem feitas.
-c) */
+c) Trava o botão de compra. */
+
+let Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "liberado";
 
 Campo_de_Preenchimento_CVV_Cartão.addEventListener("keydown", function(event) {
 
@@ -1412,11 +1033,14 @@ Campo_de_Preenchimento_CVV_Cartão.addEventListener("change", function() {
     if (Campo_de_Preenchimento_CVV_Cartão.value.length < 3) {
         Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "block";
         Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "travado";
+        AtualizaStatusBotãoCompra();
+
     } else {
         Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "none";
         Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "liberado";
+        AtualizaStatusBotãoCompra();
     }
 
 })
@@ -1569,7 +1193,10 @@ Configurações do Cartão do Pix e cartão
 a) Não permite o "autocomplete".
 b) Não permitir qualquer caracter que não seja " " ou números.
 c) Adiciona os " ".
-d) Dá o alerta se o formato não for exatamente #### #### #### ####.*/
+d) Dá o alerta se o formato não for exatamente #### #### #### ####.
+e) Trava o Botão de Compra.*/
+
+let Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "liberado";
 
 Número_do_Cartão_do_PIX_CARTÃO.setAttribute('autocomplete', 'off');
 
@@ -1597,11 +1224,13 @@ Número_do_Cartão_do_PIX_CARTÃO.addEventListener("change", function(event) {
     if (!pattern.test(Número_do_Cartão_do_PIX_CARTÃO.value)) {
         Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "block";
         Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "travado";
+        AtualizaStatusBotãoCompra();
     } else {
         Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
         Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "liberado";
+        AtualizaStatusBotãoCompra();
     }
 
 })
@@ -1641,7 +1270,9 @@ Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.addEventListener("change", fun
 /*Configura a digitação do Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO para:
 a) Não permitir qualquer caracter que não seja números.
 b) Muda a cor dos para preto, após as seleções serem feitas.
-c) */
+c) Trava o Botão de Compra.*/
+
+let Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "liberado";
 
 Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.addEventListener("keydown", function(event) {
 
@@ -1667,11 +1298,14 @@ Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.addEventListener("change", fun
     if (Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.value.length < 3) {
         Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "block";
         Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "block";
-        Comprar.disabled = true;
+        Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "travado";
+        AtualizaStatusBotãoCompra();
+
     } else {
         Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
         Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
-        Comprar.disabled = false;
+        Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "liberado";
+        AtualizaStatusBotãoCompra();
     }
 
 })
@@ -1735,460 +1369,6 @@ Número_de_Parcelas_Cartão_do_PIX_CARTÃO.addEventListener("change", function()
 
 })
 
-/*////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-         Configura o Meio de Pagamento: DOIS_CARTOES
-//////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////*/
-
-/* Configura e automatiza os valores em cada cartão, os valores e os números das parcelas. */
-
-Valor_no_Cartão_1.addEventListener("change", function() {
-
-    configura_valores_e_parcelas_do_DOIS_CARTOES ();
-
-    /* Altera o Valor_Produto_Comprado */
-    Valor_Produto_Comprado.innerHTML = Número_de_Parcelas_Cartão_1.options[Número_de_Parcelas_Cartão_1.selectedIndex].text + " + " + Número_de_Parcelas_Cartão_2.options[Número_de_Parcelas_Cartão_2.selectedIndex].text;;
-
-});
-
-function configura_valores_e_parcelas_do_DOIS_CARTOES () {
-
-    /* Altera o Valor_no_Cartão_1 para formato #,###.## se for digitado no formato R$ #.###,## */
-    Valor_no_Cartão_1.value = Valor_no_Cartão_1.value.replace("R$", "").trim();
-    Valor_no_Cartão_1.value = Valor_no_Cartão_1.value.replace(",", ".");
-    
-    /* Altera o Valor_no_Cartão_1 para Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento se o valor digitado for abaixo de Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento. */
-    if (Valor_no_Cartão_1.value < Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) {
-        Valor_no_Cartão_1.value = Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento;
-    }
-
-    /* Altera o Valor_no_Cartão_1 para Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento se o valor for acima de Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento. */
-    if (Valor_no_Cartão_1.value > Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento) {
-        Valor_no_Cartão_1.value = Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento;
-    }
-
-    if (isNaN(Valor_no_Cartão_1.value)) {
-        Valor_no_Cartão_1.value = Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento;
-    }
-
-    /*Altera o Valor_no_Cartão_2 para Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Valor_no_Cartão_1:*/
-    Valor_no_Cartão_2.value = Variável_Mestra_Valor_Total_do_Serviço_à_Vista - Valor_no_Cartão_1.value;
-
-    /*Altera as opções do Número_de_Parcelas_Cartão_1:*/
-    var Valor_no_Cartão_1_Parcela_1x = parseFloat(Valor_no_Cartão_1.value).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_2x = parseFloat(Valor_no_Cartão_1.value / 2 * Juros_Parcelamento_2x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_3x = parseFloat(Valor_no_Cartão_1.value / 3 * Juros_Parcelamento_3x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_4x = parseFloat(Valor_no_Cartão_1.value / 4 * Juros_Parcelamento_4x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_5x = parseFloat(Valor_no_Cartão_1.value / 5 * Juros_Parcelamento_5x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_6x = parseFloat(Valor_no_Cartão_1.value / 6 * Juros_Parcelamento_6x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_7x = parseFloat(Valor_no_Cartão_1.value / 7 * Juros_Parcelamento_7x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_8x = parseFloat(Valor_no_Cartão_1.value / 8 * Juros_Parcelamento_8x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_9x = parseFloat(Valor_no_Cartão_1.value / 9 * Juros_Parcelamento_9x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_10x = parseFloat(Valor_no_Cartão_1.value / 10 * Juros_Parcelamento_10x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_11x = parseFloat(Valor_no_Cartão_1.value / 11 * Juros_Parcelamento_11x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_1_Parcela_12x = parseFloat(Valor_no_Cartão_1.value / 12 * Juros_Parcelamento_12x).toLocaleString('pt-BR', configuração_BRL);
-    
-    Número_de_Parcelas_Cartão_1_Opção_1.text = "1x de " + Valor_no_Cartão_1_Parcela_1x;
-    Número_de_Parcelas_Cartão_1_Opção_2.text = "2x de " + Valor_no_Cartão_1_Parcela_2x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_3.text = "3x de " + Valor_no_Cartão_1_Parcela_3x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_4.text = "4x de " + Valor_no_Cartão_1_Parcela_4x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_5.text = "5x de " + Valor_no_Cartão_1_Parcela_5x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_6.text = "6x de " + Valor_no_Cartão_1_Parcela_6x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_7.text = "7x de " + Valor_no_Cartão_1_Parcela_7x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_8.text = "8x de " + Valor_no_Cartão_1_Parcela_8x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_9.text = "9x de " + Valor_no_Cartão_1_Parcela_9x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_10.text = "10x de " + Valor_no_Cartão_1_Parcela_10x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_11.text = "11x de " + Valor_no_Cartão_1_Parcela_11x + "*";
-    Número_de_Parcelas_Cartão_1_Opção_12.text = "12x de " + Valor_no_Cartão_1_Parcela_12x + "*";
-
-    /*Altera as opções do Número_de_Parcelas_Cartão_2:*/
-
-    var Valor_no_Cartão_2_Parcela_1x = parseFloat(Valor_no_Cartão_2.value).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_2x = parseFloat(Valor_no_Cartão_2.value / 2 * Juros_Parcelamento_2x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_3x = parseFloat(Valor_no_Cartão_2.value / 3 * Juros_Parcelamento_3x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_4x = parseFloat(Valor_no_Cartão_2.value / 4 * Juros_Parcelamento_4x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_5x = parseFloat(Valor_no_Cartão_2.value / 5 * Juros_Parcelamento_5x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_6x = parseFloat(Valor_no_Cartão_2.value / 6 * Juros_Parcelamento_6x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_7x = parseFloat(Valor_no_Cartão_2.value / 7 * Juros_Parcelamento_7x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_8x = parseFloat(Valor_no_Cartão_2.value / 8 * Juros_Parcelamento_8x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_9x = parseFloat(Valor_no_Cartão_2.value / 9 * Juros_Parcelamento_9x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_10x = parseFloat(Valor_no_Cartão_2.value / 10 * Juros_Parcelamento_10x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_11x = parseFloat(Valor_no_Cartão_2.value / 11 * Juros_Parcelamento_11x).toLocaleString('pt-BR', configuração_BRL);
-    var Valor_no_Cartão_2_Parcela_12x = parseFloat(Valor_no_Cartão_2.value / 12 * Juros_Parcelamento_12x).toLocaleString('pt-BR', configuração_BRL);
-    
-    Número_de_Parcelas_Cartão_2_Opção_1.text = "1x de " + Valor_no_Cartão_2_Parcela_1x;
-    Número_de_Parcelas_Cartão_2_Opção_2.text = "2x de " + Valor_no_Cartão_2_Parcela_2x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_3.text = "3x de " + Valor_no_Cartão_2_Parcela_3x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_4.text = "4x de " + Valor_no_Cartão_2_Parcela_4x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_5.text = "5x de " + Valor_no_Cartão_2_Parcela_5x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_6.text = "6x de " + Valor_no_Cartão_2_Parcela_6x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_7.text = "7x de " + Valor_no_Cartão_2_Parcela_7x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_8.text = "8x de " + Valor_no_Cartão_2_Parcela_8x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_9.text = "9x de " + Valor_no_Cartão_2_Parcela_9x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_10.text = "10x de " + Valor_no_Cartão_2_Parcela_10x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_11.text = "11x de " + Valor_no_Cartão_2_Parcela_11x + "*";
-    Número_de_Parcelas_Cartão_2_Opção_12.text = "12x de " + Valor_no_Cartão_2_Parcela_12x + "*";
-
-
-    /* Altera o Valor_no_Cartão_1 e Valor_no_Cartão_2 para formato R$ #.###,##. */
-    Valor_no_Cartão_1.value = parseFloat(Valor_no_Cartão_1.value).toLocaleString('pt-BR', configuração_BRL);
-    Valor_no_Cartão_2.value = parseFloat(Valor_no_Cartão_2.value).toLocaleString('pt-BR', configuração_BRL);
-
-    /*Atualiza o Valor_com_Juros_no_Cartão_1_Dígitos e o Valor_com_Juros_no_Cartão_2_Dígitos*/
-    Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".",""));
-    Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".",""));
-    
-}
-
-/*//////////////////////////////////////////////////////////// 
-Configurações do Cartão 1 
-////////////////////////////////////////////////////////////*/
-
-/*Configura a digitação do Número_do_Cartão_1 para:
-a) Não permite o "autocomplete".
-b) Não permitir qualquer caracter que não seja " " ou números.
-c) Adiciona os " ".
-d) Dá o alerta se o formato não for exatamente #### #### #### ####.*/
-
-Número_do_Cartão_1.setAttribute('autocomplete', 'off');
-
-Número_do_Cartão_1.addEventListener("keydown", function(event) {
-
-    if (event.key == "Backspace" || event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Tab") {
-        return;
-    }
-
-    if (isNaN(Number(event.key))) {
-        event.preventDefault();
-    }
-
-    let Número_do_Cartão_1_Tamanho = Número_do_Cartão_1.value.length
-    
-    if (Número_do_Cartão_1_Tamanho == 4 || Número_do_Cartão_1_Tamanho == 9 || Número_do_Cartão_1_Tamanho == 14) {
-        Número_do_Cartão_1.value += ' ';  
-    }
-})
-
-Número_do_Cartão_1.addEventListener("change", function(event) {
-
-    let pattern = /^\d{4} \d{4} \d{4} \d{4}$/;
-    
-    if (!pattern.test(Número_do_Cartão_1.value)) {
-        Aviso_de_Inconsistência_Número_do_Cartão_1_Campo.style.display = "block";
-        Aviso_de_Inconsistência_Número_do_Cartão_1_Botão.style.display = "block";
-        Comprar.disabled = true;
-    } else {
-        Aviso_de_Inconsistência_Número_do_Cartão_1_Campo.style.display = "none";
-        Aviso_de_Inconsistência_Número_do_Cartão_1_Botão.style.display = "none";
-        Comprar.disabled = false;
-    }
-
-})
-
-/*Configura a digitação do Nome_do_Titular_do_Cartão para:
-a) Não permitir qualquer caracter que não seja " " ou letras. 
-b) Não permitir que o último caracter seja " ".*/
-
-Nome_do_Titular_do_Cartão_1.addEventListener("keydown", function(event) {
-
-    if (event.key == "Backspace" || event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Tab") {
-        return;
-    }
-
-    if (/\d/.test(event.key)) {
-        event.preventDefault();
-    }
-
-})
-
-Nome_do_Titular_do_Cartão_1.addEventListener("change", function() {
-
-    Nome_do_Titular_do_Cartão_1.value = Nome_do_Titular_do_Cartão_1.value.replace(/\s+$/, "");
-
-})
-
-/*Muda a cor dos campos Mês e Ano do Cartão de Crédito para preto, após as seleções serem feitas.*/
-Campo_de_Preenchimento_Mês_Cartão_1.addEventListener("change", function(event) {
-    Campo_de_Preenchimento_Mês_Cartão_1.style.color = "black";
-})
-
-Campo_de_Preenchimento_Ano_Cartão_1.addEventListener("change", function(event) {
-    Campo_de_Preenchimento_Ano_Cartão_1.style.color = "black";
-})
-
-/*Configura a digitação do Campo_de_Preenchimento_CVV_Cartão_1 para:
-a) Não permitir qualquer caracter que não seja números.
-b) Muda a cor dos para preto, após as seleções serem feitas. */
-
-Campo_de_Preenchimento_CVV_Cartão_1.addEventListener("keydown", function(event) {
-
-    if (event.key == "Backspace" || event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Tab") {
-        return;
-    }
-
-    if (event.key === " ") {
-        event.preventDefault();
-        return;
-    }
-
-    if (isNaN(Number(event.key))) {
-        event.preventDefault();
-    }
-
-})
-
-Campo_de_Preenchimento_CVV_Cartão_1.addEventListener("change", function() {
-    
-    Campo_de_Preenchimento_CVV_Cartão_1.style.color = "black";
-
-    if (Campo_de_Preenchimento_CVV_Cartão_1.value.length < 3) {
-        Aviso_de_Inconsistência_CVV_Cartão_1_Campo.style.display = "block";
-        Aviso_de_Inconsistência_CVV_Cartão_1_Botão.style.display = "block";
-        Comprar.disabled = true;
-    } else {
-        Aviso_de_Inconsistência_CVV_Cartão_1_Campo.style.display = "none";
-        Aviso_de_Inconsistência_CVV_Cartão_1_Botão.style.display = "none";
-        Comprar.disabled = false;
-    }
-
-})
-
-/*Altera, assim que o Número de Parcelas é escolhido:
-- O Valor do Produto comprado;*/
-
-Número_de_Parcelas_Cartão_1.addEventListener("change", function() {
-    Valor_Produto_Comprado.innerHTML = Número_de_Parcelas_Cartão_1.options[Número_de_Parcelas_Cartão_1.selectedIndex].text + " + " + Número_de_Parcelas_Cartão_2.options[Número_de_Parcelas_Cartão_2.selectedIndex].text;
-
-    if (Número_de_Parcelas_Cartão_1.selectedIndex === 0) {
-
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * 1).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 1) {
-
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_2x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 2) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_3x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 3) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_4x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 4) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_5x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 5) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_6x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 6) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_7x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 7) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_8x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 8) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_9x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 9) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_10x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 10) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_11x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_1.selectedIndex === 11) {
-        
-        Valor_com_Juros_no_Cartão_1_Dígitos = (Valor_no_Cartão_1.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_12x).toFixed(0);
-
-    }
-
-    console.log(Valor_no_Cartão_1.value);
-    console.log(Valor_com_Juros_no_Cartão_1_Dígitos);
-
-})
-
-/*//////////////////////////////////////////////////////////// 
-Configurações do Cartão 2
-////////////////////////////////////////////////////////////*/
-
-/*Configura a digitação do Número_do_Cartão_2 para:
-a) Não permite o "autocomplete".
-b) Não permitir qualquer caracter que não seja " " ou números.
-c) Adiciona os " ".
-d) Dá o alerta se o formato não for exatamente #### #### #### ####.*/
-
-Número_do_Cartão_2.setAttribute('autocomplete', 'off');
-
-Número_do_Cartão_2.addEventListener("keydown", function(event) {
-
-    if (event.key == "Backspace" || event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Tab") {
-        return;
-    }
-
-    if (isNaN(Number(event.key))) {
-        event.preventDefault();
-    }
-
-    let Número_do_Cartão_2_Tamanho = Número_do_Cartão_2.value.length
-    
-    if (Número_do_Cartão_2_Tamanho == 4 || Número_do_Cartão_2_Tamanho == 9 || Número_do_Cartão_2_Tamanho == 14) {
-        Número_do_Cartão_2.value += ' ';  
-    }
-})
-
-Número_do_Cartão_2.addEventListener("change", function(event) {
-
-    let pattern = /^\d{4} \d{4} \d{4} \d{4}$/;
-    
-    if (!pattern.test(Número_do_Cartão_2.value)) {
-        Aviso_de_Inconsistência_Número_do_Cartão_2_Campo.style.display = "block";
-        Aviso_de_Inconsistência_Número_do_Cartão_2_Botão.style.display = "block";
-        Comprar.disabled = true;
-    } else {
-        Aviso_de_Inconsistência_Número_do_Cartão_2_Campo.style.display = "none";
-        Aviso_de_Inconsistência_Número_do_Cartão_2_Botão.style.display = "none";
-        Comprar.disabled = false;
-    }
-
-})
-
-/*Configura a digitação do Nome_do_Titular_do_Cartão para:
-a) Não permitir qualquer caracter que não seja " " ou letras. 
-b) Não permitir que o último caracter seja " ".*/
-
-Nome_do_Titular_do_Cartão_2.addEventListener("keydown", function(event) {
-
-    if (event.key == "Backspace" || event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Tab") {
-        return;
-    }
-
-    if (/\d/.test(event.key)) {
-        event.preventDefault();
-    }
-
-})
-
-Nome_do_Titular_do_Cartão_2.addEventListener("change", function() {
-
-    Nome_do_Titular_do_Cartão_2.value = Nome_do_Titular_do_Cartão_2.value.replace(/\s+$/, "");
-
-})
-
-/*Muda a cor dos campos Mês e Ano do Cartão de Crédito para preto, após as seleções serem feitas.*/
-Campo_de_Preenchimento_Mês_Cartão_2.addEventListener("change", function(event) {
-    Campo_de_Preenchimento_Mês_Cartão_2.style.color = "black";
-})
-
-Campo_de_Preenchimento_Ano_Cartão_2.addEventListener("change", function(event) {
-    Campo_de_Preenchimento_Ano_Cartão_2.style.color = "black";
-})
-
-/*Configura a digitação do Campo_de_Preenchimento_CVV_Cartão_2 para:
-a) Não permitir qualquer caracter que não seja números.
-b) Muda a cor dos para preto, após as seleções serem feitas. */
-
-Campo_de_Preenchimento_CVV_Cartão_2.addEventListener("keydown", function(event) {
-
-    if (event.key == "Backspace" || event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight" || event.key == "Tab") {
-        return;
-    }
-
-    if (event.key === " ") {
-        event.preventDefault();
-        return;
-    }
-
-    if (isNaN(Number(event.key))) {
-        event.preventDefault();
-    }
-
-})
-
-Campo_de_Preenchimento_CVV_Cartão_2.addEventListener("change", function() {
-    
-    Campo_de_Preenchimento_CVV_Cartão_2.style.color = "black";
-
-    if (Campo_de_Preenchimento_CVV_Cartão_2.value.length < 3) {
-        Aviso_de_Inconsistência_CVV_Cartão_2_Campo.style.display = "block";
-        Aviso_de_Inconsistência_CVV_Cartão_2_Botão.style.display = "block";
-        Comprar.disabled = true;
-    } else {
-        Aviso_de_Inconsistência_CVV_Cartão_2_Campo.style.display = "none";
-        Aviso_de_Inconsistência_CVV_Cartão_2_Botão.style.display = "none";
-        Comprar.disabled = false;
-    }
-
-})
-
-/*Altera, assim que o Número de Parcelas é escolhido:
-- O Valor do Produto comprado;*/
-
-Número_de_Parcelas_Cartão_2.addEventListener("change", function() {
-    Valor_Produto_Comprado.innerHTML = Número_de_Parcelas_Cartão_1.options[Número_de_Parcelas_Cartão_1.selectedIndex].text + " + " + Número_de_Parcelas_Cartão_2.options[Número_de_Parcelas_Cartão_2.selectedIndex].text;
-
-    if (Número_de_Parcelas_Cartão_2.selectedIndex === 0) {
-
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * 1).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 1) {
-
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_2x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 2) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_3x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 3) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_4x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 4) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_5x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 5) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_6x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 6) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_7x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 7) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_8x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 8) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_9x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 9) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_10x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 10) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_11x).toFixed(0);
-
-    } else if (Número_de_Parcelas_Cartão_2.selectedIndex === 11) {
-        
-        Valor_com_Juros_no_Cartão_2_Dígitos = (Valor_no_Cartão_2.value.replace("R$", "").trim().replace(",","").replace(".","") * Juros_Parcelamento_12x).toFixed(0);
-
-    }
-
-    console.log(Valor_no_Cartão_2.value);
-    console.log(Valor_com_Juros_no_Cartão_2_Dígitos);
-
-})
-
 /*Abre o WhatsApp*/
 Entre_em_Contato.addEventListener("click", function(event) {
     event.preventDefault();
@@ -2211,111 +1391,104 @@ function TrocaCaracteresEspeciais(str) {
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-      Envia os dados do checkout para o Power Automate.
+                Atualiza Status: Botão de Compra
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+function AtualizaStatusBotãoCompra(){
+
+    if ( Botão_Compra_Status_Email_do_Cliente === "liberado" && Botão_Compra_Status_Campo_de_Preenchimento_CPF === "liberado" && Botão_Compra_Status_Endereço_CEP === "liberado" && Botão_Compra_Status_Número_do_Cartão === "liberado" && Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão === "liberado" && Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO === "liberado" && Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO === "liberado") {
+
+        Comprar.disabled = false;
+    
+    } else {
+    
+        Comprar.disabled = true;
+    
+    }
+
+}
+
+AtualizaStatusBotãoCompra();
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+            Envia os dados do checkout ao backend.
 //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
 Formulário_de_Pagamento.addEventListener('submit', (event) => {
     
     event.preventDefault();
-  
-    const payload = {
-      
-      Nome_Produto: Nome_Produto.value,
-      Código_do_Produto: Código_do_Produto,
-
-      NomeCompleto: NomeCompleto.value,
-      Email_do_Cliente: Email_do_Cliente.value,
-      Confirmação_do_Email_do_Cliente: Confirmação_do_Email_do_Cliente.value,
-      Campo_de_Preenchimento_CPF: Campo_de_Preenchimento_CPF.value,
-      Campo_de_Preenchimento_CPF_Dígitos: Campo_de_Preenchimento_CPF.value.replace(/[.-]/g, ""),
-      Campo_de_Preenchimento_DDD: Campo_de_Preenchimento_DDD.value,
-      Campo_de_Preenchimento_Celular: Campo_de_Preenchimento_Celular.value,
-      Campo_de_Preenchimento_Celular_Dígitos: Campo_de_Preenchimento_Celular.value.replace(/[-]/g, ""),
-
-      Endereço_Rua: Endereço_Rua.value,
-      Endereço_Número: Endereço_Número.value,
-      Endereço_Complemento: Endereço_Complemento.value,
-      Endereço_Bairro: Endereço_Bairro.value,
-      Endereço_Cidade: Endereço_Cidade.value,
-      Endereço_Estado: Endereço_Estado.value,
-      Endereço_CEP: Endereço_CEP.value,
-      Endereço_CEP_Dígitos: Endereço_CEP.value.replace(/[-]/g, ""),
-
-      Tipo_de_Pagamento_Escolhido: Tipo_de_Pagamento_Escolhido,
-      
-      Número_do_Cartão: Número_do_Cartão.value,
-      Número_do_Cartão_Dígitos: Número_do_Cartão.value.replace(/ /g, ""),
-      Nome_do_Titular_do_Cartão_CaracteresOriginais: Nome_do_Titular_do_Cartão.value,
-      Nome_do_Titular_do_Cartão_CaracteresAjustados: TrocaCaracteresEspeciais(Nome_do_Titular_do_Cartão.value),
-      Campo_de_Preenchimento_Mês_Cartão: Campo_de_Preenchimento_Mês_Cartão.value,
-      Campo_de_Preenchimento_Ano_Cartão: Campo_de_Preenchimento_Ano_Cartão.value,
-      Campo_de_Preenchimento_CVV_Cartão: Campo_de_Preenchimento_CVV_Cartão.value,
-      Número_de_Parcelas_Cartão_do_UM_CARTAO: Número_de_Parcelas_Cartão_do_UM_CARTAO.value,
-      Valor_Total_da_Compra_com_Juros_UM_CARTAO: parseFloat(Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
-      Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos: Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos,
-
-      Valor_Total_da_Compra_no_PIX: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
-      Valor_Total_da_Compra_no_PIX_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
-
-      Valor_Total_da_Compra_no_BOLETO: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
-      Valor_Total_da_Compra_no_BOLETO_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
-
-      Valor_no_PIX_do_PIX_CARTÃO: Valor_no_PIX_do_PIX_CARTÃO.value,
-      Valor_no_PIX_do_PIX_CARTÃO_Dígitos: Valor_no_PIX_do_PIX_CARTÃO.value.replace("R$","").trim().replace(".","").replace(",",""),
-      Valor_à_Vista_no_Cartão_do_PIX_CARTÃO: Valor_no_Cartão_do_PIX_CARTÃO.value,
-      Valor_à_Vista_no_Cartão_do_PIX_CARTÃO_Dígitos: Valor_no_Cartão_do_PIX_CARTÃO.value.replace("R$","").trim().replace(".","").replace(",",""),
-      Valor_com_Juros_no_Cartão_do_PIX_CARTÃO: parseFloat(Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
-      Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos: Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos,
-      Número_do_Cartão_do_PIX_CARTÃO: Número_do_Cartão_do_PIX_CARTÃO.value,
-      Número_do_Cartão_do_PIX_CARTÃO_Dígitos: Número_do_Cartão_do_PIX_CARTÃO.value.replace(/ /g, ""),
-      Nome_do_Titular_do_Cartão_do_PIX_CARTÃO_CaracteresOriginais: Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.value,
-      Nome_do_Titular_do_Cartão_do_PIX_CARTÃO_CaracteresAjustados: TrocaCaracteresEspeciais(Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.value),
-      Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO: Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.value,
-      Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO: Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.value,
-      Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO: Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.value,
-      Número_de_Parcelas_Cartão_do_PIX_CARTÃO: Número_de_Parcelas_Cartão_do_PIX_CARTÃO.value,
-
-      Valor_à_Vista_no_Cartão_1: Valor_no_Cartão_1.value,
-      Valor_à_Vista_no_Cartão_1_Dígitos: Valor_no_Cartão_1.value.replace("R$","").trim().replace(".","").replace(",",""),
-      Valor_com_Juros_no_Cartão_1: parseFloat(Valor_com_Juros_no_Cartão_1_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
-      Valor_com_Juros_no_Cartão_1_Dígitos: Valor_com_Juros_no_Cartão_1_Dígitos,
-      Número_do_Cartão_1: Número_do_Cartão_1.value,
-      Número_do_Cartão_1_Dígitos: Número_do_Cartão_1.value.replace(/ /g, ""),
-      Nome_do_Titular_do_Cartão_1_CaracteresOriginais: Nome_do_Titular_do_Cartão_1.value,
-      Nome_do_Titular_do_Cartão_1_CaracteresAjustados: TrocaCaracteresEspeciais(Nome_do_Titular_do_Cartão_1.value),
-      Campo_de_Preenchimento_Mês_Cartão_1: Campo_de_Preenchimento_Mês_Cartão_1.value,
-      Campo_de_Preenchimento_Ano_Cartão_1: Campo_de_Preenchimento_Ano_Cartão_1.value,
-      Campo_de_Preenchimento_CVV_Cartão_1: Campo_de_Preenchimento_CVV_Cartão_1.value,
-      Número_de_Parcelas_Cartão_1: Número_de_Parcelas_Cartão_1.value,
-      Valor_à_Vista_no_Cartão_2: Valor_no_Cartão_2.value,
-      Valor_à_Vista_no_Cartão_2_Dígitos: Valor_no_Cartão_2.value.replace("R$","").trim().replace(".","").replace(",",""),
-      Valor_com_Juros_no_Cartão_2: parseFloat(Valor_com_Juros_no_Cartão_2_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
-      Valor_com_Juros_no_Cartão_2_Dígitos: Valor_com_Juros_no_Cartão_2_Dígitos,
-      Número_do_Cartão_2: Número_do_Cartão_2.value,
-      Número_do_Cartão_2_Dígitos: Número_do_Cartão_2.value.replace(/ /g, ""),
-      Nome_do_Titular_do_Cartão_2_CaracteresOriginais: Nome_do_Titular_do_Cartão_2.value,
-      Nome_do_Titular_do_Cartão_2_CaracteresAjustados: TrocaCaracteresEspeciais(Nome_do_Titular_do_Cartão_2.value),
-      Campo_de_Preenchimento_Mês_Cartão_2: Campo_de_Preenchimento_Mês_Cartão_2.value,
-      Campo_de_Preenchimento_Ano_Cartão_2: Campo_de_Preenchimento_Ano_Cartão_2.value,
-      Campo_de_Preenchimento_CVV_Cartão_2: Campo_de_Preenchimento_CVV_Cartão_2.value,
-      Número_de_Parcelas_Cartão_2: Número_de_Parcelas_Cartão_2.value
+    Comprar.disabled = true;
     
-    };
-  
-    // Envia as informações ao Power Automate (Checkout #1: Processa Cobranças_v2).
-    fetch('https://prod-28.brazilsouth.logic.azure.com:443/workflows/74d477074b034bf4b87ece9b46539b49/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5tir7xFkZmn3ZJrHD-GZzjrzgNKoBDCdiJ6GPlNUuHU', {
+    fetch('https://plataforma-backend-v3.azurewebsites.net/checkout/processarpagamento', { //http://localhost:3000/checkout/processarpagamento //https://plataforma-backend-v3.azurewebsites.net/checkout/processarpagamento
 
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            
+            Nome_Produto: Nome_Produto.value,
+            Código_do_Produto: Código_do_Produto,
+
+            NomeCompleto: NomeCompleto.value,
+            Email_do_Cliente: Email_do_Cliente.value,
+            Campo_de_Preenchimento_CPF: Campo_de_Preenchimento_CPF.value,
+            Campo_de_Preenchimento_CPF_Dígitos: Campo_de_Preenchimento_CPF.value.replace(/[.-]/g, ""),
+            Campo_de_Preenchimento_DDD: Campo_de_Preenchimento_DDD.value,
+            Campo_de_Preenchimento_Celular: Campo_de_Preenchimento_Celular.value,
+            Campo_de_Preenchimento_Celular_Dígitos: Campo_de_Preenchimento_Celular.value.replace(/[-]/g, ""),
+
+            Endereço_Rua: Endereço_Rua.value,
+            Endereço_Número: Endereço_Número.value,
+            Endereço_Complemento: Endereço_Complemento.value,
+            Endereço_Bairro: Endereço_Bairro.value,
+            Endereço_Cidade: Endereço_Cidade.value,
+            Endereço_Estado: Endereço_Estado.value,
+            Endereço_CEP: Endereço_CEP.value,
+            Endereço_CEP_Dígitos: Endereço_CEP.value.replace(/[-]/g, ""),
+
+            Tipo_de_Pagamento_Escolhido: Tipo_de_Pagamento_Escolhido,
+            
+            Número_do_Cartão: Número_do_Cartão.value,
+            Número_do_Cartão_Dígitos: Número_do_Cartão.value.replace(/ /g, ""),
+            Nome_do_Titular_do_Cartão_CaracteresOriginais: Nome_do_Titular_do_Cartão.value,
+            Nome_do_Titular_do_Cartão_CaracteresAjustados: TrocaCaracteresEspeciais(Nome_do_Titular_do_Cartão.value),
+            Campo_de_Preenchimento_Mês_Cartão: Campo_de_Preenchimento_Mês_Cartão.value,
+            Campo_de_Preenchimento_Ano_Cartão: Campo_de_Preenchimento_Ano_Cartão.value,
+            Campo_de_Preenchimento_CVV_Cartão: Campo_de_Preenchimento_CVV_Cartão.value,
+            Número_de_Parcelas_Cartão_do_UM_CARTAO: Número_de_Parcelas_Cartão_do_UM_CARTAO.value,
+            Valor_Total_da_Compra_com_Juros_UM_CARTAO: parseFloat(Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos: Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos,
+
+            Valor_Total_da_Compra_no_PIX: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_Total_da_Compra_no_PIX_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
+
+            Valor_Total_da_Compra_no_BOLETO: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_Total_da_Compra_no_BOLETO_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
+
+            Valor_Total_da_Compra_no_PIX_CARTÃO: parseFloat((Number(Valor_no_PIX_do_PIX_CARTÃO.value.replace("R$","").trim().replace(".","").replace(",","")) + Number(Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos))/100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_no_PIX_do_PIX_CARTÃO: Valor_no_PIX_do_PIX_CARTÃO.value,
+            Valor_no_PIX_do_PIX_CARTÃO_Dígitos: Valor_no_PIX_do_PIX_CARTÃO.value.replace("R$","").trim().replace(".","").replace(",",""),
+            Valor_com_Juros_no_Cartão_do_PIX_CARTÃO: parseFloat(Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos: Valor_com_Juros_no_Cartão_do_PIX_CARTÃO_Dígitos,
+            Número_do_Cartão_do_PIX_CARTÃO: Número_do_Cartão_do_PIX_CARTÃO.value,
+            Número_do_Cartão_do_PIX_CARTÃO_Dígitos: Número_do_Cartão_do_PIX_CARTÃO.value.replace(/ /g, ""),
+            Nome_do_Titular_do_Cartão_do_PIX_CARTÃO_CaracteresOriginais: Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.value,
+            Nome_do_Titular_do_Cartão_do_PIX_CARTÃO_CaracteresAjustados: TrocaCaracteresEspeciais(Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.value),
+            Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO: Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.value,
+            Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO: Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.value,
+            Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO: Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.value,
+            Número_de_Parcelas_Cartão_do_PIX_CARTÃO: Número_de_Parcelas_Cartão_do_PIX_CARTÃO.value
+
+        })
     
     })
     
     .then(response => {
-    
+        
         window.location.href = "/checkout/confirmação";
     
     });

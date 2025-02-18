@@ -5,7 +5,13 @@
     font-family:sans-serif;
 }
 
+/***********************************************************************************************************/
+/***********************************************************************************************************/
+/***********************************************************************************************************/
 /**********************************************Versão Celular***********************************************/
+/***********************************************************************************************************/
+/***********************************************************************************************************/
+/***********************************************************************************************************/
 
 #Sessão_Pagamento {
     width: 100%;
@@ -357,7 +363,7 @@
     background-color: #ffebef;
 }
 
-#Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO,#Tipo_de_Pagamento_DOIS_CARTOES,#Tipo_de_Pagamento_PAGAMENTO_RECORRENTE{
+#Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO{
     border: 1px solid rgb(146, 146, 146);
     width: 100%;
     height: 55px;
@@ -392,18 +398,6 @@
     background-color: #fff7f9;
 }
 
-#Tipo_de_Pagamento_DOIS_CARTOES:hover{
-    box-shadow: 1px 1px 3px black;
-    border: 1px solid #ffc6d3;
-    background-color: #fff7f9;
-}
-
-#Tipo_de_Pagamento_PAGAMENTO_RECORRENTE:hover{
-    box-shadow: 1px 1px 3px black;
-    border: 1px solid #ffc6d3;
-    background-color: #fff7f9;
-}
-
 #UM_CARTAO{
     height:18px;
 }
@@ -421,15 +415,6 @@
 #PIX_CARTAO{
     height:18px;
     margin-top: 5px;
-}
-
-#DOIS_CARTOES{
-    height:18px;
-    margin-top: 5px;
-}
-
-#PAGAMENTO_RECORRENTE{
-    height:18px;
 }
 
 .Descrição_Pagamento{
@@ -868,179 +853,12 @@
     color: black;
 }
 
-
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-        Meio de Pagamento: Dois Cartões de Crédito
+                      Resumo da Compra
 //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#Container_Dados_Pagamento_DOIS_CARTOES{
-    display: none;
-    width: 100%;
-}
-
-#Dados_Pagamento_DOIS_CARTOES{
-    display: block;
-    padding-top: 10px;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-#Dados_Cartão_Crédito_1{
-    width: 100%;
-    border-radius: 5px;
-    border: 1px solid rgb(222, 222, 222);
-    padding: 15px;
-    margin-right: 10px;
-    margin-bottom: 20px;
-}
-
-#Dados_Cartão_Crédito_2{
-    width: 100%;
-    border-radius: 5px;
-    border: 1px solid rgb(222, 222, 222);
-    padding: 15px;
-}
-
-#Identificação_Cartão_Crédito_1,#Identificação_Cartão_Crédito_2{
-    width: 100%;
-    height: 40px;
-    padding: 10px;
-    background-color: rgb(243, 243, 243);
-    border-radius: 5px;
-    display: inline-flex;
-}
-
-#Imagem_Cartão_Crédito_1,#Imagem_Cartão_Crédito_2{
-    width: 25px;
-    height: 20px;
-    margin-right: 8px;
-}
-
-#Texto_Cartão_Crédito_1,#Texto_Cartão_Crédito_2{
-    vertical-align: middle;
-}
-
-#Valor_no_Cartão_1,#Valor_no_Cartão_2{
-    width: 100%;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-right: 15px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-}
-
-#Valor_no_Cartão_2{
-    cursor: no-drop;
-}
-
-.Observações_de_Preenchimento{
-    font-size:12px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    color: rgb(128, 128, 128);
-}
-
-#Número_do_Cartão_1,#Número_do_Cartão_2{
-    width: 100%;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-right: 15px;
-    margin-bottom: 15px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-}
-
-#Aviso_de_Inconsistência_Número_do_Cartão_1_Campo, #Aviso_de_Inconsistência_Número_do_Cartão_2_Campo{
-    font-size: 11px;
-    color: #db0b3c;
-    margin-top: -10px;
-    margin-bottom: 4px;
-    display: none;
-}
-
-#Nome_do_Titular_do_Cartão_1,#Nome_do_Titular_do_Cartão_2{
-    width: 100%;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-right: 15px;
-    margin-bottom: 5px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-}
-
-#Mes_Ano_CVV_Cartão_1,#Mes_Ano_CVV_Cartão_2{
-    display: inline-flex;
-    margin-bottom: 5px;
-}
-
-#Campo_de_Preenchimento_Mês_Cartão_1,#Campo_de_Preenchimento_Mês_Cartão_2{
-    width: 70px;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-right: 20px;
-    margin-bottom: 5px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-    color: rgb(128, 128, 128);
-}
-
-#Campo_de_Preenchimento_Ano_Cartão_1,#Campo_de_Preenchimento_Ano_Cartão_2{
-    width: 70px;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-right: 20px;
-    margin-bottom: 5px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-    color: rgb(128, 128, 128);
-}
-
-#Campo_de_Preenchimento_CVV_Cartão_1,#Campo_de_Preenchimento_CVV_Cartão_2{
-    width: 70px;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-right: 20px;
-    margin-bottom: 5px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-    color: rgb(128, 128, 128);
-}
-
-#Aviso_de_Inconsistência_CVV_Cartão_1_Campo,#Aviso_de_Inconsistência_CVV_Cartão_2_Campo{
-    font-size: 11px;
-    color: #db0b3c;
-    margin-top: 0px;
-    margin-bottom: 0px;
-    display: none;
-}
-
-#Número_de_Parcelas_Cartão_1,#Número_de_Parcelas_Cartão_2{
-    width: 100%;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-bottom: 10px;
-    font-size: 13px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-    color: black;
-}
-
-/*Resumo da Compra*/
 #Texto_Resumo_Compra{
     margin-top: 10px;
     padding-bottom: 5px;
@@ -1130,7 +948,12 @@
     display: none;
 }
 
-/*Informações de Segurança*/
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                    Informações de Segurança
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
 #Informações_de_Segurança{
     width: 100%;
     padding-left: 0px;
@@ -1454,7 +1277,6 @@
 //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-
 #AmbienteSeguro_e_Container_PagarMe{
     display: inline-flex;
     margin-top: 20px;
@@ -1511,7 +1333,13 @@
     margin-top: 2px;
 }
 
+/***********************************************************************************************************/
+/***********************************************************************************************************/
+/***********************************************************************************************************/
 /**********************************************Versão Desktop***********************************************/
+/***********************************************************************************************************/
+/***********************************************************************************************************/
+/***********************************************************************************************************/
 
 @media (min-width: 670px) {
 
@@ -1835,7 +1663,7 @@
 
     #Tipo_de_Pagamento_UM_CARTAO{
         border: 2px solid #790d26;
-        width: 114px;
+        width: 144px;
         height: 70px;
         margin-bottom:10px;
         margin-right: 5px;
@@ -1845,9 +1673,9 @@
         background-color: #ffebef;
     }
 
-    #Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO,#Tipo_de_Pagamento_DOIS_CARTOES,#Tipo_de_Pagamento_PAGAMENTO_RECORRENTE{
+    #Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO{
         border: 1px solid rgb(146, 146, 146);
-        width: 114px;
+        width: 144px;
         height: 70px;
         margin-bottom:10px;
         margin-right: 5px;
@@ -1880,20 +1708,9 @@
         background-color: #fff7f9;
     }
 
-    #Tipo_de_Pagamento_DOIS_CARTOES:hover{
-        box-shadow: 1px 1px 3px black;
-        border: 1px solid #ffc6d3;
-        background-color: #fff7f9;
-    }
-
-    #Tipo_de_Pagamento_PAGAMENTO_RECORRENTE:hover{
-        box-shadow: 1px 1px 3px black;
-        border: 1px solid #ffc6d3;
-        background-color: #fff7f9;
-    }
-
     #UM_CARTAO{
         height:18px;
+        margin-top: 7px;
     }
 
     #PIX{
@@ -1909,15 +1726,6 @@
     #PIX_CARTAO{
         height:18px;
         margin-top: 7px;
-    }
-
-    #DOIS_CARTOES{
-        height:18px;
-        margin-top: 7px;
-    }
-
-    #PAGAMENTO_RECORRENTE{
-        height:18px;
     }
 
     .Descrição_Pagamento{
@@ -2353,179 +2161,12 @@
         color: black;
     }
 
-
     /*////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////
-            Meio de Pagamento: Dois Cartões de Crédito
+                            Resumo da Compra
     //////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////*/
 
-    #Container_Dados_Pagamento_DOIS_CARTOES{
-        display: none;
-    }
-
-    #Dados_Pagamento_DOIS_CARTOES{
-        display: inline-flex;
-        padding-top: 10px;
-        margin-bottom: 10px;
-        height: auto;
-    }
-
-    #Dados_Cartão_Crédito_1{
-        width: 290px;
-        border-radius: 5px;
-        border: 1px solid rgb(222, 222, 222);
-        padding: 15px;
-        margin-right: 10px;
-        margin-bottom: 0px;
-    }
-
-    #Dados_Cartão_Crédito_2{
-        width: 290px;
-        border-radius: 5px;
-        border: 1px solid rgb(222, 222, 222);
-        padding: 15px;
-        margin-bottom: 0px;
-    }
-
-    #Identificação_Cartão_Crédito_1,#Identificação_Cartão_Crédito_2{
-        width: 100%;
-        height: 40px;
-        padding: 10px;
-        background-color: rgb(243, 243, 243);
-        border-radius: 5px;
-        display: inline-flex;
-    }
-
-    #Imagem_Cartão_Crédito_1,#Imagem_Cartão_Crédito_2{
-        width: 25px;
-        height: 20px;
-        margin-right: 8px;
-    }
-
-    #Texto_Cartão_Crédito_1,#Texto_Cartão_Crédito_2{
-        vertical-align: middle;
-    }
-
-    #Valor_no_Cartão_1,#Valor_no_Cartão_2{
-        width: 100%;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-right: 15px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-    }
-
-    #Valor_no_Cartão_2{
-        cursor: no-drop;
-    }
-
-    .Observações_de_Preenchimento{
-        font-size:12px;
-        margin-top: 5px;
-        margin-bottom: 15px;
-        color: rgb(128, 128, 128);
-    }
-
-    #Número_do_Cartão_1,#Número_do_Cartão_2{
-        width: 100%;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-right: 15px;
-        margin-bottom: 15px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-    }
-
-    #Aviso_de_Inconsistência_Número_do_Cartão_1_Campo, #Aviso_de_Inconsistência_Número_do_Cartão_2_Campo{
-        font-size: 11px;
-        color: #db0b3c;
-        margin-top: -10px;
-        margin-bottom: 4px;
-        display: none;
-    }
-
-    #Nome_do_Titular_do_Cartão_1,#Nome_do_Titular_do_Cartão_2{
-        width: 100%;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-right: 15px;
-        margin-bottom: 5px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-    }
-
-    #Mes_Ano_CVV_Cartão_1,#Mes_Ano_CVV_Cartão_2{
-        display: inline-flex;
-        margin-bottom: 5px;
-    }
-
-    #Campo_de_Preenchimento_Mês_Cartão_1,#Campo_de_Preenchimento_Mês_Cartão_2{
-        width: 70px;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-right: 20px;
-        margin-bottom: 5px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-        color: rgb(128, 128, 128);
-    }
-
-    #Campo_de_Preenchimento_Ano_Cartão_1,#Campo_de_Preenchimento_Ano_Cartão_2{
-        width: 70px;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-right: 20px;
-        margin-bottom: 5px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-        color: rgb(128, 128, 128);
-    }
-
-    #Campo_de_Preenchimento_CVV_Cartão_1,#Campo_de_Preenchimento_CVV_Cartão_2{
-        width: 70px;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-right: 20px;
-        margin-bottom: 5px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-        color: rgb(128, 128, 128);
-    }
-
-    #Aviso_de_Inconsistência_CVV_Cartão_1_Campo,#Aviso_de_Inconsistência_CVV_Cartão_2_Campo{
-        font-size: 11px;
-        color: #db0b3c;
-        margin-top: 0px;
-        margin-bottom: 0px;
-        display: none;
-    }
-
-    #Número_de_Parcelas_Cartão_1,#Número_de_Parcelas_Cartão_2{
-        width: 100%;
-        display: block;
-        padding: 8px;
-        margin-top:5px;
-        margin-bottom: 5px;
-        font-size: 13px;
-        border: 1px solid rgb(146, 146, 146);
-        border-radius: 5px;
-        color: black;
-    }
-
-    /*Resumo da Compra*/
     #Texto_Resumo_Compra{
         margin-top: 10px;
         padding-bottom: 5px;
@@ -2541,7 +2182,7 @@
     #Nome_Produto_Comprado{
         float: left;
         margin-top: 10px;
-        font-size: 15px;
+        font-size: 16px;
         color: rgb(0, 0, 0);
     }
 
@@ -2615,7 +2256,13 @@
         display: none;
     }
 
-    /*Informações de Segurança*/
+    /*////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////
+                      Informações de Segurança
+    //////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////*/
+
+
     #Informações_de_Segurança{
         width: 590px;
         padding-left: 0px;

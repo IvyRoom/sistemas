@@ -153,7 +153,7 @@ Ir_Pagamento.addEventListener("click", function(event) {
     event.preventDefault();
     var data = {
         Variável_Mestra_Valor_Total_do_Serviço_à_Vista: ValorEscolhido,
-        Nome_Produto_Título: "<b> Extensão de Acesso (" + Período_Desejado.value + " dias)</b>",
+        Nome_Produto_Título: "Extensão de Acesso (" + Período_Desejado.value + " dias)",
         Nome_Produto_Valor: "Extensão de Acesso " + Período_Desejado.value + " dias"        
     };
 
