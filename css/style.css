@@ -173,7 +173,8 @@
 #Container-Externo-Seção-1{
     display:block;
     padding-top: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
+    cursor: pointer;
 }
 
 .Chamada-Seção-1{
@@ -181,7 +182,7 @@
     width: calc(var(--considered-screen-width) * 0.85);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .Número-Chamada-Seção-1{
@@ -196,13 +197,55 @@
     padding-top: 14px;
 }
 
+#Texto-Botão-Externo-Abertura-Seção-1{
+    background-color: #0aa15b;
+    font-size: 14px;
+    width: 120px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    color: #f2f2f2;
+    border-radius: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    animation: Pulso-Botão-Externo-Abertura-Seção-1 3s ease-out infinite;
+}
+
+@keyframes Pulso-Botão-Externo-Abertura-Seção-1 {
+    
+    0% {
+      box-shadow: 0 0 0px 0 #0aa15b;
+    }
+    
+    25% {
+      box-shadow: 0 0 0px 5px #489672;
+    }
+    
+    50% {
+      box-shadow: 0 0 0px 10px #d0d0d0;
+    }
+
+    50.001% {
+        box-shadow: 0 0 0px 0 #0aa15b;
+      }
+
+    75% {
+        box-shadow: 0 0 0px 5px #489672;
+    }
+
+    100% {
+        box-shadow: 0 0 0px 10px #d0d0d0;
+    }
+
+}
+
 #Seta-Chamada-Externa-Seção-1{
     fill: #790D25;
     stroke: #790D25;
-    justify-content: center;
-    display: flex;
-    align-items: center;
-    margin-top: -20px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /*/////////////////////////// Seção 1: Container Interno ////////////////////////////////*/
@@ -405,7 +448,8 @@
 #Container-Externo-Seção-2{
     display:block;
     padding-top: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
+    cursor: pointer;
 }
 
 .Chamada-Seção-2{
@@ -413,7 +457,7 @@
     width: calc(var(--considered-screen-width) * 0.85);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .Número-Chamada-Seção-2{
@@ -428,13 +472,55 @@
     padding-top: 14px;
 }
 
+#Texto-Botão-Externo-Abertura-Seção-2{
+    background-color: #0aa15b;
+    font-size: 14px;
+    width: 120px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    color: #fff;
+    border-radius: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    animation: Pulso-Botão-Externo-Abertura-Seção-2 3s ease-out infinite;
+}
+
+@keyframes Pulso-Botão-Externo-Abertura-Seção-2 {
+    
+    0% {
+      box-shadow: 0 0 0px 0 #0aa15b;
+    }
+    
+    25% {
+      box-shadow: 0 0 0px 5px #489672;
+    }
+    
+    50% {
+      box-shadow: 0 0 0px 10px #3a3a3a;
+    }
+
+    50.001% {
+        box-shadow: 0 0 0px 0 #0aa15b;
+      }
+
+    75% {
+        box-shadow: 0 0 0px 5px #489672;
+    }
+
+    100% {
+        box-shadow: 0 0 0px 10px #3a3a3a;
+    }
+
+}
+
 #Seta-Chamada-Externa-Seção-2{
     fill: #fff;
     stroke: #fff;
-    justify-content: center;
-    display: flex;
-    align-items: center;
-    margin-top: -20px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /*/////////////////////////// Seção 2: Container Interno ////////////////////////////////*/
@@ -558,7 +644,8 @@
 #Container-Externo-Seção-3{
     display:block;
     padding-top: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
+    cursor: pointer;
 }
 
 .Chamada-Seção-3{
@@ -566,7 +653,7 @@
     width: calc(var(--considered-screen-width) * 0.85);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .Número-Chamada-Seção-3{
@@ -581,13 +668,55 @@
     padding-top: 14px;
 }
 
+#Texto-Botão-Externo-Abertura-Seção-3{
+    background-color: #0aa15b;
+    font-size: 14px;
+    width: 120px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    color: #f2f2f2;
+    border-radius: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    animation: Pulso-Botão-Externo-Abertura-Seção-3 3s ease-out infinite;
+}
+
+@keyframes Pulso-Botão-Externo-Abertura-Seção-3 {
+    
+    0% {
+      box-shadow: 0 0 0px 0 #0aa15b;
+    }
+    
+    25% {
+      box-shadow: 0 0 0px 5px #489672;
+    }
+    
+    50% {
+      box-shadow: 0 0 0px 10px #d0d0d0;
+    }
+
+    50.001% {
+        box-shadow: 0 0 0px 0 #0aa15b;
+      }
+
+    75% {
+        box-shadow: 0 0 0px 5px #489672;
+    }
+
+    100% {
+        box-shadow: 0 0 0px 10px #d0d0d0;
+    }
+
+}
+
 #Seta-Chamada-Externa-Seção-3{
     fill: #790D25;
     stroke: #790D25;
-    justify-content: center;
-    display: flex;
-    align-items: center;
-    margin-top: -20px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /*/////////////////////////// Seção 3: Container Interno ////////////////////////////////*/
@@ -731,7 +860,8 @@
 #Container-Externo-Seção-4{
     display:block;
     padding-top: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
+    cursor: pointer;
 }
 
 .Chamada-Seção-4{
@@ -739,13 +869,13 @@
     width: calc(var(--considered-screen-width) * 0.85);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .Número-Chamada-Seção-4{
     font-size: 64px;
     color: #fff;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 .Texto-Chamada-Seção-4{
@@ -754,13 +884,55 @@
     padding-top: 14px;
 }
 
+#Texto-Botão-Externo-Abertura-Seção-4{
+    background-color: #0aa15b;
+    font-size: 14px;
+    width: 120px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    text-align: center;
+    color: #fff;
+    border-radius: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 5px;
+    animation: Pulso-Botão-Externo-Abertura-Seção-4 3s ease-out infinite;
+}
+
+@keyframes Pulso-Botão-Externo-Abertura-Seção-4 {
+    
+    0% {
+      box-shadow: 0 0 0px 0 #0aa15b;
+    }
+    
+    25% {
+      box-shadow: 0 0 0px 5px #489672;
+    }
+    
+    50% {
+      box-shadow: 0 0 0px 10px #3a3a3a;
+    }
+
+    50.001% {
+        box-shadow: 0 0 0px 0 #0aa15b;
+      }
+
+    75% {
+        box-shadow: 0 0 0px 5px #489672;
+    }
+
+    100% {
+        box-shadow: 0 0 0px 10px #3a3a3a;
+    }
+
+}
+
 #Seta-Chamada-Externa-Seção-4{
     fill: #fff;
     stroke: #fff;
-    justify-content: center;
-    display: flex;
-    align-items: center;
-    margin-top: -20px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /*/////////////////////////// Seção 4: Container Interno ////////////////////////////////*/
