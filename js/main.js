@@ -1,6 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Puxa as variáveis do HTML.
 
+var ContainerInternoDiasContagemRegressiva = document.getElementById("Container-Interno-Dias-Contagem-Regressiva");
+var ContainerInternoHorasContagemRegressiva = document.getElementById("Container-Interno-Horas-Contagem-Regressiva");
+var ContainerInternoMinutosContagemRegressiva = document.getElementById("Container-Interno-Minutos-Contagem-Regressiva");
+
 var ContainerVídeoPrincipal = document.getElementById("Container-Vídeo-Principal");
 var BotãoTelaCheia1 = document.getElementById("Botão-Tela-Cheia-1");
 var TextoTelaCheia1 = document.getElementById("Texto-Tela-Cheia-1");
@@ -168,26 +172,28 @@ function Processa_fbc_fbp() {
 
 window.addEventListener('load', Processa_fbc_fbp);
 
-// /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-// /*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/
-// /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+/*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/
+/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-// var DataEncerramentoInscrições = new Date("December 4, 2024 23:59:59").getTime();
+var DataAberturaTurma = new Date("April 10, 2025 22:00:00").getTime();
 
-// var ContagemRegressiva = setInterval(function() {
+var ContagemRegressiva = setInterval(function() {
 
-//     var TempoRestante = DataEncerramentoInscrições - new Date().getTime();
+    var TempoRestante = DataAberturaTurma - new Date().getTime();
 
-//     if (TempoRestante < 0) {
-//         clearInterval(ContagemRegressiva);
-//         TempoRestante = 0;
-//     }
+    if (TempoRestante < 0) {
+        clearInterval(ContagemRegressiva);
+        TempoRestante = 0;
+    }
 
-//     ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
-//     ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
-//     ContainerInternoSegundosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60)) / 1000)).slice(-2);
+    console.log(TempoRestante);
 
-// }, 1000);
+    ContainerInternoDiasContagemRegressiva.innerHTML = ("0" + Math.floor(TempoRestante / (1000 * 60 * 60 * 24))).slice(-2);
+    ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
+    ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
+    
+}, 1000);
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*/// Retira os botões de girar os vídeos se o usuário não estiver usando o Instagram In-App Browser. //*/
