@@ -36,7 +36,8 @@ var Aviso_de_Inconsistência_CEP_Botão = document.getElementById("Aviso_de_Inco
 /* Botões de Pagamento */
 var Tipo_de_Pagamento_Escolhido = "UM_CARTAO";
 var Tipo_de_Pagamento_UM_CARTAO = document.getElementById("Tipo_de_Pagamento_UM_CARTAO");
-var Tipo_de_Pagamento_PIX = document.getElementById("Tipo_de_Pagamento_PIX");
+var Tipo_de_Pagamento_PIX_PARCELADO = document.getElementById("Tipo_de_Pagamento_PIX_PARCELADO");
+var Tipo_de_Pagamento_PIX_À_VISTA = document.getElementById("Tipo_de_Pagamento_PIX_À_VISTA");
 var Tipo_de_Pagamento_BOLETO = document.getElementById("Tipo_de_Pagamento_BOLETO");
 var Tipo_de_Pagamento_PIX_CARTAO = document.getElementById("Tipo_de_Pagamento_PIX_CARTAO");
 var Tipo_de_Pagamento_DOIS_CARTOES = document.getElementById("Tipo_de_Pagamento_DOIS_CARTOES");
@@ -67,9 +68,13 @@ var Aviso_de_Inconsistência_CVV_Cartão_Campo = document.getElementById("Aviso_
 var Aviso_de_Inconsistência_CVV_Cartão_Botão = document.getElementById("Aviso_de_Inconsistência_CVV_Cartão_Botão");
 var Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos;
 
-/* Tipo de Pagamento: PIX */
-var Dados_Pagamento_PIX = document.getElementById("Dados_Pagamento_PIX");
-var Valor_Total_da_Compra_no_PIX;
+/* Tipo de Pagamento: PIX_À_VISTA */
+var Dados_Pagamento_PIX_PARCELADO = document.getElementById("Dados_Pagamento_PIX_PARCELADO");
+var Valor_Total_da_Compra_no_PIX_PARCELADO;
+
+/* Tipo de Pagamento: PIX_À_VISTA */
+var Dados_Pagamento_PIX_À_VISTA = document.getElementById("Dados_Pagamento_PIX_À_VISTA");
+var Valor_Total_da_Compra_no_PIX_À_VISTA;
 
 /* Tipo de Pagamento: BOLETO */
 var Dados_Pagamento_BOLETO = document.getElementById("Dados_Pagamento_BOLETO");
@@ -559,8 +564,11 @@ Tipo_de_Pagamento_UM_CARTAO.addEventListener("click", () => {
     Tipo_de_Pagamento_UM_CARTAO.style.backgroundColor = " #ffebef";
 
     /*Muda o layout dos demais botões.*/
-    Tipo_de_Pagamento_PIX.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_PIX.style.backgroundColor = " #ffffff";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_PIX_À_VISTA.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_À_VISTA.style.backgroundColor = " #ffffff";
 
     Tipo_de_Pagamento_BOLETO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_BOLETO.style.backgroundColor = " #ffffff";
@@ -586,7 +594,9 @@ Tipo_de_Pagamento_UM_CARTAO.addEventListener("click", () => {
 
     /*Desaciona os dados de pagamento relativos aos demais botões.*/
     
-    Dados_Pagamento_PIX.style.display = "none";
+    Dados_Pagamento_PIX_PARCELADO.style.display = "none";
+
+    Dados_Pagamento_PIX_À_VISTA.style.display = "none";
 
     Dados_Pagamento_BOLETO.style.display = "none";
 
@@ -626,28 +636,31 @@ Tipo_de_Pagamento_UM_CARTAO.addEventListener("click", () => {
 
     /*Atualiza o texto do botão de compra.*/
     Comprar.innerText = "Comprar";
+    Comprar.style.backgroundColor = "#0aa15b";
 
 })
 
+/*///////////////////////// 
+    Botão PIX_PARCELADO
+/////////////////////////*/
 
-/*////////////////////// 
-        Botão PIX 
-//////////////////////*/
-
-Tipo_de_Pagamento_PIX.addEventListener("click", () => {
+Tipo_de_Pagamento_PIX_PARCELADO.addEventListener("click", () => {
     
     /*/////// Define o Tipo de Pagamento Escolhido ////////*/ 
-    Tipo_de_Pagamento_Escolhido = "PIX";
+    Tipo_de_Pagamento_Escolhido = "PIX_PARCELADO";
 
     /*/////// Layout ////////*/
     
     /*Muda o layout do botão clicado.*/
-    Tipo_de_Pagamento_PIX.style.border = "2px solid #790d26";
-    Tipo_de_Pagamento_PIX.style.backgroundColor = " #ffebef";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.border = "2px solid #790d26";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.backgroundColor = " #ffebef";
 
     /*Muda o layout dos demais botões.*/
     Tipo_de_Pagamento_UM_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_UM_CARTAO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_PIX_À_VISTA.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_À_VISTA.style.backgroundColor = " #ffffff";
 
     Tipo_de_Pagamento_BOLETO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_BOLETO.style.backgroundColor = " #ffffff";
@@ -658,7 +671,114 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
     /*/////// Configuração dos Dados de Pagamento ////////*/
 
     /*Aciona os dados de pagamento relativos ao botão clicado.*/
-    Dados_Pagamento_PIX.style.display = "block";
+    Dados_Pagamento_PIX_PARCELADO.style.display = "block";
+
+    Valor_Produto_Comprado.innerHTML = "A definir";
+
+    /*Desaciona os dados de pagamento relativos aos demais botões.*/
+    Dados_Pagamento_UM_CARTAO.style.display = "none";
+
+        Número_do_Cartão.required = false;
+        Nome_do_Titular_do_Cartão.required = false;
+        Campo_de_Preenchimento_Mês_Cartão.required = false;
+        Campo_de_Preenchimento_Ano_Cartão.required = false;
+        Campo_de_Preenchimento_CVV_Cartão.required = false;
+        Número_de_Parcelas_Cartão_do_UM_CARTAO.required = false;
+
+    Dados_Pagamento_PIX_À_VISTA.style.display = "none";
+
+    Dados_Pagamento_BOLETO.style.display = "none";
+
+    Dados_Pagamento_PIX_CARTAO.style.display = "none";
+
+        Valor_no_Cartão_do_PIX_CARTÃO.required = false;
+        Número_de_Parcelas_Cartão_do_PIX_CARTÃO.required = false;
+        Número_do_Cartão_do_PIX_CARTÃO.required = false;
+        Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.required = false; 
+        Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.required = false;
+        Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.required = false;
+        Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.required = false;
+
+    /*/////// Reseta os Campos Internos, Avisos de Inconsistência e Desabilitação do Botão de Compra dos Dados de Pagamento ////////*/
+    
+    /*UM_CARTAO*/
+    Número_do_Cartão.value = "";
+    Nome_do_Titular_do_Cartão.value = "";
+    Campo_de_Preenchimento_Mês_Cartão.value = "";
+    Campo_de_Preenchimento_Mês_Cartão.style.color = "rgb(128, 128, 128)";
+    Campo_de_Preenchimento_Ano_Cartão.value = "";
+    Campo_de_Preenchimento_Ano_Cartão.style.color = "rgb(128, 128, 128)";
+    Campo_de_Preenchimento_CVV_Cartão.value = "";
+    Número_de_Parcelas_Cartão_do_UM_CARTAO.value = "";
+    Número_de_Parcelas_Cartão_do_UM_CARTAO.style.color = "rgb(128, 128, 128)";
+
+    Aviso_de_Inconsistência_Número_do_Cartão_Campo.style.display = "none";
+    Aviso_de_Inconsistência_Número_do_Cartão_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão = "liberado";
+    Aviso_de_Inconsistência_CVV_Cartão_Campo.style.display = "none";
+    Aviso_de_Inconsistência_CVV_Cartão_Botão.style.display = "none";
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão = "liberado";
+
+    /*PIX_CARTAO*/
+    Valor_no_Cartão_do_PIX_CARTÃO.value = "";
+    configura_valor_e_parcelas_do_PIX_CARTÃO ();
+    Número_de_Parcelas_Cartão_do_PIX_CARTÃO.value = "1"; 
+    Número_do_Cartão_do_PIX_CARTÃO.value = "";
+    Nome_do_Titular_do_Cartão_do_PIX_CARTÃO.value = "";
+    Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.value = "";
+    Campo_de_Preenchimento_Mês_Cartão_do_PIX_CARTÃO.style.color = "rgb(128, 128, 128)";
+    Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.value = "";
+    Campo_de_Preenchimento_Ano_Cartão_do_PIX_CARTÃO.style.color = "rgb(128, 128, 128)";
+    Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO.value = "";
+
+    Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
+    Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
+    Botão_Compra_Status_Número_do_Cartão_do_PIX_CARTÃO = "liberado";
+    Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Campo.style.display = "none";
+    Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão.style.display = "none";
+    Botão_Compra_Status_Campo_de_Preenchimento_CVV_Cartão_do_PIX_CARTÃO = "liberado";
+    AtualizaStatusBotãoCompra();
+
+    /*/////// Configuração do Botão de Compra ////////*/
+
+    /*Atualiza o texto do botão de compra.*/
+    Comprar.innerText = "Analisar Crédito";
+    Comprar.style.backgroundColor = "#0a62a1";
+
+})
+
+/*////////////////////// 
+    Botão PIX_À_VISTA
+//////////////////////*/
+
+Tipo_de_Pagamento_PIX_À_VISTA.addEventListener("click", () => {
+    
+    /*/////// Define o Tipo de Pagamento Escolhido ////////*/ 
+    Tipo_de_Pagamento_Escolhido = "PIX_À_VISTA";
+
+    /*/////// Layout ////////*/
+    
+    /*Muda o layout do botão clicado.*/
+    Tipo_de_Pagamento_PIX_À_VISTA.style.border = "2px solid #790d26";
+    Tipo_de_Pagamento_PIX_À_VISTA.style.backgroundColor = " #ffebef";
+
+    /*Muda o layout dos demais botões.*/
+    Tipo_de_Pagamento_UM_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_UM_CARTAO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_PIX_PARCELADO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_BOLETO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_BOLETO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_PIX_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_CARTAO.style.backgroundColor = " #ffffff";
+
+    /*/////// Configuração dos Dados de Pagamento ////////*/
+
+    /*Aciona os dados de pagamento relativos ao botão clicado.*/
+    Dados_Pagamento_PIX_À_VISTA.style.display = "block";
 
     Valor_Produto_Comprado.innerHTML = parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista).toLocaleString('pt-BR', configuração_BRL);
 
@@ -671,6 +791,8 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
         Campo_de_Preenchimento_Ano_Cartão.required = false;
         Campo_de_Preenchimento_CVV_Cartão.required = false;
         Número_de_Parcelas_Cartão_do_UM_CARTAO.required = false;
+
+    Dados_Pagamento_PIX_PARCELADO.style.display = "none";
 
     Dados_Pagamento_BOLETO.style.display = "none";
 
@@ -728,6 +850,7 @@ Tipo_de_Pagamento_PIX.addEventListener("click", () => {
 
     /*Atualiza o texto do botão de compra.*/
     Comprar.innerText = "Gerar PIX";
+    Comprar.style.backgroundColor = "#0aa15b";
 
 })
 
@@ -751,8 +874,11 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
     Tipo_de_Pagamento_UM_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_UM_CARTAO.style.backgroundColor = " #ffffff";
 
-    Tipo_de_Pagamento_PIX.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_PIX.style.backgroundColor = " #ffffff";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_PIX_À_VISTA.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_À_VISTA.style.backgroundColor = " #ffffff";
 
     Tipo_de_Pagamento_PIX_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_PIX_CARTAO.style.backgroundColor = " #ffffff";
@@ -775,7 +901,9 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
         Campo_de_Preenchimento_CVV_Cartão.required = false;
         Número_de_Parcelas_Cartão_do_UM_CARTAO.required = false;
 
-    Dados_Pagamento_PIX.style.display = "none";
+    Dados_Pagamento_PIX_PARCELADO.style.display = "none";
+
+    Dados_Pagamento_PIX_À_VISTA.style.display = "none";
 
     Dados_Pagamento_PIX_CARTAO.style.display = "none";
 
@@ -831,6 +959,7 @@ Tipo_de_Pagamento_BOLETO.addEventListener("click", () => {
 
     /*Atualiza o texto do botão de compra.*/
     Comprar.innerText = "Gerar Boleto";
+    Comprar.style.backgroundColor = "#0aa15b";
 
 })
 
@@ -853,8 +982,11 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
     Tipo_de_Pagamento_UM_CARTAO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_UM_CARTAO.style.backgroundColor = " #ffffff";
 
-    Tipo_de_Pagamento_PIX.style.border = "1px solid rgb(146, 146, 146)";
-    Tipo_de_Pagamento_PIX.style.backgroundColor = " #ffffff";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_PARCELADO.style.backgroundColor = " #ffffff";
+
+    Tipo_de_Pagamento_PIX_À_VISTA.style.border = "1px solid rgb(146, 146, 146)";
+    Tipo_de_Pagamento_PIX_À_VISTA.style.backgroundColor = " #ffffff";
 
     Tipo_de_Pagamento_BOLETO.style.border = "1px solid rgb(146, 146, 146)";
     Tipo_de_Pagamento_BOLETO.style.backgroundColor = " #ffffff";
@@ -884,7 +1016,9 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
         Campo_de_Preenchimento_CVV_Cartão.required = false;
         Número_de_Parcelas_Cartão_do_UM_CARTAO.required = false;
 
-    Dados_Pagamento_PIX.style.display = "none";
+    Dados_Pagamento_PIX_PARCELADO.style.display = "none";
+
+    Dados_Pagamento_PIX_À_VISTA.style.display = "none";
 
     Dados_Pagamento_BOLETO.style.display = "none";
 
@@ -913,6 +1047,7 @@ Tipo_de_Pagamento_PIX_CARTAO.addEventListener("click", () => {
 
     /*Atualiza o texto do botão de compra.*/
     Comprar.innerText = "Comprar";
+    Comprar.style.backgroundColor = "#0aa15b";
 
 })
 
@@ -1419,8 +1554,17 @@ AtualizaStatusBotãoCompra();
 
 Formulário_de_Pagamento.addEventListener('submit', (event) => {
     
+    /////////////////////////////////////////
+    // Desabilita o botão de Compra.
+
     event.preventDefault();
     Comprar.disabled = true;
+    Comprar.style.cursor = 'wait';
+    Comprar.style.backgroundColor = '#d2d2d2';
+    document.body.style.cursor = 'wait';
+
+    ///////////////////////////////////////
+    // Envia as informações ao backend.
     
     fetch('https://plataforma-backend-v3.azurewebsites.net/checkout/processarpagamento', { //http://localhost:3000/checkout/processarpagamento //https://plataforma-backend-v3.azurewebsites.net/checkout/processarpagamento
 
@@ -1463,8 +1607,14 @@ Formulário_de_Pagamento.addEventListener('submit', (event) => {
             Valor_Total_da_Compra_com_Juros_UM_CARTAO: parseFloat(Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos / 100).toLocaleString('pt-BR', configuração_BRL),
             Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos: Valor_Total_da_Compra_com_Juros_UM_CARTAO_Dígitos,
 
-            Valor_Total_da_Compra_no_PIX: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
-            Valor_Total_da_Compra_no_PIX_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
+            Valor_Nominal_da_Compra_no_PIX_PARCELADO: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_Nominal_da_Compra_no_PIX_PARCELADO_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
+            Url_Aprovação_PIX_PARCELADO: 'https://ivygestao.com/checkout/confirmação',
+            Url_Cancelamento_PIX_PARCELADO: 'https://ivygestao.com/checkout/cancelamento',
+            Url_Webhook_PIX_PARCELADO: 'https://plataforma-backend-v3.azurewebsites.net/checkout/webhook_pagaleve',
+            
+            Valor_Total_da_Compra_no_PIX_À_VISTA: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
+            Valor_Total_da_Compra_no_PIX_À_VISTA_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
 
             Valor_Total_da_Compra_no_BOLETO: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
             Valor_Total_da_Compra_no_BOLETO_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
@@ -1487,10 +1637,33 @@ Formulário_de_Pagamento.addEventListener('submit', (event) => {
     
     })
     
-    .then(response => {
-        
-        window.location.href = "/checkout/confirmação";
+    .then(response => response.json())
     
-    });
+    .then(data =>  {
+        
+        if (Tipo_de_Pagamento_Escolhido === 'PIX_PARCELADO') {
 
+            let PagaLeve_Checkout_URL = data.PagaLeve_Checkout_URL;
+            
+            ///////////////////////////////////
+            // Reabilita o botão de Compra.
+
+            Comprar.disabled = false;
+            Comprar.style.cursor = 'pointer';
+            Comprar.style.backgroundColor = '#0a62a1';
+            document.body.style.cursor = 'default';
+
+            ///////////////////////////////////
+            // Abre o Checkout da PagaLeve.
+
+            window.open(PagaLeve_Checkout_URL, '_blank');
+
+        } else {
+
+            window.location.href = "/checkout/confirmação";
+
+        }
+
+    })
+    
 });

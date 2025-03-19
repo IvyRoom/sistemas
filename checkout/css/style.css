@@ -363,7 +363,18 @@
     background-color: #ffebef;
 }
 
-#Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO{
+#Tipo_de_Pagamento_PIX_PARCELADO{
+    border: 1px solid rgb(146, 146, 146);
+    width: 100%;
+    height: 55px;
+    margin-bottom:10px;
+    margin-right: 5px;
+    border-radius: 5px;
+    text-align: center;
+    padding-top: 3px;
+}
+
+#Tipo_de_Pagamento_PIX_À_VISTA,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO{
     border: 1px solid rgb(146, 146, 146);
     width: 100%;
     height: 55px;
@@ -380,7 +391,13 @@
     background-color: #fff7f9;
 }
 
-#Tipo_de_Pagamento_PIX:hover{
+#Tipo_de_Pagamento_PIX_PARCELADO:hover{
+    box-shadow: 1px 1px 3px black;
+    border: 1px solid #ffc6d3;
+    background-color: #fff7f9;
+}
+
+#Tipo_de_Pagamento_PIX_À_VISTA:hover{
     box-shadow: 1px 1px 3px black;
     border: 1px solid #ffc6d3;
     background-color: #fff7f9;
@@ -402,7 +419,12 @@
     height:18px;
 }
 
-#PIX{
+#PIX_PARCELADO{
+    height:22px;
+    margin-top: 5px;
+}
+
+#PIX_À_VISTA{
     height:18px;
     margin-top: 5px;
 }
@@ -421,6 +443,7 @@
     color: rgb(146, 146, 146);
     font-size: 12px;
     text-align: center;
+    user-select: none;
 }
 
 /*////////////////////////////////////////////////////////////
@@ -542,11 +565,11 @@
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-                Meio de Pagamento: PIX
+                Meio de Pagamento: PIX_PARCELADO
 //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////*/
 
-#Dados_Pagamento_PIX{
+#Dados_Pagamento_PIX_PARCELADO{
     height: auto;
     width: 100%;
     margin-top: 10px;
@@ -560,7 +583,7 @@
     display: none;
 }
 
-#Detalhamento_Dados_Pagamento_PIX{
+#Detalhamento_Dados_Pagamento_PIX_PARCELADO{
     height: auto;
     width: 100%;
     border: 1px solid rgb(222, 222, 222);
@@ -572,19 +595,63 @@
     display: block;
 }
 
-#QR_Code{
+.QR_Code{
     height: 20px;
     width: 20px;
 }
 
-#Manchete_Como_Funciona_PIX{
+#Manchete_Como_Funciona_PIX_PARCELADO{
     font-size:15px;
     color: #790d26; 
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
-#Explicação_Como_Funciona_PIX{
+#Explicação_Como_Funciona_PIX_PARCELADO{
+    font-size:14px;
+    color: "black";
+}
+
+/*////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+                Meio de Pagamento: PIX_À_VISTA
+//////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////*/
+
+#Dados_Pagamento_PIX_À_VISTA{
+    height: auto;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: none;
+}
+
+#Detalhamento_Dados_Pagamento_PIX_À_VISTA{
+    height: auto;
+    width: 100%;
+    border: 1px solid rgb(222, 222, 222);
+    border-radius: 5px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    display: block;
+}
+
+#Manchete_Como_Funciona_PIX_À_VISTA{
+    font-size:15px;
+    color: #790d26; 
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#Explicação_Como_Funciona_PIX_À_VISTA{
     font-size:14px;
     color: "black";
 }
@@ -903,8 +970,7 @@
     transition-duration: 0.1s;
 }
 
-#Comprar:hover{
-    background-color: #0ab666; 
+#Comprar:hover{ 
     box-shadow: 2px 2px 8px black;
 }
 
@@ -956,6 +1022,7 @@
 
 #Informações_de_Segurança{
     width: 100%;
+    margin-top: 20px;
     padding-left: 0px;
     text-align: left;
     -webkit-user-select: none;
@@ -1278,68 +1345,74 @@
 ////////////////////////////////////////////////////////////*/
 
 #AmbienteSeguro_e_Container_PagarMe{
-    display: inline-flex;
+    display: block;
     margin-top: 20px;
     width: 100%;
-    justify-content: center;
-}
-
-#Identificação_Ivy_Room{
-    font-size: 8px;
-    color: rgb(170, 170, 170);
-    width: 100px;
-    height: auto;
-    margin-right: auto;
-    vertical-align: middle;
-    padding-top: 7px;
 }
 
 #AmbienteSeguro{
-    display: inline-flex;
-    padding-top: 7px;
+    width: auto;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
 #LogoCadeado{
     width: 15px;
     height: 15px;
-    margin-top: 5px;
     margin-right: 5px;
 }
 
 #Texto_AmbienteSeguro {
     font-size: 12px;
-    margin-top: 7px;
-    width: 100px;
     color: rgb(109, 109, 109);
+    margin-top: 2px;
 }
 
-#Container_PagarMe{
-    float: right;
+#Identificação_Ivy_Room{
+    font-size: 10px;
+    color: rgb(170, 170, 170);
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#Container_PoweredBy{
     display: block;
-    text-align: center;
-    margin-left: auto;
-    padding-left: 5px;
+    width: 100%;
 }
 
 #PoweredBy{
     font-size: 10px;
     color: rgb(109, 109, 109);
-    margin-left: -8px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+#Container_Logos{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#LogoPagaLeve{
+    width: 80px;
+    height: 17px;
+    margin-top: 5px;
 }
 
 #LogoPagarMe{
     width: 80px;
     height: auto;
-    margin-top: 2px;
+    margin-left: 5px;
 }
 
-/***********************************************************************************************************/
-/***********************************************************************************************************/
-/***********************************************************************************************************/
-/**********************************************Versão Desktop***********************************************/
-/***********************************************************************************************************/
-/***********************************************************************************************************/
-/***********************************************************************************************************/
+/***********************************************************************************************************************************************************/
+/***********************************************************************************************************************************************************/
+/***********************************************************************************************************************************************************/
+/*************************************************************************Versão Desktop********************************************************************/
+/***********************************************************************************************************************************************************/
+/***********************************************************************************************************************************************************/
+/***********************************************************************************************************************************************************/
 
 @media (min-width: 670px) {
 
@@ -1663,19 +1736,21 @@
 
     #Tipo_de_Pagamento_UM_CARTAO{
         border: 2px solid #790d26;
-        width: 144px;
+        width: 114px;
         height: 70px;
         margin-bottom:10px;
         margin-right: 5px;
         border-radius: 5px;
         text-align: center;
-        padding: 10px;
+        padding-top: 10px;
+        padding-left: 5px;
+        padding-right: 5px;
         background-color: #ffebef;
     }
 
-    #Tipo_de_Pagamento_PIX,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO{
+    #Tipo_de_Pagamento_PIX_PARCELADO,#Tipo_de_Pagamento_PIX_À_VISTA,#Tipo_de_Pagamento_BOLETO,#Tipo_de_Pagamento_PIX_CARTAO{
         border: 1px solid rgb(146, 146, 146);
-        width: 144px;
+        width: 114px;
         height: 70px;
         margin-bottom:10px;
         margin-right: 5px;
@@ -1713,7 +1788,7 @@
         margin-top: 7px;
     }
 
-    #PIX{
+    #PIX_À_VISTA{
         height:18px;
         margin-top: 7px;
     }
@@ -2571,54 +2646,70 @@
     //////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////*/
 
-
     #AmbienteSeguro_e_Container_PagarMe{
-        display: inline-flex;
-        margin-top: 20px;
-        justify-content: space-between;
-    }
-
-    #Identificação_Ivy_Room{
-        font-size: 10px;
-        color: rgb(170, 170, 170);
-        width: 220px;
-        height: auto;
+        display: block;
+        margin-top: 10px;
     }
 
     #AmbienteSeguro{
-        display: inline-flex;
-        margin-left: -60px;
+        display: flex;
+        justify-content: center;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 15px;
+        padding: 0px;
+        align-items: center;
     }
 
     #LogoCadeado{
         width: 15px;
         height: 15px;
-        margin-top: 5px;
         margin-right: 5px;
     }
 
     #Texto_AmbienteSeguro {
         font-size: 12px;
-        margin-top: 6px;
         width: 100px;
+        margin-top: 2px;
         color: rgb(109, 109, 109);
     }
 
-    #Container_PagarMe{
-        display: inline-flex;
+    #Identificação_Ivy_Room{
+        font-size: 10px;
+        color: rgb(170, 170, 170);
+        width: 100%;
+        margin-bottom: 15px;
+        height: auto;
+    }
+
+    #Container_PoweredBy{
+        display: block;
+        padding-left: 0px;
     }
 
     #PoweredBy{
-        margin-top: 15px;
-        margin-right: 5px;
         font-size: 10px;
         color: rgb(109, 109, 109);
         width: 60px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    #Container_Logos{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #LogoPagaLeve{
+        width: 80px;
+        height: auto;
     }
 
     #LogoPagarMe{
         width: 80px;
         height: auto;
+        margin-top: 0px;
     }
 
 }

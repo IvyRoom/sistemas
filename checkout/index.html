@@ -167,9 +167,14 @@
                             <p class="Descrição_Pagamento">Cartão de Crédito</p>
                         </div>
 
-                        <div id="Tipo_de_Pagamento_PIX" style="cursor: pointer">
-                            <img id="PIX" src="/checkout/img/PIX_CINZA_REDUZIDO.webp">
-                            <p class="Descrição_Pagamento">PIX</p>
+                        <div id="Tipo_de_Pagamento_PIX_PARCELADO" style="cursor: pointer">
+                            <img id="PIX_PARCELADO" src="/checkout/img/PIX_PARCELADO_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">PIX Parcelado</p>
+                        </div>
+
+                        <div id="Tipo_de_Pagamento_PIX_À_VISTA" style="cursor: pointer">
+                            <img id="PIX_À_VISTA" src="/checkout/img/PIX_CINZA_REDUZIDO.webp">
+                            <p class="Descrição_Pagamento">PIX à Vista</p>
                         </div>
 
                         <div id="Tipo_de_Pagamento_BOLETO" style="cursor: pointer">
@@ -306,19 +311,40 @@
 
                     </div>
 
-
                     <!-- -----------------------------------------
                     ----------------------------------------------
-                                Meio de Pagamento: PIX
+                            Meio de Pagamento: PIX_PARCELADO
                     ----------------------------------------------    
                     ---------------------------------------------->
                     
-                    <div id="Dados_Pagamento_PIX">
+                    <div id="Dados_Pagamento_PIX_PARCELADO">
 
-                        <div id="Detalhamento_Dados_Pagamento_PIX">
-                            <img id="QR_Code" src="/checkout/img/QR CODE.webp">
-                            <p id="Manchete_Como_Funciona_PIX"> Como funciona?</p>
-                            <p id="Explicação_Como_Funciona_PIX">Ao clicar em "Gerar PIX", você receberá um QR Code por e-mail. Basta escaneá-lo utilizando o aplicativo do seu banco e realizar o pagamento em até 30min. Feito isto, você receberá todas instruções de acesso ao serviço. Tudo simples, ágil e seguro.</p>
+                        <div id="Detalhamento_Dados_Pagamento_PIX_PARCELADO">
+                            <img class="QR_Code" src="/checkout/img/QR CODE.webp">
+                            <p id="Manchete_Como_Funciona_PIX_PARCELADO"> Como funciona?</p>
+                            <p id="Explicação_Como_Funciona_PIX_PARCELADO">
+                                Ao clicar em "Analisar Crédito", nosso sistema de análise instantânea de crédito junto à PagaLeve será inicializado. Dependendo dos valores aprovados ao seu CPF, você poderá parcelar o serviço em:
+                                <br><br>&#8226; <b>Entrada + 3x quinzenais sem juros:</b> Modalidade pensada para o funcionário CLT. Permite casar os vencimentos das parcelas com o recebimento / adiantamento quinzenal de salários.
+                                <br><br>&#8226; <b>Até 12x com juros:</b> Alternativa ao cartão de crédito.
+                                <br><br>Independente da modalidade escolhida, ao finalizar o processo você receberá todas instruções de acesso ao serviço. Tudo simples, ágil e seguro.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <!-- -----------------------------------------
+                    ----------------------------------------------
+                            Meio de Pagamento: PIX_À_VISTA
+                    ----------------------------------------------    
+                    ---------------------------------------------->
+                    
+                    <div id="Dados_Pagamento_PIX_À_VISTA">
+
+                        <div id="Detalhamento_Dados_Pagamento_PIX_À_VISTA">
+                            <img class="QR_Code" src="/checkout/img/QR CODE.webp">
+                            <p id="Manchete_Como_Funciona_PIX_À_VISTA"> Como funciona?</p>
+                            <p id="Explicação_Como_Funciona_PIX_À_VISTA">Ao clicar em "Gerar PIX", você receberá um QR Code por e-mail. Basta escaneá-lo utilizando o aplicativo do seu banco e realizar o pagamento em até 30min. Feito isto, você receberá todas instruções de acesso ao serviço. Tudo simples, ágil e seguro.</p>
                         </div>
 
                     </div>
@@ -527,22 +553,31 @@
                     
                     </div>
 
-                    <p class="Rodapé_Informações_de_Segurança"> <br> Ao clicar em "Comprar", eu (i) autorizo a Pagar.me a processar este pedido em nome da Ivy Room Ltda., (ii) atesto que sou maior de idade ou autorizado e acompanhado por um tutor legal e (iii) autorizo a Pagar.me e a Ivy Room Ltda. a armazenarem e processarem meus dados em conformidade com a Lei nº 13.853/2019 - Lei Geral de Proteção de Dados Pessoais (LGPD) - e com o PCI Compliance (Certificação Nível 1 com Atestado de Conformidade e Antifraude Integrado).</p>
+                    <p class="Rodapé_Informações_de_Segurança"> <br> Ao clicar em "Comprar", eu (i) autorizo a Pagar.me e/ou a PagaLeve a processarem este pedido em nome da Ivy Room Ltda., (ii) atesto que sou maior de idade ou autorizado e acompanhado por um tutor legal e (iii) autorizo a Pagar.me, a PagaLeve e a Ivy Room Ltda. a armazenarem e processarem meus dados em conformidade com a Lei nº 13.853/2019 - Lei Geral de Proteção de Dados Pessoais (LGPD) - e com o PCI Compliance (Certificação Nível 1 com Atestado de Conformidade e Antifraude Integrado).</p>
 
                     <div id="Aviso_Botão_Contrato"> Para acessar o contrato, primeiro preencha todo o formulário. </div>
 
                     <div id="AmbienteSeguro_e_Container_PagarMe">
-                        
-                        <p id="Identificação_Ivy_Room">® Ivy Room Ltda. | Todos os direitos reservados. <br> CNPJ: 39.794.363/0001-81</p>
                                                
                         <div id="AmbienteSeguro">
                             <img id="LogoCadeado" src="/checkout/img/CADEADO.webp" alt="">
                             <p id="Texto_AmbienteSeguro"> Ambiente seguro.</p>
                         </div>
 
-                        <div id="Container_PagarMe">
-                            <p id="PoweredBy"> Powered by</p>
-                            <img id="LogoPagarMe" src="/checkout/img/PAGARME.webp" alt="">
+                        <p id="Identificação_Ivy_Room">® Ivy Room Ltda. | Todos os direitos reservados. CNPJ: 39.794.363/0001-81</p>
+
+                        <div id="Container_PoweredBy">
+                            
+                            <p id="PoweredBy">Powered by</p>
+                            
+                            <div id="Container_Logos">
+                                
+                                <img id="LogoPagaLeve" src="/checkout/img/PAGALEVE.webp" alt="">
+                                
+                                <img id="LogoPagarMe" src="/checkout/img/PAGARME.webp" alt="">
+                            
+                            </div>
+                            
                         </div>
 
                     </div>
