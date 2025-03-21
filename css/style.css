@@ -189,6 +189,7 @@
     background-color: #790D25;
     width: calc(var(--considered-screen-width));
     margin-left: var(--considered-margin-left);
+    margin-top: -1px;
     padding-bottom: 20px;
 }
 

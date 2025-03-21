@@ -187,8 +187,6 @@ var ContagemRegressiva = setInterval(function() {
         TempoRestante = 0;
     }
 
-    console.log(TempoRestante);
-
     ContainerInternoDiasContagemRegressiva.innerHTML = ("0" + Math.floor(TempoRestante / (1000 * 60 * 60 * 24))).slice(-2);
     ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
     ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
