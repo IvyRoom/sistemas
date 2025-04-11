@@ -47,6 +47,35 @@
 /////////////////////////////////// Seção Abertura de Turma ///////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
+#Container-Atenção{
+    display: flex;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 40px;
+}
+
+#Manchete-Atenção{
+    color: #ffffff;
+    font-size: 24px;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-weight: 700;
+}
+
+.Triângulos-Exclamações{
+    margin-top: 0px;
+    fill: #e0c40e;
+    stroke: #000000;
+}
+
+.Exclamações{
+    text-align: center;
+    color: #000000;
+    margin-top: -30px;
+    font-size: 20px;
+}
+
 #Container-Externo-Contagem-Regressiva{
     padding-top: 40px;
     background: #000000;
@@ -56,8 +85,17 @@
 }
 
 #Manchete-Contagem-Regressiva{
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 30px;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
+}
+
+#Manchete-Complementar-Contagem-Regressiva{
+    font-size: 18px;
+    font-weight: 500;
     color: #ffffff;
     margin-bottom: 30px;
 }
@@ -136,35 +174,6 @@
     color: #ffffff;
     margin-top: 5px;
     font-size: 14px;
-}
-
-#Container-Atenção{
-    display: flex;
-    justify-content: center;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 40px;
-}
-
-#Manchete-Atenção{
-    color: #ffffff;
-    font-size: 24px;
-    margin-left: 10px;
-    margin-right: 10px;
-    font-weight: 700;
-}
-
-.Triângulos-Exclamações{
-    margin-top: 0px;
-    fill: #e0c40e;
-    stroke: #000000;
-}
-
-.Exclamações{
-    text-align: center;
-    color: #000000;
-    margin-top: -30px;
-    font-size: 20px;
 }
 
 #Manchete-Bônus{
@@ -1779,10 +1788,10 @@
 
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////// Container-Botão-Cadastro //////////////////////////////////
+///////////////////////////////// Container-Botão-Compra //////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Botão-Cadastro{
+#Container-Botão-Compra{
     display: block;
     height: 150px;
     border-radius: 50px 50px 0px 0px;
@@ -1795,7 +1804,7 @@
     bottom: 0px;
 }
 
-#Explicação-Cadastro{
+#Explicação-Compra{
     display: block;
     color: #790D25;
     width: 85%;
@@ -1805,7 +1814,7 @@
     text-align: center;
 }
 
-#Botão-Cadastro{
+#Botão-Compra{
     display: block;
     height: 60px;
     width: 85%;
