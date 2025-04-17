@@ -470,17 +470,17 @@ window.onscroll = function() {
 /*///////////////////////////////// Abre o checkout ///////////////////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-BotãoCompra.addEventListener("click", function(event){
-    event.preventDefault();
-    var data = {
-        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
-        Nome_Produto_Título: "Preparatório em Gestão Generalista",
-        Nome_Produto_Valor: "Preparatório em Gestão Generalista"        
-    };
+// BotãoCompra.addEventListener("click", function(event){
+//     event.preventDefault();
+//     var data = {
+//         Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
+//         Nome_Produto_Título: "Preparatório em Gestão Generalista",
+//         Nome_Produto_Valor: "Preparatório em Gestão Generalista"        
+//     };
 
-    localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
-    window.location.href = "checkout/";
-})
+//     localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
+//     window.location.href = "checkout/";
+// })
 
 // /*/////////////////////////////////////////////////////////////////////////////////////*/
 // /*///////////////////////////////// Abre o cadastro ///////////////////////////////////*/
