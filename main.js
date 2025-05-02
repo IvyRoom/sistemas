@@ -1,5 +1,22 @@
 ////////////////////////////////////////////////////////////////////////////////////////
+// Define o "Estado da Página".
+// Opções (até o momento, v0):
+// 1. "Captura de leads sem data de abertura da turma definida".
+// 2. "Captura de leads com data de abertura da turma definida".
+// 3. "Processamento de vendas"
+
+var Estado_da_Página = 1; //Definir manualmente.
+
+////////////////////////////////////////////////////////////////////////////////////////
 // Puxa as variáveis do HTML.
+
+if (Estado_da_Página === 2) {
+
+    var ContainerInternoDiasContagemRegressiva = document.getElementById("Container-Interno-Dias-Contagem-Regressiva");
+    var ContainerInternoHorasContagemRegressiva = document.getElementById("Container-Interno-Horas-Contagem-Regressiva");
+    var ContainerInternoMinutosContagemRegressiva = document.getElementById("Container-Interno-Minutos-Contagem-Regressiva");
+
+}
 
 var ContainerVídeoPrincipal = document.getElementById("Container-Vídeo-Principal");
 var BotãoTelaCheia1 = document.getElementById("Botão-Tela-Cheia-1");
@@ -52,12 +69,36 @@ var ContainerExternoSubseção43 = document.getElementById("Container-Externo-Su
 var ContainerInternoSubseção43 = document.getElementById("Container-Interno-Subseção-4-3");
 var SetaFechamentoSubseção43 = document.getElementById("Seta-Fechamento-Subseção-4-3");
 
-var EspaçoFinalContainerBotãoCadastro = document.getElementById("Espaço-Final-Container-Botão-Cadastro");
-var ContainerBotãoCadastro = document.getElementById("Container-Botão-Cadastro");
-var BotãoCadastro = document.getElementById("Botão-Cadastro");
+var EspaçoFinalContainerBotãoPrincipal = document.getElementById("Espaço-Final-Container-Botão-Principal");
+var ContainerBotãoPrincipal = document.getElementById("Container-Botão-Principal");
+var BotãoPrincipal = document.getElementById("Botão-Principal");
 
 var userAgent = navigator.userAgent;
 
+// /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+// /*////////////////////////////// Atualiza a contagem regressiva do topo da tela. ///////////////////////*/
+// /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+if (Estado_da_Página === 2) {
+
+    var DataEncerramentoInscrições = new Date("April 16, 2025 22:00:00").getTime();
+
+    var ContagemRegressiva = setInterval(function() {
+
+        var TempoRestante = DataEncerramentoInscrições - new Date().getTime();
+
+        if (TempoRestante < 0) {
+            clearInterval(ContagemRegressiva);
+            TempoRestante = 0;
+        }
+
+        ContainerInternoDiasContagemRegressiva.innerHTML = ("0" + Math.floor(TempoRestante / (1000 * 60 * 60 * 24))).slice(-2);
+        ContainerInternoHorasContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-2);
+        ContainerInternoMinutosContagemRegressiva.innerHTML = ("0" + Math.floor((TempoRestante % (1000 * 60 * 60)) / (1000 * 60))).slice(-2);
+        
+    }, 1000);
+
+}
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 /*/// Retira os botões de girar os vídeos se o usuário não estiver usando o Instagram In-App Browser. //*/
@@ -130,7 +171,7 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
-        ControlaPosição_ContainerBotãoCadastro();
+        ControlaPosição_ContainerBotãoCompra();
 
     } else {
         
@@ -148,7 +189,7 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 
         VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
 
-        ControlaPosição_ContainerBotãoCadastro();
+        ControlaPosição_ContainerBotãoPrincipal();
 
     }
 
@@ -158,28 +199,28 @@ BotãoTelaCheia1.addEventListener("click", function(event) {
 /*///////////////////// Controla as posições do Itens Dinâmicos ///////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-/*////////////////////// Controla a posição do Container-Botão-Cadastro ///////////////////////*/
+/*////////////////////// Controla a posição do Container-Botão-Principal ///////////////////////*/
 
-ContainerBotãoCadastro.style.display = 'none';
+ContainerBotãoPrincipal.style.display = 'none';
 
-function ControlaPosição_ContainerBotãoCadastro (){
+function ControlaPosição_ContainerBotãoPrincipal(){
     
     if (window.scrollY + window.innerHeight >= Seção1.offsetTop) {
     
-        ContainerBotãoCadastro.style.display = 'block';
-        EspaçoFinalContainerBotãoCadastro.style.height = ContainerBotãoCadastro.offsetHeight + 'px';
+        ContainerBotãoPrincipal.style.display = 'block';
+        EspaçoFinalContainerBotãoPrincipal.style.height = ContainerBotãoPrincipal.offsetHeight + 'px';
     
-        if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoCadastro.offsetHeight){
+        if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoPrincipal.offsetHeight){
     
-            ContainerBotãoCadastro.style.position = 'absolute';
-            ContainerBotãoCadastro.style.top = Seção1.offsetTop + 'px';
-            ContainerBotãoCadastro.style.bottom = '';
+            ContainerBotãoPrincipal.style.position = 'absolute';
+            ContainerBotãoPrincipal.style.top = Seção1.offsetTop + 'px';
+            ContainerBotãoPrincipal.style.bottom = '';
     
         } else {
     
-            ContainerBotãoCadastro.style.position = 'fixed';
-            ContainerBotãoCadastro.style.top = '';
-            ContainerBotãoCadastro.style.bottom = '0px';
+            ContainerBotãoPrincipal.style.position = 'fixed';
+            ContainerBotãoPrincipal.style.top = '';
+            ContainerBotãoPrincipal.style.bottom = '0px';
     
         }
     
@@ -189,14 +230,14 @@ function ControlaPosição_ContainerBotãoCadastro (){
 
 window.onscroll = function() {
 
-    ControlaPosição_ContainerBotãoCadastro();
+    ControlaPosição_ContainerBotãoPrincipal();
 
     /*////////////////////// Controla a posição das Setas de Fechamento das Seções ///////////////////////*/
     var Posição_Seção1 = Seção1.offsetTop;
     var Posição_Seção2 = Seção2.offsetTop;
     var Posição_Seção3 = Seção3.offsetTop;
     var Posição_Seção4 = Seção4.offsetTop;
-    var Posição_EspaçoFinalContainerBotãoCadastro = EspaçoFinalContainerBotãoCadastro.offsetTop;
+    var Posição_EspaçoFinalContainerBotãoPrincipal = EspaçoFinalContainerBotãoPrincipal.offsetTop;
 
     /* Seção 1 */
 
@@ -204,17 +245,17 @@ window.onscroll = function() {
     
         SetaFechamentoSeção1.style.display = 'none';
     
-    } else if (window.scrollY > Posição_Seção1 && window.scrollY <= (Posição_Seção2 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção1 && window.scrollY <= (Posição_Seção2 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         SubseçãoCadastro1.style.marginBottom = '20px';
         
         SetaFechamentoSeção1.style.display = 'flex';
         SetaFechamentoSeção1.style.position = 'fixed';
-        SetaFechamentoSeção1.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção1.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
         SetaFechamentoSeção1.style.marginBottom = '0px';
         SetaFechamentoSeção1.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_Seção2 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_Seção2 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         SubseçãoCadastro1.style.marginBottom = '15px';
 
@@ -232,17 +273,17 @@ window.onscroll = function() {
 
         SetaFechamentoSeção2.style.display = 'none';
     
-    } else if (window.scrollY > Posição_Seção2 && window.scrollY <= (Posição_Seção3 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção2 && window.scrollY <= (Posição_Seção3 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         SubseçãoCadastro2.style.marginBottom = '20px';
         
         SetaFechamentoSeção2.style.display = 'flex';
         SetaFechamentoSeção2.style.position = 'fixed';
-        SetaFechamentoSeção2.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção2.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
         SetaFechamentoSeção2.style.marginBottom = '0px';
         SetaFechamentoSeção2.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_Seção3 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_Seção3 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         SubseçãoCadastro2.style.marginBottom = '15px';
 
@@ -260,17 +301,17 @@ window.onscroll = function() {
 
         SetaFechamentoSeção3.style.display = 'none';
     
-    } else if (window.scrollY > Posição_Seção3 && window.scrollY <= (Posição_Seção4 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção3 && window.scrollY <= (Posição_Seção4 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         SubseçãoCadastro3.style.marginBottom = '20px';
         
         SetaFechamentoSeção3.style.display = 'flex';
         SetaFechamentoSeção3.style.position = 'fixed';
-        SetaFechamentoSeção3.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção3.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
         SetaFechamentoSeção3.style.marginBottom = '0px';
         SetaFechamentoSeção3.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_Seção4 - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_Seção4 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         SubseçãoCadastro3.style.marginBottom = '15px';
 
@@ -289,7 +330,7 @@ window.onscroll = function() {
         SetaFechamentoSeção4.style.display = 'none';
         BotãoInstagramDirect.style.display = 'none';
 
-    } else if (window.scrollY > Posição_Seção4 && window.scrollY <= (Posição_EspaçoFinalContainerBotãoCadastro - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > Posição_Seção4 && window.scrollY <= (Posição_EspaçoFinalContainerBotãoPrincipal - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         ContainerCondiçõesComerciais3.style.marginBottom = '20px';
     
@@ -301,11 +342,11 @@ window.onscroll = function() {
 
         SetaFechamentoSeção4.style.display = 'flex';
         SetaFechamentoSeção4.style.position = 'fixed';
-        SetaFechamentoSeção4.style.bottom = ContainerBotãoCadastro.offsetHeight + 15 + 'px';
+        SetaFechamentoSeção4.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
         SetaFechamentoSeção4.style.marginBottom = '0px';
         SetaFechamentoSeção4.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
 
-    } else if (window.scrollY > (Posição_EspaçoFinalContainerBotãoCadastro - window.innerHeight + ContainerBotãoCadastro.offsetHeight)) {
+    } else if (window.scrollY > (Posição_EspaçoFinalContainerBotãoPrincipal - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
         ContainerCondiçõesComerciais3.style.marginBottom = '15px';
 
@@ -323,10 +364,34 @@ window.onscroll = function() {
 /*///////////////////////////////// Abre o cadastro ///////////////////////////////////*/
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-BotãoCadastro.addEventListener("click", function(event){
-    event.preventDefault();
-    window.location.href = "../cadastro/";
-})
+if (Estado_da_Página === 1 || Estado_da_Página === 2) {
+
+    BotãoPrincipal.addEventListener("click", function(event){
+        event.preventDefault();
+        window.location.href = "cadastro/";
+    })
+
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////*/
+/*///////////////////////////////// Abre o checkout ///////////////////////////////////*/
+/*/////////////////////////////////////////////////////////////////////////////////////*/
+
+else {
+
+    BotãoPrincipal.addEventListener("click", function(event){
+        event.preventDefault();
+        var data = {
+            Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
+            Nome_Produto_Título: "Preparatório em Gestão Generalista",
+            Nome_Produto_Valor: "Preparatório em Gestão Generalista"        
+        };
+
+        localStorage.setItem('Dados-Enviados-ao-Checkout', JSON.stringify(data));
+        window.location.href = "checkout/";
+    })
+
+}
 
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 /*////////////////////////////////////// Seção 1 //////////////////////////////////////*/
@@ -521,22 +586,22 @@ BotãoTelaCheia2.addEventListener("click", function(event) {
 /*Abre documentos em .pdf*/
 BotãoCronograma.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("../pdf/GESTÃO GENERALISTA - CRONOGRAMA DE ESTUDOS_v3.pdf","_blank");
+    window.open("pdf/GESTÃO GENERALISTA - CRONOGRAMA DE ESTUDOS_v3.pdf","_blank");
 })
 
 BotãoEmenta.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("../pdf/GESTÃO GENERALISTA - EMENTA_v5.pdf","_blank");
+    window.open("pdf/GESTÃO GENERALISTA - EMENTA_v5.pdf","_blank");
 })
 
 BotãoBibliografia.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("../pdf/GESTÃO GENERALISTA - BIBLIOGRAFIA_v3.pdf","_blank");
+    window.open("pdf/GESTÃO GENERALISTA - BIBLIOGRAFIA_v3.pdf","_blank");
 })
 
 BotãoSoftwares.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("../pdf/GESTÃO GENERALISTA - SOFTWARES_v3.pdf","_blank");
+    window.open("pdf/GESTÃO GENERALISTA - SOFTWARES_v3.pdf","_blank");
 })
 
 /*Fecha a Seção 4*/

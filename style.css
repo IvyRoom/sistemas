@@ -1618,10 +1618,10 @@
 
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
-////////////////////// Espaço-Final-Container-Botão-Cadastro //////////////////////////////
+////////////////////// Espaço-Final-Container-Botão-Principal /////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Espaço-Final-Container-Botão-Cadastro{
+#Espaço-Final-Container-Botão-Principal{
     background: linear-gradient(165deg, #fff, #ddd);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
@@ -1629,10 +1629,10 @@
 
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////// Container-Botão-Cadastro //////////////////////////////////
+///////////////////////////////// Container-Botão-Principal ///////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Botão-Cadastro{
+#Container-Botão-Principal{
     display: block;
     height: 150px;
     border-radius: 50px 50px 0px 0px;
@@ -1645,7 +1645,7 @@
     bottom: 0px;
 }
 
-#Explicação-Cadastro{
+#Explicação-Botão-Principal{
     display: block;
     color: #790D25;
     width: 85%;
@@ -1655,7 +1655,7 @@
     text-align: center;
 }
 
-#Botão-Cadastro{
+#Botão-Principal{
     display: block;
     height: 60px;
     width: 85%;
