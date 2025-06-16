@@ -7,8 +7,6 @@
 var ContainerExternoVídeoPrincipal = document.getElementById("Container-Externo-Vídeo-Principal");
 var ContainerInternoVídeoPrincipal = document.getElementById("Container-Interno-Vídeo-Principal");
 var VídeoPrincipal = document.getElementById("Vídeo-Principal");
-var BotãoTelaCheiaVídeoPrincipal = document.getElementById("Botão-Tela-Cheia-Vídeo-Principal");
-var TextoTelaCheiaVídeoPrincipal = document.getElementById("Texto-Tela-Cheia-Vídeo-Principal");
 
 /*/////////////////////////////// Seção 1 ////////////////////////////////////*/
 
@@ -120,9 +118,6 @@ var BotãoPrincipal = document.getElementById("Botão-Principal");
 var userAgent = navigator.userAgent;
 
 if (userAgent.indexOf('Instagram') === -1) {
-    
-    BotãoTelaCheiaVídeoPrincipal.style.display = 'none';
-    ContainerExternoVídeoPrincipal.style.marginBottom = '30px';
 
     BotãoTelaCheiaVídeoDepoimento1.style.display = 'none';
     VídeoDepoimento1.style.marginBottom = '30px';
@@ -153,6 +148,7 @@ function handleIntersection(entries, observer) {
 
             ContainerInternoVídeoPrincipal.setAttribute("data-shaka-player-container", "");
             VídeoPrincipal.setAttribute("data-shaka-player", "");
+            VídeoPrincipal.setAttribute("poster", "/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
             VídeoPrincipal.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/manifest.mpd");
 
             const player = new shaka.Player(VídeoPrincipal);
@@ -173,50 +169,6 @@ function handleIntersection(entries, observer) {
 const observer = new IntersectionObserver(handleIntersection);
 observer.observe(ContainerExternoVídeoPrincipal);
 
-
-/*/////////////////////////////////////////////////////////////////////////////////////*/
-/*///////////////////////// Botão-Tela-Cheia-Vídeo-Principal //////////////////////////*/
-/*/////////////////////////////////////////////////////////////////////////////////////*/
-
-BotãoTelaCheiaVídeoPrincipal.addEventListener("click", function() {
-
-    if (TextoTelaCheiaVídeoPrincipal.innerHTML !== 'Tela Padrão') {
-        
-        ContainerExternoVídeoPrincipal.style.display='block';
-        ContainerExternoVídeoPrincipal.style.width = 'calc(var(--considered-screen-width) * 0.95 + 10px)';
-        ContainerExternoVídeoPrincipal.style.height = 'calc(var(--considered-screen-width) * 1.68888 + 10px)';
-        
-        ContainerInternoVídeoPrincipal.style.transformOrigin = 'top left';
-        ContainerInternoVídeoPrincipal.style.transform = 'rotate(90deg) translateY(-100%)';
-        ContainerInternoVídeoPrincipal.style.width = 'calc(var(--considered-screen-width) * 1.68888)';
-        ContainerInternoVídeoPrincipal.style.height = 'calc(var(--considered-screen-width) * 0.95)';
-
-        TextoTelaCheiaVídeoPrincipal.innerHTML = 'Tela Padrão';
-
-        VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
-
-        ControlaPosição_ContainerBotãoPrincipal();
-
-    } else {
-        
-        ContainerExternoVídeoPrincipal.style.display='flex';
-        ContainerExternoVídeoPrincipal.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        ContainerExternoVídeoPrincipal.style.height = 'auto';
-
-        ContainerInternoVídeoPrincipal.style.transformOrigin = '';
-        ContainerInternoVídeoPrincipal.style.transform = '';
-        ContainerInternoVídeoPrincipal.style.width = '100%';
-        ContainerInternoVídeoPrincipal.style.height = '100%';
-
-        TextoTelaCheiaVídeoPrincipal.innerHTML = 'Tela Cheia';
-
-        VídeoPrincipal.scrollIntoView({behavior: 'smooth'});
-
-        ControlaPosição_ContainerBotãoPrincipal();
-
-    }
-
-})
 
 /*/////////////////////////////////////////////////////////////////////////////////////*/
 /*///////////////////// Controla as posições do Itens Dinâmicos ///////////////////////*/
