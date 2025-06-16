@@ -273,7 +273,7 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
     //////////////////////////////////////////////////////////////////////
     // Manda as informações do solicitante ao backend.
 
-    fetch('http://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento', { //http://localhost:3000/landingpage/solicitacaoorcamento //https://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento
+    fetch('https://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento', { //http://localhost:3000/landingpage/solicitacaoorcamento //https://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ 
