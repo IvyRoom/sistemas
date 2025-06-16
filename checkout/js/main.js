@@ -136,17 +136,17 @@ const origem = urlParams.get("origem");
 if (origem === "externa") {
 
     var data = {
-        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 1990,
-        Nome_Produto_Título: "Preparatório em Gestão Generalista",
-        Nome_Produto_Valor: "Preparatório em Gestão Generalista"        
+        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 2990,
+        Nome_Produto_Título: "Formação em Método Gerencial",
+        Nome_Produto_Valor: "Formação em Método Gerencial"        
     };
 
 } else if (origem === "pessoa-jurídica") {
 
     var data = {
         Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 2990,
-        Nome_Produto_Título: "Prep. Gestão Generalista: Versão PJ",
-        Nome_Produto_Valor: "Preparatório em Gestão Generalista: Contratação PJ"        
+        Nome_Produto_Título: "Formação em Método Gerencial",
+        Nome_Produto_Valor: "Formação em Método Gerencial"        
     };
 
 } else {
@@ -165,7 +165,7 @@ if (origem === "externa") {
 /*Lembrar que é necessário também alterar / customizar o Contrato de Prestação de Serviços.*/
 Nome_Produto.innerHTML = "<b>" + data.Nome_Produto_Título + "</b>"; /* Alterar aqui o Nome do Produto que fica no topo do checkout. */
 Nome_Produto.value = data.Nome_Produto_Valor; /* Alterar aqui o Nome do Produto que será processado pela Pagar.Me. */
-var Código_do_Produto = "ivyroom";  /* Alterar aqui o Código do Produto que será processado pela Pagar.Me e aparecerá na fatura do cartão do cliente. Máximo de 22 caracteres, sem caracteres especiais. */
+var Código_do_Produto = "machado";  /* Alterar aqui o Código do Produto que será processado pela Pagar.Me e aparecerá na fatura do cartão do cliente. Máximo de 22 caracteres, sem caracteres especiais. */
 var Variável_Mestra_Valor_Total_do_Serviço_à_Vista = parseFloat(data.Variável_Mestra_Valor_Total_do_Serviço_à_Vista); /* Alterar aqui o Valor Total do Produto. Deve ser >= 2x o Valor Mínimo por Tipo de Pagamento*/
 var Variável_Mestra_Valor_Mínimo_por_Tipo_de_Pagamento = 100; /* Alterar aqui o Valor Mínimo por Tipo de Pagamento.*/
 var Juros_Parcelamento_2x = 1.0376; /* Alterar aqui os Juros para Parcelamento em 2x. */
@@ -1609,8 +1609,8 @@ Formulário_de_Pagamento.addEventListener('submit', (event) => {
 
             Valor_Nominal_da_Compra_no_PIX_PARCELADO: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),
             Valor_Nominal_da_Compra_no_PIX_PARCELADO_Dígitos: Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".",""),
-            Url_Aprovação_PIX_PARCELADO: 'https://ivygestao.com/checkout/confirmação',
-            Url_Cancelamento_PIX_PARCELADO: 'https://ivygestao.com/checkout/cancelamento',
+            Url_Aprovação_PIX_PARCELADO: 'https://machadogestao.com/checkout/confirmação',
+            Url_Cancelamento_PIX_PARCELADO: 'https://machadogestao.com/checkout/cancelamento',
             Url_Webhook_PIX_PARCELADO: 'https://plataforma-backend-v3.azurewebsites.net/checkout/webhook_pagaleve',
             
             Valor_Total_da_Compra_no_PIX_À_VISTA: parseFloat(Variável_Mestra_Valor_Total_do_Serviço_à_Vista.toFixed(2).replace(".","") / 100).toLocaleString('pt-BR', configuração_BRL),

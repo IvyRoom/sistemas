@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitação de Orçamento</title>
+    <link defer rel="stylesheet" href="/solicitação/style.css">
+</head>
+    
+    <body>
+
+        <section id="Seção-Solicitação">
+
+            <img id="Logo-Machado" src="/solicitação/img/LOGO_MACHADO.png" alt="">
+
+            <form id="Formulário-de-Solicitação">
+
+                <div id="Título-Formulário-de-Solicitação"><b>Solicitação de Orçamento:</b><br>Solução em Método Gerencial</div>
+
+                <div id="Background-Branco-Cinza">
+
+                    <div id="Título-1"><b>Seus dados:</b></div>
+
+                    <p class="Títulos-de-Preenchimento">Nome Completo*</p>
+                    <input class="Campos-de-Preenchimento" id="Nome-Completo" autocomplete="off" type="text" placeholder="Digite seu nome completo" required>
+                        
+                    <p class="Títulos-de-Preenchimento">E-mail*</p>
+                    <input class="Campos-de-Preenchimento" id="Email" type="text" placeholder="Digite seu e-mail" required>
+
+                    <p class="Títulos-de-Preenchimento">Confirmação E-mail*</p>
+                    <input class="Campos-de-Preenchimento" id="Confirmação-Email" type="text" placeholder="Confirme seu e-mail" required>
+
+                    <div id="Aviso-Emails-Divergentes-Campo">⮾ E-mails divergentes.</div>
+
+                    <p class="Títulos-de-Preenchimento">Telefone com DDD*</p>
+                    <input class="Campos-de-Preenchimento" id="Telefone-com-DDD" type="text" placeholder="(11) 99999-9999" required>
+
+                    <p class="Títulos-de-Preenchimento">Cargo*</p>
+                    <input class="Campos-de-Preenchimento" id="Cargo" type="text" placeholder="Digite seu cargo" required>
+
+                    <div id="Título-2"><b>Dados da Empresa:</b></div>
+
+                    <p class="Títulos-de-Preenchimento">Nome da Empresa*</p>
+                    <input class="Campos-de-Preenchimento" id="Nome-Empresa" type="text" placeholder="Digite o nome da empresa" required>
+
+                    <p class="Títulos-de-Preenchimento">CNPJ*</p>
+                    <input class="Campos-de-Preenchimento" id="CNPJ" type="text" placeholder="Digite o CNPJ" required>
+                        
+                    <p class="Títulos-de-Preenchimento">Número aproximado de funcionários que participarão da Solução*</p>
+                    <select class="Campos-de-Preenchimento" id="Número-de-Participantes" type="number" placeholder="Selecione o número" required>
+                        <option value="" disabled selected hidden>-</option>
+                        <option value="1">1</option>
+                        <option value="1">2</option>
+                        <option value="1">3</option>
+                        <option value="1">4</option>
+                        <option value="1">5</option>
+                        <option value="1">6</option>
+                        <option value="1">7</option>
+                        <option value="1">8</option>
+                        <option value="1">9</option>
+                        <option value="1">10</option>
+                        <option value="1">11</option>
+                        <option value="1">12</option>
+                        <option value="1">13</option>
+                        <option value="1">14</option>
+                        <option value="1">15</option>
+                        <option value="1">16</option>
+                        <option value="1">17</option>
+                        <option value="1">18</option>
+                        <option value="1">19</option>
+                        <option value="1">20</option>
+                        <option value="1">>20</option>
+                    </select>
+
+                    <p class="Títulos-de-Preenchimento">Observações</p>
+                    <textarea id="Observações" maxlength="300" placeholder="Digite suas observações"></textarea>
+
+                    <button id="Botão-Solicitar-Orçamento" type="Submit">SOLICITAR ORÇAMENTO</button>
+
+                    <div id="Aviso-Emails-Divergentes-Botão">⮾ E-mails divergentes.</div>
+
+                    <div id="Aviso-Processando">Processando informações...</div>
+
+                </div>
+                
+            </form>
+
+        </section>
+
+        <script async src="/solicitação/main.js"></script>
+    
+    </body>
+
+</html>

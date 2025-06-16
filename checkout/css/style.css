@@ -16,11 +16,11 @@
 #Sessão_Pagamento {
     width: 100%;
     overflow: auto;
-    background: linear-gradient(#fff 30%,rgb(206, 206, 206));
+    background: linear-gradient(#000000, #4a0816);
     display: block;
 }
 
-#Logo-Ivy-Room {
+#Logo-Machado {
     height: auto;
     width: 120px;
     display: block;
@@ -1419,7 +1419,7 @@
     #Sessão_Pagamento {
         width: 100%;
         overflow: auto;
-        background: linear-gradient(#fff 30%,rgb(206, 206, 206));
+        background: linear-gradient(#000000, #4a0816);
         display: block;
     }
 

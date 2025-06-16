@@ -1,0 +1,153 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+    user-select: none;
+}
+
+:root {
+    --considered-screen-width: 100vw;
+    --considered-margin-left: 0px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+@media (min-width: 431px) {
+    
+    :root {
+        --considered-screen-width: 430px;
+        --considered-margin-left: calc(50vw - (var(--considered-screen-width)/2));
+    }
+
+}
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Seção_Solicitação ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Solicitação{
+    background: linear-gradient(165deg, #000, #4a0816);
+    width: var(--considered-screen-width);
+    margin-left: var(--considered-margin-left);
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+#Logo-Machado{
+    height: auto;
+    width: 120px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 40px;
+    margin-bottom: 40px;
+}
+
+#Título-Formulário-de-Solicitação{
+    font-size:24px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#Background-Branco-Cinza{
+    background: linear-gradient(165deg, #fff, #d2d2d2);
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    padding-top: 30px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#Título-1{
+    font-size:22px;
+    color: #4a0816;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.Títulos-de-Preenchimento{
+    font-size:16px;
+    color: #4a0816;
+}
+
+.Campos-de-Preenchimento{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Aviso-Emails-Divergentes-Campo{
+    color: #dc0638;
+    display: none;
+    font-size: 14px;
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+#Título-2{
+    font-size:22px;
+    color: #4a0816;
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+#Observações{
+    width: 100%;
+    height: 200px;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+    resize: none;
+}
+
+#Botão-Solicitar-Orçamento{
+    height: 60px;
+    width: 100%;
+    color: #fff;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
+    background-color: #056839;
+}
+
+#Aviso-Emails-Divergentes-Botão{
+    color: #dc0638;
+    display: none;
+    justify-content: center;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+#Aviso-Processando{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    margin-left: auto;
+    margin-right: auto;
+}

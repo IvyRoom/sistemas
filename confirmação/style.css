@@ -1,0 +1,72 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+    user-select: none;
+}
+
+:root {
+    --considered-screen-width: 100vw;
+    --considered-margin-left: 0px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+@media (min-width: 431px) {
+    
+    :root {
+        --considered-screen-width: 430px;
+        --considered-margin-left: calc(50vw - (var(--considered-screen-width)/2));
+    }
+
+}
+
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Seção-Confirmação ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Confirmação{
+    background: linear-gradient(165deg, #000, #4a0816);
+    width: var(--considered-screen-width);
+    margin-left: var(--considered-margin-left);
+    min-height: 100vh;
+    padding-bottom: 40px;
+    display: flex;
+    align-items: center;
+}
+
+#Container-Logo-e-Confirmação{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Logo-Machado{
+    height: auto;
+    width: 120px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 30px;
+}
+
+#Confirmação-Título{
+    font-size:24px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#Confirmação-Explicação{
+    display: block;
+    width: 90%;
+    font-size:20px;
+    color: #fff;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
