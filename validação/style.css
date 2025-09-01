@@ -1,0 +1,97 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+    user-select: none;
+}
+
+:root {
+    --considered-screen-width: 100vw;
+    --considered-margin-left: 0px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// Seção_Solicitação ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Validação{
+    background: linear-gradient(165deg, #000, #4a0816);
+    min-height: 100vh;
+    padding-bottom: 40px;
+}
+
+#Logo-Machado{
+    height: auto;
+    width: 120px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 40px;
+    margin-bottom: 40px;
+}
+
+#Título-Formulário-de-Validação{
+    font-size:24px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#Background-Branco-Cinza{
+    background: linear-gradient(165deg, #fff, #d2d2d2);
+    width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    padding-top: 30px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#Explicação-Formulário-de-Validação{
+    font-size:16px;
+    color: #4a0816;
+    margin-bottom: 20px;
+}
+
+.Títulos-de-Preenchimento{
+    font-size:16px;
+    color: #4a0816;
+}
+
+.Campos-de-Preenchimento{
+    width: 100%;
+    display: block;
+    padding: 8px;
+    margin-top:5px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border: 1px solid rgb(146, 146, 146);
+    border-radius: 5px;
+}
+
+#Botão-Validar-Certificado{
+    height: 60px;
+    width: 100%;
+    color: #fff;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
+    background-color: #056839;
+}
+
+#Aviso-Processando{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #474747;
+}
