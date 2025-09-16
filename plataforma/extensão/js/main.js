@@ -117,7 +117,7 @@ Período_Desejado.addEventListener("change", function(event) {
 
     } else if (Período_Desejado.selectedIndex === 1) {
 
-        ValorEscolhido = 650;
+        ValorEscolhido = 1990;
         Ir_Pagamento.disabled = false;
         Ir_Pagamento.style.backgroundColor = "#056839";
         Ir_Pagamento.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 1)"
@@ -125,7 +125,7 @@ Período_Desejado.addEventListener("change", function(event) {
 
     } else if(Período_Desejado.selectedIndex === 2){
 
-        ValorEscolhido = 850;
+        ValorEscolhido = 2990;
         Ir_Pagamento.disabled = false;
         Ir_Pagamento.style.backgroundColor = "#056839";
         Ir_Pagamento.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 1)"
@@ -133,7 +133,7 @@ Período_Desejado.addEventListener("change", function(event) {
 
     } else if(Período_Desejado.selectedIndex === 3){
 
-        ValorEscolhido = 1000;
+        ValorEscolhido = 3990;
         Ir_Pagamento.disabled = false;
         Ir_Pagamento.style.backgroundColor = "#056839";
         Ir_Pagamento.style.boxShadow = "0px 4px 6px rgba(0, 0, 0, 1)"
