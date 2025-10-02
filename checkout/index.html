@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Ivy</title>
-    <link defer rel="stylesheet" href="/checkout/css/style.css">
+    <link defer rel="stylesheet" href="/checkout/style.css">
 </head>
     
     <body>
@@ -167,19 +167,9 @@
                             <p class="Descrição_Pagamento">Cartão de Crédito</p>
                         </div>
 
-                        <div id="Tipo_de_Pagamento_PIX_PARCELADO" style="cursor: pointer">
-                            <img id="PIX_PARCELADO" src="/checkout/img/PIX_PARCELADO_REDUZIDO.webp">
-                            <p class="Descrição_Pagamento">PIX Parcelado</p>
-                        </div>
-
                         <div id="Tipo_de_Pagamento_PIX_À_VISTA" style="cursor: pointer">
                             <img id="PIX_À_VISTA" src="/checkout/img/PIX_CINZA_REDUZIDO.webp">
                             <p class="Descrição_Pagamento">PIX à Vista</p>
-                        </div>
-
-                        <div id="Tipo_de_Pagamento_BOLETO" style="cursor: pointer">
-                            <img id="BOLETO" src="/checkout/img/BOLETO_CINZA_REDUZIDO.webp">
-                            <p class="Descrição_Pagamento">Boleto</p>
                         </div>
 
                         <div id="Tipo_de_Pagamento_PIX_CARTAO" style="cursor: pointer">
@@ -313,28 +303,6 @@
 
                     <!-- -----------------------------------------
                     ----------------------------------------------
-                            Meio de Pagamento: PIX_PARCELADO
-                    ----------------------------------------------    
-                    ---------------------------------------------->
-                    
-                    <div id="Dados_Pagamento_PIX_PARCELADO">
-
-                        <div id="Detalhamento_Dados_Pagamento_PIX_PARCELADO">
-                            <img class="QR_Code" src="/checkout/img/QR CODE.webp">
-                            <p id="Manchete_Como_Funciona_PIX_PARCELADO"> Como funciona?</p>
-                            <p id="Explicação_Como_Funciona_PIX_PARCELADO">
-                                Ao clicar em "Analisar Crédito", nosso sistema de análise instantânea de crédito junto à PagaLeve será inicializado. Dependendo dos valores aprovados ao seu CPF, você poderá parcelar o serviço em:
-                                <br><br>&#8226; <b>Entrada + 3x quinzenais sem juros:</b> Modalidade pensada para o funcionário CLT. Permite casar os vencimentos das parcelas com o recebimento / adiantamento quinzenal de salários.
-                                <br><br>&#8226; <b>Até 12x com juros:</b> Alternativa ao cartão de crédito.
-                                <br><br>Independente da modalidade escolhida, ao finalizar o processo você receberá todas instruções de acesso ao serviço. Tudo simples, ágil e seguro.
-                            </p>
-                        </div>
-
-                    </div>
-
-
-                    <!-- -----------------------------------------
-                    ----------------------------------------------
                             Meio de Pagamento: PIX_À_VISTA
                     ----------------------------------------------    
                     ---------------------------------------------->
@@ -345,22 +313,6 @@
                             <img class="QR_Code" src="/checkout/img/QR CODE.webp">
                             <p id="Manchete_Como_Funciona_PIX_À_VISTA"> Como funciona?</p>
                             <p id="Explicação_Como_Funciona_PIX_À_VISTA">Ao clicar em "Gerar PIX", você receberá um QR Code por e-mail. Basta escaneá-lo utilizando o aplicativo do seu banco e realizar o pagamento em até 30min. Feito isto, você receberá todas instruções de acesso ao serviço. Tudo simples, ágil e seguro.</p>
-                        </div>
-
-                    </div>
-
-                    <!-- -----------------------------------------
-                    ----------------------------------------------
-                               Meio de Pagamento: Boleto
-                    ----------------------------------------------    
-                    ---------------------------------------------->
-                    
-                    <div id="Dados_Pagamento_BOLETO">
-
-                        <div id="Detalhamento_Dados_Pagamento_BOLETO">
-                            <img id="Código_de_Barras" src="/checkout/img/CÓDIGO DE BARRAS.webp">
-                            <p id="Manchete_Como_Funciona_BOLETO"> Como funciona?</p>
-                            <p id="Explicação_Como_Funciona_BOLETO">Ao clicar em "Gerar Boleto", você receberá o documento por e-mail. Basta escanear o código de barras utilizando o app do seu banco e fazer o pagamento em até 24h. <br> <br> O pagamento via boleto pode levar <b>até 3 dias úteis</b> para ser compensado. Na sequência, você recebará as instruções de acesso ao serviço. <br> <br> Para <b>acesso imediato</b>, faça o pagamento via PIX.</p>
                         </div>
 
                     </div>
@@ -527,10 +479,6 @@
                     <p id="Aviso_de_Inconsistência_CVV_Cartão_Botão"> <b>ⓧ</b> Valor CVV inconsistente.</p>
                     <p id="Aviso_de_Inconsistência_Número_do_Cartão_do_PIX_CARTÃO_Botão"> <b>ⓧ</b> Número do Cartão inconsistente.</p>
                     <p id="Aviso_de_Inconsistência_CVV_Cartão_do_PIX_CARTÃO_Botão"> <b>ⓧ</b> Valor CVV Inconsistente.</p>
-                    <p id="Aviso_de_Inconsistência_Número_do_Cartão_1_Botão"> <b>ⓧ</b> Número do Cartão 1 inconsistente.</p>
-                    <p id="Aviso_de_Inconsistência_Número_do_Cartão_2_Botão"> <b>ⓧ</b> Número do Cartão 2 inconsistente.</p>
-                    <p id="Aviso_de_Inconsistência_CVV_Cartão_1_Botão"> <b>ⓧ</b> Valor CVV Cartão 1 inconsistente.</p>
-                    <p id="Aviso_de_Inconsistência_CVV_Cartão_2_Botão"> <b>ⓧ</b> Valor CVV Cartão 2 inconsistente.</p>
 
                 </form>
 
@@ -553,9 +501,7 @@
                     
                     </div>
 
-                    <p class="Rodapé_Informações_de_Segurança"> <br> Ao clicar em "Comprar", eu (i) autorizo a Pagar.me e/ou a PagaLeve a processarem este pedido em nome da Machado, (ii) atesto que sou maior de idade ou autorizado e acompanhado por um tutor legal e (iii) autorizo a Pagar.me, a PagaLeve e a Machado a armazenarem e processarem meus dados em conformidade com a Lei nº 13.853/2019 - Lei Geral de Proteção de Dados Pessoais (LGPD) - e com o PCI Compliance (Certificação Nível 1 com Atestado de Conformidade e Antifraude Integrado).</p>
-
-                    <div id="Aviso_Botão_Contrato"> Para acessar o contrato, primeiro preencha todo o formulário. </div>
+                    <p class="Rodapé_Informações_de_Segurança"> <br> Ao clicar em "Comprar", eu (i) autorizo a Pagar.me a processar este pedido em nome da Machado, (ii) atesto que sou maior de idade ou autorizado e acompanhado por um tutor legal e (iii) autorizo a Pagar.me e a Machado a armazenarem e processarem meus dados em conformidade com a Lei nº 13.853/2019 - Lei Geral de Proteção de Dados Pessoais (LGPD) - e com o PCI Compliance (Certificação Nível 1 com Atestado de Conformidade e Antifraude Integrado).</p>
 
                     <div id="AmbienteSeguro_e_Container_PagarMe">
                                                
@@ -564,19 +510,13 @@
                             <p id="Texto_AmbienteSeguro"> Ambiente seguro.</p>
                         </div>
 
-                        <p id="Identificação_Ivy_Room">® Machado | Todos os direitos reservados. CNPJ: 39.794.363/0001-81</p>
+                        <p id="Identificação_Machado">® Machado | Todos os direitos reservados. CNPJ: 39.794.363/0001-81</p>
 
                         <div id="Container_PoweredBy">
                             
                             <p id="PoweredBy">Powered by</p>
-                            
-                            <div id="Container_Logos">
-                                
-                                <img id="LogoPagaLeve" src="/checkout/img/PAGALEVE.webp" alt="">
-                                
-                                <img id="LogoPagarMe" src="/checkout/img/PAGARME.webp" alt="">
-                            
-                            </div>
+
+                            <img id="LogoPagarMe" src="/checkout/img/PAGARME.webp" alt="">
                             
                         </div>
 
@@ -588,7 +528,7 @@
 
         </section>
 
-        <script async src="/checkout/js/main.js"></script>
+        <script async src="/checkout/main.js"></script>
     
     </body>
 
