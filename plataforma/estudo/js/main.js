@@ -393,7 +393,7 @@ window.addEventListener('load', function() {
         
                     if (NúmeroMódulo === NúmeroMóduloAtivo) {
         
-                        MóduloAberto = `Módulo ${NúmeroMóduloAtivo + 1}`;
+                        MóduloAberto = `Modulo ${NúmeroMóduloAtivo + 1}`;
                         
                         ContainerExternoTópicosMódulo.style.display = ContainerExternoTópicosMódulo.style.display === "block" ? "none" : "block";
                         SetasAuxiliaresMódulos[NúmeroMódulo].innerHTML = ContainerExternoTópicosMódulo.style.display === "block"
@@ -531,8 +531,16 @@ window.addEventListener('load', function() {
         
                     var NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
                     
-                    //DisplayVídeo.src: note que o Azure Storage Account Container SAS token com validade até 01-01-2050 foi incluído ao final da URL para permitir "video seeking".
-                    DisplayVídeo.src = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/" + MóduloAberto + "/" + NomeVídeo + ".mp4" + "?sp=r&st=2024-11-01T11:00:00Z&se=2050-01-01T03:00:00Z&spr=https&sv=2022-11-02&sr=c&sig=o%2FEOtQQlRp4%2F0Iu4Pbn4EghosVs6DoYgIkr4kUfclIc%3D";
+                    //Puxa o arquivo .m3u8 dos vídeos que passaram por HLS Transcoding.
+
+                    console.log(NomeVídeo);
+                    
+                    if (Hls.isSupported()) {
+                        const hls = new Hls();
+                        hls.loadSource("https://videospreparatoriosv2.blob.core.windows.net/videosv3/HLS_TRANSCODED_VIDEOS/" + MóduloAberto + "/" + NomeVídeo + ".m3u8");
+                        hls.attachMedia(DisplayVídeo);
+                        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+                    }
 
                     // Atualiza o Aviso Especial Tópico e o arquivo para download.
         
