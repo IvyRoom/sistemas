@@ -138,6 +138,14 @@ if (origem === "externa") {
         Nome_Produto_Valor: "Formação em Método Gerencial"        
     };
 
+} else if (origem === "renovação-acesso-90-dias") {
+
+    var data = {
+        Variável_Mestra_Valor_Total_do_Serviço_à_Vista: 990,
+        Nome_Produto_Título: "Formação em Método Gerencial",
+        Nome_Produto_Valor: "Formação em Método Gerencial"        
+    };
+
 } else {
 
     var data = JSON.parse(localStorage.getItem('Dados-Enviados-ao-Checkout'));
