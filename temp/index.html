@@ -25,8 +25,14 @@
       player.configure({
         drm: {
           servers: {
-            'com.widevine.alpha': 'https://widevine-dash.ezdrm.com/widevine-php/widevine-foreignkey.php?pX=E0AFB6',
-            'com.microsoft.playready': 'https://playready.ezdrm.com/cency/preauth.aspx?pX=B7AE6C'
+            'com.widevine.alpha': 'https://widevine-dash.ezdrm.com/widevine-php/widevine-foreignkey.php?pX=E0AFB6'//,
+            //'com.microsoft.playready': 'https://playready.ezdrm.com/cency/preauth.aspx?pX=B7AE6C'
+          },
+          advanced: {
+            'com.widevine.alpha': {
+              videoRobustness: 'SW_SECURE_DECODE',
+              audioRobustness: 'SW_SECURE_DECODE'
+            }
           }
         }
       });
