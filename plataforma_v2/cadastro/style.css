@@ -1,0 +1,126 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////// Seção-Cadastro-Foto-Referência //////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Cadastro-Foto-Referência{
+    background: linear-gradient(135deg, #4a0816, #000000);
+    text-align: center;
+    padding-top: 40px;
+}
+
+#Logo-Machado{
+    height: 40px;
+    user-select: none;
+    vertical-align: bottom;
+}
+
+#Container-Formulário-Foto-Referência{
+    align-content: center;
+    text-align: center;
+    min-height: calc(100vh - 120px);
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+#Formulário-Foto-Referência{
+    width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+#Manchete-Formulário-Foto-Referência{
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 20px;
+    user-select: none;
+}
+
+.Instruções-Upload-Foto{
+    color: #fff;
+    text-align: left;
+    margin-bottom: 20px;
+    font-size: 17px;
+    user-select: none;
+}
+
+.Links{
+    color: #fff;
+}
+
+#Referências-Fotos{
+    width: 860px;
+    height: auto;
+    margin-bottom: 30px;
+    user-select: none;
+}
+
+#Botão-Escolher-Arquivo{
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+#Botão-Escolher-Arquivo::file-selector-button {
+    background-color: #e2e2e2;
+    color: black;
+    border: 1px solid black;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#Botão-Cadastrar-Foto-Referência{
+    background-color: #4a0816;
+    color: #fff;
+    font-size: 17px;
+    height: 50px;
+    width: 220px;
+    align-items: center;
+    border-radius: 10px;
+    border-width: 0px;
+    user-select: none;
+    box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.8);
+}
+
+#Botão-Cadastrar-Foto-Referência:hover {
+    box-shadow: 0px 0px 12px rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
+#Aviso-Cadastrando{
+    color: #fff;
+    width: max-content;
+    white-space: nowrap;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    user-select: none;
+    display: none;
+}
+
+#Texto-Rodapé{
+    height: 40px;
+    color: #fff;
+    font-size: 12px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

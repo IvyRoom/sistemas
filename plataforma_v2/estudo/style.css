@@ -1,0 +1,1121 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// Configura a página para Desktops. ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Container-Seções{
+    display: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Seção-Navegação /////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Navegação{
+    width: 420px;
+    height: 100vh;
+    background: linear-gradient(135deg, #4a0816, #000000);
+    text-align: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+    border-right: 1px solid #d4d4d4;
+}
+
+#Botão-Sair{
+    text-align: left;
+    margin-left: 25px;
+    margin-top: 10px;
+    cursor: pointer;
+    color: #dedede;
+    width: 55px;
+    user-select: none;
+}
+
+#Logo-Machado{
+    height: auto;
+    width: 220px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    user-select: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// Resumo-Formação ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Formação-Nome{
+    font-size: 20px;
+    color: #dedede;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    user-select: none;
+}
+
+#Formação-Container-Símbolo-Status-e-Prazo-Acesso{
+    display: flex;
+    align-items: center;
+    width: 370px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#Formação-Status-Símbolo{
+    background-color: #0a983e;
+    height: 10px;
+    width: 10px;
+    border: 1px, solid , #fff;
+    border-radius: 5px;
+    margin-top: 2px;
+    margin-left: 5px;
+    user-select: none;
+}
+
+#Formação-Prazo-Acesso{
+    margin-left: 8px;
+    color: #dedede;
+    user-select: none;    
+}
+
+#Formação-Container-Régua-Avanço{
+    height: 4px;
+    border-radius: 2px;
+    width: 370px;
+    background-color: #dedede;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Formação-Régua-Avanço{
+    height: 4px;
+    border-radius: 2px;
+    background-color: #a41034;
+    margin-top: 10px;
+}
+
+#Formação-Percentual-Concluído{
+    width: 370px;
+    text-align: left;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    user-select: none;
+    color: #dedede;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// Módulos Formação ///////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////////////// Container /////////////////////////////////////*/
+
+.Container-Módulo{
+    display: flex;
+    width: 370px;
+    margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    border-bottom: 1px solid #dedede;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.Container-Anel-Avanço-e-Nome{
+    display: flex;
+    align-items: center;
+}
+
+.Container-Fração-Avanço-e-Seta-Baixo{
+    display: flex;
+    align-items: center;
+}
+
+/*/////////////////////////////////// Anel de Avanço ///////////////////////////////////*/
+
+.Módulo-Anel-Avanço{
+    width: 30px;
+    height: 30px;
+    transform: rotate(-90deg);
+    margin-right: 10px;
+}
+
+.Módulo-Anel-Avanço-Fundo,.Módulo-Anel-Avanço-Progresso {
+    stroke-width: 4;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.Módulo-Anel-Avanço-Fundo {
+    stroke: #dedede;
+}
+
+.Módulo-Anel-Avanço-Progresso {
+    stroke: #a41034;
+    stroke-dasharray: 94.2;
+    stroke-dashoffset: 94.2;
+    transition: stroke-dashoffset 0.3s;
+}
+
+/*/////////////////////////////////// Nome, Fração e Seta ////////////////////////////////*/
+
+.Nome-Módulo{
+    font-size: 18px;
+    color: #dedede;
+}
+
+.Fração-Avanço-Módulo{
+    font-size: 17px;
+    color: #dedede;
+    margin-right: 10px;
+}
+
+.Seta-Auxiliar-Módulo{
+    fill: #dedede;
+    stroke: #dedede;
+    stroke-width: 1px;
+    margin-top: 2px;
+    margin-right: 10px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// Tópicos Formação /////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*//////////////////////////////////////// Geral ////////////////////////////////////////*/
+
+.Container-Tópico-Concluído,.Container-Tópico-Aberto,.Container-Tópico-Fechado{
+    height: 50px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.Container-Tópico-Concluído:hover {
+    background-color: #4a0816;
+    cursor: pointer;
+}
+
+.Container-Tópico-Aberto:hover{
+    background-color: #4a0816;
+    cursor: pointer;
+}
+
+.Símbolo-Check-Concluído{
+    height: 16px;
+    width: 16px;
+    border: 1px solid #dedede;
+    background-color: #a41034;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-left: 25px;
+    font-size: 10px;
+    padding-left: 3px;
+    color: #dedede;
+}
+
+.Símbolo-Check-Aberto{
+    height: 16px;
+    width: 16px;
+    border: 1px solid #dedede;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-left: 25px;
+    font-size: 11px;
+    padding-left: 3px;
+    color: #dedede;
+    background-color: #dedede;
+}
+
+.Símbolo-Check-Fechado{
+    height: 16px;
+    width: 16px;
+    border: 1px solid #343434;
+    border-radius: 8px;
+    margin-right: 10px;
+    margin-left: 25px;
+    font-size: 11px;
+    padding-left: 3px;
+    color: #dedede;
+}
+
+.Tópico-Nome{
+    color: #dedede;
+}
+
+/*//////////////////////////////////////// Módulo 1 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-1{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 2 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-2{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 3////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-3{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 4 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-4{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 5 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-5{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 6 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-6{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 7 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-7{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 8 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-8{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 9 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-9{
+    display: none;
+}
+
+/*//////////////////////////////////////// Módulo 10 ////////////////////////////////////////*/
+
+#Container-Externo-Tópicos-Módulo-10{
+    display: none;
+}
+
+/*//////////////////////////// Botão Desempenho e Certificado ///////////////////////////*/
+
+
+#Formação-Botão-Desempenho-e-Certificado{
+    background: linear-gradient(135deg, #4a0816, #000000);
+    color: #dedede;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    width: 320px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    user-select: none;
+    cursor: pointer;
+    box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
+}
+
+#Formação-Botão-Desempenho-e-Certificado:hover{
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////// Seção-Conteúdo //////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Conteúdo{
+    width: calc(100vw - 400px);
+    height: 100vh;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// Faixa Superior /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Container-Externo-Faixa-Superior-e-Container-Usuário{
+    display: flex;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #4a0816, #000000);
+}
+
+#Faixa-Superior{
+    display: flex;
+    width: 100%;
+    height: 40px;
+    align-items: center;  
+}
+
+#Nome-Tópico{
+    margin-left: 20px;
+    font-size: 16px;
+    color: #fff;
+    user-select: none;
+}
+
+#Container-Usuário{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    width: fit-content;
+    white-space: nowrap;
+    user-select: none;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.Tempo-Sessão-Últimos-5min {
+    animation: PiscarTempoSessão 1s infinite;
+}
+
+@keyframes PiscarTempoSessão {
+    0% { opacity: 100; }
+    1% { opacity: 0; }
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// Container Conteúdo ////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Container-Externo-Conteúdo{
+    height: calc(100vh - 40px - 50px);
+    justify-content: center;
+    overflow-y: auto;
+    background: linear-gradient(135deg, #dedede, #ffffff);
+    padding-top: 0px;
+}
+
+#Container-Interno-Conteúdo{
+    width: 80%;
+    display: block;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    height: fit-content;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+#Container-Interno-Shaka-Player{
+    width: 100%;
+    height: auto;
+}
+
+.Containers-Download-Arquivos{
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #ebebeb;
+    border: 1px solid #d4d4d4;
+    border-radius: 5px;
+}
+
+#Container-Download-Arquivo-1{
+    margin-top: 30px;
+}
+
+#Nome-Arquivo-1,#Nome-Arquivo-2,#Nome-Arquivo-3,#Nome-Arquivo-4{
+    color: #4a0816;
+    font-size: 16px;
+    font-weight: 500;
+    user-select: none;
+}
+
+#Botão-Download-1,#Botão-Download-2,#Botão-Download-3,#Botão-Download-4{
+    padding: 10px;
+    background-color: #4a0816;
+    border-radius: 5px;
+    color: #ffffff;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    user-select: none;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// Testes //////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*/////////////////////////////// Container-Externo-Testes //////////////////////////////*/
+
+#Container-Externo-Testes{
+    display: none;
+    height: calc(100vh - 40px - 50px);
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+#Container-Interno-Testes{
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 40px;
+}
+
+#Container-Orientações-Aviso-Nota-e-Percentil{
+    margin-bottom: 40px;
+}
+
+#Manchete-Orientações-Teste{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #000;
+    color: #ffffff;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+#Orientações-Teste{
+    display: block;
+    padding: 20px;
+    background-color: #343434;
+    color: #fff;
+    align-items: center;
+    font-weight: 400;
+    user-select: none;
+    border-radius: 0px 0px 10px 10px;
+    margin-bottom: 40px;
+}
+
+#Container-Externo-Aviso-Revisão{
+    display: none;
+    margin-bottom: 40px;
+}
+
+#Manchete-Aviso-Revisão{
+    display: flex;
+    height: 50px;
+    background-color: #a41034;
+    color: #ffffff;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+#Aviso-Revisão{
+    display: block;
+    padding: 20px;
+    background-color: #ecb6c3;
+    color: #343434;
+    text-align: center;
+    font-weight: 400;
+    border-radius: 0px 0px 10px 10px;
+    user-select: none;
+}
+
+#Container-Externo-Nota-e-Percentil{
+    display: none;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+#Container-Nota{
+    width: 48%;
+    margin-right: 2%;
+}
+
+#Container-Percentil{
+    width: 48%;
+    margin-left: 2%;
+}
+
+.Manchete-Nota-e-Percentil{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #343434;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    text-align: center;
+    user-select: none;
+}
+
+#Nota{
+    border: 1px solid #d4d4d4;
+    font-size: 70px;
+    font-weight: 700;
+    user-select: none;
+}
+
+#Percentil{
+    border: 1px solid #d4d4d4;
+    font-size: 70px;
+    font-weight: 700;
+    user-select: none;
+}
+
+.Explicação-Nota-e-Percentil{
+    display: flex;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: #d4d4d4;
+    color: #343434;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 0px 0px 10px 10px;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+    height: 120px;
+}
+
+/*/////////////////////////////// Containers-Questões-Módulos //////////////////////////////*/
+
+.Containers-Questões-Módulos{
+    display: none;
+}
+
+.Containers-Questões{
+    margin-bottom: 40px;
+}
+
+.Títulos{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #343434;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+.Perguntas{
+    display: flex;
+    padding: 20px;
+    background-color: #d4d4d4;
+    color: #343434;
+    align-items: center;
+    font-weight: 500;
+    user-select: none;
+}
+
+.Opção {
+    display: block;
+    padding: 20px;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+}
+
+.Opção input[type="radio"] {
+    margin-right: 5px;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// Container Feedbacks ///////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Container-Externo-Feedbacks{
+    display: none;
+    height: calc(100vh - 40px - 50px);
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    
+}
+
+#Container-Interno-Feedbacks{
+    width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 40px;
+}
+
+#Manchete-Orientação-Feedbacks{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #a41034;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+#Explicação-Orientação-Feedbacks{
+    display: block;
+    padding: 20px;
+    background-color: #ecb6c3;
+    color: #343434;
+    font-weight: 400;
+    user-select: none;
+    border-radius: 0px 0px 10px 10px;
+}
+
+#Manchete-Tamanho-Módulo,#Manchete-Qualidade-Conteúdo,#Manchete-Qualidade-Plataforma,#Manchete-Qualidade-Materiais-Impressos,#Manchete-Comentários{
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #343434;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+    margin-top: 20px;
+}
+
+#Explicação-Qualidade-Conteúdo,#Explicação-Qualidade-Plataforma,#Explicação-Qualidade-Materiais-Impressos,#Explicação-Comentários{
+    display: block;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #d4d4d4;
+    color: #343434;
+    font-weight: 400;
+    user-select: none;
+}
+
+#Containter-Alternativas-Tamanho-Módulo,#Containter-Alternativas-Qualidade-Conteúdo,#Containter-Alternativas-Qualidade-Plataforma,#Containter-Alternativas-Qualidade-Materiais-Impressos{
+    display: flex;
+    border: 1px solid #d4d4d4;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    border-radius: 0px 0px 10px 10px;
+}
+
+.Alternativa-Tamanho-Módulo,.Alternativa-Qualidade-Conteúdo,.Alternativa-Qualidade-Plataforma,.Alternativa-Qualidade-Materiais-Impressos{
+    display: flex;
+    width: 120px;
+    cursor: pointer;
+    user-select: none;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    font-size: 15px;
+    gap: 5px;
+}
+
+.Opções-Feedbacks {
+    display: block;
+    border: 1px solid #d4d4d4;
+    cursor: pointer;
+}
+
+#Containter-Interno-Comentários{
+    display: block;
+    border: 1px solid #d4d4d4;
+    padding-right: 20px;
+    padding-left: 20px;
+    padding-top: 20px;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    border-radius: 0px 0px 10px 10px;
+}
+
+#Campo-Comentários{
+    width: 100%;
+    height: 200px;
+    padding: 10px;
+    resize: none;
+    font-size: 15px;
+    background-color: #f4f4f4;
+    border-radius: 10px 10px 10px 10px;
+}
+
+#Campo-Comentários-Contador-Caracteres{
+    font-size:12px;
+    color: #343434;
+    text-align: right;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Desempenho e Certificado ////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+/*////////////////////////////////////// Desempenho /////////////////////////////////////*/
+
+#Container-Externo-Desempenho-e-Certificado{
+    height: calc(100vh - 40px);
+    overflow-y: auto;
+    display: none;
+    padding-top: 40px;
+}
+
+#Container-Externo-Gráficos-Desempenho{
+    width: 1100px;
+    border: 1px solid #343434;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    border-radius: 20px 20px 20px 20px;
+}
+
+#Manchete-Gráficos-Desempenho{
+    background-color: #343434;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+#Container-Interno-Gráficos-Desempenho{
+    display: flex;
+    justify-content: space-between;
+    padding-top: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 30px;
+}
+
+#Container-Externo-Realizado-Gráficos-Desempenho{
+    display: block;
+    border: 1px solid #343434;
+    border-radius: 20px;
+}
+
+#Manchete-Realizado-Desempenho{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 20px 20px 0px 0px;
+    margin-bottom: 10px;
+    width: 750px;
+}
+
+#Container-Interno-Realizado-Gráficos-Desempenho{
+    display: flex;
+    justify-content: space-between;
+    padding: 25px;
+}
+
+#Container-Barras-Notas-Testes-Módulos{
+    display: flex;
+    border-bottom: 1px solid #696969;
+    margin-bottom: 5px;
+    height: 420px;
+    align-items: flex-end;
+}
+
+.Percentual-Nota-Teste-Módulo{
+    text-align: center;
+    font-weight: 400;
+    margin-bottom: 5px;
+}
+
+.Barra-Nota-Teste-Módulos{
+    width: 50px;
+    height: 0px;
+    background-color: #0a983e;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+#Container-Títulos-Notas-Testes-Módulos{
+    display: flex;
+}
+
+.Título-Nota-Testes-Módulos{
+    width: 60px;
+    text-align: center;
+    font-size: 14px;
+}
+
+#Container-Barra-Nota-Testes-Acumulado{
+    display: flex;
+    border-bottom: 1px solid #696969;
+    margin-bottom: 5px;
+    height: 420px;
+    align-items: flex-end;
+}
+
+#Percentual-Nota-Testes-Acumulado{
+    text-align: center;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+#Barra-Nota-Testes-Acumulado{
+    width: 60px;
+    height: 0px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+#Título-Nota-Testes-Acumulado{
+    width: 70px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+#Meta-Desempenho-Acumulado{
+    width: 250px;
+    border: 1px solid #696969;
+    border-radius: 20px;
+}
+
+#Manchete-Metas-Desempenho{
+    background-color: #696969;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+#Container-Externo-Explicação-Inicial-e-Metas-Desempenho{
+    padding-top: 10px;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+#Explicação-Inicial-Metas-Desempenho{
+    text-align: center;
+}
+
+#Container-Metas-Desempenho-95{
+    display: flex;
+    margin-top: 35px;
+}
+
+#Container-Metas-Desempenho-70{
+    display: flex;
+    margin-top: 75px;
+}
+
+.Traços-Metas-Desempenho{
+    margin-right: 5px;
+}
+
+/*////////////////////////////////////// Certificado ////////////////////////////////////*/
+
+#Container-Externo-Orientações-Certificado{
+    width: 1100px;
+    border: 1px solid #343434;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 40px;
+    border-radius: 20px 20px 20px 20px;
+}
+
+#Manchete-Orientações-Certificado{
+    background-color: #343434;
+    color: #ffffff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 500;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px 20px 0px 0px;
+    margin-bottom: 20px;
+}
+
+#Status-Certificado{
+    margin-left: 25px;
+    margin-bottom: 25px;
+}
+
+#Container-Interno-Orientações-Certificado{
+    display: none;
+    padding-left: 25px;
+    padding-right: 25px;
+    padding-bottom: 25px;
+}
+
+#Botão-Download-Certificado-Impresso{
+    background-color: #4a0816;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #ffffff;
+    width: 120px;
+    text-align: center;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px 10px 10px 10px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////// Faixa Inferior /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Faixa-Inferior{
+    display: flex;
+    width: 100%;
+    height: 50px;
+    border-top: 1px solid #d4d4d4;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(0deg, #fff, #dedede);
+}
+
+/*///////////////////////////////// Tópicos de Conteúdo ////////////////////////////////*/
+
+#Botão-Completar-e-Continuar{
+    background: linear-gradient(135deg, #4a0816, #000000);
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+    box-shadow: 0px 0px 5px rgba(74, 8, 22, 1);
+}
+
+#Botão-Completar-e-Continuar:hover{
+    box-shadow: 0px 0px 10px rgba(74, 8, 22, 1);
+}
+
+#Aviso-Tópico-Concluído{
+    background-color: #ffffff;
+    color: #343434;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ededed;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+}
+
+/*/////////////////////////////////// Tópicos de Teste //////////////////////////////////*/
+
+#Botão-Enviar-Respostas{
+    background-color: #4a0816;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Enviar-Respostas:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Botão-Continuar{
+    background-color: #4a0816;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Continuar:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Aviso-Teste-Concluído{
+    background-color: #ffffff;
+    color: #343434;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ededed;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+}
+
+/*/////////////////////////////////// Tópicos de Feedback //////////////////////////////////*/
+
+#Botão-Enviar-Feedback{
+    background-color: #4a0816;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Enviar-Feedback:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Aviso-Feedback-Concluído{
+    background-color: #ffffff;
+    color: #343434;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 5px;
+    border: 1px solid #ededed;
+    font-size: 14px;
+    font-weight: 500;
+    user-select: none;
+}

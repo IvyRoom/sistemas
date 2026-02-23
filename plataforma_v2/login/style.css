@@ -1,0 +1,141 @@
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI';
+}
+
+/*/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// Seção-Login ///////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////*/
+
+#Seção-Login{
+    background: linear-gradient(135deg, #4a0816, #000000);
+    text-align: center;
+    padding-top: 40px;
+}
+
+#Logo-Machado{
+    height: 40px;
+    user-select: none;
+    vertical-align: bottom;
+}
+
+#Container-Externo-Formulário-Login{
+    min-height: 500px; 
+    height: calc(100vh - 120px);
+    align-content: center;
+}
+
+#Container-Interno-Formulário-Login{
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#Manchete-Formulário-Login{
+    font-size: 30px;
+    margin-bottom: 20px;
+    user-select: none;
+    color: #fff;
+}
+
+#Formulário-Login{
+    text-align: left;  
+}
+
+#Cabeçalho-E-mail{
+    font-size: 18px;
+    margin-bottom: 5px;
+    user-select: none;
+    color: #fff;
+}
+
+#E-mail{
+    width: 100%;
+    height: 32px;
+    background-color: #fff;
+    border-radius: 10px;
+    font-size: 16px;
+    padding-left: 10px;
+    margin-bottom: 10px;
+    border-width: 0px;
+}
+
+#Cabeçalho-Senha{
+    font-size: 18px;
+    margin-bottom: 5px;
+    user-select: none;
+    color: #fff;
+}
+
+#Senha{
+    width: 100%;
+    height: 32px;
+    background-color: #fff;
+    border-radius: 10px;
+    font-size: 16px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-bottom: 30px;
+    border-width: 0px;
+}
+
+#Entrar{
+    background-color: #4a0816;
+    color: #fff;
+    font-size: 17px;
+    height: 40px;
+    border-radius: 20px;
+    width: 100px;
+    border-width: 0px;
+    margin-left: calc(50% - 50px);
+    user-select: none;
+    box-shadow: 0px 0px 8px rgba(255, 255, 255, 0.8);
+}
+
+#Entrar:hover {
+    box-shadow: 0px 0px 12px rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+}
+
+#Aviso-Inconsistência{
+    color: #fff;
+    width: 202px;
+    margin-left: calc(50% - 101px);
+    margin-top: 10px;
+    display: none;
+    user-select: none;
+}
+
+#Aviso-Inicializando{
+    color: #fff;
+    width: max-content;
+    white-space: nowrap;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    user-select: none;
+    display: none;
+}
+
+#Aviso-Login-Expirado{
+    color: #fff;
+    width: max-content;
+    white-space: nowrap;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30px;
+    user-select: none;
+    display: none;
+}
+
+#Texto-Rodapé{
+    height: 40px;
+    color: #fff;
+    font-size: 12px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
