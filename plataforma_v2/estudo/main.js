@@ -407,6 +407,7 @@ function AbreTópico() {
         ContainerExternoTestes.style.display = "none";
         ContainerExternoFeedbacks.style.display = "none";
         ContainerExternoDesempenhoeCertificado.style.display = "none";
+        ContainerExternoConteúdo.scrollTo(0,0);
         
         ////////////////////////////////////////////////////////////////////////////////////////
         // Cria a estrutura do ShakaPlayer e faz o download do vídeo .mpd a partir do Azure Container.
@@ -742,6 +743,7 @@ function AbreTópico() {
         ContainerInternoOrientaçõesTeste.style.display = "block";
         ContainerExternoAvisoRevisão.style.display = 'none';
         ContainerExternoNotaePercentil.style.display = 'none';
+        ContainerExternoTestes.scrollTo(0, 0);
         let NúmeroMóduloContémTópicoSelecionado = parseInt(ContainerTópicoSelecionado.getAttribute("name").match(/\d+/)[0], 10);
         ContainerQuestõesMódulo.forEach((ContainerQuestõesMódulo, Índice) => { ContainerQuestõesMódulo.style.display = (Índice === NúmeroMóduloContémTópicoSelecionado - 1) ? "block" : "none"; });
         ContainerExternoFeedbacks.style.display = "none";
@@ -841,8 +843,9 @@ function AbreTópico() {
                         // Processa o botão "Continuar".
                         document.getElementById("Botão-Continuar").addEventListener('click', function(){ AbreTópico.call(PróximoContainerTópico); });
 
-                        // Atualiza a variável Usuário_Formação_NotaMódulos para estar correto no "Desempenho e Certificado".
+                        // Atualiza a nota do módulo e a nota acumulada aqui no frontend (sem precisar extrair do backend via novo fetch), para estarem atualizadas na aba "Desempenho e Certificado".
                         Usuário_Formação_NotasMódulos[NúmeroMóduloContémTópicoSelecionado] = PercentualAcerto;
+                        Usuário_Formação_NotaAcumulado = Usuário_Formação_NotasMódulos.reduce((a, b) => a + b, 0) / (Usuário_Formação_NotasMódulos.length - 1);
 
                     }
                 
@@ -886,13 +889,17 @@ function AbreTópico() {
         ContainerExternoTestes.style.display = "none";
         ContainerExternoFeedbacks.style.display = "block";
         ContainerExternoDesempenhoeCertificado.style.display = "none";
+        ContainerExternoFeedbacks.scrollTo(0, 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////
-        // Aciona o contador de caractéres do Campo-Comentários.
+        // Limpa todos os dados do feedback já preenchidos e aciona o contador de caractéres do Campo-Comentários.
         ////////////////////////////////////////////////////////////////////////////////////////
 
+        document.querySelectorAll('.Opções-Feedbacks').forEach(r => r.checked = false);
         let CampoComentários = document.getElementById("Campo-Comentários");
         let CampoComentáriosContadorCaracteres = document.getElementById("Campo-Comentários-Contador-Caracteres");
+        CampoComentários.value = '';
+        CampoComentáriosContadorCaracteres.textContent = "0 / 1000";
         CampoComentários.oninput=()=>CampoComentáriosContadorCaracteres.textContent=`${CampoComentários.value.length} / 1000`;
     
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -998,7 +1005,7 @@ function AbreDesempenhoeCertificado(){
     ////////////////////////////////////////////////////////////////////////////////////////
 
     for (var i = 0; i < ContainersTópicosAbertos.length; i++) {
-        ContainersTópicosAbertos[i].style.backgroundColor = "#ebebeb";
+        ContainersTópicosAbertos[i].style.backgroundColor = "";
         ContainersTópicosAbertos[i].querySelector('.Tópico-Nome').style.fontWeight = "400";
     }
     
