@@ -13,16 +13,6 @@ const URL_Base_Backend = sessionStorage.getItem('URL_Base_Backend');
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-// Importa o código de comunicação com o Azure Face API, para fazer o FaceID.
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
-
-import "../azure-ai-vision-face-ui/FaceLivenessDetector.js"
-
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
 // Declara as demais variáveis necessárias.
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -133,28 +123,26 @@ FormulárioLogin.addEventListener('submit', function(event) {
                 
                 else if (Usuário_Foto_Cadastrada === 'Sim') {
                                         
-                    fetch(URL_Base_Backend + '/FaceID', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ IndexVerificado: IndexVerificado }) }).then(response => response.json()).then(data =>  {
-                
-                        let Azure_Face_API_LivenessSession_authToken = data.Azure_Face_API_LivenessSession_authToken;
-                        let Azure_Face_API_LivenessSession_sessionID = data.Azure_Face_API_LivenessSession_sessionID;
+                    fetch(URL_Base_Backend + '/FaceID', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ IndexVerificado: IndexVerificado }) }).then(response => response.json()).then(async data =>  {
+
+                        document.body.style.cursor = 'default';
+                        
+                        await import("../azure-ai-vision-face-ui/FaceLivenessDetector.js");
                         let faceLivenessDetector = document.createElement("azure-ai-vision-face-ui");
                         faceLivenessDetector.locale = "pt-BR";
                         faceLivenessDetector.fontSize = "18px";
                         faceLivenessDetector.buttonStyles = "margin-top: 10px; height: 40px; width: 110px; font-size: 16px; border-radius: 20px; box-shadow: 0px 0px 8px #4a0816; border: 0px; cursor: pointer;";
                         ContainerAuxiliarFaceID.appendChild(faceLivenessDetector);
 
-                        faceLivenessDetector.start(Azure_Face_API_LivenessSession_authToken).then(() => {
+                        faceLivenessDetector.start(data.Azure_Face_API_LivenessSession_authToken).then(() => {
                 
                             // Obtém os resultados do FaceID.
                         
-                            fetch(URL_Base_Backend + '/FaceID_resultado/' + Azure_Face_API_LivenessSession_sessionID, { method: 'GET', headers: {'Content-Type': 'application/json'} }).then(response => response.json()).then(data =>  {
-
-                                let Azure_Face_API_LivenessSession_LivenessDecision = data.Azure_Face_API_LivenessSession_LivenessDecision;
-                                let Azure_Face_API_LivenessSession_MatchDecision = data.Azure_Face_API_LivenessSession_MatchDecision;
+                            fetch(URL_Base_Backend + '/FaceID_resultado/' + data.Azure_Face_API_LivenessSession_sessionID, { method: 'GET', headers: {'Content-Type': 'application/json'} }).then(response => response.json()).then(data =>  {
                                 
                                 // Processa caso o FaceID seja aprovado (leva à página de estudo):
                                 
-                                if ( Azure_Face_API_LivenessSession_LivenessDecision === 'realface' && Azure_Face_API_LivenessSession_MatchDecision === true ) { sessionStorage.setItem('Usuário_Logado', 'Sim'); window.location.href = '/plataforma_v2/estudo'; } 
+                                if (data.Azure_Face_API_LivenessSession_LivenessDecision === 'realface' && data.Azure_Face_API_LivenessSession_MatchDecision === true ) { sessionStorage.setItem('Usuário_Logado', 'Sim'); window.location.href = '/plataforma_v2/estudo'; } 
                                 
                                 // Processa caso o FaceID seja reprovado (dá o alerta de FaceID reprovado):
 
