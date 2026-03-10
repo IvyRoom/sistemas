@@ -413,6 +413,10 @@ function AbreTópico() {
         // Cria a estrutura do ShakaPlayer e faz o download do vídeo .mpd a partir do Azure Container.
         ////////////////////////////////////////////////////////////////////////////////////////
 
+        let DRM_Ativo;
+
+        if (Usuário_NomeCompleto === 'Ellyson Freitas' || Usuário_NomeCompleto === 'Rafael Santos Jesus' || Usuário_NomeCompleto === 'Ader Angelo Passos') { DRM_Ativo = false } else { DRM_Ativo = true };
+        
         let NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
         
         async function initPlayer() {
@@ -421,10 +425,11 @@ function AbreTópico() {
                 await ShakaPlayer.attach(ContainerInternoShakaPlayer);
                 UIShakaPlayer = new shaka.ui.Overlay(ShakaPlayer, ContainerExternoShakaPlayer, ContainerInternoShakaPlayer);
                 UIShakaPlayer.configure({ controlPanelElements: ['play_pause', 'time_and_duration','spacer', 'mute', 'volume', 'quality', 'playback_rate', 'fullscreen' ], overflowMenuButtons: [] });
-                ShakaPlayer.configure({ drm: { servers: {'com.microsoft.playready': 'https://eu-playready.ezdrm.com/cency/preauth.aspx?pX=7C6D6C'}}});
+                if (DRM_Ativo === true) { ShakaPlayer.configure({ drm: { servers: { 'com.microsoft.playready': 'https://eu-playready.ezdrm.com/cency/preauth.aspx?pX=7C6D6C' } } }); }
                 AlgumVídeoJáFoiCarregado = true;
             } 
-            await ShakaPlayer.load('https://videospreparatoriosv2.blob.core.windows.net/videosv3/plataforma_v2/' + MóduloAberto + '/' + NomeVídeo + '_dash.mpd');
+            if (DRM_Ativo === true) { await ShakaPlayer.load('https://videospreparatoriosv2.blob.core.windows.net/videosv3/plataforma_v2/' + MóduloAberto + '/' + NomeVídeo + '_dash.mpd'); } else { await ShakaPlayer.load('https://videospreparatoriosv2.blob.core.windows.net/videosv3/plataforma_v2_sem_drm/' + MóduloAberto + '/' + NomeVídeo + '_dash.mpd'); };
+
             ContainerInternoShakaPlayer.play();
         }
         shaka.polyfill.installAll();
