@@ -13,6 +13,7 @@ var TelefonecomDDD = document.getElementById("Telefone-com-DDD");
 var Cargo = document.getElementById("Cargo");
 var NomeEmpresa = document.getElementById("Nome-Empresa");
 var CNPJ = document.getElementById("CNPJ");
+var NúmerodeParticipantes = document.getElementById("Número-de-Participantes");
 var Observações = document.getElementById("Observações");
 var BotãoSolicitarOrçamento = document.getElementById("Botão-Solicitar-Orçamento");
 var AvisoEmailsDivergentesBotão = document.getElementById("Aviso-Emails-Divergentes-Botão");
@@ -283,6 +284,7 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
             Solicitante_Cargo: Cargo.value,
             Solicitante_NomeEmpresa: NomeEmpresa.value,
             Solicitante_CNPJ: CNPJ.value,
+            Solicitante_NúmerodeParticipantes: NúmerodeParticipantes.value,
             Solicitante_Observações: Observações.value.trim()
         })
     })

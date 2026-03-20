@@ -149,7 +149,7 @@ function handleIntersection(entries, observer) {
             ContainerInternoVídeoPrincipal.setAttribute("data-shaka-player-container", "");
             VídeoPrincipal.setAttribute("data-shaka-player", "");
             VídeoPrincipal.setAttribute("poster", "/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
-            VídeoPrincipal.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/manifest.mpd");
+            VídeoPrincipal.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8");
 
             const player = new shaka.Player(VídeoPrincipal);
             const ui = new shaka.ui.Overlay(player, ContainerInternoVídeoPrincipal, VídeoPrincipal);
@@ -488,7 +488,7 @@ SetaFechamentoSeção3.addEventListener("click", function(event) {
 
 BotãoInstagramDirect.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("https://ig.me/m/ivy.escoladegestao","_blank");
+    window.open("https://ig.me/m/machado.gestao","_blank");
 })
 
 /*///////////////////////////////////// Subseção 3.1 /////////////////////////////////////*/
