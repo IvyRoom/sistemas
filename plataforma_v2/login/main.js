@@ -114,7 +114,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
             
             if (Usuário_Status_Login === "Ativo") {
 
-                sessionStorage.setItem('TempoSessão_Segundos', 3600);
+                sessionStorage.setItem('TempoSessão_Segundos', 7200);
 
                 ////////////////////////////////////////////////////////////////////////////////////////
                 // Processa caso o FaceId esteja inativo (faz o login direto do usuário).

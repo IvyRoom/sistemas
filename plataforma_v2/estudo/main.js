@@ -210,7 +210,7 @@ window.addEventListener('load', function() {
                     
                     TempoSessão_Segundos--;
                     sessionStorage.setItem('TempoSessão_Segundos', TempoSessão_Segundos);
-                    UsuárioTempoSessão.textContent = `Tempo Sessão: ${String((TempoSessão_Segundos/60|0)).padStart(2,"0")}:${String(TempoSessão_Segundos%60).padStart(2,"0")}`;
+                    UsuárioTempoSessão.textContent = `Tempo Sessão: ${String((TempoSessão_Segundos/3600|0)).padStart(2,"0")}:${String(((TempoSessão_Segundos%3600)/60|0)).padStart(2,"0")}:${String(TempoSessão_Segundos%60).padStart(2,"0")}`;
                     if (TempoSessão_Segundos <= 600) { UsuárioTempoSessão.style.color = "red"; }
                     if (TempoSessão_Segundos <= 300) { UsuárioTempoSessão.classList.add("Tempo-Sessão-Últimos-5min"); }
                     if (TempoSessão_Segundos <= 0) { clearInterval(ContadorRegressivoTempoSessão); sessionStorage.setItem('Usuário_Logado', 'Não'); window.location.href = '/plataforma_v2/login'; }
