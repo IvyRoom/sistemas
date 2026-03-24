@@ -628,6 +628,16 @@
     user-select: none;
 }
 
+.Avisos-Questões-Checkbox {
+    display: flex;
+    padding: 20px;
+    background-color: #ecb6c3;
+    color: #4a0816;
+    align-items: center;
+    font-weight: 500;
+    user-select: none;
+}
+
 .Perguntas{
     display: flex;
     padding: 20px;

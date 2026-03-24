@@ -434,10 +434,17 @@ function AbreTópico() {
         }
         shaka.polyfill.installAll();
         if (shaka.Player.isBrowserSupported()) { initPlayer(); } else { alert('Navegador não suportado.'); }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Avança o tópico automaticamente, ao chegar ao final do vídeo, se o tópico selecionado for o tópico aberto.
+        //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        if (ContainerTópicoSelecionado.className === "Container-Tópico-Aberto") { ContainerInternoShakaPlayer.onended = () => { Completar_e_Continuar_Tópico(ContainerTópicoSelecionado) } } 
+        else { ContainerInternoShakaPlayer.onended = null; }
                                 
         //////////////////////////////////////////////////////////////////////////////////////
         // Disponibiliza os arquivos para download.
-        ////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////
 
         let ContainerDownloadArquivo1 = document.getElementById("Container-Download-Arquivo-1");
         let NomeArquivo1 = document.getElementById("Nome-Arquivo-1");
@@ -684,43 +691,7 @@ function AbreTópico() {
 
             FaixaInferior.innerHTML = '<div id="Botão-Completar-e-Continuar">Completar e Continuar →</div>';
             
-            document.getElementById("Botão-Completar-e-Continuar").addEventListener('click', function(){
-    
-                FaixaInferior.innerHTML = '';                    
-                document.body.style.cursor = 'wait';
-                Usuário_Formação_NúmeroTópicosConcluídos += 1;
-
-                ////////////////////////////////////////////////////////////////////////////////////////
-                // Envia informações ao backend para atualizar a BD - PLATAFORMA.
-
-                fetch(URL_Base_Backend + "/updates", { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Formação_NúmeroTópicosConcluídos, NúmeroMódulo: 'n/a', NotaTeste: 'n/a'}) }).then(response => {
-                    
-                    if (response.status === 200) {
-
-                        document.body.style.cursor = 'default';
-                        AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
-                        
-                        ////////////////////////////////////////////////////////////////////////////////////////
-                        // Atualiza o Container Tópico Selecionado.
-            
-                        ContainerTópicoSelecionado.className = "Container-Tópico-Concluído";
-                        ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').innerHTML = "✔";
-                        ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').classList.replace("Símbolo-Check-Aberto", "Símbolo-Check-Concluído");
-            
-                        ////////////////////////////////////////////////////////////////////////////////////////
-                        // Atualiza o próximo Container Tópico.
-            
-                        let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
-                        PróximoContainerTópico.className = "Container-Tópico-Aberto";
-                        PróximoContainerTópico.querySelector('.Símbolo-Check-Fechado').classList.replace("Símbolo-Check-Fechado", "Símbolo-Check-Aberto");                
-                        AbreTópico.call(PróximoContainerTópico);
-                        PróximoContainerTópico.addEventListener('click', AbreTópico);
-
-                    }
-                
-                });
-
-            });
+            document.getElementById("Botão-Completar-e-Continuar").addEventListener('click', function () { Completar_e_Continuar_Tópico(ContainerTópicoSelecionado)});
     
         } else {
     
@@ -773,8 +744,9 @@ function AbreTópico() {
                 
             document.getElementById("Botão-Enviar-Respostas").addEventListener('click', function(){
 
-                Usuário_Formação_NúmeroTópicosConcluídos += 1;
                 FaixaInferior.innerHTML = '';
+                document.body.style.cursor = 'wait';
+                Usuário_Formação_NúmeroTópicosConcluídos += 1;
                 
                 ////////////////////////////////////////////////////////////////////////////////////////
                 // Calcula o PercentualAcerto.
@@ -801,6 +773,7 @@ function AbreTópico() {
                         // Atualiza as Seção-Navegação.
 
                         // Atualiza as Métricas de Avanço na Formação.
+                        document.body.style.cursor = 'default';
                         AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
 
                         // Atualiza o Tópico Selecionado.
@@ -927,7 +900,7 @@ function AbreTópico() {
                 // Atualiza a BD - PLATAFORMA e a BD - FEEDBACKS.
 
                 let NúmeroMóduloContémTópicoSelecionado = parseInt(ContainerTópicoSelecionado.getAttribute("name").match(/\d+/)[0], 10);
-                let Feedback_DataPreenchimento = new Date().toLocaleDateString('pt-BR');
+                let Feedback_DataPreenchimento = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '');
                 let Feedback_TamanhoMódulo = document.querySelector('input[name="Tamanho-Módulo"]:checked')?.getAttribute('query-id');
                 let Feedback_QualidadeConteúdo = document.querySelector('input[name="Qualidade-Conteúdo"]:checked')?.getAttribute('query-id');
                 let Feedback_QualidadePlataforma = document.querySelector('input[name="Qualidade-Plataforma"]:checked')?.getAttribute('query-id');
@@ -982,6 +955,54 @@ function AbreTópico() {
     }
 
     FaixaInferior.style.display = "flex";
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Cria a função "Completar e Continuar".
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function Completar_e_Continuar_Tópico(ContainerTópicoSelecionado) {
+    
+    FaixaInferior.innerHTML = '';
+    document.body.style.cursor = 'wait';
+    Usuário_Formação_NúmeroTópicosConcluídos += 1;
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    // Envia informações ao backend para atualizar a BD - PLATAFORMA.
+
+    fetch(URL_Base_Backend + "/updates", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Formação_NúmeroTópicosConcluídos, NúmeroMódulo: 'n/a', NotaTeste: 'n/a' }) }).then(response => {
+
+        if (response.status === 200) {
+
+            document.body.style.cursor = 'default';
+            AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Atualiza o Container Tópico Selecionado.
+
+            ContainerTópicoSelecionado.className = "Container-Tópico-Concluído";
+            ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').innerHTML = "✔";
+            ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').classList.replace("Símbolo-Check-Aberto", "Símbolo-Check-Concluído");
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Atualiza o próximo Container Tópico.
+
+            let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
+            PróximoContainerTópico.className = "Container-Tópico-Aberto";
+            PróximoContainerTópico.querySelector('.Símbolo-Check-Fechado').classList.replace("Símbolo-Check-Fechado", "Símbolo-Check-Aberto");
+            AbreTópico.call(PróximoContainerTópico);
+            PróximoContainerTópico.addEventListener('click', AbreTópico);
+
+        }
+
+    });
 
 }
 

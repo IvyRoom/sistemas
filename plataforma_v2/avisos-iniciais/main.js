@@ -38,10 +38,10 @@ window.addEventListener('load', function () {
 
 let PalavraPasseCredenciais = document.getElementById('Palavra-Passe-Credenciais');
 let PalavraPasseDireitos = document.getElementById('Palavra-Passe-Direitos');
-let PalavraPasseSancoes = document.getElementById('Palavra-Passe-Sancoes');
+let PalavraPasseJanela = document.getElementById('Palavra-Passe-Janela');
 let AlertaPalavraPasseCredenciais = document.getElementById("Alerta-Palavra-Passe-Credenciais");
 let AlertaPalavraPasseDireitos = document.getElementById("Alerta-Palavra-Passe-Direitos");
-let AlertaPalavraPasseSancoes = document.getElementById("Alerta-Palavra-Passe-Sancoes");
+let AlertaPalavraPasseJanela = document.getElementById("Alerta-Palavra-Passe-Janela");
 let BotãoLieConcordo = document.getElementById("Botão-Li-e-Concordo");
 
 document.getElementById('Formulário').addEventListener('submit', function (event) {
@@ -52,9 +52,9 @@ document.getElementById('Formulário').addEventListener('submit', function (even
     
     if (PalavraPasseCredenciais.value !== "credenciais") { document.getElementById('Alerta-Palavra-Passe-Credenciais').style.display = "block"; }
     if (PalavraPasseDireitos.value !== "direitos") { document.getElementById('Alerta-Palavra-Passe-Direitos').style.display = "block"; }
-    if (PalavraPasseSancoes.value !== "sanções") { document.getElementById('Alerta-Palavra-Passe-Sancoes').style.display = "block"; }
+    if (PalavraPasseJanela.value !== "janela") { document.getElementById('Alerta-Palavra-Passe-Janela').style.display = "block"; }
 
-    if (PalavraPasseCredenciais.value === "credenciais" && PalavraPasseDireitos.value === "direitos" && PalavraPasseSancoes.value === "sanções") { window.location.href = '/plataforma_v2/cadastro'; }
+    if (PalavraPasseCredenciais.value === "credenciais" && PalavraPasseDireitos.value === "direitos" && PalavraPasseJanela.value === "janela") { window.location.href = '/plataforma_v2/cadastro'; }
     else { document.body.style.cursor = 'default'; }
 
 });
@@ -65,6 +65,6 @@ document.getElementById('Formulário').addEventListener('submit', function (even
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-PalavraPasseCredenciais.addEventListener('change', function () { AlertaPalavraPasseCredenciais.style.display = 'none'; AlertaPalavraPasseDireitos.style.display = 'none'; AlertaPalavraPasseSancoes.style.display = 'none'; BotãoLieConcordo.style.display = "block"; });
-PalavraPasseDireitos.addEventListener('change', function () { AlertaPalavraPasseCredenciais.style.display = 'none'; AlertaPalavraPasseDireitos.style.display = 'none'; AlertaPalavraPasseSancoes.style.display = 'none'; BotãoLieConcordo.style.display = "block"; });
-PalavraPasseSancoes.addEventListener('change', function () { AlertaPalavraPasseCredenciais.style.display = 'none'; AlertaPalavraPasseDireitos.style.display = 'none'; AlertaPalavraPasseSancoes.style.display = 'none'; BotãoLieConcordo.style.display = "block"; });
+PalavraPasseCredenciais.addEventListener('change', function () { AlertaPalavraPasseCredenciais.style.display = 'none'; AlertaPalavraPasseDireitos.style.display = 'none'; AlertaPalavraPasseJanela.style.display = 'none'; BotãoLieConcordo.style.display = "block"; });
+PalavraPasseDireitos.addEventListener('change', function () { AlertaPalavraPasseCredenciais.style.display = 'none'; AlertaPalavraPasseDireitos.style.display = 'none'; AlertaPalavraPasseJanela.style.display = 'none'; BotãoLieConcordo.style.display = "block"; });
+PalavraPasseJanela.addEventListener('change', function () { AlertaPalavraPasseCredenciais.style.display = 'none'; AlertaPalavraPasseDireitos.style.display = 'none'; AlertaPalavraPasseJanela.style.display = 'none'; BotãoLieConcordo.style.display = "block"; });
