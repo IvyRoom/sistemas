@@ -39,7 +39,7 @@
   "AZAIF_BrightnessTip2": "Pode ser que você seja solicitado a sorrir.",
   "AZAIF_BrightnessTip3": "Você pode ser solicitado a virar o nariz em direção à cor verde.",
   "AZAIF_BrightnessContinue": "Continuar",
-  "AZAIF_IncreaseBrightness": "Coloque o brilho da tela no máximo.",
-  "AZAIF_IncreaseBrightnessHighestSetting": "O brilho da tela deve estar no máximo, pois a tela irá piscar algumas vezes para processar o FaceID.",
-  "AZAIF_IncreaseBrightnessTurnedUp": "Coloquei o brilho no máximo."
+  "AZAIF_IncreaseBrightness": "Coloque o brilho da tela no máximo e afaste-se de janelas muito iluminadas.",
+  "AZAIF_IncreaseBrightnessHighestSetting": "A tela piscará algumas vezes para processar o FaceID.",
+  "AZAIF_IncreaseBrightnessTurnedUp": "Coloquei o brilho no máximo e me afastei de janelas muito iluminadas."
 }
