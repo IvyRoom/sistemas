@@ -606,6 +606,48 @@
     height: 120px;
 }
 
+#Container-Externo-Legenda-Respostas {
+    display: none;
+    text-align: left;
+    margin-bottom: 40px;
+}
+
+#Manchete-Legenda-Respostas {
+    display: flex;
+    height: 50px;
+    padding-left: 20px;
+    background-color: #343434;
+    color: #ffffff;
+    align-items: center;
+    font-weight: 500;
+    border-radius: 10px 10px 0px 0px;
+    user-select: none;
+}
+
+#Legenda-Respostas-1{
+    display: block;
+    padding: 20px;
+    background-color: #94fd7f;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+}
+
+#Legenda-Respostas-2 {
+    display: block;
+    padding: 20px;
+    background-color: #d3ffcb;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+}
+
+#Legenda-Respostas-3 {
+    display: block;
+    padding: 20px;
+    background-color: #fd7f7f;
+    border: 1px solid #d4d4d4;
+    user-select: none;
+}
+
 /*/////////////////////////////// Containers-Questões-Módulos //////////////////////////////*/
 
 .Containers-Questões-Módulos{
@@ -1063,6 +1105,42 @@
 }
 
 #Botão-Enviar-Respostas:hover{
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Botão-Confirmar-Envio-Respostas {
+    background-color: #ffffff;
+    color: #4a0816;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Confirmar-Envio-Respostas:hover {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#Botão-Voltar-Respostas {
+    background-color: #4a0816;
+    color: #ffffff;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+#Botão-Voltar-Respostas:hover {
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
 }
 

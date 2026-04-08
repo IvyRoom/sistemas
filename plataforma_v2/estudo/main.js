@@ -42,9 +42,10 @@ let UIShakaPlayer;
 let AlgumVídeoJáFoiCarregado = false;
 
 let ContainerExternoTestes = document.getElementById("Container-Externo-Testes");
-let ContainerInternoOrientaçõesTeste = document.getElementById("Container-Interno-Orientações-Teste");
+let ContainerExternoOrientaçõesTeste = document.getElementById("Container-Externo-Orientações-Teste");
 let ContainerExternoAvisoRevisão = document.getElementById("Container-Externo-Aviso-Revisão");
 let ContainerExternoNotaePercentil = document.getElementById("Container-Externo-Nota-e-Percentil");
+let ContainerExternoLegendaRespostas = document.getElementById("Container-Externo-Legenda-Respostas");
 let ContainerQuestõesMódulo = document.querySelectorAll("[id^='Container-Questões-Módulo-']");
 
 let ContainerExternoFeedbacks = document.getElementById("Container-Externo-Feedbacks");
@@ -436,11 +437,11 @@ function AbreTópico() {
         if (shaka.Player.isBrowserSupported()) { initPlayer(); } else { alert('Navegador não suportado.'); }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Avança o tópico automaticamente, ao chegar ao final do vídeo, se o tópico selecionado for o tópico aberto.
+        // Avança o tópico automaticamente, ao chegar ao final do vídeo.
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
         if (ContainerTópicoSelecionado.className === "Container-Tópico-Aberto") { ContainerInternoShakaPlayer.onended = () => { Completar_e_Continuar_Tópico(ContainerTópicoSelecionado) } } 
-        else { ContainerInternoShakaPlayer.onended = null; }
+        else { ContainerInternoShakaPlayer.onended = () => { AbreTópico.call(document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]')) }}
                                 
         //////////////////////////////////////////////////////////////////////////////////////
         // Disponibiliza os arquivos para download.
@@ -716,9 +717,10 @@ function AbreTópico() {
         ContainerInternoShakaPlayer.pause();
         ContainerExternoConteúdo.style.display = "none";
         ContainerExternoTestes.style.display = "block";
-        ContainerInternoOrientaçõesTeste.style.display = "block";
+        ContainerExternoOrientaçõesTeste.style.display = "block";
         ContainerExternoAvisoRevisão.style.display = 'none';
         ContainerExternoNotaePercentil.style.display = 'none';
+        ContainerExternoLegendaRespostas.style.display = 'none';
         ContainerExternoTestes.scrollTo(0, 0);
         let NúmeroMóduloContémTópicoSelecionado = parseInt(ContainerTópicoSelecionado.getAttribute("name").match(/\d+/)[0], 10);
         ContainerQuestõesMódulo.forEach((ContainerQuestõesMódulo, Índice) => { ContainerQuestõesMódulo.style.display = (Índice === NúmeroMóduloContémTópicoSelecionado - 1) ? "block" : "none"; });
@@ -735,99 +737,112 @@ function AbreTópico() {
             // Destrava as questões e desmarca as respostas.
 
             let RespostasTodas = document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"], input[query-id="Ij73hRG8120Amb85Ff473LCx3Zaor991"]');
-            RespostasTodas.forEach(function(input) { input.disabled = false; input.parentElement.style.backgroundColor = '#ffffff'; });
+            RespostasTodas.forEach(function(input) { input.checked = false; input.disabled = false; input.parentElement.style.backgroundColor = '#ffffff'; });
             
             ////////////////////////////////////////////////////////////////////////////////////////
-            // Cria e processa o botão "Enviar Respostas"
+            // Processa o envio das respostas do teste.
             
             FaixaInferior.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';
-                
-            document.getElementById("Botão-Enviar-Respostas").addEventListener('click', function(){
 
-                FaixaInferior.innerHTML = '';
-                document.body.style.cursor = 'wait';
-                Usuário_Formação_NúmeroTópicosConcluídos += 1;
-                
-                ////////////////////////////////////////////////////////////////////////////////////////
-                // Calcula o PercentualAcerto.
+            FaixaInferior.addEventListener('click', function (e) {
 
-                let RespostasCorretasSelecionadas = Array.from(document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]:checked')).filter(e => e.closest('#Container-Questões-Módulo-' + NúmeroMóduloContémTópicoSelecionado)).length;                
-                let RespostasIncorretasSelecionadas = Array.from(document.querySelectorAll('input[query-id="Ij73hRG8120Amb85Ff473LCx3Zaor991"]:checked')).filter(e => e.closest('#Container-Questões-Módulo-' + NúmeroMóduloContémTópicoSelecionado)).length;
-                let TotalRespostasCorretas = Array.from(document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]')).filter(e => e.closest('#Container-Questões-Módulo-' + NúmeroMóduloContémTópicoSelecionado)).length;
-                let PercentualAcerto = Math.max(0,(RespostasCorretasSelecionadas - RespostasIncorretasSelecionadas) / TotalRespostasCorretas);
+                if (e.target.id === 'Botão-Enviar-Respostas') { FaixaInferior.innerHTML = '<div id="Botão-Confirmar-Envio-Respostas">Confirmar Envio</div><div id="Botão-Voltar-Respostas">Voltar</div>'; }
 
-                ////////////////////////////////////////////////////////////////////////////////////////
-                // Envia informações ao backend para atualizar a BD - PLATAFORMA.
-                
-                fetch(URL_Base_Backend + "/updates", {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos-e-NotaTeste', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Formação_NúmeroTópicosConcluídos, NúmeroMódulo: NúmeroMóduloContémTópicoSelecionado, NotaTeste: PercentualAcerto })
-                })
-                
-                .then(response => {
+                else if (e.target.id === 'Botão-Voltar-Respostas') { FaixaInferior.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';}
+
+                else if (e.target.id === 'Botão-Confirmar-Envio-Respostas') { 
                     
-                    if (response.status === 200) {
+                    FaixaInferior.innerHTML = '';
+                    document.body.style.cursor = 'wait';
+                    Usuário_Formação_NúmeroTópicosConcluídos += 1;
+                    
+                    ////////////////////////////////////////////////////////////////////////////////////////
+                    // Calcula o PercentualAcerto.
 
-                        ////////////////////////////////////////////////////////////////////////////////////////
-                        // Atualiza as Seção-Navegação.
+                    let RespostasCorretasSelecionadas = Array.from(document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]:checked')).filter(e => e.closest('#Container-Questões-Módulo-' + NúmeroMóduloContémTópicoSelecionado)).length;                
+                    let RespostasIncorretasSelecionadas = Array.from(document.querySelectorAll('input[query-id="Ij73hRG8120Amb85Ff473LCx3Zaor991"]:checked')).filter(e => e.closest('#Container-Questões-Módulo-' + NúmeroMóduloContémTópicoSelecionado)).length;
+                    let TotalRespostasCorretas = Array.from(document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]')).filter(e => e.closest('#Container-Questões-Módulo-' + NúmeroMóduloContémTópicoSelecionado)).length;
+                    let PercentualAcerto = Math.max(0,(RespostasCorretasSelecionadas - RespostasIncorretasSelecionadas) / TotalRespostasCorretas);
 
-                        // Atualiza as Métricas de Avanço na Formação.
-                        document.body.style.cursor = 'default';
-                        AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
+                    ////////////////////////////////////////////////////////////////////////////////////////
+                    // Envia informações ao backend para atualizar a BD - PLATAFORMA.
+                    
+                    fetch(URL_Base_Backend + "/updates", { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ TipoAtualização: 'NúmeroTópicosConcluídos-e-NotaTeste', IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Formação_NúmeroTópicosConcluídos, NúmeroMódulo: NúmeroMóduloContémTópicoSelecionado, NotaTeste: PercentualAcerto }) }).then(response => {
+                        
+                        if (response.status === 200) {
 
-                        // Atualiza o Tópico Selecionado.
-                        ContainerTópicoSelecionado.className = "Container-Tópico-Concluído";
-                        ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').innerHTML = "✔";
-                        ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').classList.replace("Símbolo-Check-Aberto", "Símbolo-Check-Concluído");
-            
-                        // Atualiza o próximo Tópico.
-                        let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
-                        PróximoContainerTópico.className = "Container-Tópico-Aberto";
-                        PróximoContainerTópico.querySelector('.Símbolo-Check-Fechado').classList.replace("Símbolo-Check-Fechado", "Símbolo-Check-Aberto");                    
-                        PróximoContainerTópico.addEventListener('click', AbreTópico);
+                            ////////////////////////////////////////////////////////////////////////////////////////
+                            // Atualiza as Seção-Navegação.
 
-                        ////////////////////////////////////////////////////////////////////////////////////////
-                        // Atualiza a Seção-Conteúdo.
+                            // Atualiza as Métricas de Avanço na Formação.
+                            document.body.style.cursor = 'default';
+                            AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
 
-                        ContainerInternoOrientaçõesTeste.style.display = "none"; 
-                        ContainerExternoAvisoRevisão.style.display = 'block';
-                        ContainerExternoNotaePercentil.style.display = 'flex';
-
-                        // Define a Nota e calcula o Percentil a partir de uma equação do segundo grau tipo "y = ax2 - b".
-                        let Nota = document.getElementById("Nota");
-                        let Percentil = document.getElementById("Percentil");
-                        let PercentilCalculado;
-                        if (PercentualAcerto < 0.6){ PercentilCalculado = 0; } else { PercentilCalculado =  1.453125 * Math.pow(PercentualAcerto,2) -0.523125 }
-                        Nota.innerHTML = (PercentualAcerto * 100).toFixed(1) + "%";
-                        Percentil.innerHTML = (PercentilCalculado * 100).toFixed(1) + "%";
-
-                        // Configura as cores da Nota e do Percentil.
-                        function DefineCorNotaPercentil(value) { let r, g, b; if (value <= 60) { r = Math.round(139 + (200 - 139) * (value / 60)); g = Math.round(0 + (200 - 0) * (value / 60)); } else { r = Math.round(200 - (200 - 0) * ((value - 60) / 40)); g = Math.round(150 - (150 - 100) * ((value - 60) / 40)); } b=0; return `rgb(${r}, ${g}, ${b})`; }
-                        Nota.style.color = DefineCorNotaPercentil(PercentualAcerto * 100);
-                        Percentil.style.color = DefineCorNotaPercentil(PercentilCalculado * 100);
-    
-                        // Trava as todas as respostas e marca as corretas.
-                        RespostasTodas.forEach(function(input) { input.disabled = true; });
-                        var RespostasCorretas = document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]');
-                        RespostasCorretas.forEach(function(input) { input.parentElement.style.backgroundColor = '#c2ffb6'; });
-    
-                        // Navega para o topo da tela.                        
-                        ContainerExternoTestes.scrollTop = 0
-
-                        // Atualiza o botão da faixa inferior para "Continuar".    
-                        FaixaInferior.innerHTML = '<div id="Botão-Continuar">Continuar →</div>';
-
-                        // Processa o botão "Continuar".
-                        document.getElementById("Botão-Continuar").addEventListener('click', function(){ AbreTópico.call(PróximoContainerTópico); });
-
-                        // Atualiza a nota do módulo e a nota acumulada aqui no frontend (sem precisar extrair do backend via novo fetch), para estarem atualizadas na aba "Desempenho e Certificado".
-                        Usuário_Formação_NotasMódulos[NúmeroMóduloContémTópicoSelecionado] = PercentualAcerto;
-                        Usuário_Formação_NotaAcumulado = Usuário_Formação_NotasMódulos.reduce((a, b) => a + b, 0) / (Usuário_Formação_NotasMódulos.length - 1);
-
-                    }
+                            // Atualiza o Tópico Selecionado.
+                            ContainerTópicoSelecionado.className = "Container-Tópico-Concluído";
+                            ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').innerHTML = "✔";
+                            ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').classList.replace("Símbolo-Check-Aberto", "Símbolo-Check-Concluído");
                 
-                });
+                            // Atualiza o próximo Tópico.
+                            let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
+                            PróximoContainerTópico.className = "Container-Tópico-Aberto";
+                            PróximoContainerTópico.querySelector('.Símbolo-Check-Fechado').classList.replace("Símbolo-Check-Fechado", "Símbolo-Check-Aberto");                    
+                            PróximoContainerTópico.addEventListener('click', AbreTópico);
+
+                            ////////////////////////////////////////////////////////////////////////////////////////
+                            // Atualiza a Seção-Conteúdo.
+
+                            ContainerExternoOrientaçõesTeste.style.display = "none"; 
+                            ContainerExternoAvisoRevisão.style.display = 'block';
+                            ContainerExternoNotaePercentil.style.display = 'flex';
+                            ContainerExternoLegendaRespostas.style.display = 'block';
+
+                            // Define a Nota e calcula o Percentil a partir de uma equação do segundo grau tipo "y = ax2 - b".
+                            let Nota = document.getElementById("Nota");
+                            let Percentil = document.getElementById("Percentil");
+                            let PercentilCalculado;
+                            if (PercentualAcerto < 0.6){ PercentilCalculado = 0; } else { PercentilCalculado =  1.453125 * Math.pow(PercentualAcerto,2) -0.523125 }
+                            Nota.innerHTML = (PercentualAcerto * 100).toFixed(1) + "%";
+                            Percentil.innerHTML = (PercentilCalculado * 100).toFixed(1) + "%";
+
+                            // Configura as cores da Nota e do Percentil.
+                            function DefineCorNotaPercentil(value) { let r, g, b; if (value <= 60) { r = Math.round(139 + (200 - 139) * (value / 60)); g = Math.round(0 + (200 - 0) * (value / 60)); } else { r = Math.round(200 - (200 - 0) * ((value - 60) / 40)); g = Math.round(150 - (150 - 100) * ((value - 60) / 40)); } b=0; return `rgb(${r}, ${g}, ${b})`; }
+                            Nota.style.color = DefineCorNotaPercentil(PercentualAcerto * 100);
+                            Percentil.style.color = DefineCorNotaPercentil(PercentilCalculado * 100);
+        
+                            // Trava as todas as respostas.
+                            RespostasTodas.forEach(function(input) { input.disabled = true; });
+
+                            // Pinta cada tipo de alternativa.
+                            let AlternativasCorretasSelecionadas = document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]:checked');
+                            let AlternativasCorretasNãoSelecionadas = document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"]:not(:checked)');
+                            let AlternativasIncorretasSelecionadas = document.querySelectorAll('input[query-id="Ij73hRG8120Amb85Ff473LCx3Zaor991"]:checked');
+
+                            AlternativasCorretasSelecionadas.forEach(function (input) { input.parentElement.style.backgroundColor = '#94fd7f'; });
+                            AlternativasCorretasNãoSelecionadas.forEach(function (input) { input.parentElement.style.backgroundColor = '#d3ffcb'; });
+                            AlternativasIncorretasSelecionadas.forEach(function (input) { input.parentElement.style.backgroundColor = '#fd7f7f'; });
+        
+                            // Navega para o topo da tela.                        
+                            ContainerExternoTestes.scrollTop = 0
+
+                            // Atualiza o botão da faixa inferior para "Continuar".    
+                            FaixaInferior.innerHTML = '<div id="Botão-Continuar">Continuar →</div>';
+
+                            // Atualiza a nota do módulo e a nota acumulada aqui no frontend (sem precisar extrair do backend via novo fetch), para estarem atualizadas na aba "Desempenho e Certificado".
+                            Usuário_Formação_NotasMódulos[NúmeroMóduloContémTópicoSelecionado] = PercentualAcerto;
+                            Usuário_Formação_NotaAcumulado = Usuário_Formação_NotasMódulos.reduce((a, b) => a + b, 0) / (Usuário_Formação_NotasMódulos.length - 1);
+
+                        }
+                    
+                    }); 
+                
+                }
+
+                else if (e.target.id === 'Botão-Continuar') {
+
+                    let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
+                    AbreTópico.call(PróximoContainerTópico);
+                }
 
             });
     
@@ -843,7 +858,7 @@ function AbreTópico() {
             // Trava as questões e desmarca as respostas.
 
             let RespostasTodas = document.querySelectorAll('input[query-id="c11aoIurJLm38YTHncm87493KaiowJMca"], input[query-id="Ij73hRG8120Amb85Ff473LCx3Zaor991"]');
-            RespostasTodas.forEach(function(input) { input.disabled = true; input.parentElement.style.backgroundColor = '#ffffff'; });
+            RespostasTodas.forEach(function (input) { input.checked = false; input.disabled = true; input.parentElement.style.backgroundColor = '#ffffff'; });
             
             ////////////////////////////////////////////////////////////////////////////////////////
             // Cria o botão "Teste Concluído"
@@ -962,7 +977,7 @@ function AbreTópico() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Cria a função "Completar e Continuar".
+// Cria a função "Completar e Continuar Tópico".
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
