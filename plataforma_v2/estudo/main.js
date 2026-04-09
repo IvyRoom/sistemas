@@ -416,7 +416,7 @@ function AbreTópico() {
 
         let DRM_Ativo;
 
-        if (Usuário_NomeCompleto === 'Ellyson Freitas' || Usuário_NomeCompleto === 'Rafael Santos Jesus' || Usuário_NomeCompleto === 'Ader Angelo Passos') { DRM_Ativo = false } else { DRM_Ativo = true };
+        if (Usuário_NomeCompleto === 'Ellyson Freitas' || Usuário_NomeCompleto === 'Rafael Santos Jesus' || Usuário_NomeCompleto === 'Ader Angelo Passos') { DRM_Ativo = false } else { DRM_Ativo = false };
         
         let NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
         
