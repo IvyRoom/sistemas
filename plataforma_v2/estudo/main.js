@@ -692,8 +692,8 @@ function AbreTópico() {
 
             FaixaInferior.innerHTML = '<div id="Botão-Completar-e-Continuar">Completar e Continuar →</div>';
             
-            document.getElementById("Botão-Completar-e-Continuar").addEventListener('click', function () { Completar_e_Continuar_Tópico(ContainerTópicoSelecionado)});
-    
+            FaixaInferior.onclick = function (e) { if (e.target.closest('#Botão-Completar-e-Continuar')) { Completar_e_Continuar_Tópico(ContainerTópicoSelecionado); } };
+
         } else {
     
             FaixaInferior.innerHTML = '<div id="Aviso-Tópico-Concluído">Tópico Concluído</div>';
@@ -744,13 +744,13 @@ function AbreTópico() {
             
             FaixaInferior.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';
 
-            FaixaInferior.addEventListener('click', function (e) {
+            FaixaInferior.onclick = function (e) {
 
-                if (e.target.id === 'Botão-Enviar-Respostas') { FaixaInferior.innerHTML = '<div id="Botão-Confirmar-Envio-Respostas">Confirmar Envio</div><div id="Botão-Voltar-Respostas">Voltar</div>'; }
+                if (e.target.closest('#Botão-Enviar-Respostas')) { FaixaInferior.innerHTML = '<div id="Botão-Confirmar-Envio-Respostas">Confirmar Envio</div><div id="Botão-Voltar-Respostas">Voltar</div>'; }
 
-                else if (e.target.id === 'Botão-Voltar-Respostas') { FaixaInferior.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';}
+                else if (e.target.closest('#Botão-Voltar-Respostas')) { FaixaInferior.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';}
 
-                else if (e.target.id === 'Botão-Confirmar-Envio-Respostas') { 
+                else if (e.target.closest('#Botão-Confirmar-Envio-Respostas')) { 
                     
                     FaixaInferior.innerHTML = '';
                     document.body.style.cursor = 'wait';
@@ -838,13 +838,13 @@ function AbreTópico() {
                 
                 }
 
-                else if (e.target.id === 'Botão-Continuar') {
+                else if (e.target.closest('#Botão-Continuar')) {
 
                     let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
                     AbreTópico.call(PróximoContainerTópico);
                 }
 
-            });
+            };
     
         }
 
@@ -906,58 +906,62 @@ function AbreTópico() {
             
             FaixaInferior.innerHTML = '<div id="Botão-Enviar-Feedback">Enviar Feedback</div>';
     
-            document.getElementById("Botão-Enviar-Feedback").addEventListener('click', function(){
+            FaixaInferior.onclick = function (e) {
 
-                FaixaInferior.innerHTML = '';                
-                document.body.style.cursor = 'wait';
-                Usuário_Formação_NúmeroTópicosConcluídos += 1;
+                if (e.target.closest('#Botão-Enviar-Feedback')) {
 
-                // Atualiza a BD - PLATAFORMA e a BD - FEEDBACKS.
+                    FaixaInferior.innerHTML = '';                
+                    document.body.style.cursor = 'wait';
+                    Usuário_Formação_NúmeroTópicosConcluídos += 1;
 
-                let NúmeroMóduloContémTópicoSelecionado = parseInt(ContainerTópicoSelecionado.getAttribute("name").match(/\d+/)[0], 10);
-                let Feedback_DataPreenchimento = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '');
-                let Feedback_TamanhoMódulo = document.querySelector('input[name="Tamanho-Módulo"]:checked')?.getAttribute('query-id');
-                let Feedback_QualidadeConteúdo = document.querySelector('input[name="Qualidade-Conteúdo"]:checked')?.getAttribute('query-id');
-                let Feedback_QualidadePlataforma = document.querySelector('input[name="Qualidade-Plataforma"]:checked')?.getAttribute('query-id');
-                let Feedback_QualidadeMateriaisImpressos = document.querySelector('input[name="Qualidade-Materiais-Impressos"]:checked')?.getAttribute('query-id');
-                let Feedback_Comentários = document.getElementById('Campo-Comentários').value;
+                    // Atualiza a BD - PLATAFORMA e a BD - FEEDBACKS.
 
-                fetch(URL_Base_Backend + '/processa-feedback', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Formação_NúmeroTópicosConcluídos, Usuário_NomeCompleto: Usuário_NomeCompleto, Usuário_Email: Usuário_Email, Feedback_DataPreenchimento: Feedback_DataPreenchimento, NúmeroMódulo: NúmeroMóduloContémTópicoSelecionado, Feedback_TamanhoMódulo: Feedback_TamanhoMódulo, Feedback_QualidadeConteúdo: Feedback_QualidadeConteúdo, Feedback_QualidadePlataforma: Feedback_QualidadePlataforma, Feedback_QualidadeMateriaisImpressos: Feedback_QualidadeMateriaisImpressos, Feedback_Comentários: Feedback_Comentários }) }).then(response => {
-                    
-                    if (response.status === 200) {
+                    let NúmeroMóduloContémTópicoSelecionado = parseInt(ContainerTópicoSelecionado.getAttribute("name").match(/\d+/)[0], 10);
+                    let Feedback_DataPreenchimento = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '');
+                    let Feedback_TamanhoMódulo = document.querySelector('input[name="Tamanho-Módulo"]:checked')?.getAttribute('query-id');
+                    let Feedback_QualidadeConteúdo = document.querySelector('input[name="Qualidade-Conteúdo"]:checked')?.getAttribute('query-id');
+                    let Feedback_QualidadePlataforma = document.querySelector('input[name="Qualidade-Plataforma"]:checked')?.getAttribute('query-id');
+                    let Feedback_QualidadeMateriaisImpressos = document.querySelector('input[name="Qualidade-Materiais-Impressos"]:checked')?.getAttribute('query-id');
+                    let Feedback_Comentários = document.getElementById('Campo-Comentários').value;
 
-                        document.body.style.cursor = 'default';
-                        AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
+                    fetch(URL_Base_Backend + '/processa-feedback', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ IndexVerificado: IndexVerificado, NúmeroTópicosConcluídos: Usuário_Formação_NúmeroTópicosConcluídos, Usuário_NomeCompleto: Usuário_NomeCompleto, Usuário_Email: Usuário_Email, Feedback_DataPreenchimento: Feedback_DataPreenchimento, NúmeroMódulo: NúmeroMóduloContémTópicoSelecionado, Feedback_TamanhoMódulo: Feedback_TamanhoMódulo, Feedback_QualidadeConteúdo: Feedback_QualidadeConteúdo, Feedback_QualidadePlataforma: Feedback_QualidadePlataforma, Feedback_QualidadeMateriaisImpressos: Feedback_QualidadeMateriaisImpressos, Feedback_Comentários: Feedback_Comentários }) }).then(response => {
                         
-                        // Atualiza o Container Tópico Selecionado.
-            
-                        ContainerTópicoSelecionado.className = "Container-Tópico-Concluído";
-                        ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').innerHTML = "✔";
-                        ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').classList.replace("Símbolo-Check-Aberto", "Símbolo-Check-Concluído");
+                        if (response.status === 200) {
 
-                        // Se não for o "Feedback: Módulo 10", faz as alterações necessárias no Próximo Tópico e abre o Próximo Tópico.
-            
-                        if(ContainerTópicoSelecionado.querySelector('.Tópico-Nome').innerHTML !== "Feedback: Módulo 10") {
+                            document.body.style.cursor = 'default';
+                            AtualizaMétricasAvançoFormação(Usuário_Formação_NúmeroTópicosConcluídos);
+                            
+                            // Atualiza o Container Tópico Selecionado.
                 
-                            let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
-                            PróximoContainerTópico.className = "Container-Tópico-Aberto";
-                            PróximoContainerTópico.querySelector('.Símbolo-Check-Fechado').classList.replace("Símbolo-Check-Fechado", "Símbolo-Check-Aberto");
-                            PróximoContainerTópico.addEventListener('click', AbreTópico);
+                            ContainerTópicoSelecionado.className = "Container-Tópico-Concluído";
+                            ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').innerHTML = "✔";
+                            ContainerTópicoSelecionado.querySelector('.Símbolo-Check-Aberto').classList.replace("Símbolo-Check-Aberto", "Símbolo-Check-Concluído");
 
-                            AbreMódulo(parseInt(PróximoContainerTópico.parentElement.id.split('-').pop(), 10) - 1);
-                            AbreTópico.call(PróximoContainerTópico);
-
-                        } 
-                        
-                        // Se for o "Feedback: Módulo 10", faz as alterações necessárias no Próximo Tópico e abre o Próximo Tópico.
-
-                        else { AbreDesempenhoeCertificado.call(); }
+                            // Se não for o "Feedback: Módulo 10", faz as alterações necessárias no Próximo Tópico e abre o Próximo Tópico.
+                
+                            if(ContainerTópicoSelecionado.querySelector('.Tópico-Nome').innerHTML !== "Feedback: Módulo 10") {
                     
-                    }
-                
-                })
+                                let PróximoContainerTópico = document.querySelector('[data-index="' + (parseInt(ContainerTópicoSelecionado.getAttribute('data-index'), 10) + 1) + '"]');
+                                PróximoContainerTópico.className = "Container-Tópico-Aberto";
+                                PróximoContainerTópico.querySelector('.Símbolo-Check-Fechado').classList.replace("Símbolo-Check-Fechado", "Símbolo-Check-Aberto");
+                                PróximoContainerTópico.addEventListener('click', AbreTópico);
 
-            })
+                                AbreMódulo(parseInt(PróximoContainerTópico.parentElement.id.split('-').pop(), 10) - 1);
+                                AbreTópico.call(PróximoContainerTópico);
+
+                            } 
+                            
+                            // Se for o "Feedback: Módulo 10", faz as alterações necessárias no Próximo Tópico e abre o Próximo Tópico.
+
+                            else { AbreDesempenhoeCertificado.call(); }
+                        
+                        }
+
+                    })
+
+                }
+
+            }
 
         } 
         
@@ -1112,7 +1116,7 @@ function AbreDesempenhoeCertificado(){
     // Processa o botão de download do Certificado Impresso.
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    document.getElementById('Botão-Download-Certificado-Impresso').addEventListener('click', function(event){
+    document.getElementById('Botão-Download-Certificado-Impresso').onclick = function (event) {
         
         event.preventDefault();
 
@@ -1193,7 +1197,7 @@ function AbreDesempenhoeCertificado(){
 
         doc.save('CERTIFICADO - ' + Usuário_NomeCompleto + '.pdf');
 
-    });
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////////
     // Torna a Faixa-Inferior invisível.
