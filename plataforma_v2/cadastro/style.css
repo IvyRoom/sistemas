@@ -87,6 +87,9 @@
 }
 
 #Botão-Cadastrar-Foto-Referência{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     background-color: #4a0816;
     color: #fff;
     font-size: 17px;

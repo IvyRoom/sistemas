@@ -264,11 +264,11 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
     
     //////////////////////////////////////////////////////////////////////
     // Evita envio duplicado:
-    
+    if (BotãoSolicitarOrçamento.disabled) return;
+    document.body.style.cursor = 'wait';
+    BotãoSolicitarOrçamento.disabled = true;
     BotãoSolicitarOrçamento.style.display = "none";
     AvisoProcessando.style.display = "flex";
-    document.body.style.cursor = 'wait';
-    
     event.preventDefault();
     
     //////////////////////////////////////////////////////////////////////
@@ -289,14 +289,22 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
         })
     })
 
-    .then(response => {
-        
-        if (response.status === 200) {
+    .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw { status: response.status, error: data.error };
+        return data;
+    })
 
-             window.location.href = "../confirmação/";
-        
-        }
-    
-    });
+    .then(data => { window.location.href = "../confirmação/" })
+
+    .catch(err => {
+
+        document.body.style.cursor = 'default';
+        BotãoSolicitarOrçamento.disabled = false;
+        BotãoSolicitarOrçamento.style.display = "block";
+        AvisoProcessando.style.display = "none";
+        alert("Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.");
+
+    })
 
 });
