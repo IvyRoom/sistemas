@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-sessionStorage.setItem('URL_Base_Backend', 'https://plataforma-backend-v3.azurewebsites.net/plataforma_v2'); // 'http://localhost:3000/plataforma_v2'
+sessionStorage.setItem('URL_Base_Backend', 'https://plataforma-backend-v3.azurewebsites.net/plataforma_v2'); // 'http://localhost:3000/plataforma_v2' 
 
 const URL_Base_Backend = sessionStorage.getItem('URL_Base_Backend');
 
@@ -196,7 +196,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
                     faceLivenessDetector.buttonStyles = "margin-top: 10px; height: 40px; width: 110px; font-size: 16px; border-radius: 20px; box-shadow: 0px 0px 8px #4a0816; border: 0px; cursor: pointer;";
                     ContainerAuxiliarFaceID.appendChild(faceLivenessDetector);
 
-                    faceLivenessDetector.start(data.Azure_Face_API_LivenessSession_authToken).then(() => {
+                    faceLivenessDetector.start(data.Azure_Face_API_LivenessSession_authToken).then(resultData => {
                         
                         ////////////////////////////////////////////////////////////////////////////////////////
                         // Obtém os resultados da LivenessSession.
@@ -234,7 +234,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
 
                                 resetarLogin();
                                 AvisoFaceIDReprovado.style.display = "block";
-                                AvisoFaceIDReprovado.innerHTML = "⮾ FaceID reprovado. Tente novamente.<br>Liveness Decision: " + data.Azure_Face_API_LivenessSession_LivenessDecision + "<br>Match Confidence: " + data.Azure_Face_API_LivenessSession_MatchConfidence + "<br>Match Decision: " + data.Azure_Face_API_LivenessSession_MatchDecision;
+                                AvisoFaceIDReprovado.innerHTML = "⮾ FaceID reprovado. Tente novamente.";
 
                             }
             
@@ -258,10 +258,11 @@ FormulárioLogin.addEventListener('submit', function(event) {
                     // Processa avisos / alertas.
                     ////////////////////////////////////////////////////////////////////////////////////////
 
-                    .catch(err => {
+                    .catch(errorData => {
 
                         resetarLogin();
                         alert("Erro_006: falha interna do sistema da Microsoft (Azure Face API).\nTente novamente.");
+                        console.log(errorData);
                     
                     })
 
