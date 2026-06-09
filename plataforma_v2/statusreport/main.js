@@ -37,7 +37,7 @@ const Observação_Gráfico_Controle_Resultados_Avanço_Formação = document.ge
 // Declara as variáveis mestras.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const URL_Base_Backend = "http://localhost:3000/plataforma_v2";
+const URL_Base_Backend = "https://plataforma-backend-v3.azurewebsites.net/plataforma_v2"; //https://plataforma-backend-v3.azurewebsites.net/plataforma_v2 //http://localhost:3000/plataforma_v2
 
 const Metas = [];
 Metas[0] = [13, 30, 51, 71, 90, 100, 114, 138, 157, 171]; // Avanço na Formação.
