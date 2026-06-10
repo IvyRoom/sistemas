@@ -11,17 +11,17 @@ window.addEventListener('resize', LevaàPáginaAvisoDispositivo);
 
 const parâmetros = new URLSearchParams(window.location.search);
 
-const id_status_report = parâmetros.get('idsr') === "final" ? "Final" : parseInt(parâmetros.get('idsr'), 10).toString().padStart(2, '0'); // "1", "2", "3", etc. ou "final"
+const nome_empresa = parâmetros.get('ne');
+const número_turma = parseInt(parâmetros.get('nt'), 10);
 const linha_inicial = parseInt(parâmetros.get('li'), 10);
 const linha_final = parseInt(parâmetros.get('lf'), 10);
 const número_linhas = linha_final - linha_inicial + 1;
+const data_última_atualização = parâmetros.get('dua');
+const id_status_report = parâmetros.get('idsr') === "final" ? "Final" : parseInt(parâmetros.get('idsr'), 10).toString().padStart(2, '0'); // "1", "2", "3", etc. ou "final"
 const módulo_inicial = parseInt(parâmetros.get('mi'), 10);
 const módulo_final = parseInt(parâmetros.get('mf'), 10);
 const número_módulos = módulo_final - módulo_inicial + 1;
-const nome_empresa = parâmetros.get('ne');
-const número_turma = parseInt(parâmetros.get('nt'), 10);
-const data_última_atualização = parâmetros.get('dua');
-const modalidade_rótulos_metas = parâmetros.get('mrm');; // "c: consolidado" ou "i: individual"
+const modalidade_rótulos_metas = parâmetros.get('mrm'); // "c: consolidado" ou "i: individual"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Declara as variáveis extraídas do HMTL.
@@ -243,7 +243,7 @@ window.onload = async function () {
 
                     }
 
-                    if (modalidade_rótulos_metas === "c" && i !== (número_linhas - 1)) { div.style.display = 'none' }
+                    if (modalidade_rótulos_metas === "consolidado" && i !== (número_linhas - 1)) { div.style.display = 'none' }
                     else if (i >= número_linhas) { div.style.display = 'none' }
 
                 });
