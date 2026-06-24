@@ -440,7 +440,7 @@ function AbreTópico() {
 
         let DRM_Ativo;
 
-        if (Usuário_NomeCompleto === 'Ellyson Freitas' || Usuário_NomeCompleto === 'Rafael Santos Jesus' || Usuário_NomeCompleto === 'Ader Angelo Passos') { DRM_Ativo = false } else { DRM_Ativo = true };
+        if (Usuário_NomeCompleto === 'Ellyson Freitas' || Usuário_NomeCompleto === 'Rafael Santos Jesus' || Usuário_NomeCompleto === 'Ader Angelo Passos' || Usuário_NomeCompleto === 'Pedro Henrique Dabul Tosin' || Usuário_NomeCompleto === 'Theo Mouchbahani de Souza') { DRM_Ativo = false } else { DRM_Ativo = true };
         
         let NomeVídeo = ContainerTópicoSelecionado.getAttribute('name');
         
