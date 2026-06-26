@@ -33,13 +33,14 @@
             <label for="company-cnpj">CNPJ:</label>
             <input class="text-input" id="company-cnpj" name="company-cnpj" type="text" inputmode="numeric" maxlength="18" required>
           </div>
-          <div class="field">
-            <label for="company-postal-code">CEP:</label>
-            <input class="text-input" id="company-postal-code" name="company-postal-code" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="9" required>
-          </div>
         </div>
 
         <div class="field-row">
+          <div class="field">
+            <label for="company-postal-code">CEP:</label>
+            <input class="text-input" id="company-postal-code" name="company-postal-code" type="text" inputmode="numeric"
+              autocomplete="postal-code" maxlength="9" required>
+          </div>
           <div class="field">
             <label for="company-street">Rua:</label>
             <input class="text-input" id="company-street" name="company-street" type="text" autocomplete="address-line1" required>
@@ -63,7 +64,7 @@
           <div class="field">
             <label for="company-state">Estado:</label>
             <select class="select-input" id="company-state" name="company-state" autocomplete="address-level1" required>
-              <option value="">Selecione…</option>
+              <option value=""></option>
               <option value="AC">AC</option>
               <option value="AL">AL</option>
               <option value="AP">AP</option>
@@ -122,9 +123,6 @@
             <label for="shipping-address-complement">Complemento:</label>
             <input class="text-input" id="shipping-address-complement" name="shipping-address-complement" type="text" autocomplete="shipping address-line2">
           </div>
-        </div>
-
-        <div class="field-row">
           <div class="field">
             <label for="shipping-neighborhood">Bairro:</label>
             <input class="text-input" id="shipping-neighborhood" name="shipping-neighborhood" type="text" required>
@@ -136,7 +134,7 @@
           <div class="field">
             <label for="shipping-state">Estado:</label>
             <select class="select-input" id="shipping-state" name="shipping-state" autocomplete="shipping address-level1" required>
-              <option value="">Selecione…</option>
+              <option value=""></option>
               <option value="AC">AC</option>
               <option value="AL">AL</option>
               <option value="AP">AP</option>
@@ -183,13 +181,14 @@
             <label for="legal-rep-cpf">CPF:</label>
             <input class="text-input" id="legal-rep-cpf" name="legal-rep-cpf" type="text" inputmode="numeric" maxlength="14" required>
           </div>
+          <div class="field">
+            <label for="legal-rep-role">Cargo:</label>
+            <input class="text-input" id="legal-rep-role" name="legal-rep-role" type="text" autocomplete="organization-title"
+              required>
+          </div>
         </div>
 
         <div class="field-row">
-          <div class="field">
-            <label for="legal-rep-role">Cargo:</label>
-            <input class="text-input" id="legal-rep-role" name="legal-rep-role" type="text" autocomplete="organization-title" required>
-          </div>
           <div class="field">
             <label for="legal-rep-area-code">DDD:</label>
             <input class="text-input" id="legal-rep-area-code" name="legal-rep-area-code" type="tel" inputmode="numeric" autocomplete="tel-area-code" maxlength="2" required>
@@ -198,18 +197,18 @@
             <label for="legal-rep-whatsapp">WhatsApp:</label>
             <input class="text-input" id="legal-rep-whatsapp" name="legal-rep-whatsapp" type="tel" inputmode="numeric" autocomplete="tel-national" required>
           </div>
+          <div class="field">
+            <label for="legal-rep-email">E-mail:</label>
+            <input class="text-input" id="legal-rep-email" name="legal-rep-email" type="email" autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label for="legal-rep-email-confirm">Confirmação E-mail:</label>
+            <input class="text-input" id="legal-rep-email-confirm" name="legal-rep-email-confirm" type="email" autocomplete="off"
+              required>
+            <p class="email-mismatch-warning" id="legal-rep-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
+          </div>
         </div>
 
-        <div class="field">
-          <label for="legal-rep-email">E-mail:</label>
-          <input class="text-input" id="legal-rep-email" name="legal-rep-email" type="email" autocomplete="email" required>
-        </div>
-
-        <div class="field">
-          <label for="legal-rep-email-confirm">Confirmação E-mail:</label>
-          <input class="text-input" id="legal-rep-email-confirm" name="legal-rep-email-confirm" type="email" autocomplete="off" required>
-          <p class="email-mismatch-warning" id="legal-rep-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
-        </div>
       </fieldset>
 
       <!-- SECTION: Administrative / Financial Assistant -->
@@ -227,13 +226,14 @@
             <label for="admin-assistant-cpf">CPF:</label>
             <input class="text-input" id="admin-assistant-cpf" name="admin-assistant-cpf" type="text" inputmode="numeric" maxlength="14" required>
           </div>
+          <div class="field">
+            <label for="admin-assistant-role">Cargo:</label>
+            <input class="text-input" id="admin-assistant-role" name="admin-assistant-role" type="text"
+              autocomplete="organization-title" required>
+          </div>
         </div>
 
         <div class="field-row">
-          <div class="field">
-            <label for="admin-assistant-role">Cargo:</label>
-            <input class="text-input" id="admin-assistant-role" name="admin-assistant-role" type="text" autocomplete="organization-title" required>
-          </div>
           <div class="field">
             <label for="admin-assistant-area-code">DDD:</label>
             <input class="text-input" id="admin-assistant-area-code" name="admin-assistant-area-code" type="tel" inputmode="numeric" autocomplete="tel-area-code" maxlength="2" required>
@@ -242,18 +242,19 @@
             <label for="admin-assistant-whatsapp">WhatsApp:</label>
             <input class="text-input" id="admin-assistant-whatsapp" name="admin-assistant-whatsapp" type="tel" inputmode="numeric" autocomplete="tel-national" required>
           </div>
+          <div class="field">
+            <label for="admin-assistant-email">E-mail:</label>
+            <input class="text-input" id="admin-assistant-email" name="admin-assistant-email" type="email" autocomplete="email"
+              required>
+          </div>
+          <div class="field">
+            <label for="admin-assistant-email-confirm">Confirmação E-mail:</label>
+            <input class="text-input" id="admin-assistant-email-confirm" name="admin-assistant-email-confirm" type="email"
+              autocomplete="off" required>
+            <p class="email-mismatch-warning" id="admin-assistant-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
+          </div>
         </div>
-
-        <div class="field">
-          <label for="admin-assistant-email">E-mail:</label>
-          <input class="text-input" id="admin-assistant-email" name="admin-assistant-email" type="email" autocomplete="email" required>
-        </div>
-
-        <div class="field">
-          <label for="admin-assistant-email-confirm">Confirmação E-mail:</label>
-          <input class="text-input" id="admin-assistant-email-confirm" name="admin-assistant-email-confirm" type="email" autocomplete="off" required>
-          <p class="email-mismatch-warning" id="admin-assistant-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
-        </div>
+        
       </fieldset>
 
       <!-- SECTION: Participants (dynamic, cloned from <template>) -->
