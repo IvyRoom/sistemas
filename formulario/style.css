@@ -1,44 +1,33 @@
 /* ============================================================ */
-/* DESIGN TOKENS (custom properties)                            */
-/* Single source of truth for colors, spacing, and radii.       */
-/* Change a value here and it updates everywhere it's used.     */
+/* DESIGN TOKENS                                                */
 /* ============================================================ */
 :root {
-  /* Brand palette */
+
   --color-official-machado-wine: #4a0816;
   --color-black: #000000;
   --color-white: #ffffff;
-
-  /* Greys (light → dark) */
   --color-grey-paper: #dedede;
   --color-grey-450: #909090;
   --color-grey-500: #808080;
   --color-grey-700: #505050;
-
-  /* Status */
   --color-red: #c0000a;
   --color-green: #0aa15b;
 
-  /* Surfaces */
   --gradient-page: linear-gradient(135deg, var(--color-black) 0%, var(--color-official-machado-wine) 50%);
   --gradient-form: linear-gradient(135deg, var(--color-white) 0%, var(--color-grey-paper) 100%);
 
-  /* Typography */
   --font-base: 'Segoe UI', system-ui, -apple-system, sans-serif;
 
-  /* Spacing scale (keeps rhythm consistent) */
   --space-xs: 5px;
   --space-sm: 10px;
   --space-md: 15px;
   --space-lg: 20px;
   --space-xl: 40px;
 
-  /* Radii */
   --radius-sm: 5px;
   --radius-md: 15px;
   --radius-lg: 20px;
 
-  /* Layout */
   --form-max-width: 1000px;
 }
 
@@ -57,7 +46,6 @@ body {
   font-family: var(--font-base);
 }
 
-/* Form controls don't inherit font by default — make them. */
 input,
 select,
 button {
@@ -104,7 +92,7 @@ button {
 
 .form-subtitle {
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 400;
   margin-bottom: var(--space-sm);
 }
 
@@ -119,25 +107,22 @@ button {
 }
 
 /* ============================================================ */
-/* SECTION (fieldset) — full-width bordered card, stacked       */
+/* SECTIONS                                                     */
 /* ============================================================ */
 .form-section {
   width: 100%;
   border: 1px solid black;
   border-radius: var(--radius-lg);
-  /* No top padding: the legend banner sits flush against the top. */
   padding: 0 var(--space-md) var(--space-md);
   margin-bottom: var(--space-lg);
 }
 
-/* <legend> styled as the section's header bar.                 */
-/* A legend is laid out specially inside a fieldset. width:100%  */
-/* plus negative horizontal margins (which cancel the section's  */
-/* padding) make the bar span edge to edge.                     */
 .section-title {
   display: block;
-  width: calc(100% + 2 * var(--space-md));
-  margin: 0 calc(-1 * var(--space-md));
+  width: calc(100% + 2 * var(--space-md) + 2px);
+  margin: -1px calc(-1 * var(--space-md) - 1px) 0;
+  border: 1px solid black;
+  border-bottom: none;
   background-color: var(--color-grey-700);
   color: var(--color-white);
   text-align: center;
@@ -147,8 +132,6 @@ button {
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
-/* Descriptive sub-banner under a section title. Same edge-to-  */
-/* edge trick as the legend. Sits flush below it (no gap).      */
 .section-description {
   width: calc(100% + 2 * var(--space-md));
   margin: 0 calc(-1 * var(--space-md));
@@ -166,18 +149,11 @@ button {
 
 /* ============================================================ */
 /* FIELDS                                                       */
-/* .field      = one label + input stacked vertically           */
-/* .field-row  = multiple .field side by side                   */
-/*                                                              */
-/* Width model: fields in a row STRETCH to share the full row   */
-/* width evenly (flex: 1). The per-field --field-width below     */
-/* acts as a flex-basis hint, so a CEP starts narrower than a    */
-/* Razão Social, but all grow to fill leftover space.            */
 /* ============================================================ */
 .field {
   display: flex;
   flex-direction: column;
-  flex: 1 1 var(--field-width, 20ch);   /* grow, shrink, basis */
+  flex: 1 1 var(--field-width, 20ch);
   min-width: 0;
 }
 
@@ -196,42 +172,38 @@ button {
 
 .text-input,
 .select-input {
-  width: 100%;           /* fill the .field; sizing handled by flex */
+  width: 100%;
   padding: var(--space-xs);
   border: 1px solid black;
   border-radius: var(--radius-sm);
   font-size: 16px;
 }
 
-/* Per-field flex-basis (in ch ≈ character count). Sets each     */
-/* field's STARTING width / relative proportion before fields    */
-/* grow to fill the row. Applied to .field via :has() so the     */
-/* whole label+input column is sized, not just the input.        */
-.field:has(> #company-legal-name)          { --field-width: 60ch; }
+.field:has(> #company-legal-name)          { --field-width: 88ch; }
 .field:has(> #company-cnpj)                { --field-width: 18ch; }
-.field:has(> #company-postal-code)         { --field-width: 9ch; }
-.field:has(> #company-street)              { --field-width: 32ch; }
-.field:has(> #company-number)              { --field-width: 6ch; }
-.field:has(> #company-address-complement)  { --field-width: 20ch; }
-.field:has(> #company-neighborhood)        { --field-width: 22ch; }
-.field:has(> #company-city)                { --field-width: 22ch; }
-.field:has(> #company-state)               { --field-width: 11ch; }
+.field:has(> #company-postal-code)         { --field-width: 10ch; }
+.field:has(> #company-street)              { --field-width: 25ch; }
+.field:has(> #company-number)              { --field-width: 7ch; }
+.field:has(> #company-address-complement)  { --field-width: 14ch; }
+.field:has(> #company-neighborhood)        { --field-width: 16ch; }
+.field:has(> #company-city)                { --field-width: 18ch; }
+.field:has(> #company-state)               { --field-width: 5ch; }
 
-.field:has(> #shipping-postal-code)        { --field-width: 9ch; }
-.field:has(> #shipping-street)             { --field-width: 32ch; }
-.field:has(> #shipping-number)             { --field-width: 6ch; }
-.field:has(> #shipping-address-complement) { --field-width: 20ch; }
-.field:has(> #shipping-neighborhood)       { --field-width: 22ch; }
-.field:has(> #shipping-city)               { --field-width: 22ch; }
-.field:has(> #shipping-state)              { --field-width: 11ch; }
+.field:has(> #shipping-postal-code)        { --field-width: 10ch; }
+.field:has(> #shipping-street)             { --field-width: 25ch; }
+.field:has(> #shipping-number)             { --field-width: 7ch; }
+.field:has(> #shipping-address-complement) { --field-width: 14ch; }
+.field:has(> #shipping-neighborhood)       { --field-width: 16ch; }
+.field:has(> #shipping-city)               { --field-width: 18ch; }
+.field:has(> #shipping-state)              { --field-width: 5ch; }
 
 .field:has(> [id$="-full-name"])     { --field-width: 36ch; }
 .field:has(> [id$="-cpf"])           { --field-width: 16ch; }
 .field:has(> [id$="-role"])          { --field-width: 24ch; }
 .field:has(> [id$="-area-code"])     { --field-width: 6ch; }
 .field:has(> [id$="-whatsapp"])      { --field-width: 18ch; }
-.field:has(> [id$="-email"])         { --field-width: 30ch; }
-.field:has(> [id$="-email-confirm"]) { --field-width: 30ch; }
+.field:has(> [id$="-email"])         { --field-width: 40ch; }
+.field:has(> [id$="-email-confirm"]) { --field-width: 40ch; }
 
 /* Visible keyboard-focus ring (accessibility baseline). */
 .text-input:focus-visible,
@@ -256,8 +228,6 @@ button:focus-visible {
 
 /* ============================================================ */
 /* EMAIL MISMATCH WARNING                                       */
-/* Hidden by the [hidden] attribute in HTML; JS removes it to   */
-/* reveal. The rule below styles it when visible.               */
 /* ============================================================ */
 .email-mismatch-warning {
   font-size: 13px;
@@ -289,7 +259,6 @@ button:focus-visible {
 
 /* ============================================================ */
 /* BUTTONS                                                      */
-/* Reset native button chrome first, then style.               */
 /* ============================================================ */
 .delete-participant-button,
 .add-participant-button,
@@ -330,36 +299,4 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-/* ============================================================ */
-/* RESPONSIVE — let fields fill the row on narrow screens        */
-/* ============================================================ */
-@media (max-width: 700px) {
-  .field {
-    width: 100%;
-  }
-
-  .text-input,
-  .select-input {
-    width: 100%;
-  }
-
-  .participant {
-    width: 100%;
-  }
-}
-
-/* ============================================================ */
-/* MOTION PREFERENCES                                           */
-/* Respect users who ask the OS to reduce animation.            */
-/* ============================================================ */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
 }
