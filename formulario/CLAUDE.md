@@ -67,7 +67,7 @@ Files:
   all use the literal token `__INDEX__`. JS clones the template per participant and
   replaces **every** `__INDEX__` with the participant number (1, 2, 3, …) before inserting
   the clone into `.participants-list`. Keep ids unique.
-- **Device gate:** the page must not be used below 1024px wide. On load and on resize,
+- **Device gate:** the page must not be used equal to or below 1024px wide. On load and on resize,
   if `window.innerWidth <= 1024`, redirect to the device-warning page.
 - Prefer clear, small, well-named functions over clever one-liners.
 
