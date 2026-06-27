@@ -1,8 +1,4 @@
-/* ============================================================ */
-/* DESIGN TOKENS                                                */
-/* ============================================================ */
 :root {
-
   --color-official-machado-wine: #4a0816;
   --color-black: #000000;
   --color-white: #ffffff;
@@ -31,9 +27,6 @@
   --form-max-width: 1000px;
 }
 
-/* ============================================================ */
-/* RESET & BASE                                                 */
-/* ============================================================ */
 *,
 *::before,
 *::after {
@@ -52,9 +45,6 @@ button {
   font-family: inherit;
 }
 
-/* ============================================================ */
-/* PAGE LAYOUT                                                  */
-/* ============================================================ */
 .page {
   min-height: 100vh;
   padding-top: var(--space-xl);
@@ -106,9 +96,6 @@ button {
   margin-bottom: var(--space-lg);
 }
 
-/* ============================================================ */
-/* SECTIONS                                                     */
-/* ============================================================ */
 .form-section {
   width: 100%;
   border: 1px solid black;
@@ -147,9 +134,6 @@ button {
   padding-top: 0;
 }
 
-/* ============================================================ */
-/* FIELDS                                                       */
-/* ============================================================ */
 .field {
   display: flex;
   flex-direction: column;
@@ -179,6 +163,13 @@ button {
   font-size: 16px;
 }
 
+.text-input:disabled,
+.select-input:disabled {
+  background-color: var(--color-grey-paper);
+  color: var(--color-grey-700);
+  opacity: 1;
+}
+
 .field:has(> #company-legal-name)          { --field-width: 88ch; }
 .field:has(> #company-cnpj)                { --field-width: 18ch; }
 .field:has(> #company-postal-code)         { --field-width: 10ch; }
@@ -205,18 +196,28 @@ button {
 .field:has(> [id$="-email"])         { --field-width: 40ch; }
 .field:has(> [id$="-email-confirm"]) { --field-width: 40ch; }
 
-/* Visible keyboard-focus ring (accessibility baseline). */
+.field:has(> [id^="participant-"][id$="-area-code"])     { --field-width: 3ch; }
+.field:has(> [id^="participant-"][id$="-whatsapp"])      { --field-width: 16ch; }
+.field:has(> [id^="participant-"][id$="-email"])         { --field-width: 34ch; }
+.field:has(> [id^="participant-"][id$="-email-confirm"]) { --field-width: 34ch; }
+
 .text-input:focus-visible,
 .select-input:focus-visible,
 .checkbox-field input:focus-visible,
+.no-number-field input:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--color-official-machado-wine);
   outline-offset: 2px;
 }
 
-/* ============================================================ */
-/* CHECKBOX (same-address toggle)                               */
-/* ============================================================ */
+.no-number-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  accent-color: var(--color-grey-500);
+  font-size: 13px;
+}
+
 .checkbox-field {
   display: flex;
   align-items: center;
@@ -226,24 +227,17 @@ button:focus-visible {
   margin-top: var(--space-sm);
 }
 
-/* ============================================================ */
-/* EMAIL MISMATCH WARNING                                       */
-/* ============================================================ */
 .email-mismatch-warning {
   font-size: 13px;
   margin-top: 7px;
   color: var(--color-red);
 }
 
-/* ============================================================ */
-/* PARTICIPANTS                                                 */
-/* ============================================================ */
 .participant {
-  width: fit-content;
-  margin: var(--space-lg) auto 0;
+  margin: var(--space-lg) 0 0;
   border: 1px solid black;
   border-radius: var(--radius-lg);
-  padding: 0 var(--space-md) var(--space-md);
+  padding: 0 var(--space-lg) var(--space-md);
 }
 
 .participant-title {
@@ -254,12 +248,9 @@ button:focus-visible {
   font-weight: 500;
   padding: var(--space-xs);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  margin: 0 calc(-1 * var(--space-md)) var(--space-sm);
+  margin: 0 calc(-1 * var(--space-lg)) var(--space-sm);
 }
 
-/* ============================================================ */
-/* BUTTONS                                                      */
-/* ============================================================ */
 .delete-participant-button,
 .add-participant-button,
 .submit-button {
@@ -279,6 +270,15 @@ button:focus-visible {
   box-shadow: 1px 1px 2px black;
 }
 
+.delete-participant-button[hidden] {
+  display: none;
+}
+
+.add-participant-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .submit-button {
   margin: 0 auto;
   padding: var(--space-md);
@@ -289,9 +289,6 @@ button:focus-visible {
   box-shadow: 0 2px 4px black;
 }
 
-/* ============================================================ */
-/* FOOTER                                                       */
-/* ============================================================ */
 .page-footer {
   height: var(--space-xl);
   color: var(--color-white);

@@ -20,7 +20,6 @@
       <p class="form-subtitle">Solução em Método Gerencial</p>
       <p class="form-instructions"><strong>Importante!</strong> Preencha as informações abaixo <strong>com muita atenção</strong>! Estes dados entram em processos automáticos na Machado e têm impacto direto no cronograma e na qualidade do serviço prestado.</p>
 
-      <!-- SECTION: Contracting Company -->
       <fieldset class="form-section">
         <legend class="section-title">Pessoa Jurídica Contratante</legend>
 
@@ -47,7 +46,8 @@
           </div>
           <div class="field">
             <label for="company-number">Número:</label>
-            <input class="text-input" id="company-number" name="company-number" type="text" inputmode="numeric" required>
+            <input class="text-input" id="company-number" name="company-number" type="text" inputmode="numeric" maxlength="6" required>
+            <label class="no-number-field"><input id="company-no-number" name="company-no-number" type="checkbox" value="yes">Sem número</label>
           </div>
           <div class="field">
             <label for="company-address-complement">Complemento:</label>
@@ -97,7 +97,6 @@
         </div>
       </fieldset>
 
-      <!-- SECTION: Shipping Address (Printed Materials) -->
       <fieldset class="form-section">
         <legend class="section-title">Endereço de Envio dos Materiais Impressos</legend>
         <p class="section-description">Endereço ao qual enviaremos as caixas com os materiais físicos de cada participante (contendo apostilas, guias, estudos de caso, etc.).</p>
@@ -117,7 +116,8 @@
           </div>
           <div class="field">
             <label for="shipping-number">Número:</label>
-            <input class="text-input" id="shipping-number" name="shipping-number" type="text" inputmode="numeric" required>
+            <input class="text-input" id="shipping-number" name="shipping-number" type="text" inputmode="numeric" maxlength="6" required>
+            <label class="no-number-field"><input id="shipping-no-number" name="shipping-no-number" type="checkbox" value="yes">Sem número</label>
           </div>
           <div class="field">
             <label for="shipping-address-complement">Complemento:</label>
@@ -167,7 +167,6 @@
         </div>
       </fieldset>
 
-      <!-- SECTION: Legal Representative -->
       <fieldset class="form-section">
         <legend class="section-title">Representante Jurídico</legend>
         <p class="section-description">Profissional que assinará o contrato em nome da Pessoa Jurídica contratante.</p>
@@ -208,10 +207,8 @@
             <p class="email-mismatch-warning" id="legal-rep-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
           </div>
         </div>
-
       </fieldset>
 
-      <!-- SECTION: Administrative / Financial Assistant -->
       <fieldset class="form-section">
         <legend class="section-title">Auxiliar Administrativo Financeiro</legend>
         <p class="section-description">Funcionário operacional responsável por intermediações administrativas e financeiras junto à Machado.</p>
@@ -254,15 +251,12 @@
             <p class="email-mismatch-warning" id="admin-assistant-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
           </div>
         </div>
-        
       </fieldset>
 
-      <!-- SECTION: Participants (dynamic, cloned from <template>) -->
       <fieldset class="form-section participants-section">
         <legend class="section-title">Participantes da Solução</legend>
         <p class="section-description">Inclua novamente o Representante Jurídico e o Auxiliar Administrativo Financeiro, caso estas pessoas venham a participar da Solução.</p>
 
-        <!-- JS CONTRACT: main.js clones this template per participant. Replaces every __INDEX__ token with the participant number (1, 2, 3, ...) before inserting the clone into .participants-list. -->
         <template id="participant-template">
           <div class="participant" data-participant-index="__INDEX__">
             <h2 class="participant-title">Participante __INDEX__</h2>
@@ -306,7 +300,6 @@
           </div>
         </template>
 
-        <!-- JS appends cloned participants here. -->
         <div class="participants-list"></div>
 
         <button class="add-participant-button" type="button">Adicionar Participante</button>
