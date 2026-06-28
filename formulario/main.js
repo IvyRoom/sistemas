@@ -2,7 +2,8 @@
 
 const MIN_VIEWPORT_WIDTH = 1024;
 const DEVICE_WARNING_URL = './plataforma_v2/aviso-dispositivo';
-const SUBMIT_ENDPOINT = './plataforma_v2/updates';
+const SUBMIT_ENDPOINT = 'https://plataforma-backend-v3.azurewebsites.net/clientes/cadastro-plataforma';
+const SUBMIT_TIMEOUT_MS = 15000;
 const MAX_PARTICIPANTS = 25;
 
 const form = document.querySelector('.form');
@@ -298,23 +299,49 @@ function collectFormData() {
   };
 }
 
+function setSubmitting(isSubmitting) {
+  submitButton.disabled = isSubmitting;
+  submitButton.setAttribute('aria-busy', String(isSubmitting));
+  form.classList.toggle('is-submitting', isSubmitting);
+  submitButton.classList.toggle('is-submitting', isSubmitting);
+}
+
+function resetFormState() {
+  form.reset();
+  participantsList.replaceChildren();
+  addParticipant();
+  syncShippingAddress();
+}
+
 async function submitForm() {
-  submitButton.disabled = true;
+  const submitLabel = submitButton.textContent;
+  setSubmitting(true);
+  submitButton.textContent = 'Enviando…';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
+
   try {
     const response = await fetch(SUBMIT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(collectFormData()),
+      signal: controller.signal,
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    window.alert('Informações cadastradas com sucesso!');
-    form.reset();
-    syncShippingAddress();
+    resetFormState();
+    form.classList.remove('is-submitting');
+    submitButton.classList.remove('is-submitting');
+    submitButton.classList.add('is-success');
+    submitButton.setAttribute('aria-busy', 'false');
+    submitButton.textContent = 'Informações cadastradas com sucesso!';
   } catch (error) {
     console.error('Falha no envio do formulário:', error);
     window.alert('Não foi possível enviar o formulário. Tente novamente.');
+    setSubmitting(false);
+    submitButton.textContent = submitLabel;
   } finally {
-    submitButton.disabled = false;
+    clearTimeout(timeout);
   }
 }
 
