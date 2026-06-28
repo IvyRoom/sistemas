@@ -136,6 +136,9 @@ button {
 
 .section-description--important {
   background-color: var(--color-official-machado-wine);
+  font-size: 16px;
+  padding-left: 140px;
+  padding-right: 140px;
 }
 
 .field {
