@@ -2,7 +2,7 @@
 
 const MIN_VIEWPORT_WIDTH = 1024;
 const DEVICE_WARNING_URL = './plataforma_v2/aviso-dispositivo';
-const SUBMIT_ENDPOINT = 'https://plataforma-backend-v3.azurewebsites.net/clientes/cadastro-plataforma';
+const SUBMIT_ENDPOINT = 'https://plataforma-backend-v3.azurewebsites.net/clientes/processa-formulario';
 const SUBMIT_TIMEOUT_MS = 15000;
 const MAX_PARTICIPANTS = 25;
 

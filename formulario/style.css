@@ -134,6 +134,11 @@ button {
   padding-top: 0;
 }
 
+.section-description--important {
+  background-color: var(--color-official-machado-wine);
+  font-weight: 500;
+}
+
 .field {
   display: flex;
   flex-direction: column;
