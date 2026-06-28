@@ -1,7 +1,7 @@
 'use strict';
 
 const MIN_VIEWPORT_WIDTH = 1024;
-const DEVICE_WARNING_URL = './plataforma_v2/aviso-dispositivo';
+const DEVICE_WARNING_URL = '../plataforma_v2/aviso-dispositivo';
 const SUBMIT_ENDPOINT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/clientes/processa-formulario'
   : 'https://plataforma-backend-v3.azurewebsites.net/clientes/processa-formulario';
@@ -29,7 +29,7 @@ const STATIC_EMAIL_BASES = ['legal-rep', 'admin-assistant'];
 
 function enforceDeviceGate() {
   if (window.innerWidth <= MIN_VIEWPORT_WIDTH) {
-    window.location.replace(DEVICE_WARNING_URL);
+    window.location.href = DEVICE_WARNING_URL;
   }
 }
 
