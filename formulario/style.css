@@ -306,10 +306,21 @@ button:focus-visible {
   cursor: wait;
 }
 
-.submit-button.is-success {
-  background-color: var(--color-green);
-  color: var(--color-white);
-  opacity: 1;
+.form-success {
+  display: none;
+  color: var(--color-official-machado-wine);
+  text-align: center;
+  font-weight: 500;
+  font-size: 20px;
+  padding: var(--space-lg);
+}
+
+.form--submitted > :not(.form-success) {
+  display: none;
+}
+
+.form--submitted .form-success {
+  display: block;
 }
 
 .page-footer {

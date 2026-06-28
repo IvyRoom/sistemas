@@ -292,10 +292,10 @@
               <div class="field">
                 <label for="participant-__INDEX__-email-confirm">Confirmação E-mail:</label>
                 <input class="text-input" id="participant-__INDEX__-email-confirm" name="participant-__INDEX__-email-confirm" type="email" autocomplete="off" required>
+                <p class="email-mismatch-warning" id="participant-__INDEX__-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
               </div>
             </div>
 
-            <p class="email-mismatch-warning" id="participant-__INDEX__-email-warning" role="alert" hidden>ⓧ E-mails diferentes.</p>
             <button class="delete-participant-button" type="button">Deletar Participante</button>
           </div>
         </template>
@@ -306,6 +306,7 @@
       </fieldset>
 
       <button class="submit-button" type="submit">Cadastrar Informações</button>
+      <p class="form-success">Informações cadastradas com sucesso!</p>
     </form>
 
     <footer class="page-footer">Machado | Método Gerencial para Empresas&reg; — Todos os direitos reservados.</footer>

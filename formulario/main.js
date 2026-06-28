@@ -306,13 +306,6 @@ function setSubmitting(isSubmitting) {
   submitButton.classList.toggle('is-submitting', isSubmitting);
 }
 
-function resetFormState() {
-  form.reset();
-  participantsList.replaceChildren();
-  addParticipant();
-  syncShippingAddress();
-}
-
 async function submitForm() {
   const submitLabel = submitButton.textContent;
   setSubmitting(true);
@@ -329,12 +322,8 @@ async function submitForm() {
       signal: controller.signal,
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    resetFormState();
     form.classList.remove('is-submitting');
-    submitButton.classList.remove('is-submitting');
-    submitButton.classList.add('is-success');
-    submitButton.setAttribute('aria-busy', 'false');
-    submitButton.textContent = 'Informações cadastradas com sucesso!';
+    form.classList.add('form--submitted');
   } catch (error) {
     console.error('Falha no envio do formulário:', error);
     window.alert('Não foi possível enviar o formulário. Tente novamente.');
