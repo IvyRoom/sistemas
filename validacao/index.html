@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Valide a autenticidade de um certificado da Formação em Método Gerencial da Machado pelo Certificado ID#.">
+  <title>Validação de Certificados | Machado</title>
+  <link rel="icon" href="/validacao/img/favicon.ico">
+  <link rel="stylesheet" href="/validacao/style.css">
+  <script defer src="/validacao/main.js"></script>
+</head>
+
+<body>
+  <main class="page">
+    <img class="logo" src="/validacao/img/logo_machado.png" alt="Logo da Machado" width="240" height="80">
+
+    <section class="validator">
+      <h1 class="validator-title">Validação de Certificados</h1>
+      <p class="validator-subtitle">Formação em Método Gerencial</p>
+      <p class="validator-instructions">Digite abaixo o <strong>Certificado ID#</strong> impresso no certificado para verificar sua autenticidade.</p>
+
+      <form class="validator-form" action="#" method="get">
+        <div class="field">
+          <label for="certificate-id">Certificado ID#:</label>
+          <input class="text-input" id="certificate-id" name="certificate-id" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="FMG-XXXX-XXXX" required>
+        </div>
+
+        <button class="validate-button" type="submit">Validar Certificado</button>
+      </form>
+
+      <output class="validation-result" id="validation-result" role="status" aria-live="polite" hidden></output>
+    </section>
+
+    <footer class="page-footer">Machado | Método Gerencial para Empresas&reg; — Todos os direitos reservados.</footer>
+  </main>
+</body>
+
+</html>
