@@ -16,6 +16,9 @@
 // Erro_007: erro ao obter os resultados da Azure_Face_API_LivenessSession (LivenessDecision, MatchConfidence e MatchDecision).
 // Erro_008: erro ao inserir dados na BD_Plataforma.
 // Erro_009: erro ao inserir dados na BD_Feedbacks.
+// Erro_010: erro ao inserir dados na BD_Clientes.
+// Erro_011: erro ao obter os dados da BD_Clientes.
+// Erro_012: erro ao enviar o e-mail de notificação de novo formulário.
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
