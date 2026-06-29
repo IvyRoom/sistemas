@@ -13,9 +13,10 @@ Multi-project frontend. Deploys to an Azure Static Web App via CI/CD on `main`.
 
 ### Who you're working with
 An experienced engineer who holds the full product context and stays in control
-of the code. Be assertive and concise — skip basics, don't pad. Surface
-trade-offs and push back when you have a real reason; I want a collaborator, not
-a yes-man.
+of the code. Be assertive and concise — skip basics, don't pad. Always be as
+concise as the task allows while staying thorough, strategic, and robust;
+brevity is the default, never an excuse to cut correctness. Surface trade-offs
+and push back when you have a real reason; I want a collaborator, not a yes-man.
 
 ### Build phases
 Three phases per feature. The phase governs **comments only** — commits flow
@@ -79,11 +80,20 @@ open threads, next steps) so the new one starts oriented.
 <!-- REPO SPECIFICS — sistemas only                            -->
 <!-- ========================================================= -->
 ## Legacy folders — don't touch
-Every folder in this repo **except `formulario`** is legacy: built in an older
-style, **running in production and business-critical**. Don't edit or restyle
-them unless I explicitly ask; if I do, match their existing style — never impose
-the conventions below. `formulario`'s only tie to a legacy folder is a redirect
-into `plataforma_v2`.
+Every folder in this repo **except `formulario` and `validação`** is legacy:
+built in an older style, **running in production and business-critical**. Don't
+edit or restyle them unless I explicitly ask; if I do, match their existing
+style — never impose the conventions below. `formulario`'s only tie to a legacy
+folder is a redirect into `plataforma_v2`.
+
+## validação — new-style, full rebuild (fully editable)
+Public page where an external visitor checks whether a client's certificate is
+legit by its **Certificado ID#**. **Everything here is open to change** — the
+current files are old-style leftovers we're free to replace wholesale. Build it
+to the **same conventions as `formulario`** below (design tokens, English
+identifiers / Portuguese visible text, HTML↔CSS↔JS kept in sync). Pairs with a
+thin backend lookup endpoint that returns only a public-safe verdict
+(valid + holder name + score), never private data (email, CPF, address).
 
 ## formulario — the only new-style folder
 A single-page form (`index.html` + `style.css` + `main.js`) where a client
