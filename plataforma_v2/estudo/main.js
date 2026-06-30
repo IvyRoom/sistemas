@@ -1287,7 +1287,7 @@ function AbreDesempenhoeCertificado(){
         doc.setFontSize(10);
         doc.setFont('Helvetica','normal');
         doc.text('Certificado ID#: ' + Usuário_Formação_CertificadoID, 105, 260, null, null, 'center');
-        doc.text('Validação via: https://forms.office.com/r/CvRpsnMVyC', 105, 265, null, null, 'center');
+        doc.text('Validação via: https://machadogestao.com/validacao', 105, 265, null, null, 'center');
 
         doc.save('CERTIFICADO - ' + Usuário_NomeCompleto + '.pdf');
 
