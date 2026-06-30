@@ -1,8 +1,8 @@
 'use strict';
 
 const VALIDATE_ENDPOINT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000/landingpage/validacaocertificados/'
-  : 'https://plataforma-backend-v3.azurewebsites.net/landingpage/validacaocertificados/';
+  ? 'http://localhost:3000/validacaocertificados/'
+  : 'https://plataforma-backend-v3.azurewebsites.net/validacaocertificados/';
 const VALIDATE_TIMEOUT_MS = 15000;
 
 const form = document.querySelector('.validator-form');
