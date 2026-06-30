@@ -1,0 +1,207 @@
+:root {
+  --color-official-machado-wine: #4a0816;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-grey-paper: #dedede;
+  --color-grey-450: #909090;
+  --color-grey-500: #808080;
+  --color-grey-700: #505050;
+  --color-red: #c0000a;
+  --color-green: #0aa15b;
+
+  --gradient-page: linear-gradient(135deg, var(--color-black) 0%, var(--color-official-machado-wine) 50%);
+  --gradient-form: linear-gradient(135deg, var(--color-white) 0%, var(--color-grey-paper) 100%);
+
+  --font-base: 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  --space-xs: 5px;
+  --space-sm: 5px;
+  --space-md: 15px;
+  --space-lg: 20px;
+  --space-xl: 40px;
+
+  --radius-sm: 5px;
+  --radius-md: 15px;
+  --radius-lg: 20px;
+
+  --validator-max-width: 520px;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-base);
+}
+
+input,
+button {
+  font-family: inherit;
+}
+
+body.is-loading,
+body.is-loading * {
+  cursor: wait !important;
+}
+
+.page {
+  min-height: 100vh;
+  padding: var(--space-xl) 0;
+  background: var(--gradient-page);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo {
+  display: block;
+  height: 45px;
+  width: auto;
+  margin: 0;
+}
+
+.validator {
+  width: min(var(--validator-max-width), 100% - 2 * var(--space-lg));
+  margin: auto;
+  padding: var(--space-lg);
+  background: var(--gradient-form);
+  border-radius: var(--radius-lg);
+}
+
+.validator-title,
+.validator-subtitle {
+  color: var(--color-official-machado-wine);
+  text-align: center;
+}
+
+.validator-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.validator-subtitle {
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: var(--space-sm);
+}
+
+.validator-instructions {
+  color: var(--color-official-machado-wine);
+  font-size: 16px;
+  text-align: center;
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  color: var(--color-official-machado-wine);
+  margin-bottom: var(--space-xs);
+}
+
+.text-input {
+  width: 100%;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-black);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  text-align: left;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.text-input::placeholder {
+  color: var(--color-grey-450);
+  letter-spacing: normal;
+}
+
+.validate-button {
+  display: block;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-white);
+  background-color: var(--color-green);
+  box-shadow: 0 2px 4px var(--color-black);
+  cursor: pointer;
+}
+
+.validate-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.text-input:focus-visible,
+.validate-button:focus-visible {
+  outline: 2px solid var(--color-official-machado-wine);
+  outline-offset: 2px;
+}
+
+.validation-result {
+  display: block;
+  margin-top: var(--space-lg);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.validation-result[hidden] {
+  display: none;
+}
+
+.validation-result--valid {
+  color: var(--color-green);
+}
+
+.validation-result--invalid {
+  color: var(--color-red);
+}
+
+.result-headline {
+  display: block;
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: var(--space-xs);
+}
+
+.result-name {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.result-detail {
+  display: block;
+  font-size: 14px;
+  margin-top: var(--space-xs);
+}
+
+.page-footer {
+  margin-top: 0;
+  padding: var(--space-md);
+  color: var(--color-white);
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
