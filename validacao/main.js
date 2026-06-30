@@ -31,14 +31,11 @@ function showResult(state, lines) {
 
 function renderValid(data) {
   const lines = [
-    makeLine('result-headline', '✓ Certificado válido'),
+    makeLine('result-headline', '✓ Certificado Válido'),
     makeLine('result-name', data.Titular_NomeCompleto),
   ];
   if (Number.isFinite(data.Acumulado_Percentual)) {
-    lines.push(makeLine('result-detail', `Aproveitamento: ${data.Acumulado_Percentual}%`));
-  }
-  if (data.Certificado_ID) {
-    lines.push(makeLine('result-detail', `Certificado ID#: ${data.Certificado_ID}`));
+    lines.push(makeLine('result-detail', `Nota Acumulada: ${data.Acumulado_Percentual}%`));
   }
   showResult('valid', lines);
 }
