@@ -46,7 +46,7 @@ button {
 
 .page {
   min-height: 100vh;
-  padding-top: var(--space-xl);
+  padding: var(--space-xl) 0;
   background: var(--gradient-page);
   display: flex;
   flex-direction: column;
@@ -57,12 +57,12 @@ button {
   display: block;
   height: 45px;
   width: auto;
-  margin: 0 auto var(--space-xl);
+  margin: 0;
 }
 
 .validator {
   width: min(var(--validator-max-width), 100% - 2 * var(--space-lg));
-  margin: 0 auto auto;
+  margin: auto;
   padding: var(--space-lg);
   background: var(--gradient-form);
   border-radius: var(--radius-lg);
@@ -167,10 +167,6 @@ button {
   color: var(--color-red);
 }
 
-.validation-result--error {
-  color: var(--color-grey-700);
-}
-
 .result-headline {
   display: block;
   font-size: 16px;
@@ -191,7 +187,7 @@ button {
 }
 
 .page-footer {
-  margin-top: var(--space-xl);
+  margin-top: 0;
   padding: var(--space-md);
   color: var(--color-white);
   font-size: 12px;

@@ -47,13 +47,6 @@ function renderInvalid() {
   ]);
 }
 
-function renderError() {
-  showResult('error', [
-    makeLine('result-headline', 'Não foi possível validar agora'),
-    makeLine('result-detail', 'Tente novamente em alguns instantes.'),
-  ]);
-}
-
 async function validate(certificateId) {
   setLoading(true);
   result.hidden = true;
@@ -66,13 +59,19 @@ async function validate(certificateId) {
       method: 'GET',
       signal: controller.signal,
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw { error: body.error };
+    }
     const data = await response.json();
     if (data.Certificado_Válido) renderValid(data);
     else renderInvalid();
-  } catch (error) {
-    console.error('Falha na validação do certificado:', error);
-    renderError();
+  } catch (err) {
+    if (err && err.error === 'Erro_001') {
+      alert('Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente.');
+    } else {
+      alert('Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.');
+    }
   } finally {
     clearTimeout(timeout);
     setLoading(false);
