@@ -27,6 +27,15 @@ const ADDRESS_FIELD_PAIRS = [
 
 const STATIC_EMAIL_BASES = ['legal-rep', 'admin-assistant'];
 
+const SUBMIT_ERROR_FALLBACK = 'Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.';
+const SUBMIT_ERROR_MESSAGES = {
+  Erro_001: 'Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente.',
+  Erro_008: 'Erro_008: falha ao atualizar a base de dados de controle da plataforma.\nTente novamente.',
+  Erro_010: 'Erro_010: falha ao atualizar a base de dados de clientes.\nTente novamente.',
+  Erro_011: 'Erro_011: falha de comunicação com a base de dados de clientes.\nTente novamente.',
+  Erro_012: 'Erro_012: falha ao enviar a notificação por e-mail.\nTente novamente.',
+};
+
 function enforceDeviceGate() {
   if (window.innerWidth <= MIN_VIEWPORT_WIDTH) {
     window.location.href = DEVICE_WARNING_URL;
@@ -323,12 +332,13 @@ async function submitForm() {
       body: JSON.stringify(collectFormData()),
       signal: controller.signal,
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!response.ok) throw { error: data.error };
     form.classList.remove('is-submitting');
     form.classList.add('form--submitted');
   } catch (error) {
     console.error('Falha no envio do formulário:', error);
-    window.alert('Não foi possível enviar o formulário. Tente novamente.');
+    window.alert(SUBMIT_ERROR_MESSAGES[error && error.error] || SUBMIT_ERROR_FALLBACK);
     setSubmitting(false);
     submitButton.textContent = submitLabel;
   } finally {
