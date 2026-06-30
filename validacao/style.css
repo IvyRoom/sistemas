@@ -44,6 +44,11 @@ button {
   font-family: inherit;
 }
 
+body.is-loading,
+body.is-loading * {
+  cursor: wait !important;
+}
+
 .page {
   min-height: 100vh;
   padding: var(--space-xl) 0;

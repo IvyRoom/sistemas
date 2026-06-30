@@ -14,6 +14,7 @@ function setLoading(isLoading) {
   button.disabled = isLoading;
   button.setAttribute('aria-busy', String(isLoading));
   button.textContent = isLoading ? 'Validando…' : 'Validar Certificado';
+  document.body.classList.toggle('is-loading', isLoading);
 }
 
 function makeLine(className, text) {
