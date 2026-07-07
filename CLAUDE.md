@@ -38,7 +38,10 @@ open threads, next steps) so the new one starts oriented.
 - **Ask before large or structural changes.** Propose, wait for my OK. Small,
   obvious fixes: just do them.
 - **One concern per change.** No unrelated refactors in passing.
-- **Never invent scope.** No fields, endpoints, or copy I didn't ask for.
+- **Never invent scope.** No fields or endpoints I didn't ask for. When a
+  change genuinely requires new user-facing copy (labels, messages), write it
+  to fit the surrounding tone and language, and list it in your handoff so I
+  can review the wording.
 - **Match the surrounding code** of whichever repo/folder you're in — its
   naming, language, and structure win over your defaults. Flag mismatches
   instead of silently "fixing" them.
@@ -103,7 +106,11 @@ one file must be reflected in the others (classes, ids, the `__INDEX__`
 contract); flag any mismatch you notice.
 
 Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
-(behaviour: validation, participant cloning, same-address copy, device gate).
+(behaviour: validation, participant cloning, same-address copy, device gate) ·
+`main.test.js` (Node harness over main.js's pure helpers — masks, CPF/CNPJ
+validators, normalizers). Run `node formulario/main.test.js` after touching
+`main.js`; extend it when adding pure logic. It loads the real `main.js` with
+a stubbed DOM, so tested logic is never duplicated.
 
 Backend contract: submissions POST JSON to `/clientes/processa-formulario`;
 `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes
