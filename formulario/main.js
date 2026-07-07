@@ -5,7 +5,7 @@ const DEVICE_WARNING_URL = '../plataforma_v2/aviso-dispositivo';
 const SUBMIT_ENDPOINT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/clientes/processa-formulario'
   : 'https://plataforma-backend-v3.azurewebsites.net/clientes/processa-formulario';
-const SUBMIT_TIMEOUT_MS = 15000;
+const SUBMIT_TIMEOUT_MS = 60000;
 const MAX_PARTICIPANTS = 25;
 
 const form = document.querySelector('.form');
@@ -34,6 +34,7 @@ const SUBMIT_ERROR_MESSAGES = {
   Erro_010: 'Erro_010: falha ao atualizar a base de dados de clientes.\nTente novamente.',
   Erro_011: 'Erro_011: falha de comunicação com a base de dados de clientes.\nTente novamente.',
   Erro_012: 'Erro_012: falha ao enviar a notificação por e-mail.\nTente novamente.',
+  Erro_013: 'Erro_013: dados inválidos ou incompletos.\nRevise o preenchimento e tente novamente.',
 };
 
 function enforceDeviceGate() {
