@@ -122,6 +122,10 @@ function validateAllEmailPairs() {
   return bases.map(validateEmailPair).every(Boolean);
 }
 
+function isCompanyAddressSource(id) {
+  return ADDRESS_FIELD_PAIRS.some(([companyId]) => companyId === id);
+}
+
 function syncShippingAddress() {
   const useCompany = useCompanyAddressCheckbox.checked;
   ADDRESS_FIELD_PAIRS.forEach(([companyId, shippingId]) => {
@@ -362,7 +366,7 @@ form.addEventListener('input', (event) => {
   if (target.id.endsWith('-email') || target.id.endsWith('-email-confirm')) {
     clearEmailWarning(emailBaseFromId(target.id));
   }
-  if (useCompanyAddressCheckbox.checked && ADDRESS_FIELD_PAIRS.some(([companyId]) => companyId === target.id)) {
+  if (useCompanyAddressCheckbox.checked && isCompanyAddressSource(target.id)) {
     syncShippingAddress();
   }
 });
@@ -373,6 +377,9 @@ form.addEventListener('focusout', (event) => {
   normalizeField(target);
   if (target.id.endsWith('-email') || target.id.endsWith('-email-confirm')) {
     validateEmailPair(emailBaseFromId(target.id));
+  }
+  if (useCompanyAddressCheckbox.checked && isCompanyAddressSource(target.id)) {
+    syncShippingAddress();
   }
 });
 
