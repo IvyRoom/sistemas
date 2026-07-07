@@ -5,7 +5,7 @@ const DEVICE_WARNING_URL = '../plataforma_v2/aviso-dispositivo';
 const SUBMIT_ENDPOINT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/clientes/processa-formulario'
   : 'https://plataforma-backend-v3.azurewebsites.net/clientes/processa-formulario';
-const SUBMIT_TIMEOUT_MS = 15000;
+const SUBMIT_TIMEOUT_MS = 60000;
 const MAX_PARTICIPANTS = 25;
 
 const form = document.querySelector('.form');
@@ -34,6 +34,7 @@ const SUBMIT_ERROR_MESSAGES = {
   Erro_010: 'Erro_010: falha ao atualizar a base de dados de clientes.\nTente novamente.',
   Erro_011: 'Erro_011: falha de comunicação com a base de dados de clientes.\nTente novamente.',
   Erro_012: 'Erro_012: falha ao enviar a notificação por e-mail.\nTente novamente.',
+  Erro_013: 'Erro_013: dados inválidos ou incompletos.\nRevise o preenchimento e tente novamente.',
 };
 
 function enforceDeviceGate() {
@@ -46,13 +47,19 @@ function onlyDigits(value) {
   return value.replace(/\D/g, '');
 }
 
+// CNPJs issued from Jul/2026 on may be alphanumeric: 12 alphanumerics + 2 numeric check digits.
+function cnpjChars(value) {
+  return value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 14);
+}
+
 function maskCnpj(value) {
-  const d = onlyDigits(value).slice(0, 14);
-  return d
-    .replace(/^(\d{2})(\d)/, '$1.$2')
-    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2');
+  const c = cnpjChars(value);
+  let masked = c.slice(0, 2);
+  if (c.length > 2) masked += `.${c.slice(2, 5)}`;
+  if (c.length > 5) masked += `.${c.slice(5, 8)}`;
+  if (c.length > 8) masked += `/${c.slice(8, 12)}`;
+  if (c.length > 12) masked += `-${c.slice(12, 14)}`;
+  return masked;
 }
 
 function maskCpf(value) {
@@ -75,8 +82,35 @@ function maskPhone(value) {
   return `${d.slice(0, 5)}-${d.slice(5)}`;
 }
 
+function isValidCpf(value) {
+  const d = onlyDigits(value);
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  for (const length of [9, 10]) {
+    let sum = 0;
+    for (let i = 0; i < length; i++) sum += Number(d[i]) * (length + 1 - i);
+    if (((sum * 10) % 11) % 10 !== Number(d[length])) return false;
+  }
+  return true;
+}
+
+const CNPJ_CHECK_WEIGHTS = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+function isValidCnpj(value) {
+  const c = cnpjChars(value);
+  if (c.length !== 14 || !/^\d{2}$/.test(c.slice(12)) || /^(.)\1{13}$/.test(c)) return false;
+  for (const length of [12, 13]) {
+    const weights = CNPJ_CHECK_WEIGHTS.slice(13 - length);
+    let sum = 0;
+    for (let i = 0; i < length; i++) sum += (c.charCodeAt(i) - 48) * weights[i];
+    const check = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (check !== Number(c[length])) return false;
+  }
+  return true;
+}
+
 function maskForField(input) {
   const id = input.id;
+  if (id.endsWith('-no-number')) return null;
   if (id.endsWith('-cnpj')) return maskCnpj;
   if (id.endsWith('-cpf')) return maskCpf;
   if (id.endsWith('-postal-code')) return maskCep;
@@ -119,6 +153,33 @@ function validateAllEmailPairs() {
     bases.push(`participant-${participant.dataset.participantIndex}`);
   });
   return bases.map(validateEmailPair).every(Boolean);
+}
+
+function isCompanyAddressSource(id) {
+  return ADDRESS_FIELD_PAIRS.some(([companyId]) => companyId === id);
+}
+
+function documentValidityMessage(input) {
+  if (input.value === '') return '';
+  if (input.id.endsWith('-cnpj')) return isValidCnpj(input.value) ? '' : 'CNPJ inválido.';
+  return isValidCpf(input.value) ? '' : 'CPF inválido.';
+}
+
+function validateDocumentField(input) {
+  input.setCustomValidity(documentValidityMessage(input));
+}
+
+function validateAllDocumentFields() {
+  form.querySelectorAll('[id$="-cpf"], [id$="-cnpj"]').forEach(validateDocumentField);
+}
+
+function flagDuplicateParticipantFields(fieldSuffix, canonicalize, message) {
+  const seen = new Set();
+  participantsList.querySelectorAll(`[id$="${fieldSuffix}"]`).forEach((input) => {
+    const value = canonicalize(input.value);
+    if (value !== '' && seen.has(value)) input.setCustomValidity(message);
+    seen.add(value);
+  });
 }
 
 function syncShippingAddress() {
@@ -354,6 +415,7 @@ form.addEventListener('input', (event) => {
   if (!(target instanceof HTMLElement) || !target.id) return;
 
   applyMask(target);
+  if (typeof target.setCustomValidity === 'function') target.setCustomValidity('');
 
   if (target.id.endsWith('-city')) {
     target.value = target.value.replace(/\d/g, '');
@@ -361,7 +423,7 @@ form.addEventListener('input', (event) => {
   if (target.id.endsWith('-email') || target.id.endsWith('-email-confirm')) {
     clearEmailWarning(emailBaseFromId(target.id));
   }
-  if (useCompanyAddressCheckbox.checked && ADDRESS_FIELD_PAIRS.some(([companyId]) => companyId === target.id)) {
+  if (useCompanyAddressCheckbox.checked && isCompanyAddressSource(target.id)) {
     syncShippingAddress();
   }
 });
@@ -372,6 +434,12 @@ form.addEventListener('focusout', (event) => {
   normalizeField(target);
   if (target.id.endsWith('-email') || target.id.endsWith('-email-confirm')) {
     validateEmailPair(emailBaseFromId(target.id));
+  }
+  if (target.id.endsWith('-cpf') || target.id.endsWith('-cnpj')) {
+    validateDocumentField(target);
+  }
+  if (useCompanyAddressCheckbox.checked && isCompanyAddressSource(target.id)) {
+    syncShippingAddress();
   }
 });
 
@@ -398,7 +466,11 @@ addParticipant();
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   normalizeAllFields();
+  form.querySelectorAll('.text-input').forEach((input) => input.setCustomValidity(''));
   validateAllEmailPairs();
+  validateAllDocumentFields();
+  flagDuplicateParticipantFields('-cpf', onlyDigits, 'CPF repetido em outro participante.');
+  flagDuplicateParticipantFields('-email', (value) => value.trim().toLowerCase(), 'E-mail repetido em outro participante.');
   if (!form.reportValidity()) return;
   submitForm();
 });

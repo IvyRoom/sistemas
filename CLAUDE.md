@@ -38,7 +38,10 @@ open threads, next steps) so the new one starts oriented.
 - **Ask before large or structural changes.** Propose, wait for my OK. Small,
   obvious fixes: just do them.
 - **One concern per change.** No unrelated refactors in passing.
-- **Never invent scope.** No fields, endpoints, or copy I didn't ask for.
+- **Never invent scope.** No fields or endpoints I didn't ask for. When a
+  change genuinely requires new user-facing copy (labels, messages), write it
+  to fit the surrounding tone and language, and list it in your handoff so I
+  can review the wording.
 - **Match the surrounding code** of whichever repo/folder you're in — its
   naming, language, and structure win over your defaults. Flag mismatches
   instead of silently "fixing" them.
@@ -48,7 +51,12 @@ open threads, next steps) so the new one starts oriented.
   of tracked files (use ignored config / env vars). If a change would add one,
   stop and flag it.
 - **Verify before handoff.** Check what's mechanical — syntax, tests, logic —
-  yourself; I own behavioural and visual testing.
+  yourself. When it adds real signal, also exercise the change yourself in a
+  local preview (serve the frontend, drive it in a browser). Before running
+  anything, map what it touches: never exercise paths that reach production —
+  Graph API, live spreadsheets, real e-mail — or anything else with side
+  effects beyond this machine, without my explicit OK. I still own final
+  behavioural and visual testing.
 
 ### Git — you commit, I publish
 - **You make the commits** (`git add` + `git commit`) on the current feature
@@ -69,8 +77,9 @@ open threads, next steps) so the new one starts oriented.
   with no branch yet: create and name it yourself — no need to ask — then tell me.
 - Conventional Commits: `feat | fix | refactor | style | docs | chore`;
   imperative summary ≤ ~50 chars; body explains *why* when non-obvious. End
-  every commit with a `Co-Authored-By: Claude <noreply@anthropic.com>` trailer —
-  a footer line after a blank line, never on the summary.
+  every commit with a `Co-Authored-By:` trailer naming the model that wrote it
+  (e.g. `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`) — a footer
+  line after a blank line, never on the summary.
 - Branches are workspaces; merging to `main` deploys. Nothing's "ready" until I
   say so.
 
@@ -103,6 +112,16 @@ contract); flag any mismatch you notice.
 
 Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
 (behaviour: validation, participant cloning, same-address copy, device gate).
+
+Tests live outside the deployed folders: `.claude/tests/main.test.js` is a
+Node harness over `main.js`'s pure helpers (masks, CPF/CNPJ validators,
+normalizers). Run `node .claude/tests/main.test.js` after touching `main.js`;
+extend it when adding pure logic. It loads the real `main.js` with a stubbed
+DOM, so tested logic is never duplicated.
+
+Backend contract: submissions POST JSON to `/clientes/processa-formulario`;
+`SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes
+(registry in `backend/CLAUDE.md`).
 
 ### Naming
 - Identifiers (class/id/variable): English, lowercase, hyphen-separated, ASCII
