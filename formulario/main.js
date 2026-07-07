@@ -172,6 +172,15 @@ function validateAllDocumentFields() {
   form.querySelectorAll('[id$="-cpf"], [id$="-cnpj"]').forEach(validateDocumentField);
 }
 
+function flagDuplicateParticipantFields(fieldSuffix, canonicalize, message) {
+  const seen = new Set();
+  participantsList.querySelectorAll(`[id$="${fieldSuffix}"]`).forEach((input) => {
+    const value = canonicalize(input.value);
+    if (value !== '' && seen.has(value)) input.setCustomValidity(message);
+    seen.add(value);
+  });
+}
+
 function syncShippingAddress() {
   const useCompany = useCompanyAddressCheckbox.checked;
   ADDRESS_FIELD_PAIRS.forEach(([companyId, shippingId]) => {
@@ -459,6 +468,8 @@ form.addEventListener('submit', (event) => {
   form.querySelectorAll('.text-input').forEach((input) => input.setCustomValidity(''));
   validateAllEmailPairs();
   validateAllDocumentFields();
+  flagDuplicateParticipantFields('-cpf', onlyDigits, 'CPF repetido em outro participante.');
+  flagDuplicateParticipantFields('-email', (value) => value.trim().toLowerCase(), 'E-mail repetido em outro participante.');
   if (!form.reportValidity()) return;
   submitForm();
 });
