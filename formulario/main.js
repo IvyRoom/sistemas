@@ -77,6 +77,7 @@ function maskPhone(value) {
 
 function maskForField(input) {
   const id = input.id;
+  if (id.endsWith('-no-number')) return null;
   if (id.endsWith('-cnpj')) return maskCnpj;
   if (id.endsWith('-cpf')) return maskCpf;
   if (id.endsWith('-postal-code')) return maskCep;
