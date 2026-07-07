@@ -46,13 +46,19 @@ function onlyDigits(value) {
   return value.replace(/\D/g, '');
 }
 
+// CNPJs issued from Jul/2026 on may be alphanumeric: 12 alphanumerics + 2 numeric check digits.
+function cnpjChars(value) {
+  return value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 14);
+}
+
 function maskCnpj(value) {
-  const d = onlyDigits(value).slice(0, 14);
-  return d
-    .replace(/^(\d{2})(\d)/, '$1.$2')
-    .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-    .replace(/\.(\d{3})(\d)/, '.$1/$2')
-    .replace(/(\d{4})(\d)/, '$1-$2');
+  const c = cnpjChars(value);
+  let masked = c.slice(0, 2);
+  if (c.length > 2) masked += `.${c.slice(2, 5)}`;
+  if (c.length > 5) masked += `.${c.slice(5, 8)}`;
+  if (c.length > 8) masked += `/${c.slice(8, 12)}`;
+  if (c.length > 12) masked += `-${c.slice(12, 14)}`;
+  return masked;
 }
 
 function maskCpf(value) {
@@ -73,6 +79,32 @@ function maskPhone(value) {
   if (d.length <= 4) return d;
   if (d.length <= 8) return `${d.slice(0, d.length - 4)}-${d.slice(d.length - 4)}`;
   return `${d.slice(0, 5)}-${d.slice(5)}`;
+}
+
+function isValidCpf(value) {
+  const d = onlyDigits(value);
+  if (d.length !== 11 || /^(\d)\1{10}$/.test(d)) return false;
+  for (const length of [9, 10]) {
+    let sum = 0;
+    for (let i = 0; i < length; i++) sum += Number(d[i]) * (length + 1 - i);
+    if (((sum * 10) % 11) % 10 !== Number(d[length])) return false;
+  }
+  return true;
+}
+
+const CNPJ_CHECK_WEIGHTS = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+function isValidCnpj(value) {
+  const c = cnpjChars(value);
+  if (c.length !== 14 || !/^\d{2}$/.test(c.slice(12)) || /^(.)\1{13}$/.test(c)) return false;
+  for (const length of [12, 13]) {
+    const weights = CNPJ_CHECK_WEIGHTS.slice(13 - length);
+    let sum = 0;
+    for (let i = 0; i < length; i++) sum += (c.charCodeAt(i) - 48) * weights[i];
+    const check = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (check !== Number(c[length])) return false;
+  }
+  return true;
 }
 
 function maskForField(input) {
@@ -124,6 +156,20 @@ function validateAllEmailPairs() {
 
 function isCompanyAddressSource(id) {
   return ADDRESS_FIELD_PAIRS.some(([companyId]) => companyId === id);
+}
+
+function documentValidityMessage(input) {
+  if (input.value === '') return '';
+  if (input.id.endsWith('-cnpj')) return isValidCnpj(input.value) ? '' : 'CNPJ inválido.';
+  return isValidCpf(input.value) ? '' : 'CPF inválido.';
+}
+
+function validateDocumentField(input) {
+  input.setCustomValidity(documentValidityMessage(input));
+}
+
+function validateAllDocumentFields() {
+  form.querySelectorAll('[id$="-cpf"], [id$="-cnpj"]').forEach(validateDocumentField);
 }
 
 function syncShippingAddress() {
@@ -359,6 +405,7 @@ form.addEventListener('input', (event) => {
   if (!(target instanceof HTMLElement) || !target.id) return;
 
   applyMask(target);
+  if (typeof target.setCustomValidity === 'function') target.setCustomValidity('');
 
   if (target.id.endsWith('-city')) {
     target.value = target.value.replace(/\d/g, '');
@@ -377,6 +424,9 @@ form.addEventListener('focusout', (event) => {
   normalizeField(target);
   if (target.id.endsWith('-email') || target.id.endsWith('-email-confirm')) {
     validateEmailPair(emailBaseFromId(target.id));
+  }
+  if (target.id.endsWith('-cpf') || target.id.endsWith('-cnpj')) {
+    validateDocumentField(target);
   }
   if (useCompanyAddressCheckbox.checked && isCompanyAddressSource(target.id)) {
     syncShippingAddress();
@@ -406,7 +456,9 @@ addParticipant();
 form.addEventListener('submit', (event) => {
   event.preventDefault();
   normalizeAllFields();
+  form.querySelectorAll('.text-input').forEach((input) => input.setCustomValidity(''));
   validateAllEmailPairs();
+  validateAllDocumentFields();
   if (!form.reportValidity()) return;
   submitForm();
 });
