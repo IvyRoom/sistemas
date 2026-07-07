@@ -106,11 +106,13 @@ one file must be reflected in the others (classes, ids, the `__INDEX__`
 contract); flag any mismatch you notice.
 
 Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
-(behaviour: validation, participant cloning, same-address copy, device gate) ·
-`main.test.js` (Node harness over main.js's pure helpers — masks, CPF/CNPJ
-validators, normalizers). Run `node formulario/main.test.js` after touching
-`main.js`; extend it when adding pure logic. It loads the real `main.js` with
-a stubbed DOM, so tested logic is never duplicated.
+(behaviour: validation, participant cloning, same-address copy, device gate).
+
+Tests live outside the deployed folders: `.claude/tests/main.test.js` is a
+Node harness over `main.js`'s pure helpers (masks, CPF/CNPJ validators,
+normalizers). Run `node .claude/tests/main.test.js` after touching `main.js`;
+extend it when adding pure logic. It loads the real `main.js` with a stubbed
+DOM, so tested logic is never duplicated.
 
 Backend contract: submissions POST JSON to `/clientes/processa-formulario`;
 `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes
