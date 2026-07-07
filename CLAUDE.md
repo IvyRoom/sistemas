@@ -69,8 +69,9 @@ open threads, next steps) so the new one starts oriented.
   with no branch yet: create and name it yourself — no need to ask — then tell me.
 - Conventional Commits: `feat | fix | refactor | style | docs | chore`;
   imperative summary ≤ ~50 chars; body explains *why* when non-obvious. End
-  every commit with a `Co-Authored-By: Claude <noreply@anthropic.com>` trailer —
-  a footer line after a blank line, never on the summary.
+  every commit with a `Co-Authored-By:` trailer naming the model that wrote it
+  (e.g. `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`) — a footer
+  line after a blank line, never on the summary.
 - Branches are workspaces; merging to `main` deploys. Nothing's "ready" until I
   say so.
 
@@ -103,6 +104,10 @@ contract); flag any mismatch you notice.
 
 Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
 (behaviour: validation, participant cloning, same-address copy, device gate).
+
+Backend contract: submissions POST JSON to `/clientes/processa-formulario`;
+`SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes
+(registry in `backend/CLAUDE.md`).
 
 ### Naming
 - Identifiers (class/id/variable): English, lowercase, hyphen-separated, ASCII
