@@ -1,145 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Machado | Método Gerencial para Empresas</title>
-    <link rel="icon" href="/conecta/img/FAVICON.ico">
-    <link async rel="stylesheet" href="/conecta/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Machado Conecta: programa de recomendações exclusivo para empresas clientes da Machado | Método Gerencial para Empresas.">
+  <title>Machado | Método Gerencial para Empresas</title>
+  <link rel="icon" href="/conecta/img/FAVICON.ico">
+  <link rel="stylesheet" href="/conecta/style.css">
+  <script defer src="/conecta/main.js"></script>
 </head>
 
 <body>
+  <main class="page">
+    <h1 class="logo-heading"><img class="logo" src="/conecta/img/LOGO_MACHADO_CONECTA.png" alt="Machado Conecta" width="189" height="80" draggable="false"></h1>
 
-    <section id="Seção-Principal">
+    <!-- JS CONTRACT: main.js opens exactly one .accordion-section at a time (class "is-open");
+         the open section shows only .section-content, closed sections show only .section-toggle. -->
 
-        <div id="Container-Geral">
+    <!-- SECTION: sobre o programa -->
+    <section class="accordion-section" id="section-about">
+      <h2 class="section-heading">
+        <button class="section-toggle" type="button" aria-expanded="false" aria-controls="about-content">
+          <span>SOBRE O PROGRAMA</span>
+          <svg class="section-arrow" width="20" height="8" aria-hidden="true"><polyline points="1,1 10,7 19,1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </h2>
+      <div class="section-content" id="about-content" role="region" aria-label="Sobre o programa">
+        <p class="content-text">Conheça o Machado Conecta, o programa de benefícios exclusivo para nossas empresas clientes:</p>
 
-            <img id="Logo-Machado-Conecta" src="/conecta/img/LOGO_MACHADO_CONECTA.png" draggable="false"></img>
-            
-            <div class="Containers-Externos" id="Container-Externo-01">
-                <div class="Títulos-Containers-Externos">SOBRE O PROGRAMA</div>
-                <div class="Setas-Containers-Externos"><svg width="20" height="8"><polyline points="1,1 10,7 19,1" fill="none" stroke="#4a0816" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
-            </div>
-            
-            <div id="Container-Interno-01">
-            
-                <div class="Textos-Explicativos">Conheça o Machado Conecta, o programa de benefícios exclusivo para nossas empresas clientes:</div>
-            
-                <div class="Títulos">GERAL</div>
+        <h3 class="content-title">GERAL</h3>
+        <p class="content-text">O funcionamento do programa é muito simples:</p>
+        <p class="content-text">Você recomenda a Machado para empresas do seu círculo profissional... E a empresa onde você atua ganha <strong>participantes gratuitos</strong> para novas turmas da Solução em Método Gerencial!</p>
 
-                <div class="Textos-Explicativos">O funcionamento do programa é muito simples:</div>
+        <h3 class="content-title">ENTENDA EM DETALHES</h3>
+        <p class="content-text">A cada 5 profissionais que participem da Solução em Método Gerencial numa empresa recomendada por você, a sua empresa ganha 1 participante gratuito para novas turmas da Solução. Isto de forma <strong>cumulativa</strong> e <strong>ilimitada</strong>!</p>
 
-                <div class="Textos-Explicativos">Você recomenda a Machado para empresas do seu círculo profissional... E a empresa onde você atua ganha <b>participantes gratuitos</b> para novas turmas da Solução em Método Gerencial!</div>
-                
-                <div class="Títulos">ENTENDA EM DETALHES</div>
-                
-                <div class="Textos-Explicativos">A cada 5 profissionais que participem da Solução em Método Gerencial numa empresa recomendada por você, a sua empresa ganha 1 participante gratuito para novas turmas da Solução. Isto de forma <b>cumulativa</b> e <b>ilimitada</b>!</div>
+        <h3 class="content-title">EXEMPLO</h3>
+        <p class="content-text">Imagine que você trabalha na Ambev e participou da Solução em Método Gerencial recentemente.</p>
+        <p class="content-text">Você então recomenda a Machado para duas empresas, a Transportadora Dias e o iFood.</p>
+        <p class="content-text">A Transportadora Dias contrata a Solução para 10 de seus profissionais. E o iFood para 15 profissionais.</p>
+        <p class="content-text">Com isto você e seus colegas, na Ambev, ganharão 10/5 + 15/5 = <strong>5 participantes gratuitos</strong> para uma próxima turma da Solução em Método Gerencial!</p>
 
-                <div class="Títulos">EXEMPLO</div>
-                
-                <div class="Textos-Explicativos">Imagine que você trabalha na Ambev e participou da Solução em Método Gerencial recentemente.</div>
-
-                <div class="Textos-Explicativos">Você então recomenda a Machado para duas empresas, a Transportadora Dias e o iFood.</div>
-
-                <div class="Textos-Explicativos">A Transportadora Dias contrata a Solução para 10 de seus profissionais. E o iFood para 15 profissionais.</div>
-                
-                <div class="Textos-Explicativos">Com isto você e seus colegas, na Ambev, ganharão 10/5 + 15/5 = <b>5 participantes gratuitos</b> para uma próxima turma da Solução em Método Gerencial!</div>
-
-                <div class="Títulos">SE DESTAQUE</div>
-
-                <div class="Textos-Explicativos">Além disso, esta é uma ótima oportunidade para <b>você se destacar</b>!</div>
-                
-                <div class="Textos-Explicativos">Pois a diretoria da sua empresa tem acesso a um dashboard mostrando, <b>para cada funcionário</b>:</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp; • Número de recomendações realizadas.</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp; • Taxa de conversão.</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp; • Número de participantes gratuitos gerado e valor financeiro equivalente.</div>
-            
-            </div>
-
-            <div class="Containers-Externos" id="Container-Externo-02">
-                <div class="Títulos-Containers-Externos">COMO NOS RECOMENDAR</div>
-                <div class="Setas-Containers-Externos"><svg width="20" height="8"><polyline points="1,1 10,7 19,1" fill="none" stroke="#4a0816" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /> </svg></div>
-            </div>
-
-            <div id="Container-Interno-02">
-                
-                <div class="Títulos">QUEM CONTATAR</div>
-                
-                <div class="Textos-Explicativos">Busque contatar profissionais:</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp; • <strong>De sua confiança:</strong> pessoas do seu círculo profissional, com quem você tenha proximidade.</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp; • <strong>Com poder decisório:</strong> profissionais com autonomia para contratar o serviço à empresa onde atuam.</div>
-
-                <div class="Títulos">PASSO A PASSO</div>
-                
-                <div class="Textos-Explicativos">Para fazer uma nova recomendação:</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp;1. Contate o profissional para o qual você irá nos recomendar.</div>
-                
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp;2. Preencha este formulário:</div>
-                
-                <form id="Formulário">
-                
-                    <div id="Título-Formulário">CADASTRO: NOVA RECOMENDAÇÃO</div>
-                
-                    <div class="Subtítulos-Formulário">Seus dados:</div>
-                
-                    <div class="Cabeçalhos">Nome Completo:</div>
-                
-                    <div class="Campos-de-Preenchimento-Fechados" id="Recomendante_Nome_Completo"></div>
-                
-                    <div class="Cabeçalhos">Empresa Beneficiada:</div>
-                
-                    <div class="Campos-de-Preenchimento-Fechados" id="Recomendante_Empresa_Beneficiada"></div>
-                
-                    <div class="Divisórias-Formulário"></div>
-                
-                    <div class="Subtítulos-Formulário">Dados da empresa para a qual você nos recomendou:</div>
-                
-                    <div class="Cabeçalhos">Nome da Empresa:</div>
-                
-                    <input class="Campos-de-Preenchimento-Abertos" id="Recomendado_Nome_Empresa"></input>
-                
-                    <div class="Cabeçalhos">Nome do Profissional Contatado:</div>
-                
-                    <input class="Campos-de-Preenchimento-Abertos" id="Recomendado_Nome_Profissional"></input>
-
-                    <div class="Cabeçalhos">WhatsApp do Profissional Contatado:</div>
-                    
-                    <input class="Campos-de-Preenchimento-Abertos" id="Recomendado_WhatsApp_Profissional"></input>
-                
-                    <button id="Botão-Cadastro-Recomendante">CADASTRAR</button>
-                
-                </form>
-
-                <div class="Textos-Explicativos">Ao recebermos o formulário, nós entraremos em contato com o profissional para quem você nos recomendou.</div>
-                
-                <div class="Títulos">LINKS ÚTEIS</div>
-
-                <div class="Textos-Explicativos">Para você compartilhar com os profissionais contatados:</div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp;• <strong>Instagram da Machado</strong> - <a href="https://www.instagram.com/machado.gestao/" target="_blank">https://www.instagram.com/machado.gestao/</a></div>
-
-                <div class="Textos-Explicativos">&nbsp;&nbsp;&nbsp;&nbsp;• <b>Explicação: Solução em Método Gerencial:</b> - <a href="https://machadogestao.com/" target="_blank">https://machadogestao.com/</a></div>
-
-            </div>
-
-        </div>
-
-        <img id="Esfera" src="/conecta/img/ESFERA.jpg"></img>
-
-        <div id="Texto-Rodapé">Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</div>
-    
+        <h3 class="content-title">SE DESTAQUE</h3>
+        <p class="content-text">Além disso, esta é uma ótima oportunidade para <strong>você se destacar</strong>!</p>
+        <p class="content-text">Pois a diretoria da sua empresa tem acesso a um dashboard mostrando, <strong>para cada funcionário</strong>:</p>
+        <ul class="content-list">
+          <li>Número de recomendações realizadas.</li>
+          <li>Taxa de conversão.</li>
+          <li>Número de participantes gratuitos gerado e valor financeiro equivalente.</li>
+        </ul>
+      </div>
     </section>
 
-    <script async src="/conecta/main.js"></script>
+    <!-- SECTION: como nos recomendar -->
+    <section class="accordion-section" id="section-recommend">
+      <h2 class="section-heading">
+        <button class="section-toggle" type="button" aria-expanded="false" aria-controls="recommend-content">
+          <span>COMO NOS RECOMENDAR</span>
+          <svg class="section-arrow" width="20" height="8" aria-hidden="true"><polyline points="1,1 10,7 19,1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </h2>
+      <div class="section-content" id="recommend-content" role="region" aria-label="Como nos recomendar">
+        <h3 class="content-title">QUEM CONTATAR</h3>
+        <p class="content-text">Busque contatar profissionais:</p>
+        <ul class="content-list">
+          <li><strong>De sua confiança:</strong> pessoas do seu círculo profissional, com quem você tenha proximidade.</li>
+          <li><strong>Com poder decisório:</strong> profissionais com autonomia para contratar o serviço à empresa onde atuam.</li>
+        </ul>
 
+        <h3 class="content-title">PASSO A PASSO</h3>
+        <p class="content-text">Para fazer uma nova recomendação:</p>
+        <ol class="content-steps">
+          <li>Contate o profissional para o qual você irá nos recomendar.</li>
+          <li>Preencha este formulário:</li>
+        </ol>
+
+        <p class="invalid-link-notice" hidden>Link inválido ou incompleto. Para registrar recomendações, utilize o link personalizado que você recebeu por e-mail.</p>
+
+        <!-- JS CONTRACT: main.js fills #recommender-name / #benefited-company from the URL
+             parameters "ncr" / "eb" and reads the three open fields on submit. -->
+        <form class="form" action="#" method="post" novalidate>
+          <h4 class="form-title">CADASTRO: NOVA RECOMENDAÇÃO</h4>
+
+          <div class="form-fields">
+            <p class="form-subtitle">Seus dados:</p>
+
+            <div class="form-field">
+              <label for="recommender-name">Nome Completo:</label>
+              <input class="text-input" id="recommender-name" name="recommender-name" type="text" readonly>
+            </div>
+
+            <div class="form-field">
+              <label for="benefited-company">Empresa Beneficiada:</label>
+              <input class="text-input" id="benefited-company" name="benefited-company" type="text" readonly>
+            </div>
+
+            <hr class="form-divider">
+
+            <p class="form-subtitle">Dados da empresa para a qual você nos recomendou:</p>
+
+            <div class="form-field">
+              <label for="recommended-company">Nome da Empresa:</label>
+              <input class="text-input" id="recommended-company" name="recommended-company" type="text" required>
+            </div>
+
+            <div class="form-field">
+              <label for="recommended-professional">Nome do Profissional Contatado:</label>
+              <input class="text-input" id="recommended-professional" name="recommended-professional" type="text" required>
+            </div>
+
+            <div class="form-field">
+              <label for="recommended-whatsapp">WhatsApp do Profissional Contatado:</label>
+              <input class="text-input" id="recommended-whatsapp" name="recommended-whatsapp" type="tel" inputmode="tel" maxlength="20" required>
+            </div>
+
+            <button class="submit-button" type="submit">CADASTRAR</button>
+          </div>
+
+          <div class="form-success">
+            <p>Recomendação registrada com sucesso!</p>
+            <button class="new-recommendation-button" type="button">REGISTRAR NOVA RECOMENDAÇÃO</button>
+          </div>
+        </form>
+
+        <p class="content-text">Ao recebermos o formulário, nós entraremos em contato com o profissional para quem você nos recomendou.</p>
+
+        <h3 class="content-title">LINKS ÚTEIS</h3>
+        <p class="content-text">Para você compartilhar com os profissionais contatados:</p>
+        <ul class="content-list">
+          <li><strong>Instagram da Machado</strong> - <a href="https://www.instagram.com/machado.gestao/" target="_blank" rel="noopener">https://www.instagram.com/machado.gestao/</a></li>
+          <li><strong>Explicação: Solução em Método Gerencial:</strong> - <a href="https://machadogestao.com/" target="_blank" rel="noopener">https://machadogestao.com/</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <img class="sphere" src="/conecta/img/ESFERA.jpg" alt="" draggable="false">
+
+    <p class="footer-note">Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</p>
+  </main>
 </body>
 
 </html>
