@@ -87,7 +87,8 @@ open threads, next steps) so the new one starts oriented.
 <!-- REPO SPECIFICS — sistemas only                            -->
 <!-- ========================================================= -->
 ## Legacy folders — don't touch
-Every folder in this repo **except `formulario` and `validação`** is legacy:
+Every folder in this repo **except `formulario`, `validação` and `conecta`**
+is legacy:
 built in an older style, **running in production and business-critical**. Don't
 edit or restyle them unless I explicitly ask; if I do, match their existing
 style — never impose the conventions below. `formulario`'s only tie to a legacy
@@ -102,7 +103,23 @@ identifiers / Portuguese visible text, HTML↔CSS↔JS kept in sync). Pairs with
 thin backend lookup endpoint that returns only a public-safe verdict
 (valid + holder name + score), never private data (email, CPF, address).
 
-## formulario — the only new-style folder
+## conecta — new-style (fully editable)
+Public page of the Machado Conecta referral program: employees of client
+companies open a personal link and submit recommendations. Built to the same
+conventions as `formulario` below. Specifics:
+- The personal link carries URL params `ncr` (recommender full name) and `eb`
+  (benefited company); `main.js` fills the read-only fields from them — no
+  fetch on load. Missing params hide the form and show the invalid-link notice.
+- Accordion: exactly one section open at a time; the open section shows only
+  its content (its header row is hidden). First visit opens SOBRE O PROGRAMA;
+  later visits open COMO NOS RECOMENDAR (`localStorage` flag
+  `conecta-returning-visitor`).
+- **Responsive, no device gate** — unlike `formulario`, participants open
+  their links on phones. Keep it working at mobile widths.
+- Backend contract: POST `/conecta/processa-recomendacao`;
+  `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes.
+
+## formulario — new-style, conventions reference
 A single-page form (`index.html` + `style.css` + `main.js`) where a client
 company submits its initial information to Machado. **Visible text is Brazilian
 Portuguese; code identifiers are English.** Preserve the wine/grey/green visual
