@@ -256,14 +256,23 @@ button {
 }
 
 .submit-button[disabled] {
-  cursor: progress;
   opacity: 0.7;
+}
+
+.new-recommendation-button {
+  background-color: var(--color-official-machado-wine);
+}
+
+body.is-submitting,
+body.is-submitting * {
+  cursor: wait !important;
 }
 
 .form-success {
   display: none;
 }
 
+.form--submitted .form-title,
 .form--submitted .form-fields {
   display: none;
 }
@@ -321,5 +330,9 @@ button {
 
   .form {
     padding: var(--space-md) var(--space-sm);
+  }
+
+  .footer-note {
+    margin-bottom: var(--space-xs);
   }
 }
