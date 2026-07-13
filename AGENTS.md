@@ -55,7 +55,12 @@ open threads, next steps) so the new one starts oriented.
   local preview (serve the frontend, drive it in a browser). Before running
   anything, map what it touches: never exercise paths that reach production —
   Graph API, live spreadsheets, real e-mail — or anything else with side
-  effects beyond this machine, without my explicit OK. I still own final
+  effects beyond this machine, without my explicit OK. Standing exception:
+  **read-only** Graph reads of our workbooks are pre-approved — always verify
+  a sheet's real schema (columns, table GUID, AUXILIAR-style lists) by reading
+  it before writing endpoint code against it; writes and e-mails stay gated.
+  When the task wraps, stop any local preview/stub servers you started so
+  their ports (e.g. 3000) are free for my own runs. I still own final
   behavioural and visual testing.
 
 ### Git — you commit, I publish
