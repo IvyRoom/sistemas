@@ -88,11 +88,19 @@ open threads, next steps) so the new one starts oriented.
 <!-- ========================================================= -->
 ## Legacy folders — don't touch
 Every folder in this repo **except `formulario`, `validação` and `conecta`**
-is legacy:
-built in an older style, **running in production and business-critical**. Don't
+is legacy: built in an older style, **running in production and
+business-critical**. Don't
 edit or restyle them unless I explicitly ask; if I do, match their existing
 style — never impose the conventions below. `formulario`'s only tie to a legacy
 folder is a redirect into `plataforma_v2`.
+
+## Error codes (Erro_XXX)
+The canonical registry lives in `backend/AGENTS.md` (moved out of the old
+dictionary at the top of `plataforma_v2/login/main.js`). Frontends own the
+user-facing messages for the codes they consume (`SUBMIT_ERROR_MESSAGES` in
+`formulario/main.js` and `conecta/main.js`; inline strings in legacy folders).
+`Erro_000` (network fallback) and `Erro_006` (FaceLivenessDetector failure)
+are emitted by the frontends themselves, never by the backend.
 
 ## validação — new-style, full rebuild (fully editable)
 Public page where an external visitor checks whether a client's certificate is
@@ -118,6 +126,10 @@ conventions as `formulario` below. Specifics:
   their links on phones. Keep it working at mobile widths.
 - Backend contract: POST `/conecta/processa-recomendacao`;
   `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes.
+- The WhatsApp field is masked to `+XX XX XXXXX-XXXX` (`maskWhatsapp` /
+  `isCompleteWhatsapp` in `main.js`); the backend enforces the same pattern.
+- Tests: run `node .claude/tests/conecta.test.js` after touching `main.js`;
+  extend it when adding pure logic.
 
 ## formulario — new-style, conventions reference
 A single-page form (`index.html` + `style.css` + `main.js`) where a client
