@@ -131,7 +131,8 @@ conventions as `formulario` below. Specifics:
   their links on phones. Keep it working at mobile widths.
 - Backend contract: POST `/conecta/processa-recomendacao`;
   `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes.
-- The WhatsApp field is masked to `+XX XX XXXXX-XXXX` (`maskWhatsapp` /
+- The WhatsApp field is masked to `+55 XX XXXXX-XXXX` — the +55 prefix is
+  hard-pinned, the user types only DDD + number (`maskWhatsapp` /
   `isCompleteWhatsapp` in `main.js`); the backend enforces the same pattern.
 - Tests: run `node .claude/tests/conecta.test.js` after touching `main.js`;
   extend it when adding pure logic.

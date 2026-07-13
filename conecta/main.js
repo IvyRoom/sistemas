@@ -19,8 +19,8 @@ const urlParams = new URLSearchParams(location.search);
 const recommenderFullName = (urlParams.get('ncr') || '').trim();
 const benefitedCompany = (urlParams.get('eb') || '').trim();
 
-const WHATSAPP_PATTERN = /^\+\d{2} \d{2} \d{5}-\d{4}$/;
-const WHATSAPP_FORMAT_MESSAGE = 'Informe o WhatsApp no formato +XX XX XXXXX-XXXX, incluindo o código do país e o DDD.';
+const WHATSAPP_PATTERN = /^\+55 \d{2} \d{5}-\d{4}$/;
+const WHATSAPP_FORMAT_MESSAGE = 'Informe o WhatsApp no formato +55 XX XXXXX-XXXX, incluindo o DDD.';
 
 const sections = Array.from(document.querySelectorAll('.accordion-section'));
 const aboutSection = document.getElementById('section-about');
@@ -55,13 +55,19 @@ function markVisit() {
   }
 }
 
+// Prefixo +55 fixo: o usuário digita apenas DDD + número; um "55" à frente só é
+// tratado como código do país quando os dígitos excedem DDD + número (evita engolir o DDD 55).
 function maskWhatsapp(value) {
-  const digits = value.replace(/\D/g, '').slice(0, 13);
+  let rest = value.trim();
+  if (rest.startsWith('+55')) rest = rest.slice(3);
+  else if (rest.startsWith('+')) rest = rest.slice(1);
+  let digits = rest.replace(/\D/g, '');
+  if (digits.startsWith('55') && digits.length > 11) digits = digits.slice(2);
+  digits = digits.slice(0, 11);
   if (digits === '') return '';
-  let masked = `+${digits.slice(0, 2)}`;
-  if (digits.length > 2) masked += ` ${digits.slice(2, 4)}`;
-  if (digits.length > 4) masked += ` ${digits.slice(4, 9)}`;
-  if (digits.length > 9) masked += `-${digits.slice(9)}`;
+  let masked = `+55 ${digits.slice(0, 2)}`;
+  if (digits.length > 2) masked += ` ${digits.slice(2, 7)}`;
+  if (digits.length > 7) masked += `-${digits.slice(7)}`;
   return masked;
 }
 
@@ -82,6 +88,7 @@ function collectFormData() {
 function setSubmitting(isSubmitting) {
   submitButton.disabled = isSubmitting;
   submitButton.setAttribute('aria-busy', String(isSubmitting));
+  document.body.classList.toggle('is-submitting', isSubmitting);
 }
 
 async function submitForm() {
