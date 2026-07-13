@@ -19,6 +19,9 @@ const urlParams = new URLSearchParams(location.search);
 const recommenderFullName = (urlParams.get('ncr') || '').trim();
 const benefitedCompany = (urlParams.get('eb') || '').trim();
 
+const WHATSAPP_PATTERN = /^\+\d{2} \d{2} \d{5}-\d{4}$/;
+const WHATSAPP_FORMAT_MESSAGE = 'Informe o WhatsApp no formato +XX XX XXXXX-XXXX, incluindo o código do país e o DDD.';
+
 const sections = Array.from(document.querySelectorAll('.accordion-section'));
 const aboutSection = document.getElementById('section-about');
 const recommendSection = document.getElementById('section-recommend');
@@ -26,6 +29,7 @@ const form = document.querySelector('.form');
 const invalidLinkNotice = document.querySelector('.invalid-link-notice');
 const submitButton = document.querySelector('.submit-button');
 const newRecommendationButton = document.querySelector('.new-recommendation-button');
+const whatsappInput = document.getElementById('recommended-whatsapp');
 
 function openSection(target) {
   sections.forEach((section) => {
@@ -49,6 +53,20 @@ function markVisit() {
   } catch (error) {
     /* armazenamento indisponível (ex.: navegação privada) — a página segue funcional */
   }
+}
+
+function maskWhatsapp(value) {
+  const digits = value.replace(/\D/g, '').slice(0, 13);
+  if (digits === '') return '';
+  let masked = `+${digits.slice(0, 2)}`;
+  if (digits.length > 2) masked += ` ${digits.slice(2, 4)}`;
+  if (digits.length > 4) masked += ` ${digits.slice(4, 9)}`;
+  if (digits.length > 9) masked += `-${digits.slice(9)}`;
+  return masked;
+}
+
+function isCompleteWhatsapp(value) {
+  return WHATSAPP_PATTERN.test(value);
 }
 
 function collectFormData() {
@@ -109,8 +127,14 @@ if (recommenderFullName && benefitedCompany) {
   invalidLinkNotice.hidden = false;
 }
 
+whatsappInput.addEventListener('input', () => {
+  whatsappInput.value = maskWhatsapp(whatsappInput.value);
+  whatsappInput.setCustomValidity('');
+});
+
 form.addEventListener('submit', (event) => {
   event.preventDefault();
+  whatsappInput.setCustomValidity(whatsappInput.value === '' || isCompleteWhatsapp(whatsappInput.value) ? '' : WHATSAPP_FORMAT_MESSAGE);
   if (!form.reportValidity()) return;
   submitForm();
 });
