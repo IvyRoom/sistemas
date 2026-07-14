@@ -172,7 +172,7 @@ button {
 }
 
 .copy-link-button {
-  --copy-button-size: calc(var(--space-xl) - var(--space-xs));
+  --copy-button-size: calc(var(--space-xl) - var(--space-sm));
 
   display: flex;
   align-items: center;
@@ -182,7 +182,7 @@ button {
   height: var(--copy-button-size);
   color: var(--color-official-machado-wine);
   background-color: var(--color-grey-field);
-  border: 1px solid var(--color-grey-border);
+  border: 1px solid var(--color-grey-readonly);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
