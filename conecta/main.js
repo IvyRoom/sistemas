@@ -40,6 +40,15 @@ function openSection(target) {
   });
 }
 
+function preferredScrollBehavior() {
+  return matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
+function scrollToSectionTop(section) {
+  const top = section.getBoundingClientRect().top + window.scrollY - 10;
+  window.scrollTo({ top: Math.max(top, 0), behavior: preferredScrollBehavior() });
+}
+
 function isReturningVisitor() {
   try {
     return localStorage.getItem(RETURNING_VISITOR_KEY) === '1';
@@ -106,7 +115,7 @@ async function submitForm() {
     if (!response.ok) throw { error: data.error };
     successCompanyName.textContent = formData.recommendedCompany;
     form.classList.add('form--submitted');
-    document.querySelector('.form-success').scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    document.querySelector('.form-success').scrollIntoView({ block: 'center', behavior: preferredScrollBehavior() });
   } catch (error) {
     console.error('Falha no envio da recomendação:', error);
     window.alert(SUBMIT_ERROR_MESSAGES[error && error.error] || SUBMIT_ERROR_FALLBACK);
@@ -118,7 +127,10 @@ async function submitForm() {
 }
 
 sections.forEach((section) => {
-  section.querySelector('.section-toggle').addEventListener('click', () => openSection(section));
+  section.querySelector('.section-toggle').addEventListener('click', () => {
+    openSection(section);
+    scrollToSectionTop(section);
+  });
 });
 
 openSection(isReturningVisitor() ? recommendSection : aboutSection);
