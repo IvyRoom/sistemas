@@ -159,6 +159,9 @@ button {
 .content-list a {
   color: inherit;
   overflow-wrap: anywhere;
+}
+
+.link-list li {
   -webkit-user-select: text;
   user-select: text;
 }
