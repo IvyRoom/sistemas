@@ -5,7 +5,7 @@
   --color-grey-paper: #dedede;
   --color-grey-band: #707070;
   --color-grey-border: #6a6a6a;
-  --color-grey-readonly: #b6b6b6;
+  --color-grey-muted: #b6b6b6;
   --color-grey-field: #e8e8e8;
   --color-green: #0aa15b;
 
@@ -182,7 +182,7 @@ button {
   height: var(--copy-button-size);
   color: var(--color-official-machado-wine);
   background-color: var(--color-grey-field);
-  border: 1px solid var(--color-grey-readonly);
+  border: 1px solid var(--color-grey-muted);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
@@ -285,7 +285,7 @@ button {
   padding-left: var(--space-sm);
   color: var(--color-grey-border);
   font-size: var(--font-size-input);
-  background-color: var(--color-grey-readonly);
+  background-color: var(--color-grey-muted);
   border: 1px solid var(--color-grey-border);
   border-radius: var(--radius-sm);
   cursor: not-allowed;
