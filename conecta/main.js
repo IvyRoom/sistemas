@@ -19,8 +19,8 @@ const urlParams = new URLSearchParams(location.search);
 const recommenderFullName = (urlParams.get('ncr') || '').trim();
 const benefitedCompany = (urlParams.get('eb') || '').trim();
 
-const WHATSAPP_PATTERN = /^\+55 \d{2} \d{5}-\d{4}$/;
-const WHATSAPP_FORMAT_MESSAGE = 'Informe o WhatsApp no formato +55 XX XXXXX-XXXX, incluindo o DDD.';
+const WHATSAPP_PATTERN = /^\+\d{2} \d{2} \d{5}-\d{4}$/;
+const WHATSAPP_FORMAT_MESSAGE = 'Informe o WhatsApp no formato +XX XX XXXXX-XXXX, incluindo o código do país e o DDD.';
 
 const sections = Array.from(document.querySelectorAll('.accordion-section'));
 const aboutSection = document.getElementById('section-about');
@@ -30,6 +30,7 @@ const invalidLinkNotice = document.querySelector('.invalid-link-notice');
 const submitButton = document.querySelector('.submit-button');
 const newRecommendationButton = document.querySelector('.new-recommendation-button');
 const whatsappInput = document.getElementById('recommended-whatsapp');
+const successCompanyName = document.querySelector('.success-company');
 
 function openSection(target) {
   sections.forEach((section) => {
@@ -55,19 +56,13 @@ function markVisit() {
   }
 }
 
-// Prefixo +55 fixo: o usuário digita apenas DDD + número; um "55" à frente só é
-// tratado como código do país quando os dígitos excedem DDD + número (evita engolir o DDD 55).
 function maskWhatsapp(value) {
-  let rest = value.trim();
-  if (rest.startsWith('+55')) rest = rest.slice(3);
-  else if (rest.startsWith('+')) rest = rest.slice(1);
-  let digits = rest.replace(/\D/g, '');
-  if (digits.startsWith('55') && digits.length > 11) digits = digits.slice(2);
-  digits = digits.slice(0, 11);
+  const digits = value.replace(/\D/g, '').slice(0, 13);
   if (digits === '') return '';
-  let masked = `+55 ${digits.slice(0, 2)}`;
-  if (digits.length > 2) masked += ` ${digits.slice(2, 7)}`;
-  if (digits.length > 7) masked += `-${digits.slice(7)}`;
+  let masked = `+${digits.slice(0, 2)}`;
+  if (digits.length > 2) masked += ` ${digits.slice(2, 4)}`;
+  if (digits.length > 4) masked += ` ${digits.slice(4, 9)}`;
+  if (digits.length > 9) masked += `-${digits.slice(9)}`;
   return masked;
 }
 
@@ -98,17 +93,20 @@ async function submitForm() {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), SUBMIT_TIMEOUT_MS);
+  const formData = collectFormData();
 
   try {
     const response = await fetch(SUBMIT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(collectFormData()),
+      body: JSON.stringify(formData),
       signal: controller.signal,
     });
     const data = await response.json();
     if (!response.ok) throw { error: data.error };
+    successCompanyName.textContent = formData.recommendedCompany;
     form.classList.add('form--submitted');
+    document.querySelector('.form-success').scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   } catch (error) {
     console.error('Falha no envio da recomendação:', error);
     window.alert(SUBMIT_ERROR_MESSAGES[error && error.error] || SUBMIT_ERROR_FALLBACK);

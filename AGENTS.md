@@ -131,9 +131,10 @@ conventions as `formulario` below. Specifics:
   their links on phones. Keep it working at mobile widths.
 - Backend contract: POST `/conecta/processa-recomendacao`;
   `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes.
-- The WhatsApp field is masked to `+55 XX XXXXX-XXXX` — the +55 prefix is
-  hard-pinned, the user types only DDD + number (`maskWhatsapp` /
+- The WhatsApp field is masked to `+XX XX XXXXX-XXXX` (`maskWhatsapp` /
   `isCompleteWhatsapp` in `main.js`); the backend enforces the same pattern.
+  A +55 hard-pin was tried and reverted — users instinctively typed 55 first
+  and had to backspace; asking for the full number is clearer.
 - Tests: run `node .claude/tests/conecta.test.js` after touching `main.js`;
   extend it when adding pure logic.
 
