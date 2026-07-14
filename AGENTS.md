@@ -8,8 +8,8 @@ Multi-project frontend. Deploys to an Azure Static Web App via CI/CD on `main`.
 ## Working agreement — KEEP IN SYNC across repos
 > This section is mirrored **verbatim** in `sistemas/AGENTS.md` and
 > `backend/AGENTS.md`. If it changes in one, make the identical change in the
-> other in the same edit. The agent can access both repos and edits both
-> together, then flags each for its own commit.
+> other in the same edit. The agent can access both repos, edit both together,
+> and commit each repo separately.
 
 ### Who you're working with
 An experienced engineer who holds the full product context and stays in control
@@ -62,17 +62,15 @@ open threads, next steps) so the new one starts oriented.
   When the task wraps, stop any local preview/stub servers you started so
   their ports (e.g. 3000) are free for my own runs. For interaction features,
   verify the human experience, not only DOM state: where the viewport lands
-  after a click, what gains focus, whether text people need to copy is
-  actually selectable — at desktop and mobile widths. I still own final
-  behavioural and visual testing.
-- **Approved prompts feed the allowlist.** The permission allowlist lives
-  outside the repos, in the workspace-level `.claude/settings.json` (the
-  folder that contains both repos, next to `launch.json`). Whenever a command
-  prompts and I approve it, generalize the rule behind that approval (a
-  prefix pattern, not the literal one-off string) and add it to that file in
-  the same session. Never allowlist what the deny floor forbids (push /
-  rebase / amend / hard reset) or anything with side effects beyond this
-  machine.
+  after a click, what gains focus, and whether content people need to copy can
+  actually be copied (through selection or a copy control, including success
+  feedback and a usable failure fallback) — at desktop and mobile widths. I
+  still own final behavioural and visual testing.
+- **Keep permission approvals agent-specific.** When a command prompts and I
+  approve it, prefer a reusable, narrowly scoped rule in the active agent's
+  own permission system when supported. Never allowlist what the deny floor
+  forbids (push / rebase / amend / hard reset) or anything with side effects
+  beyond this machine.
 
 ### Git — you commit, I publish
 - **You make the commits** (`git add` + `git commit`) on the current feature
@@ -93,9 +91,9 @@ open threads, next steps) so the new one starts oriented.
   with no branch yet: create and name it yourself — no need to ask — then tell me.
 - Conventional Commits: `feat | fix | refactor | style | docs | chore`;
   imperative summary ≤ ~50 chars; body explains *why* when non-obvious. End
-  every commit with a `Co-Authored-By:` trailer naming the model that wrote it
-  (e.g. `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`) — a footer
-  line after a blank line, never on the summary.
+  every commit with a `Co-Authored-By:` trailer naming the agent/model that
+  wrote it, using the matching provider identity — a footer line after a blank
+  line, never on the summary.
 - Branches are workspaces; merging to `main` deploys. Nothing's "ready" until I
   say so.
 
@@ -140,13 +138,16 @@ conventions as `formulario` below. Specifics:
   `conecta-returning-visitor`).
 - **Responsive, no device gate** — unlike `formulario`, participants open
   their links on phones. Keep it working at mobile widths.
+- Useful-link text is intentionally non-selectable. Each link has a copy-icon
+  control that writes the exact URL, confirms success, and falls back to a
+  manual-copy prompt when the Clipboard API is unavailable.
 - Backend contract: POST `/conecta/processa-recomendacao`;
   `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes.
 - The WhatsApp field is masked to `+XX XX XXXXX-XXXX` (`maskWhatsapp` /
   `isCompleteWhatsapp` in `main.js`); the backend enforces the same pattern.
   A +55 hard-pin was tried and reverted — users instinctively typed 55 first
   and had to backspace; asking for the full number is clearer.
-- Tests: run `node .claude/tests/conecta.test.js` after touching `main.js`;
+- Tests: run `node .agents/tests/conecta.test.js` after touching `main.js`;
   extend it when adding pure logic.
 
 ## formulario — new-style, conventions reference
@@ -160,9 +161,9 @@ contract); flag any mismatch you notice.
 Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
 (behaviour: validation, participant cloning, same-address copy, device gate).
 
-Tests live outside the deployed folders: `.claude/tests/main.test.js` is a
+Tests live in the repository support folder: `.agents/tests/formulario.test.js` is a
 Node harness over `main.js`'s pure helpers (masks, CPF/CNPJ validators,
-normalizers). Run `node .claude/tests/main.test.js` after touching `main.js`;
+normalizers). Run `node .agents/tests/formulario.test.js` after touching `main.js`;
 extend it when adding pure logic. It loads the real `main.js` with a stubbed
 DOM, so tested logic is never duplicated.
 

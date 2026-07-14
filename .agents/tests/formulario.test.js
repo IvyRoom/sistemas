@@ -1,6 +1,6 @@
 'use strict';
 
-// Node harness for formulario/main.js's pure helpers. Run: node .claude/tests/main.test.js
+// Node harness for formulario/main.js's pure helpers. Run: node .agents/tests/formulario.test.js
 // Loads the real main.js in a stubbed DOM so the logic under test is never duplicated.
 
 const fs = require('node:fs');
