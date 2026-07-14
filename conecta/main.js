@@ -5,6 +5,7 @@ const SUBMIT_ENDPOINT = location.hostname === 'localhost' || location.hostname =
   : 'https://plataforma-backend-v3.azurewebsites.net/conecta/processa-recomendacao';
 const SUBMIT_TIMEOUT_MS = 60000;
 const RETURNING_VISITOR_KEY = 'conecta-returning-visitor';
+const COPY_FEEDBACK_MS = 2000;
 
 const SUBMIT_ERROR_FALLBACK = 'Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.';
 const SUBMIT_ERROR_MESSAGES = {
@@ -31,6 +32,9 @@ const submitButton = document.querySelector('.submit-button');
 const newRecommendationButton = document.querySelector('.new-recommendation-button');
 const whatsappInput = document.getElementById('recommended-whatsapp');
 const successCompanyName = document.querySelector('.success-company');
+const copyLinkButtons = Array.from(document.querySelectorAll('.copy-link-button'));
+const copyStatus = document.querySelector('.copy-status');
+let copyFeedbackTimeout;
 
 function openSection(target) {
   sections.forEach((section) => {
@@ -77,6 +81,28 @@ function maskWhatsapp(value) {
 
 function isCompleteWhatsapp(value) {
   return WHATSAPP_PATTERN.test(value);
+}
+
+async function copyLink(button) {
+  const url = button.closest('li').querySelector('a').href;
+
+  try {
+    if (!navigator.clipboard) throw new Error('Clipboard API unavailable');
+    await navigator.clipboard.writeText(url);
+  } catch (error) {
+    console.error('Falha ao copiar link:', error);
+    window.prompt('Não foi possível copiar automaticamente. Copie o link:', url);
+    return;
+  }
+
+  clearTimeout(copyFeedbackTimeout);
+  copyLinkButtons.forEach((copyButton) => copyButton.classList.remove('is-copied'));
+  button.classList.add('is-copied');
+  copyStatus.textContent = 'Link copiado!';
+  copyFeedbackTimeout = setTimeout(() => {
+    button.classList.remove('is-copied');
+    copyStatus.textContent = '';
+  }, COPY_FEEDBACK_MS);
 }
 
 function collectFormData() {
@@ -162,4 +188,8 @@ newRecommendationButton.addEventListener('click', () => {
   });
   form.classList.remove('form--submitted');
   document.getElementById('recommended-company').focus();
+});
+
+copyLinkButtons.forEach((button) => {
+  button.addEventListener('click', () => copyLink(button));
 });

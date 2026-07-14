@@ -8,6 +8,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 function fakeElement() {
+  const classes = new Set();
   return {
     value: '',
     hidden: false,
@@ -18,25 +19,38 @@ function fakeElement() {
     setCustomValidity() {},
     focus() {},
     querySelector: () => fakeElement(),
-    classList: { add() {}, remove() {}, toggle() {}, contains: () => false },
+    classList: {
+      add: (...names) => names.forEach((name) => classes.add(name)),
+      remove: (...names) => names.forEach((name) => classes.delete(name)),
+      toggle: (name, force) => force ? classes.add(name) : classes.delete(name),
+      contains: (name) => classes.has(name),
+    },
   };
 }
 
+const copyStatus = fakeElement();
+const clipboardWrites = [];
+let promptArguments;
+let scheduledCallback;
 const sandbox = {
   location: { hostname: 'test', search: '' },
   localStorage: { getItem: () => null, setItem() {} },
   URLSearchParams,
+  navigator: { clipboard: { writeText: async (value) => clipboardWrites.push(value) } },
+  window: { prompt: (...args) => { promptArguments = args; } },
+  setTimeout: (callback) => { scheduledCallback = callback; return 1; },
+  clearTimeout() {},
   document: {
-    querySelector: () => fakeElement(),
+    querySelector: (selector) => selector === '.copy-status' ? copyStatus : fakeElement(),
     querySelectorAll: () => [],
     getElementById: () => fakeElement(),
   },
-  console,
+  console: { error() {} },
 };
 
 const context = vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'conecta', 'main.js'), 'utf8'), context);
-const { maskWhatsapp, isCompleteWhatsapp } = context;
+const { maskWhatsapp, isCompleteWhatsapp, copyLink } = context;
 
 const cases = [
   ['mask full number', maskWhatsapp('5541996799092'), '+55 41 99679-9092'],
@@ -54,11 +68,32 @@ const cases = [
   ['empty is invalid', isCompleteWhatsapp(''), false],
 ];
 
-let failed = 0;
-for (const [name, got, want] of cases) {
+function recordResult(name, got, want) {
   const ok = got === want;
-  if (!ok) failed++;
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${ok ? '' : `  (got ${JSON.stringify(got)}, want ${JSON.stringify(want)})`}`);
+  return ok ? 0 : 1;
 }
-console.log(failed ? `\n${failed} FAILED` : '\nall passed');
-process.exit(failed ? 1 : 0);
+
+(async () => {
+  let failed = 0;
+  for (const [name, got, want] of cases) failed += recordResult(name, got, want);
+
+  const copiedButton = fakeElement();
+  copiedButton.closest = () => ({ querySelector: () => ({ href: 'https://machadogestao.com/' }) });
+  await copyLink(copiedButton);
+  failed += recordResult('copy writes exact URL', clipboardWrites[0], 'https://machadogestao.com/');
+  failed += recordResult('copy shows success icon', copiedButton.classList.contains('is-copied'), true);
+  failed += recordResult('copy announces success', copyStatus.textContent, 'Link copiado!');
+  scheduledCallback();
+  failed += recordResult('copy feedback resets', copiedButton.classList.contains('is-copied'), false);
+
+  sandbox.navigator.clipboard.writeText = async () => { throw new Error('denied'); };
+  const fallbackButton = fakeElement();
+  fallbackButton.closest = () => ({ querySelector: () => ({ href: 'https://www.instagram.com/machado.gestao/' }) });
+  await copyLink(fallbackButton);
+  failed += recordResult('copy failure opens manual fallback', promptArguments[1], 'https://www.instagram.com/machado.gestao/');
+  failed += recordResult('copy failure does not show success', fallbackButton.classList.contains('is-copied'), false);
+
+  console.log(failed ? `\n${failed} FAILED` : '\nall passed');
+  process.exit(failed ? 1 : 0);
+})();
