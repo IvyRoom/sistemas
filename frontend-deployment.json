@@ -103,7 +103,7 @@
       "id": "conecta-referral-form",
       "mappings": [
         {
-          "source": "conecta",
+          "source": "apps/conecta/referral-form",
           "output": "conecta"
         }
       ],

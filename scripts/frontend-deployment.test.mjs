@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  assertReadmeContract,
   extractCssReferences,
   extractHtmlReferences,
   publicDownloads,
@@ -20,6 +21,18 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.equal(publicEntries(manifest).length, 13);
   assert.equal(publicDownloads(manifest).length, 3);
   assert.equal(validation.files.length, 227);
+  assert.deepEqual(
+    validation.files.find((file) => file.output === "conecta/index.html"),
+    {
+      applicationId: "conecta-referral-form",
+      source: "apps/conecta/referral-form/index.html",
+      output: "conecta/index.html"
+    }
+  );
+  assert.deepEqual(
+    await assertReadmeContract(manifest),
+    { entries: 13, downloads: 3 }
+  );
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)

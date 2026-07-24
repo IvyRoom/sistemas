@@ -521,6 +521,18 @@ function contractMap(contracts) {
   );
 }
 
+function sourceContracts(contracts, mappedFiles) {
+  const sourceByOutput = new Map(
+    mappedFiles.map((file) => [file.output, file.source])
+  );
+
+  return contracts.map((contract) => {
+    const source = sourceByOutput.get(contract.file);
+    invariant(source, `Public contract has no mapped source file: ${contract.file}`);
+    return { ...contract, file: source };
+  });
+}
+
 function assertContractMapsEqual(actual, expected, label) {
   invariant(actual.size === expected.size, `${label} count differs between README and manifest.`);
 
@@ -548,8 +560,9 @@ export async function assertReadmeContract(manifest) {
 
   const readmeEntries = parseReadmeContracts(entrySection, manifest.canonicalOrigin);
   const readmeDownloads = parseReadmeContracts(downloadSection, manifest.canonicalOrigin);
-  const manifestEntries = publicEntries(manifest);
-  const manifestDownloads = publicDownloads(manifest);
+  const validation = await validateDeploymentManifest(manifest);
+  const manifestEntries = sourceContracts(validation.entries, validation.files);
+  const manifestDownloads = sourceContracts(validation.downloads, validation.files);
 
   invariant(readmeEntries.length === 13, `README must document exactly 13 page routes, found ${readmeEntries.length}.`);
   invariant(readmeDownloads.length === 3, `README must document exactly 3 downloads, found ${readmeDownloads.length}.`);
