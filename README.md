@@ -1,11 +1,11 @@
 # sistemas
 
 Static, multi-project frontend for Machado | Método Gerencial para Empresas.
-Azure Static Web Apps publishes the repository root as one site: the main
-marketing page lives at the root, and the other frontends live in path-based
-directories beside it. There is no application-wide router or generated build
-directory; each page is served from its tracked HTML, CSS, JavaScript, and
-assets.
+The main marketing page lives at the root, and the other frontends live in
+path-based source directories beside it. GitHub Actions generates an allowlisted
+`dist/` tree from those sources, and Azure Static Web Apps publishes only that
+tree. There is no application-wide router; public paths are independent from
+source locations and remain defined by the deployment manifest.
 
 ## URL contract
 
@@ -97,16 +97,26 @@ README, while live-site links are canonical absolute URLs.
 ## Deployment
 
 The [Azure Static Web Apps workflow](.github/workflows/azure-static-web-apps-red-cliff-0b4173b0f.yml)
-deploys production from `main`. It uploads `/` as already-built static content;
-there is no API directory or separate output directory.
+deploys production from `main`. The machine-readable
+[frontend deployment manifest](frontend-deployment.json) maps stable
+application identities and current source locations to public `dist/` paths.
+The dependency-free scripts in [`scripts/`](scripts/) recreate only the ignored
+repository-local `dist/` directory, copy mapped tracked files, and validate the
+route contract, references, file set, bytes, repeatability, and expected `404`
+responses.
 
-- A non-filtered push to `main` uploads the current repository content to the
-  production Static Web App.
+- A non-filtered push to `main` builds and validates `dist/`, retains that exact
+  tree as a GitHub Actions artifact, and deploys the same tree with Azure-side
+  application building disabled.
 - Markdown-only pushes are ignored, as are changes limited to `.agents/` or
   `.github/dependabot.yml`.
 - Pull requests targeting `main` create or update temporary Azure preview
-  deployments, except Dependabot pull requests.
+  deployments, except Dependabot pull requests, and validate every documented
+  page and download against the preview.
 - Closing or merging a non-Dependabot pull request removes its preview.
+- Repository-only material such as `AGENTS.md`, `README.md`, `.agents/`,
+  `.github/`, `.git/`, the manifest, and the build scripts is not emitted to
+  `dist/` and is not published.
 
 The repository has no root-level `staticwebapp.config.json`, `routes.json`, or
 `CNAME`. Routes come from the directory entry points listed above; DNS, custom
