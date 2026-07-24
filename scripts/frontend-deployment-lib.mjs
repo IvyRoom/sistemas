@@ -1,0 +1,879 @@
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { createServer } from "node:http";
+import {
+  dirname,
+  isAbsolute,
+  posix,
+  relative,
+  resolve,
+  sep
+} from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  copyFile,
+  lstat,
+  mkdir,
+  readFile,
+  readdir,
+  rm
+} from "node:fs/promises";
+
+const scriptDirectory = dirname(fileURLToPath(import.meta.url));
+const localOrigin = "https://frontend-artifact.invalid";
+
+export const repositoryRoot = resolve(scriptDirectory, "..");
+export const distRoot = resolve(repositoryRoot, "dist");
+export const manifestPath = resolve(repositoryRoot, "frontend-deployment.json");
+
+function comparePaths(left, right) {
+  if (left < right) {
+    return -1;
+  }
+
+  if (left > right) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function invariant(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function toLocalPath(relativePath) {
+  return resolve(repositoryRoot, ...relativePath.split("/"));
+}
+
+function isInside(root, candidate) {
+  const pathFromRoot = relative(root, candidate);
+  return pathFromRoot === ""
+    || (!pathFromRoot.startsWith(`..${sep}`)
+      && pathFromRoot !== ".."
+      && !isAbsolute(pathFromRoot));
+}
+
+function assertSafeRelativePath(value, label) {
+  invariant(typeof value === "string" && value.length > 0, `${label} must be a non-empty string.`);
+  invariant(!value.includes("\\"), `${label} must use forward slashes: ${value}`);
+  invariant(!value.startsWith("/"), `${label} must be repository-relative: ${value}`);
+  invariant(!value.endsWith("/"), `${label} must not end with a slash: ${value}`);
+  invariant(posix.normalize(value) === value, `${label} is not normalized: ${value}`);
+
+  const segments = value.split("/");
+  invariant(
+    segments.every((segment) => segment !== "" && segment !== "." && segment !== ".."),
+    `${label} contains an unsafe segment: ${value}`
+  );
+
+  invariant(
+    isInside(repositoryRoot, toLocalPath(value)),
+    `${label} escapes the repository: ${value}`
+  );
+}
+
+function normalizedCollisionKey(value) {
+  return value.normalize("NFC").toLowerCase();
+}
+
+function normalizePublicPath(value, label, canonicalOrigin) {
+  invariant(typeof value === "string" && value.startsWith("/"), `${label} must start with "/": ${value}`);
+  invariant(!value.includes("\\"), `${label} must use URL separators: ${value}`);
+  invariant(!value.includes("?") && !value.includes("#"), `${label} must not contain a query or fragment: ${value}`);
+
+  const parsed = new URL(value, canonicalOrigin);
+  const normalizedOrigin = new URL(canonicalOrigin).origin;
+  invariant(parsed.origin === normalizedOrigin, `${label} must stay on the canonical origin: ${value}`);
+
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(parsed.pathname).normalize("NFC");
+  } catch {
+    throw new Error(`${label} contains malformed URL encoding: ${value}`);
+  }
+
+  invariant(
+    decodedPath === value.normalize("NFC"),
+    `${label} must be a decoded, normalized public path: ${value}`
+  );
+  invariant(posix.normalize(decodedPath) === decodedPath, `${label} is not normalized: ${value}`);
+  return decodedPath;
+}
+
+function isCoveredByMapping(file, mapping) {
+  if (mapping.sourceType === "file") {
+    return file === mapping.output;
+  }
+
+  return file.startsWith(`${mapping.output}/`);
+}
+
+function gitTrackedFiles(source) {
+  const output = execFileSync(
+    "git",
+    ["ls-files", "--cached", "-z", "--", source],
+    {
+      cwd: repositoryRoot,
+      encoding: "buffer",
+      windowsHide: true
+    }
+  );
+
+  return output
+    .toString("utf8")
+    .split("\0")
+    .filter(Boolean);
+}
+
+async function inspectMapping(applicationId, mapping, mappingIndex) {
+  const label = `applications.${applicationId}.mappings[${mappingIndex}]`;
+  invariant(isPlainObject(mapping), `${label} must be an object.`);
+  assertSafeRelativePath(mapping.source, `${label}.source`);
+  assertSafeRelativePath(mapping.output, `${label}.output`);
+
+  const sourcePath = toLocalPath(mapping.source);
+  let sourceStats;
+  try {
+    sourceStats = await lstat(sourcePath);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new Error(`${label}.source does not exist: ${mapping.source}`);
+    }
+    throw error;
+  }
+
+  invariant(!sourceStats.isSymbolicLink(), `${label}.source must not be a symbolic link: ${mapping.source}`);
+  invariant(
+    sourceStats.isFile() || sourceStats.isDirectory(),
+    `${label}.source must be a regular file or directory: ${mapping.source}`
+  );
+
+  return {
+    applicationId,
+    source: mapping.source,
+    output: mapping.output,
+    sourceType: sourceStats.isFile() ? "file" : "directory"
+  };
+}
+
+export async function readDeploymentManifest() {
+  const contents = await readFile(manifestPath, "utf8");
+  let manifest;
+
+  try {
+    manifest = JSON.parse(contents);
+  } catch (error) {
+    throw new Error(`frontend-deployment.json is not valid JSON: ${error.message}`);
+  }
+
+  return manifest;
+}
+
+export function publicEntries(manifest) {
+  return manifest.applications.flatMap((application) => application.publicEntries);
+}
+
+export function publicDownloads(manifest) {
+  return manifest.applications.flatMap((application) => application.publicDownloads);
+}
+
+export async function validateDeploymentManifest(manifest) {
+  invariant(isPlainObject(manifest), "Deployment manifest must be an object.");
+  invariant(manifest.schemaVersion === 1, "Deployment manifest schemaVersion must be 1.");
+  invariant(
+    manifest.canonicalOrigin === "https://machadogestao.com",
+    "Deployment manifest canonicalOrigin must remain https://machadogestao.com."
+  );
+  invariant(Array.isArray(manifest.applications) && manifest.applications.length > 0, "Deployment manifest must contain applications.");
+
+  const applicationIds = new Set();
+  const mappings = [];
+
+  for (const [applicationIndex, application] of manifest.applications.entries()) {
+    const applicationLabel = `applications[${applicationIndex}]`;
+    invariant(isPlainObject(application), `${applicationLabel} must be an object.`);
+    invariant(
+      typeof application.id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(application.id),
+      `${applicationLabel}.id must be a stable kebab-case identifier.`
+    );
+
+    const applicationKey = normalizedCollisionKey(application.id);
+    invariant(!applicationIds.has(applicationKey), `Duplicate application id: ${application.id}`);
+    applicationIds.add(applicationKey);
+
+    invariant(
+      Array.isArray(application.mappings) && application.mappings.length > 0,
+      `${applicationLabel}.mappings must contain at least one source-to-output mapping.`
+    );
+
+    for (const [mappingIndex, mapping] of application.mappings.entries()) {
+      mappings.push(await inspectMapping(application.id, mapping, mappingIndex));
+    }
+
+    invariant(Array.isArray(application.publicEntries), `${applicationLabel}.publicEntries must be an array.`);
+    invariant(Array.isArray(application.publicDownloads), `${applicationLabel}.publicDownloads must be an array.`);
+  }
+
+  for (let leftIndex = 0; leftIndex < mappings.length; leftIndex += 1) {
+    const left = normalizedCollisionKey(mappings[leftIndex].output);
+
+    for (let rightIndex = leftIndex + 1; rightIndex < mappings.length; rightIndex += 1) {
+      const right = normalizedCollisionKey(mappings[rightIndex].output);
+      invariant(
+        left !== right && !left.startsWith(`${right}/`) && !right.startsWith(`${left}/`),
+        `Overlapping output destinations: ${mappings[leftIndex].output} and ${mappings[rightIndex].output}`
+      );
+    }
+  }
+
+  const publicPathKeys = new Set();
+  const entries = [];
+  const downloads = [];
+
+  for (const application of manifest.applications) {
+    for (const [entryIndex, entry] of application.publicEntries.entries()) {
+      const label = `applications.${application.id}.publicEntries[${entryIndex}]`;
+      invariant(isPlainObject(entry), `${label} must be an object.`);
+      const publicPath = normalizePublicPath(entry.path, `${label}.path`, manifest.canonicalOrigin);
+      invariant(publicPath.endsWith("/"), `${label}.path must be a directory entry route: ${entry.path}`);
+      assertSafeRelativePath(entry.file, `${label}.file`);
+      invariant(
+        mappings.some((mapping) => isCoveredByMapping(entry.file, mapping)),
+        `${label}.file is not covered by an output mapping: ${entry.file}`
+      );
+
+      const pathKey = normalizedCollisionKey(publicPath);
+      invariant(!publicPathKeys.has(pathKey), `Duplicate public path: ${entry.path}`);
+      publicPathKeys.add(pathKey);
+      entries.push({ ...entry, applicationId: application.id });
+    }
+
+    for (const [downloadIndex, download] of application.publicDownloads.entries()) {
+      const label = `applications.${application.id}.publicDownloads[${downloadIndex}]`;
+      invariant(isPlainObject(download), `${label} must be an object.`);
+      const publicPath = normalizePublicPath(download.path, `${label}.path`, manifest.canonicalOrigin);
+      invariant(!publicPath.endsWith("/"), `${label}.path must identify a file: ${download.path}`);
+      assertSafeRelativePath(download.file, `${label}.file`);
+      invariant(
+        mappings.some((mapping) => isCoveredByMapping(download.file, mapping)),
+        `${label}.file is not covered by an output mapping: ${download.file}`
+      );
+
+      const pathKey = normalizedCollisionKey(publicPath);
+      invariant(!publicPathKeys.has(pathKey), `Duplicate public path: ${download.path}`);
+      publicPathKeys.add(pathKey);
+      downloads.push({ ...download, applicationId: application.id });
+    }
+  }
+
+  invariant(Array.isArray(manifest.notFoundPaths), "Deployment manifest notFoundPaths must be an array.");
+  invariant(Array.isArray(manifest.repositoryOnlyPaths), "Deployment manifest repositoryOnlyPaths must be an array.");
+
+  const negativePathKeys = new Set();
+  for (const [groupName, paths] of [
+    ["notFoundPaths", manifest.notFoundPaths],
+    ["repositoryOnlyPaths", manifest.repositoryOnlyPaths]
+  ]) {
+    for (const [pathIndex, publicPath] of paths.entries()) {
+      const normalizedPath = normalizePublicPath(
+        publicPath,
+        `${groupName}[${pathIndex}]`,
+        manifest.canonicalOrigin
+      );
+      const pathKey = normalizedCollisionKey(normalizedPath);
+      invariant(!publicPathKeys.has(pathKey), `${groupName} overlaps a public path: ${publicPath}`);
+      invariant(!negativePathKeys.has(pathKey), `Duplicate expected 404 path: ${publicPath}`);
+      negativePathKeys.add(pathKey);
+    }
+  }
+
+  const files = await collectMappedFiles(mappings);
+  const emittedFiles = new Set(files.map((file) => file.output));
+  for (const contract of [...entries, ...downloads]) {
+    invariant(
+      emittedFiles.has(contract.file),
+      `Public contract file is not a tracked emitted file: ${contract.file}`
+    );
+  }
+
+  return { mappings, files, entries, downloads };
+}
+
+export async function collectMappedFiles(mappings) {
+  const mappedFiles = [];
+  const outputKeys = new Map();
+
+  for (const mapping of mappings) {
+    const trackedFiles = gitTrackedFiles(mapping.source);
+    invariant(trackedFiles.length > 0, `Mapped source has no tracked files: ${mapping.source}`);
+
+    if (mapping.sourceType === "file") {
+      invariant(
+        trackedFiles.length === 1 && trackedFiles[0] === mapping.source,
+        `Mapped file source does not resolve exactly: ${mapping.source}`
+      );
+    }
+
+    for (const trackedFile of trackedFiles) {
+      invariant(
+        mapping.sourceType === "file"
+          ? trackedFile === mapping.source
+          : trackedFile.startsWith(`${mapping.source}/`),
+        `Git returned a file outside mapped source ${mapping.source}: ${trackedFile}`
+      );
+
+      const suffix = mapping.sourceType === "file"
+        ? ""
+        : trackedFile.slice(mapping.source.length + 1);
+      const output = mapping.sourceType === "file"
+        ? mapping.output
+        : posix.join(mapping.output, suffix);
+      const outputKey = normalizedCollisionKey(output);
+
+      invariant(
+        !outputKeys.has(outputKey),
+        `Multiple tracked sources emit the same output: ${outputKeys.get(outputKey)} and ${trackedFile}`
+      );
+      outputKeys.set(outputKey, trackedFile);
+
+      const sourceStats = await lstat(toLocalPath(trackedFile));
+      invariant(!sourceStats.isSymbolicLink(), `Tracked source must not be a symbolic link: ${trackedFile}`);
+      invariant(sourceStats.isFile(), `Tracked source must be a regular file: ${trackedFile}`);
+
+      mappedFiles.push({
+        applicationId: mapping.applicationId,
+        source: trackedFile,
+        output
+      });
+    }
+  }
+
+  return mappedFiles.sort((left, right) => comparePaths(left.output, right.output));
+}
+
+async function clearDist() {
+  invariant(distRoot === resolve(repositoryRoot, "dist"), "Refusing to clear an unexpected dist path.");
+
+  try {
+    const existingStats = await lstat(distRoot);
+    invariant(!existingStats.isSymbolicLink(), "Refusing to clear dist because it is a symbolic link.");
+    invariant(existingStats.isDirectory(), "Refusing to clear dist because it is not a directory.");
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+
+  await rm(distRoot, { force: true, recursive: true });
+  await mkdir(distRoot);
+}
+
+export async function listTreeFiles(root) {
+  const files = [];
+
+  async function visit(directory, relativeDirectory = "") {
+    const entries = await readdir(directory, { withFileTypes: true });
+    entries.sort((left, right) => comparePaths(left.name, right.name));
+
+    for (const entry of entries) {
+      const relativePath = relativeDirectory
+        ? posix.join(relativeDirectory, entry.name)
+        : entry.name;
+      const absolutePath = resolve(directory, entry.name);
+
+      invariant(!entry.isSymbolicLink(), `Generated tree contains a symbolic link: ${relativePath}`);
+
+      if (entry.isDirectory()) {
+        await visit(absolutePath, relativePath);
+      } else {
+        invariant(entry.isFile(), `Generated tree contains a non-file entry: ${relativePath}`);
+        files.push(relativePath);
+      }
+    }
+  }
+
+  await visit(root);
+  return files.sort(comparePaths);
+}
+
+export async function treeDigest(root, files = null) {
+  const treeFiles = files ?? await listTreeFiles(root);
+  const hash = createHash("sha256");
+  let bytes = 0;
+
+  for (const file of treeFiles) {
+    const contents = await readFile(resolve(root, ...file.split("/")));
+    const pathBytes = Buffer.from(file, "utf8");
+    hash.update(Buffer.from(`${pathBytes.length}:`, "utf8"));
+    hash.update(pathBytes);
+    hash.update(Buffer.from(`:${contents.length}:`, "utf8"));
+    hash.update(contents);
+    bytes += contents.length;
+  }
+
+  return {
+    algorithm: "sha256",
+    digest: hash.digest("hex"),
+    files: treeFiles.length,
+    bytes
+  };
+}
+
+export async function buildDist(manifest = null) {
+  const deploymentManifest = manifest ?? await readDeploymentManifest();
+  const validation = await validateDeploymentManifest(deploymentManifest);
+  await clearDist();
+
+  for (const file of validation.files) {
+    const outputPath = resolve(distRoot, ...file.output.split("/"));
+    invariant(isInside(distRoot, outputPath), `Output path escapes dist: ${file.output}`);
+    await mkdir(dirname(outputPath), { recursive: true });
+    await copyFile(toLocalPath(file.source), outputPath);
+  }
+
+  const generatedFiles = await listTreeFiles(distRoot);
+  const expectedFiles = validation.files.map((file) => file.output);
+  invariant(
+    JSON.stringify(generatedFiles) === JSON.stringify(expectedFiles),
+    "Generated dist file set does not match the tracked manifest file set."
+  );
+
+  return {
+    manifest: deploymentManifest,
+    validation,
+    stats: await treeDigest(distRoot, generatedFiles)
+  };
+}
+
+export async function assertArtifactMatchesSources(manifest = null) {
+  const deploymentManifest = manifest ?? await readDeploymentManifest();
+  const validation = await validateDeploymentManifest(deploymentManifest);
+  const actualFiles = await listTreeFiles(distRoot);
+  const expectedFiles = validation.files.map((file) => file.output);
+
+  invariant(
+    JSON.stringify(actualFiles) === JSON.stringify(expectedFiles),
+    "dist contains a missing, extra, or differently cased path."
+  );
+
+  for (const file of validation.files) {
+    const sourceContents = await readFile(toLocalPath(file.source));
+    const outputContents = await readFile(resolve(distRoot, ...file.output.split("/")));
+    invariant(
+      sourceContents.equals(outputContents),
+      `Generated file differs from its source: ${file.source} -> dist/${file.output}`
+    );
+  }
+
+  return {
+    validation,
+    stats: await treeDigest(distRoot, actualFiles)
+  };
+}
+
+function markdownSection(markdown, startMarker, endMarker) {
+  const start = markdown.indexOf(startMarker);
+  invariant(start !== -1, `README is missing section marker: ${startMarker}`);
+  const end = markdown.indexOf(endMarker, start + startMarker.length);
+  invariant(end !== -1, `README is missing section boundary: ${endMarker}`);
+  return markdown.slice(start, end);
+}
+
+function parseReadmeContracts(section, canonicalOrigin) {
+  const contracts = [];
+
+  for (const line of section.split(/\r?\n/)) {
+    if (!line.startsWith("|")) {
+      continue;
+    }
+
+    const targets = [...line.matchAll(/\]\(([^)]+)\)/g)].map((match) => match[1]);
+    const canonicalIndex = targets.findIndex((target) => target.startsWith(canonicalOrigin));
+    if (canonicalIndex < 1) {
+      continue;
+    }
+
+    const sourceTarget = targets[canonicalIndex - 1];
+    const publicUrl = new URL(targets[canonicalIndex]);
+    invariant(publicUrl.origin === canonicalOrigin, `README uses an unexpected public origin: ${publicUrl.origin}`);
+
+    contracts.push({
+      file: decodeURIComponent(sourceTarget).normalize("NFC"),
+      path: decodeURIComponent(publicUrl.pathname).normalize("NFC")
+    });
+  }
+
+  return contracts;
+}
+
+function contractMap(contracts) {
+  return new Map(
+    contracts
+      .map((contract) => [contract.path, contract.file])
+      .sort(([left], [right]) => comparePaths(left, right))
+  );
+}
+
+function assertContractMapsEqual(actual, expected, label) {
+  invariant(actual.size === expected.size, `${label} count differs between README and manifest.`);
+
+  for (const [publicPath, file] of expected) {
+    invariant(actual.has(publicPath), `${label} is missing from README: ${publicPath}`);
+    invariant(
+      actual.get(publicPath) === file,
+      `${label} file differs for ${publicPath}: ${actual.get(publicPath)} !== ${file}`
+    );
+  }
+}
+
+export async function assertReadmeContract(manifest) {
+  const readme = await readFile(resolve(repositoryRoot, "README.md"), "utf8");
+  const entrySection = markdownSection(
+    readme,
+    "## Frontend structure and public routes",
+    "These are URL entry points"
+  );
+  const downloadSection = markdownSection(
+    readme,
+    "The main site also exposes these public downloads:",
+    "Other files under project directories"
+  );
+
+  const readmeEntries = parseReadmeContracts(entrySection, manifest.canonicalOrigin);
+  const readmeDownloads = parseReadmeContracts(downloadSection, manifest.canonicalOrigin);
+  const manifestEntries = publicEntries(manifest);
+  const manifestDownloads = publicDownloads(manifest);
+
+  invariant(readmeEntries.length === 13, `README must document exactly 13 page routes, found ${readmeEntries.length}.`);
+  invariant(readmeDownloads.length === 3, `README must document exactly 3 downloads, found ${readmeDownloads.length}.`);
+  invariant(manifestEntries.length === 13, `Manifest must define exactly 13 page routes, found ${manifestEntries.length}.`);
+  invariant(manifestDownloads.length === 3, `Manifest must define exactly 3 downloads, found ${manifestDownloads.length}.`);
+
+  assertContractMapsEqual(
+    contractMap(readmeEntries),
+    contractMap(manifestEntries),
+    "Page route contract"
+  );
+  assertContractMapsEqual(
+    contractMap(readmeDownloads),
+    contractMap(manifestDownloads),
+    "Download contract"
+  );
+
+  return {
+    entries: manifestEntries.length,
+    downloads: manifestDownloads.length
+  };
+}
+
+export function extractHtmlReferences(html) {
+  const references = [];
+  const tagPattern = /<([A-Za-z][A-Za-z0-9:-]*)(?:\s[^<>]*?)?>/gs;
+
+  for (const tagMatch of html.matchAll(tagPattern)) {
+    const tag = tagMatch[1].toLowerCase();
+    const attributePattern = /\b(href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+
+    for (const attributeMatch of tagMatch[0].matchAll(attributePattern)) {
+      references.push({
+        tag,
+        attribute: attributeMatch[1].toLowerCase(),
+        value: attributeMatch[2] ?? attributeMatch[3] ?? attributeMatch[4]
+      });
+    }
+  }
+
+  return references;
+}
+
+export function extractCssReferences(css) {
+  const references = [];
+  const urlPattern = /url\(\s*(?:(["'])(.*?)\1|([^)]*?))\s*\)/gis;
+
+  for (const match of css.matchAll(urlPattern)) {
+    references.push((match[2] ?? match[3]).trim());
+  }
+
+  return references;
+}
+
+function localReferenceCandidates(value, baseUrl) {
+  const trimmedValue = value.trim();
+  if (trimmedValue.startsWith("#") || trimmedValue.startsWith("//")) {
+    return [];
+  }
+
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(trimmedValue)) {
+    return [];
+  }
+
+  const resolvedUrl = new URL(trimmedValue, baseUrl);
+  if (resolvedUrl.origin !== localOrigin) {
+    return [];
+  }
+
+  let decodedPath;
+  try {
+    decodedPath = decodeURIComponent(resolvedUrl.pathname).normalize("NFC");
+  } catch {
+    throw new Error(`Local reference contains malformed URL encoding: ${value}`);
+  }
+
+  const normalizedPath = posix.normalize(decodedPath);
+  invariant(
+    normalizedPath === decodedPath,
+    `Local reference path is not normalized: ${value}`
+  );
+
+  const relativePath = decodedPath.replace(/^\/+/, "");
+  if (relativePath === "") {
+    return ["index.html"];
+  }
+
+  if (decodedPath.endsWith("/")) {
+    return [posix.join(relativePath, "index.html")];
+  }
+
+  return [relativePath, posix.join(relativePath, "index.html")];
+}
+
+export async function assertLocalReferences() {
+  const artifactFiles = await listTreeFiles(distRoot);
+  const artifactFileSet = new Set(artifactFiles);
+  let htmlReferences = 0;
+  let cssReferences = 0;
+
+  for (const file of artifactFiles.filter((filePath) => filePath.toLowerCase().endsWith(".html"))) {
+    const html = await readFile(resolve(distRoot, ...file.split("/")), "utf8");
+    const references = extractHtmlReferences(html);
+    const documentUrl = new URL(`/${file}`, localOrigin);
+    const baseReference = references.find(
+      (reference) => reference.tag === "base" && reference.attribute === "href"
+    );
+    const baseUrl = baseReference
+      ? new URL(baseReference.value, documentUrl)
+      : documentUrl;
+
+    for (const reference of references) {
+      if (reference.tag === "base") {
+        continue;
+      }
+
+      const candidates = localReferenceCandidates(reference.value, baseUrl);
+      if (candidates.length === 0) {
+        continue;
+      }
+
+      htmlReferences += 1;
+      invariant(
+        candidates.some((candidate) => artifactFileSet.has(candidate)),
+        `Broken local HTML ${reference.attribute} in dist/${file}: ${reference.value}`
+      );
+    }
+  }
+
+  for (const file of artifactFiles.filter((filePath) => filePath.toLowerCase().endsWith(".css"))) {
+    const css = await readFile(resolve(distRoot, ...file.split("/")), "utf8");
+    const stylesheetUrl = new URL(`/${file}`, localOrigin);
+
+    for (const reference of extractCssReferences(css)) {
+      const candidates = localReferenceCandidates(reference, stylesheetUrl);
+      if (candidates.length === 0) {
+        continue;
+      }
+
+      cssReferences += 1;
+      invariant(
+        candidates.some((candidate) => artifactFileSet.has(candidate)),
+        `Broken local CSS url() in dist/${file}: ${reference}`
+      );
+    }
+  }
+
+  return { htmlReferences, cssReferences };
+}
+
+function contentType(file) {
+  const extension = posix.extname(file).toLowerCase();
+  return new Map([
+    [".css", "text/css; charset=utf-8"],
+    [".html", "text/html; charset=utf-8"],
+    [".ico", "image/x-icon"],
+    [".jpeg", "image/jpeg"],
+    [".jpg", "image/jpeg"],
+    [".js", "text/javascript; charset=utf-8"],
+    [".json", "application/json; charset=utf-8"],
+    [".pdf", "application/pdf"],
+    [".png", "image/png"],
+    [".svg", "image/svg+xml"],
+    [".webp", "image/webp"]
+  ]).get(extension) ?? "application/octet-stream";
+}
+
+export async function startDistServer() {
+  const artifactFiles = new Set(await listTreeFiles(distRoot));
+
+  const server = createServer(async (request, response) => {
+    try {
+      const requestUrl = new URL(request.url, "http://127.0.0.1");
+      let decodedPath;
+
+      try {
+        decodedPath = decodeURIComponent(requestUrl.pathname).normalize("NFC");
+      } catch {
+        response.writeHead(400);
+        response.end("Bad Request");
+        return;
+      }
+
+      const normalizedPath = posix.normalize(decodedPath);
+      if (normalizedPath !== decodedPath) {
+        response.writeHead(400);
+        response.end("Bad Request");
+        return;
+      }
+
+      const relativePath = decodedPath.replace(/^\/+/, "");
+      const candidates = relativePath === ""
+        ? ["index.html"]
+        : decodedPath.endsWith("/")
+          ? [posix.join(relativePath, "index.html")]
+          : [relativePath, posix.join(relativePath, "index.html")];
+      const file = candidates.find((candidate) => artifactFiles.has(candidate));
+
+      if (!file) {
+        response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+        response.end("Not Found");
+        return;
+      }
+
+      const contents = await readFile(resolve(distRoot, ...file.split("/")));
+      response.writeHead(200, {
+        "content-length": contents.length,
+        "content-type": contentType(file)
+      });
+      response.end(contents);
+    } catch {
+      response.writeHead(500);
+      response.end("Internal Server Error");
+    }
+  });
+
+  await new Promise((resolveListen, rejectListen) => {
+    server.once("error", rejectListen);
+    server.listen(0, "127.0.0.1", resolveListen);
+  });
+
+  const address = server.address();
+  invariant(address && typeof address === "object", "Local dist server did not expose an address.");
+
+  return {
+    baseUrl: `http://127.0.0.1:${address.port}`,
+    close: () => new Promise((resolveClose, rejectClose) => {
+      server.close((error) => error ? rejectClose(error) : resolveClose());
+    })
+  };
+}
+
+async function fetchWithoutRedirect(url) {
+  const abortController = new AbortController();
+  const timeout = setTimeout(() => abortController.abort(), 20000);
+
+  try {
+    const response = await fetch(url, {
+      redirect: "manual",
+      signal: abortController.signal
+    });
+
+    return {
+      bytes: Buffer.from(await response.arrayBuffer()),
+      location: response.headers.get("location"),
+      status: response.status
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function assertPublishedFile(baseUrl, contract, outputRoot) {
+  const requestUrl = new URL(contract.path, `${baseUrl}/`);
+  const expectedPath = contract.path.normalize("NFC");
+  const requestedPath = decodeURIComponent(requestUrl.pathname).normalize("NFC");
+  invariant(requestedPath === expectedPath, `Public path changed while constructing request: ${contract.path}`);
+
+  const response = await fetchWithoutRedirect(requestUrl);
+  invariant(
+    response.status === 200,
+    `Expected HTTP 200 for ${requestUrl.href}, received ${response.status}${response.location ? ` -> ${response.location}` : ""}.`
+  );
+  invariant(!response.location, `Unexpected redirect for ${requestUrl.href}: ${response.location}`);
+
+  const expectedBytes = await readFile(resolve(outputRoot, ...contract.file.split("/")));
+  invariant(
+    response.bytes.equals(expectedBytes),
+    `Published bytes differ from dist/${contract.file} at ${requestUrl.href}.`
+  );
+
+  return requestUrl;
+}
+
+export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRoot) {
+  const normalizedBaseUrl = new URL(baseUrl).origin;
+  const contracts = [...publicEntries(manifest), ...publicDownloads(manifest)];
+  let encodedAccentedPaths = 0;
+
+  for (const contract of contracts) {
+    const requestUrl = await assertPublishedFile(normalizedBaseUrl, contract, outputRoot);
+    if (/[^\x00-\x7F]/.test(contract.path)) {
+      invariant(
+        /%[0-9A-F]{2}/i.test(requestUrl.pathname),
+        `Accented public path was not URL-encoded: ${contract.path}`
+      );
+      encodedAccentedPaths += 1;
+    }
+  }
+
+  const conectaEntry = publicEntries(manifest).find((entry) => entry.path === "/conecta/");
+  invariant(conectaEntry, "Manifest is missing the Machado Conecta entry route.");
+  const conectaUrl = new URL(conectaEntry.path, `${normalizedBaseUrl}/`);
+  conectaUrl.searchParams.set("ncr", "Lucas Machado");
+  conectaUrl.searchParams.set("eb", "Empresa Beneficiária");
+  const conectaResponse = await fetchWithoutRedirect(conectaUrl);
+  invariant(
+    conectaResponse.status === 200,
+    `Expected HTTP 200 for encoded Conecta query URL, received ${conectaResponse.status}.`
+  );
+  invariant(!conectaResponse.location, `Unexpected redirect for encoded Conecta query URL: ${conectaResponse.location}`);
+  const conectaBytes = await readFile(resolve(outputRoot, ...conectaEntry.file.split("/")));
+  invariant(
+    conectaResponse.bytes.equals(conectaBytes),
+    "Published Conecta query route differs from its dist entry file."
+  );
+
+  const expectedNotFound = [...manifest.notFoundPaths, ...manifest.repositoryOnlyPaths];
+  for (const publicPath of expectedNotFound) {
+    const requestUrl = new URL(publicPath, `${normalizedBaseUrl}/`);
+    const response = await fetchWithoutRedirect(requestUrl);
+    invariant(
+      response.status === 404,
+      `Expected HTTP 404 for ${requestUrl.href}, received ${response.status}${response.location ? ` -> ${response.location}` : ""}.`
+    );
+    invariant(!response.location, `Unexpected redirect for expected 404 ${requestUrl.href}: ${response.location}`);
+  }
+
+  return {
+    publicFiles: contracts.length,
+    pageRoutes: publicEntries(manifest).length,
+    downloads: publicDownloads(manifest).length,
+    encodedAccentedPaths,
+    conectaQueryRoutes: 1,
+    notFoundPaths: expectedNotFound.length
+  };
+}

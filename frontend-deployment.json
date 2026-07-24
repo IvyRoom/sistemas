@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "canonicalOrigin": "https://machadogestao.com",
+  "applications": [
+    {
+      "id": "marketing-site",
+      "mappings": [
+        {
+          "source": "index.html",
+          "output": "index.html"
+        },
+        {
+          "source": "principal",
+          "output": "principal"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/",
+          "file": "index.html"
+        }
+      ],
+      "publicDownloads": [
+        {
+          "path": "/principal/pdf/EMENTA E SOFTWARES.pdf",
+          "file": "principal/pdf/EMENTA E SOFTWARES.pdf"
+        },
+        {
+          "path": "/principal/pdf/BIBLIOGRAFIA.pdf",
+          "file": "principal/pdf/BIBLIOGRAFIA.pdf"
+        },
+        {
+          "path": "/principal/pdf/CRONOGRAMA.pdf",
+          "file": "principal/pdf/CRONOGRAMA.pdf"
+        }
+      ]
+    },
+    {
+      "id": "quote-request",
+      "mappings": [
+        {
+          "source": "solicitação",
+          "output": "solicitação"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/solicitação/",
+          "file": "solicitação/index.html"
+        }
+      ],
+      "publicDownloads": []
+    },
+    {
+      "id": "quote-request-confirmation",
+      "mappings": [
+        {
+          "source": "confirmação",
+          "output": "confirmação"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/confirmação/",
+          "file": "confirmação/index.html"
+        }
+      ],
+      "publicDownloads": []
+    },
+    {
+      "id": "client-intake",
+      "mappings": [
+        {
+          "source": "formulario",
+          "output": "formulario"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/formulario/",
+          "file": "formulario/index.html"
+        }
+      ],
+      "publicDownloads": []
+    },
+    {
+      "id": "certificate-validation",
+      "mappings": [
+        {
+          "source": "validacao",
+          "output": "validacao"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/validacao/",
+          "file": "validacao/index.html"
+        }
+      ],
+      "publicDownloads": []
+    },
+    {
+      "id": "conecta-referral-form",
+      "mappings": [
+        {
+          "source": "conecta",
+          "output": "conecta"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/conecta/",
+          "file": "conecta/index.html"
+        }
+      ],
+      "publicDownloads": []
+    },
+    {
+      "id": "learning-platform",
+      "mappings": [
+        {
+          "source": "plataforma_v2",
+          "output": "plataforma_v2"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/plataforma_v2/aviso-dispositivo/",
+          "file": "plataforma_v2/aviso-dispositivo/index.html"
+        },
+        {
+          "path": "/plataforma_v2/aviso-navegador/",
+          "file": "plataforma_v2/aviso-navegador/index.html"
+        },
+        {
+          "path": "/plataforma_v2/avisos-iniciais/",
+          "file": "plataforma_v2/avisos-iniciais/index.html"
+        },
+        {
+          "path": "/plataforma_v2/cadastro/",
+          "file": "plataforma_v2/cadastro/index.html"
+        },
+        {
+          "path": "/plataforma_v2/estudo/",
+          "file": "plataforma_v2/estudo/index.html"
+        },
+        {
+          "path": "/plataforma_v2/login/",
+          "file": "plataforma_v2/login/index.html"
+        },
+        {
+          "path": "/plataforma_v2/statusreport/",
+          "file": "plataforma_v2/statusreport/index.html"
+        }
+      ],
+      "publicDownloads": []
+    }
+  ],
+  "notFoundPaths": [
+    "/route-contract-not-found/",
+    "/principal/",
+    "/plataforma_v2/"
+  ],
+  "repositoryOnlyPaths": [
+    "/AGENTS.md",
+    "/README.md",
+    "/.gitignore",
+    "/.agents/",
+    "/.github/",
+    "/.git/",
+    "/frontend-deployment.json",
+    "/scripts/"
+  ]
+}
