@@ -657,6 +657,137 @@ function localReferenceCandidates(value, baseUrl) {
   return [relativePath, posix.join(relativePath, "index.html")];
 }
 
+function compareResolvedSourcePreviewReference(
+  value,
+  outputBaseUrl,
+  sourceBaseUrl,
+  sourceByOutput
+) {
+  const outputCandidates = localReferenceCandidates(value, outputBaseUrl);
+  if (outputCandidates.length === 0) {
+    return null;
+  }
+
+  const output = outputCandidates.find((candidate) => sourceByOutput.has(candidate)) ?? null;
+  const expectedSource = output === null ? null : sourceByOutput.get(output);
+  const sourceCandidates = localReferenceCandidates(value, sourceBaseUrl);
+
+  return {
+    expectedSource,
+    matches: expectedSource !== null && sourceCandidates.includes(expectedSource),
+    output,
+    sourceCandidates
+  };
+}
+
+export function compareSourcePreviewReference(value, outputFile, sourceFile, mappedFiles) {
+  const sourceByOutput = new Map(
+    mappedFiles.map((file) => [file.output, file.source])
+  );
+
+  return compareResolvedSourcePreviewReference(
+    value,
+    new URL(`/${outputFile}`, localOrigin),
+    new URL(`/${sourceFile}`, localOrigin),
+    sourceByOutput
+  );
+}
+
+function assertSourcePreviewReference(result, label, value) {
+  if (result === null) {
+    return false;
+  }
+
+  invariant(
+    result.output !== null,
+    `Broken mapped asset ${label}: ${value}`
+  );
+  invariant(
+    result.matches,
+    [
+      `Broken source-preview asset ${label}: ${value}.`,
+      `dist/${result.output} maps to ${result.expectedSource},`,
+      `but repository-root preview resolves to ${result.sourceCandidates.join(" or ")}.`
+    ].join(" ")
+  );
+
+  return true;
+}
+
+function isHtmlAssetReference(reference) {
+  return reference.attribute === "src"
+    || (reference.tag === "link" && reference.attribute === "href");
+}
+
+export async function assertSourcePreviewReferences(manifest) {
+  const validation = await validateDeploymentManifest(manifest);
+  const sourceByOutput = new Map(
+    validation.files.map((file) => [file.output, file.source])
+  );
+  let htmlReferences = 0;
+  let cssReferences = 0;
+
+  for (const file of validation.files.filter(
+    (mappedFile) => mappedFile.source.toLowerCase().endsWith(".html")
+  )) {
+    const html = await readFile(toLocalPath(file.source), "utf8");
+    const references = extractHtmlReferences(html);
+    const outputDocumentUrl = new URL(`/${file.output}`, localOrigin);
+    const sourceDocumentUrl = new URL(`/${file.source}`, localOrigin);
+    const baseReference = references.find(
+      (reference) => reference.tag === "base" && reference.attribute === "href"
+    );
+    const outputBaseUrl = baseReference
+      ? new URL(baseReference.value, outputDocumentUrl)
+      : outputDocumentUrl;
+    const sourceBaseUrl = baseReference
+      ? new URL(baseReference.value, sourceDocumentUrl)
+      : sourceDocumentUrl;
+
+    for (const reference of references.filter(isHtmlAssetReference)) {
+      const result = compareResolvedSourcePreviewReference(
+        reference.value,
+        outputBaseUrl,
+        sourceBaseUrl,
+        sourceByOutput
+      );
+      if (assertSourcePreviewReference(
+        result,
+        `HTML ${reference.attribute} in ${file.source}`,
+        reference.value
+      )) {
+        htmlReferences += 1;
+      }
+    }
+  }
+
+  for (const file of validation.files.filter(
+    (mappedFile) => mappedFile.source.toLowerCase().endsWith(".css")
+  )) {
+    const css = await readFile(toLocalPath(file.source), "utf8");
+    const outputStylesheetUrl = new URL(`/${file.output}`, localOrigin);
+    const sourceStylesheetUrl = new URL(`/${file.source}`, localOrigin);
+
+    for (const reference of extractCssReferences(css)) {
+      const result = compareResolvedSourcePreviewReference(
+        reference,
+        outputStylesheetUrl,
+        sourceStylesheetUrl,
+        sourceByOutput
+      );
+      if (assertSourcePreviewReference(
+        result,
+        `CSS url() in ${file.source}`,
+        reference
+      )) {
+        cssReferences += 1;
+      }
+    }
+  }
+
+  return { htmlReferences, cssReferences };
+}
+
 export async function assertLocalReferences() {
   const artifactFiles = await listTreeFiles(distRoot);
   const artifactFileSet = new Set(artifactFiles);
@@ -853,7 +984,9 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
     }
   }
 
-  const conectaEntry = publicEntries(manifest).find((entry) => entry.path === "/conecta/");
+  const conectaEntry = publicEntries(manifest).find(
+    (entry) => entry.path === "/conecta/cadastro-recomendacoes/"
+  );
   invariant(conectaEntry, "Manifest is missing the Machado Conecta entry route.");
   const conectaUrl = new URL(conectaEntry.path, `${normalizedBaseUrl}/`);
   conectaUrl.searchParams.set("ncr", "Lucas Machado");

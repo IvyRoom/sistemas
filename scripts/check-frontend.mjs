@@ -4,6 +4,7 @@ import {
   assertArtifactMatchesSources,
   assertLocalReferences,
   assertReadmeContract,
+  assertSourcePreviewReferences,
   buildDist,
   distRoot,
   readDeploymentManifest,
@@ -43,6 +44,7 @@ if (firstDigest.digest !== repeatedBuild.stats.digest) {
 
 const finalArtifact = await assertArtifactMatchesSources(manifest);
 const readmeContract = await assertReadmeContract(manifest);
+const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
 const localReferences = await assertLocalReferences();
 const server = await startDistServer();
 let localRoutes;
@@ -60,6 +62,8 @@ console.log(
     `sha256:${finalArtifact.stats.digest}`,
     `${readmeContract.entries} page routes`,
     `${readmeContract.downloads} downloads`,
+    `${sourcePreviewReferences.htmlReferences} source-preview HTML assets`,
+    `${sourcePreviewReferences.cssReferences} source-preview CSS assets`,
     `${localReferences.htmlReferences} local HTML references`,
     `${localReferences.cssReferences} local CSS references`,
     `${localRoutes.encodedAccentedPaths} URL-encoded accented paths`,

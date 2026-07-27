@@ -31,7 +31,8 @@ while `/validacao/` is not.
 ## Frontend structure and public routes
 
 The following inventory is based on the repository's real `index.html` entry
-points. Each listed route returned HTTP `200` when verified on 2026-07-23.
+points. The deployment contract requires every listed route to return HTTP
+`200` without redirect.
 
 | Frontend | Repository entry point | Public route |
 | --- | --- | --- |
@@ -39,7 +40,7 @@ points. Each listed route returned HTTP `200` when verified on 2026-07-23.
 | Quote request | [solicitação/index.html](solicita%C3%A7%C3%A3o/index.html) | [`/solicitação/`](https://machadogestao.com/solicita%C3%A7%C3%A3o/) |
 | Quote-request confirmation | [confirmação/index.html](confirma%C3%A7%C3%A3o/index.html) | [`/confirmação/`](https://machadogestao.com/confirma%C3%A7%C3%A3o/) |
 | Client initial-information form | [formulario/index.html](formulario/index.html) | [`/formulario/`](https://machadogestao.com/formulario/) |
-| Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/`](https://machadogestao.com/conecta/) |
+| Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [validacao/index.html](validacao/index.html) | [`/validacao/`](https://machadogestao.com/validacao/) |
 | Platform device warning | [plataforma_v2/aviso-dispositivo/index.html](plataforma_v2/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
 | Platform browser warning | [plataforma_v2/aviso-navegador/index.html](plataforma_v2/aviso-navegador/index.html) | [`/plataforma_v2/aviso-navegador/`](https://machadogestao.com/plataforma_v2/aviso-navegador/) |
@@ -57,10 +58,10 @@ independent routes. There is no single-page-application fallback: those
 namespaces and unknown paths return `404` when no entry point exists.
 
 Machado Conecta personal links add both required query parameters to the
-existing route:
-`/conecta/?ncr=<URL-encoded recommender name>&eb=<URL-encoded benefited company>`.
-The path remains `/conecta/`; values must be URL-encoded before the link is
-shared.
+referral-form route:
+`/conecta/cadastro-recomendacoes/?ncr=<URL-encoded recommender name>&eb=<URL-encoded benefited company>`.
+Values must be URL-encoded before the link is shared. `/conecta/` is reserved
+for a future program hub and does not currently resolve to a page.
 
 The main site also exposes these public downloads:
 
@@ -77,13 +78,13 @@ status.
 
 ## Relative and absolute links
 
-- For navigation and assets within this deployment, use root-relative paths
-  such as `/formulario/` and `/principal/img/LOGO_MACHADO.png`. They keep the
-  same path on the canonical site and on Azure previews without coupling the
-  code to a hostname.
-- Use document-relative paths such as `../confirmação/` only when the target is
-  intentionally expressed relative to the current project directory. Preserve
-  working relative links unless a separate route change is approved.
+- Use root-relative paths such as `/formulario/` for public navigation and
+  cross-application route contracts. They keep the same public path on the
+  canonical site and on Azure previews without coupling the code to a hostname.
+- Use document-relative paths such as `./style.css` and `./img/LOGO.png` for
+  assets packaged with an application. This keeps source previews working when
+  repository paths and public deployment paths differ.
+- Preserve working links unless a separate route change is approved.
 - Use canonical absolute URLs beginning with `https://machadogestao.com` when a
   URL will be copied, shared, indexed, embedded outside this deployment, or
   consumed by an external system.
@@ -105,6 +106,11 @@ repository-local `dist/` directory, copy mapped tracked files, and validate the
 route contract, references, file set, bytes, repeatability, and expected `404`
 responses.
 
+- To preview source, serve the repository root and open the repository entry
+  point, such as `/apps/conecta/referral-form/index.html`.
+- To preview the deployment artifact, serve `dist/` as the web root and open
+  the public route. Opening `/dist/...` through a repository-root server does
+  not reproduce Azure's web-root behavior.
 - A non-filtered push to `main` builds and validates `dist/`, retains that exact
   tree as a GitHub Actions artifact, and deploys the same tree with Azure-side
   application building disabled.
