@@ -87,7 +87,7 @@
       "id": "certificate-validation",
       "mappings": [
         {
-          "source": "validacao",
+          "source": "apps/certificate-validation",
           "output": "validacao"
         }
       ],
