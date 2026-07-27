@@ -154,6 +154,17 @@
         }
       ],
       "publicDownloads": []
+    },
+    {
+      "id": "deployment-configuration",
+      "mappings": [
+        {
+          "source": "staticwebapp.config.json",
+          "output": "staticwebapp.config.json"
+        }
+      ],
+      "publicEntries": [],
+      "publicDownloads": []
     }
   ],
   "notFoundPaths": [

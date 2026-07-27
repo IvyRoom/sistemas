@@ -189,7 +189,8 @@ Public page of the Machado Conecta referral program: employees of client
 companies open a personal link and submit recommendations. Built to the same
 conventions as `formulario` below. Specifics:
 - Public referral-form route: `/conecta/cadastro-recomendacoes/`; `/conecta/`
-  remains unassigned until a real program hub exists.
+  remains unassigned until a real program hub exists. The slashless referral
+  path redirects to the canonical trailing-slash route and preserves its query.
 - The personal link carries URL params `ncr` (recommender full name) and `eb`
   (benefited company); `main.js` fills the read-only fields from them — no
   fetch on load. Missing params hide the form and show the invalid-link notice.
