@@ -39,7 +39,7 @@ points. Each listed route returned HTTP `200` when verified on 2026-07-23.
 | Quote request | [solicitação/index.html](solicita%C3%A7%C3%A3o/index.html) | [`/solicitação/`](https://machadogestao.com/solicita%C3%A7%C3%A3o/) |
 | Quote-request confirmation | [confirmação/index.html](confirma%C3%A7%C3%A3o/index.html) | [`/confirmação/`](https://machadogestao.com/confirma%C3%A7%C3%A3o/) |
 | Client initial-information form | [formulario/index.html](formulario/index.html) | [`/formulario/`](https://machadogestao.com/formulario/) |
-| Machado Conecta referral form | [conecta/index.html](conecta/index.html) | [`/conecta/`](https://machadogestao.com/conecta/) |
+| Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/`](https://machadogestao.com/conecta/) |
 | Certificate validation | [validacao/index.html](validacao/index.html) | [`/validacao/`](https://machadogestao.com/validacao/) |
 | Platform device warning | [plataforma_v2/aviso-dispositivo/index.html](plataforma_v2/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
 | Platform browser warning | [plataforma_v2/aviso-navegador/index.html](plataforma_v2/aviso-navegador/index.html) | [`/plataforma_v2/aviso-navegador/`](https://machadogestao.com/plataforma_v2/aviso-navegador/) |

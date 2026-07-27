@@ -1,6 +1,6 @@
 'use strict';
 
-// Node harness for conecta/main.js's pure helpers. Run: node .agents/tests/conecta.test.js
+// Node harness for apps/conecta/referral-form/main.js's pure helpers. Run: node .agents/tests/conecta.test.js
 // Loads the real main.js in a stubbed DOM so the logic under test is never duplicated.
 
 const fs = require('node:fs');
@@ -49,7 +49,10 @@ const sandbox = {
 };
 
 const context = vm.createContext(sandbox);
-vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'conecta', 'main.js'), 'utf8'), context);
+vm.runInContext(fs.readFileSync(
+  path.join(__dirname, '..', '..', 'apps', 'conecta', 'referral-form', 'main.js'),
+  'utf8',
+), context);
 const { maskWhatsapp, isCompleteWhatsapp, copyLink } = context;
 
 const cases = [
