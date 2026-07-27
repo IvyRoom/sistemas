@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import {
   assertReadmeContract,
   assertSourcePreviewReferences,
@@ -191,4 +193,42 @@ test("source preview and deployment references resolve to the same mapped asset"
     ),
     null
   );
+});
+
+test("Conecta normalizes only extensionless entry URLs before assets load", async () => {
+  const html = await readFile(
+    new URL("../apps/conecta/referral-form/index.html", import.meta.url),
+    "utf8"
+  );
+  const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
+  assert.ok(inlineScript);
+  assert.ok(inlineScript.index < html.indexOf('<link rel="icon"'));
+
+  for (const testCase of [
+    {
+      pathname: "/conecta/cadastro-recomendacoes",
+      expected: "/conecta/cadastro-recomendacoes/?ncr=Lucas%20Machado#form"
+    },
+    {
+      pathname: "/conecta/cadastro-recomendacoes/",
+      expected: null
+    },
+    {
+      pathname: "/apps/conecta/referral-form/index.html",
+      expected: null
+    }
+  ]) {
+    let replacement = null;
+    const location = {
+      hash: "#form",
+      pathname: testCase.pathname,
+      replace(value) {
+        replacement = value;
+      },
+      search: "?ncr=Lucas%20Machado"
+    };
+
+    runInNewContext(inlineScript[1], { window: { location } });
+    assert.equal(replacement, testCase.expected);
+  }
 });
