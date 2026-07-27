@@ -67,7 +67,6 @@ console.log(
     `${localReferences.htmlReferences} local HTML references`,
     `${localReferences.cssReferences} local CSS references`,
     `${localRoutes.encodedAccentedPaths} URL-encoded accented paths`,
-    `${localRoutes.redirects} canonical redirects`,
     `${localRoutes.notFoundPaths} expected 404 paths`,
     `deterministic rebuild from sha256:${firstArtifact.stats.digest}`
   ].join(", ")

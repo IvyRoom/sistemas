@@ -24,10 +24,10 @@ make the Azure hostname canonical.
 
 Path spellings are part of the contract. The directory routes below are written
 with a trailing slash; preserve existing working references rather than
-normalizing them during unrelated work. The Conecta referral form explicitly
-redirects its slashless spelling to the canonical trailing-slash route while
-preserving its query string. In particular, `/solicitação/` and `/confirmação/`
-are accented, while `/validacao/` is not.
+normalizing them during unrelated work. The Conecta referral form normalizes
+its slashless spelling before loading external assets while preserving its
+query string. In particular, `/solicitação/` and `/confirmação/` are accented,
+while `/validacao/` is not.
 
 ## Frontend structure and public routes
 
@@ -125,8 +125,7 @@ responses.
   `.github/`, `.git/`, the manifest, and the build scripts is not emitted to
   `dist/` and is not published.
 
-The root-level `staticwebapp.config.json` is emitted to `dist/` and currently
-defines only the Conecta slashless-to-trailing-slash redirect. The repository
-has no `routes.json` or `CNAME`. Other routes come from the directory entry
-points listed above; DNS, custom domain, and the remaining Static Web App
-settings are managed outside this repository.
+The repository has no root-level `staticwebapp.config.json`, `routes.json`, or
+`CNAME`. Routes come from the directory entry points listed above; DNS, custom
+domain, Azure redirect, and Static Web App settings are managed outside this
+repository.

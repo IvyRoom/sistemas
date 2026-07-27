@@ -1,9 +1,0 @@
-{
-  "routes": [
-    {
-      "route": "/conecta/cadastro-recomendacoes",
-      "redirect": "/conecta/cadastro-recomendacoes/",
-      "statusCode": 301
-    }
-  ]
-}

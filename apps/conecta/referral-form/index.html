@@ -6,6 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Machado Conecta: programa de recomendações exclusivo para empresas clientes da Machado | Método Gerencial para Empresas.">
   <title>Machado | Método Gerencial para Empresas</title>
+  <script>
+    const pagePath = window.location.pathname;
+    const lastSegment = pagePath.slice(pagePath.lastIndexOf('/') + 1);
+    if (lastSegment && !lastSegment.includes('.')) {
+      window.location.replace(`${pagePath}/${window.location.search}${window.location.hash}`);
+    }
+  </script>
   <link rel="icon" href="./img/FAVICON.ico">
   <link rel="stylesheet" href="./style.css">
   <script defer src="./main.js"></script>

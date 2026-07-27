@@ -788,55 +788,6 @@ export async function assertSourcePreviewReferences(manifest) {
   return { htmlReferences, cssReferences };
 }
 
-export async function readStaticWebAppRedirects(root = distRoot) {
-  const configurationPath = resolve(root, "staticwebapp.config.json");
-  let contents;
-
-  try {
-    contents = await readFile(configurationPath, "utf8");
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      return [];
-    }
-    throw error;
-  }
-
-  let configuration;
-  try {
-    configuration = JSON.parse(contents);
-  } catch (error) {
-    throw new Error(`staticwebapp.config.json is not valid JSON: ${error.message}`);
-  }
-
-  invariant(isPlainObject(configuration), "staticwebapp.config.json must contain an object.");
-  invariant(Array.isArray(configuration.routes), "staticwebapp.config.json routes must be an array.");
-
-  const redirects = [];
-  for (const [routeIndex, route] of configuration.routes.entries()) {
-    if (!isPlainObject(route) || !Object.hasOwn(route, "redirect")) {
-      continue;
-    }
-
-    const label = `staticwebapp.config.json routes[${routeIndex}]`;
-    const path = normalizePublicPath(route.route, `${label}.route`, "https://machadogestao.com");
-    const location = normalizePublicPath(
-      route.redirect,
-      `${label}.redirect`,
-      "https://machadogestao.com"
-    );
-    const statusCode = route.statusCode ?? 302;
-    invariant(path !== location, `${label} must not redirect to itself.`);
-    invariant(
-      statusCode === 301 || statusCode === 302,
-      `${label}.statusCode must be 301 or 302.`
-    );
-
-    redirects.push({ path, location, statusCode });
-  }
-
-  return redirects;
-}
-
 export async function assertLocalReferences() {
   const artifactFiles = await listTreeFiles(distRoot);
   const artifactFileSet = new Set(artifactFiles);
@@ -912,7 +863,6 @@ function contentType(file) {
 
 export async function startDistServer() {
   const artifactFiles = new Set(await listTreeFiles(distRoot));
-  const redirects = await readStaticWebAppRedirects();
 
   const server = createServer(async (request, response) => {
     try {
@@ -931,15 +881,6 @@ export async function startDistServer() {
       if (normalizedPath !== decodedPath) {
         response.writeHead(400);
         response.end("Bad Request");
-        return;
-      }
-
-      const redirect = redirects.find((rule) => rule.path === decodedPath);
-      if (redirect) {
-        response.writeHead(redirect.statusCode, {
-          location: `${redirect.location}${requestUrl.search}`
-        });
-        response.end();
         return;
       }
 
@@ -1030,7 +971,6 @@ async function assertPublishedFile(baseUrl, contract, outputRoot) {
 export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRoot) {
   const normalizedBaseUrl = new URL(baseUrl).origin;
   const contracts = [...publicEntries(manifest), ...publicDownloads(manifest)];
-  const redirects = await readStaticWebAppRedirects(outputRoot);
   let encodedAccentedPaths = 0;
 
   for (const contract of contracts) {
@@ -1063,29 +1003,6 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
     "Published Conecta query route differs from its dist entry file."
   );
 
-  for (const redirect of redirects) {
-    const requestUrl = new URL(redirect.path, `${normalizedBaseUrl}/`);
-    if (redirect.path === "/conecta/cadastro-recomendacoes") {
-      requestUrl.searchParams.set("ncr", "Lucas Machado");
-      requestUrl.searchParams.set("eb", "Empresa Beneficiária");
-    }
-
-    const response = await fetchWithoutRedirect(requestUrl);
-    invariant(
-      response.status === redirect.statusCode,
-      `Expected HTTP ${redirect.statusCode} for ${requestUrl.href}, received ${response.status}.`
-    );
-    invariant(response.location, `Expected redirect location for ${requestUrl.href}.`);
-
-    const expectedLocation = new URL(redirect.location, `${normalizedBaseUrl}/`);
-    expectedLocation.search = requestUrl.search;
-    const actualLocation = new URL(response.location, requestUrl);
-    invariant(
-      actualLocation.href === expectedLocation.href,
-      `Unexpected redirect for ${requestUrl.href}: ${actualLocation.href} !== ${expectedLocation.href}.`
-    );
-  }
-
   const expectedNotFound = [...manifest.notFoundPaths, ...manifest.repositoryOnlyPaths];
   for (const publicPath of expectedNotFound) {
     const requestUrl = new URL(publicPath, `${normalizedBaseUrl}/`);
@@ -1103,7 +1020,6 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
     downloads: publicDownloads(manifest).length,
     encodedAccentedPaths,
     conectaQueryRoutes: 1,
-    redirects: redirects.length,
     notFoundPaths: expectedNotFound.length
   };
 }

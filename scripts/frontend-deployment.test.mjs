@@ -8,9 +8,7 @@ import {
   extractHtmlReferences,
   publicDownloads,
   publicEntries,
-  readStaticWebAppRedirects,
   readDeploymentManifest,
-  repositoryRoot,
   validateDeploymentManifest
 } from "./frontend-deployment-lib.mjs";
 
@@ -24,7 +22,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
 
   assert.equal(publicEntries(manifest).length, 13);
   assert.equal(publicDownloads(manifest).length, 3);
-  assert.equal(validation.files.length, 228);
+  assert.equal(validation.files.length, 227);
   assert.deepEqual(
     validation.files.find(
       (file) => file.output === "conecta/cadastro-recomendacoes/index.html"
@@ -46,24 +44,6 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     }
   );
   assert.ok(manifest.notFoundPaths.includes("/conecta/"));
-  assert.deepEqual(
-    validation.files.find((file) => file.output === "staticwebapp.config.json"),
-    {
-      applicationId: "deployment-configuration",
-      source: "staticwebapp.config.json",
-      output: "staticwebapp.config.json"
-    }
-  );
-  assert.deepEqual(
-    await readStaticWebAppRedirects(repositoryRoot),
-    [
-      {
-        path: "/conecta/cadastro-recomendacoes",
-        location: "/conecta/cadastro-recomendacoes/",
-        statusCode: 301
-      }
-    ]
-  );
   assert.deepEqual(
     await assertReadmeContract(manifest),
     { entries: 13, downloads: 3 }

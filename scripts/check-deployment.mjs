@@ -22,7 +22,6 @@ console.log(
     `${result.downloads} downloads`,
     `${result.encodedAccentedPaths} URL-encoded accented paths`,
     `${result.conectaQueryRoutes} encoded Conecta query route`,
-    `${result.redirects} canonical redirects`,
     `${result.notFoundPaths} expected 404 paths`
   ].join(", ")
 );
