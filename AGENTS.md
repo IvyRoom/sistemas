@@ -150,6 +150,14 @@ open threads, next steps) so the new one starts oriented.
 <!-- ========================================================= -->
 <!-- REPO SPECIFICS — sistemas only                            -->
 <!-- ========================================================= -->
+## Source, deployment, and preview paths
+- Application-internal assets use document-relative URLs. Root-relative URLs
+  are for stable public navigation and explicit cross-application contracts.
+- Source locations, deployment locations, and public URLs are independent.
+  When any one changes, validate the application from its repository source
+  path and validate the generated `dist/` tree with `dist/` as the web root.
+  Report those results separately in the pre-merge briefing.
+
 ## Legacy folders — don't touch
 Every frontend source directory in this repo **except `formulario`, `validação`
 and `apps/conecta/referral-form`** is legacy: built in an older style,
@@ -180,6 +188,9 @@ thin backend lookup endpoint that returns only a public-safe verdict
 Public page of the Machado Conecta referral program: employees of client
 companies open a personal link and submit recommendations. Built to the same
 conventions as `formulario` below. Specifics:
+- Public referral-form route: `/conecta/cadastro-recomendacoes/`; `/conecta/`
+  remains unassigned until a real program hub exists. Normalize the slashless
+  referral path before external assets load and preserve its query.
 - The personal link carries URL params `ncr` (recommender full name) and `eb`
   (benefited company); `main.js` fills the read-only fields from them — no
   fetch on load. Missing params hide the form and show the invalid-link notice.

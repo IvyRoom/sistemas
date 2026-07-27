@@ -104,13 +104,13 @@
       "mappings": [
         {
           "source": "apps/conecta/referral-form",
-          "output": "conecta"
+          "output": "conecta/cadastro-recomendacoes"
         }
       ],
       "publicEntries": [
         {
-          "path": "/conecta/",
-          "file": "conecta/index.html"
+          "path": "/conecta/cadastro-recomendacoes/",
+          "file": "conecta/cadastro-recomendacoes/index.html"
         }
       ],
       "publicDownloads": []
@@ -158,6 +158,7 @@
   ],
   "notFoundPaths": [
     "/route-contract-not-found/",
+    "/conecta/",
     "/principal/",
     "/plataforma_v2/"
   ],

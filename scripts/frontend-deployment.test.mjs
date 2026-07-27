@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 import {
   assertReadmeContract,
+  assertSourcePreviewReferences,
+  compareSourcePreviewReference,
   extractCssReferences,
   extractHtmlReferences,
   publicDownloads,
@@ -22,17 +26,32 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.equal(publicDownloads(manifest).length, 3);
   assert.equal(validation.files.length, 227);
   assert.deepEqual(
-    validation.files.find((file) => file.output === "conecta/index.html"),
+    validation.files.find(
+      (file) => file.output === "conecta/cadastro-recomendacoes/index.html"
+    ),
     {
       applicationId: "conecta-referral-form",
       source: "apps/conecta/referral-form/index.html",
-      output: "conecta/index.html"
+      output: "conecta/cadastro-recomendacoes/index.html"
     }
   );
+  assert.deepEqual(
+    validation.entries.find(
+      (entry) => entry.applicationId === "conecta-referral-form"
+    ),
+    {
+      applicationId: "conecta-referral-form",
+      path: "/conecta/cadastro-recomendacoes/",
+      file: "conecta/cadastro-recomendacoes/index.html"
+    }
+  );
+  assert.ok(manifest.notFoundPaths.includes("/conecta/"));
   assert.deepEqual(
     await assertReadmeContract(manifest),
     { entries: 13, downloads: 3 }
   );
+  const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
+  assert.ok(sourcePreviewReferences.htmlReferences > 0);
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)
@@ -105,4 +124,111 @@ test("HTML and CSS reference extractors preserve encoded local references", () =
     ),
     ["../img/LOGO.png", "data:image/svg+xml;base64,abc"]
   );
+});
+
+test("source preview and deployment references resolve to the same mapped asset", () => {
+  const mappedFiles = [
+    {
+      source: "apps/conecta/referral-form/style.css",
+      output: "conecta/cadastro-recomendacoes/style.css"
+    },
+    {
+      source: "shared/logo.png",
+      output: "shared/logo.png"
+    }
+  ];
+
+  assert.deepEqual(
+    compareSourcePreviewReference(
+      "./style.css?v=1#theme",
+      "conecta/cadastro-recomendacoes/index.html",
+      "apps/conecta/referral-form/index.html",
+      mappedFiles
+    ),
+    {
+      expectedSource: "apps/conecta/referral-form/style.css",
+      matches: true,
+      output: "conecta/cadastro-recomendacoes/style.css",
+      sourceCandidates: [
+        "apps/conecta/referral-form/style.css",
+        "apps/conecta/referral-form/style.css/index.html"
+      ]
+    }
+  );
+
+  assert.equal(
+    compareSourcePreviewReference(
+      "/conecta/cadastro-recomendacoes/style.css",
+      "conecta/cadastro-recomendacoes/index.html",
+      "apps/conecta/referral-form/index.html",
+      mappedFiles
+    ).matches,
+    false
+  );
+
+  assert.equal(
+    compareSourcePreviewReference(
+      "/shared/logo.png",
+      "conecta/cadastro-recomendacoes/index.html",
+      "apps/conecta/referral-form/index.html",
+      mappedFiles
+    ).matches,
+    true
+  );
+  assert.equal(
+    compareSourcePreviewReference(
+      "data:image/svg+xml;base64,abc",
+      "conecta/cadastro-recomendacoes/style.css",
+      "apps/conecta/referral-form/style.css",
+      mappedFiles
+    ),
+    null
+  );
+  assert.equal(
+    compareSourcePreviewReference(
+      "#filter",
+      "conecta/cadastro-recomendacoes/style.css",
+      "apps/conecta/referral-form/style.css",
+      mappedFiles
+    ),
+    null
+  );
+});
+
+test("Conecta normalizes only extensionless entry URLs before assets load", async () => {
+  const html = await readFile(
+    new URL("../apps/conecta/referral-form/index.html", import.meta.url),
+    "utf8"
+  );
+  const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
+  assert.ok(inlineScript);
+  assert.ok(inlineScript.index < html.indexOf('<link rel="icon"'));
+
+  for (const testCase of [
+    {
+      pathname: "/conecta/cadastro-recomendacoes",
+      expected: "/conecta/cadastro-recomendacoes/?ncr=Lucas%20Machado#form"
+    },
+    {
+      pathname: "/conecta/cadastro-recomendacoes/",
+      expected: null
+    },
+    {
+      pathname: "/apps/conecta/referral-form/index.html",
+      expected: null
+    }
+  ]) {
+    let replacement = null;
+    const location = {
+      hash: "#form",
+      pathname: testCase.pathname,
+      replace(value) {
+        replacement = value;
+      },
+      search: "?ncr=Lucas%20Machado"
+    };
+
+    runInNewContext(inlineScript[1], { window: { location } });
+    assert.equal(replacement, testCase.expected);
+  }
 });
