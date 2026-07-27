@@ -232,3 +232,41 @@ test("Conecta normalizes only extensionless entry URLs before assets load", asyn
     assert.equal(replacement, testCase.expected);
   }
 });
+
+test("certificate validation normalizes only its slashless public route before assets load", async () => {
+  const html = await readFile(
+    new URL("../validacao/index.html", import.meta.url),
+    "utf8"
+  );
+  const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
+  assert.ok(inlineScript);
+  assert.ok(inlineScript.index < html.indexOf('<link rel="icon"'));
+
+  for (const testCase of [
+    {
+      pathname: "/validacao",
+      expected: "/validacao/?certificateId=FMG-1234#validator"
+    },
+    {
+      pathname: "/validacao/",
+      expected: null
+    },
+    {
+      pathname: "/validacao/index.html",
+      expected: null
+    }
+  ]) {
+    let replacement = null;
+    const location = {
+      hash: "#validator",
+      pathname: testCase.pathname,
+      replace(value) {
+        replacement = value;
+      },
+      search: "?certificateId=FMG-1234"
+    };
+
+    runInNewContext(inlineScript[1], { window: { location } });
+    assert.equal(replacement, testCase.expected);
+  }
+});
