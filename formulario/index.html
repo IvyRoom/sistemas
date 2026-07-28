@@ -6,14 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Formulário de informações iniciais para pessoas jurídicas clientes da Machado | Método Gerencial para Empresas.">
   <title>Machado | Método Gerencial para Empresas</title>
-  <link rel="icon" href="/formulario/img/favicon.ico">
-  <link rel="stylesheet" href="/formulario/style.css">
-  <script defer src="/formulario/main.js"></script>
+  <script>
+    if (window.location.pathname === '/formulario') {
+      window.location.replace(`/formulario/${window.location.search}${window.location.hash}`);
+    }
+  </script>
+  <link rel="icon" href="./img/favicon.ico">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./main.js"></script>
 </head>
 
 <body>
   <main class="page">
-    <img class="logo" src="/formulario/img/logo_machado.png" alt="Logo da Machado" width="240" height="80">
+    <img class="logo" src="./img/logo_machado.png" alt="Logo da Machado" width="240" height="80">
 
     <form class="form" action="#" method="post" novalidate>
       <h1 class="form-title">Formulário de Informações Iniciais</h1>

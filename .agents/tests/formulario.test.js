@@ -41,9 +41,13 @@ const sandbox = {
 
 const context = vm.createContext(sandbox);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'formulario', 'main.js'), 'utf8'), context);
-const { isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase } = context;
+const { enforceDeviceGate, isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase } = context;
+
+sandbox.window.innerWidth = 1024;
+enforceDeviceGate();
 
 const cases = [
+  ['device gate destination', sandbox.window.location.href, '/plataforma_v2/aviso-dispositivo/'],
   ['CPF valid 529.982.247-25', isValidCpf('529.982.247-25'), true],
   ['CPF valid 111.444.777-35', isValidCpf('111.444.777-35'), true],
   ['CPF invalid check digit', isValidCpf('529.982.247-26'), false],
