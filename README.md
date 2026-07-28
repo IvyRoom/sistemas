@@ -40,7 +40,7 @@ points. The deployment contract requires every listed route to return HTTP
 | Main marketing site (`principal/` contains its assets) | [index.html](index.html) | [`/`](https://machadogestao.com/) |
 | Quote request | [solicitação/index.html](solicita%C3%A7%C3%A3o/index.html) | [`/solicitação/`](https://machadogestao.com/solicita%C3%A7%C3%A3o/) |
 | Quote-request confirmation | [confirmação/index.html](confirma%C3%A7%C3%A3o/index.html) | [`/confirmação/`](https://machadogestao.com/confirma%C3%A7%C3%A3o/) |
-| Client initial-information form | [formulario/index.html](formulario/index.html) | [`/formulario/`](https://machadogestao.com/formulario/) |
+| Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario/`](https://machadogestao.com/formulario/) |
 | Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
 | Platform device warning | [plataforma_v2/aviso-dispositivo/index.html](plataforma_v2/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |

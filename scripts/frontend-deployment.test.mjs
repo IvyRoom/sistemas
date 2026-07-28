@@ -26,6 +26,17 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.equal(publicDownloads(manifest).length, 3);
   assert.equal(validation.files.length, 227);
   assert.deepEqual(
+    validation.mappings.find(
+      (mapping) => mapping.applicationId === "client-intake"
+    ),
+    {
+      applicationId: "client-intake",
+      source: "apps/client-intake",
+      output: "formulario",
+      sourceType: "directory"
+    }
+  );
+  assert.deepEqual(
     validation.files.find(
       (file) => file.output === "conecta/cadastro-recomendacoes/index.html"
     ),
@@ -220,7 +231,7 @@ test("source preview and deployment references resolve to the same mapped asset"
 
 test("client intake normalizes only its slashless public route before assets load", async () => {
   const html = await readFile(
-    new URL("../formulario/index.html", import.meta.url),
+    new URL("../apps/client-intake/index.html", import.meta.url),
     "utf8"
   );
   const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
@@ -257,8 +268,15 @@ test("client intake normalizes only its slashless public route before assets loa
       expected: null
     },
     {
-      label: "explicit index and repository source preview",
+      label: "explicit index",
       pathname: "/formulario/index.html",
+      search: "",
+      hash: "",
+      expected: null
+    },
+    {
+      label: "repository source preview",
+      pathname: "/apps/client-intake/index.html",
       search: "?preview=source",
       hash: "#formulario",
       expected: null

@@ -159,18 +159,18 @@ open threads, next steps) so the new one starts oriented.
   Report those results separately in the pre-merge briefing.
 
 ## Legacy folders — don't touch
-Every frontend source directory in this repo **except `formulario`, `apps/certificate-validation`
+Every frontend source directory in this repo **except `apps/client-intake`, `apps/certificate-validation`
 and `apps/conecta/referral-form`** is legacy: built in an older style,
 **running in production and business-critical**. Don't
 edit or restyle them unless I explicitly ask; if I do, match their existing
-style — never impose the conventions below. `formulario`'s only tie to a legacy
+style — never impose the conventions below. `apps/client-intake`'s only tie to a legacy
 folder is a redirect into `plataforma_v2`.
 
 ## Error codes (Erro_XXX)
 The canonical registry lives in `backend/AGENTS.md` (moved out of the old
 dictionary at the top of `plataforma_v2/login/main.js`). Frontends own the
 user-facing messages for the codes they consume (`SUBMIT_ERROR_MESSAGES` in
-`formulario/main.js` and `apps/conecta/referral-form/main.js`; inline strings
+`apps/client-intake/main.js` and `apps/conecta/referral-form/main.js`; inline strings
 in legacy folders).
 `Erro_000` (network fallback) and `Erro_006` (FaceLivenessDetector failure)
 are emitted by the frontends themselves, never by the backend.
@@ -179,7 +179,7 @@ are emitted by the frontends themselves, never by the backend.
 Public page where an external visitor checks whether a client's certificate is
 legit by its **Certificado ID#**. **Everything here is open to change** — the
 current files are old-style leftovers we're free to replace wholesale. Build it
-to the **same conventions as `formulario`** below (design tokens, English
+to the **same conventions as `apps/client-intake`** below (design tokens, English
 identifiers / Portuguese visible text, HTML↔CSS↔JS kept in sync). Pairs with a
 thin backend lookup endpoint that returns only a public-safe verdict
 (valid + holder name + score), never private data (email, CPF, address).
@@ -191,7 +191,7 @@ retired without redirects.
 ## conecta — new-style (fully editable)
 Public page of the Machado Conecta referral program: employees of client
 companies open a personal link and submit recommendations. Built to the same
-conventions as `formulario` below. Specifics:
+conventions as `apps/client-intake` below. Specifics:
 - Public referral-form route: `/conecta/cadastro-recomendacoes/`; `/conecta/`
   remains unassigned until a real program hub exists. Normalize the slashless
   referral path before external assets load and preserve its query.
@@ -202,7 +202,7 @@ conventions as `formulario` below. Specifics:
   its content (its header row is hidden). First visit opens SOBRE O PROGRAMA;
   later visits open COMO NOS RECOMENDAR (`localStorage` flag
   `conecta-returning-visitor`).
-- **Responsive, no device gate** — unlike `formulario`, participants open
+- **Responsive, no device gate** — unlike `apps/client-intake`, participants open
   their links on phones. Keep it working at mobile widths.
 - Useful-link text is intentionally non-selectable. Each link has a copy-icon
   control that writes the exact URL, confirms success, and falls back to a
@@ -216,8 +216,8 @@ conventions as `formulario` below. Specifics:
 - Tests: run `node .agents/tests/conecta.test.js` after touching `main.js`;
   extend it when adding pure logic.
 
-## formulario — new-style, conventions reference
-A single-page form (`index.html` + `style.css` + `main.js`) where a client
+## client intake — new-style, conventions reference
+A single-page form in `apps/client-intake/` where a client
 company submits its initial information to Machado. **Visible text is Brazilian
 Portuguese; code identifiers are English.** Preserve the wine/grey/green visual
 identity — don't restyle unprompted. Keep HTML, CSS, and JS in sync: a rename in
