@@ -235,7 +235,7 @@ test("Conecta normalizes only extensionless entry URLs before assets load", asyn
 
 test("certificate validation normalizes only its slashless public route before assets load", async () => {
   const html = await readFile(
-    new URL("../validacao/index.html", import.meta.url),
+    new URL("../apps/certificate-validation/index.html", import.meta.url),
     "utf8"
   );
   const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);

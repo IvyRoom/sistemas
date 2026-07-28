@@ -42,7 +42,7 @@ points. The deployment contract requires every listed route to return HTTP
 | Quote-request confirmation | [confirmação/index.html](confirma%C3%A7%C3%A3o/index.html) | [`/confirmação/`](https://machadogestao.com/confirma%C3%A7%C3%A3o/) |
 | Client initial-information form | [formulario/index.html](formulario/index.html) | [`/formulario/`](https://machadogestao.com/formulario/) |
 | Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
-| Certificate validation | [validacao/index.html](validacao/index.html) | [`/validacao/`](https://machadogestao.com/validacao/) |
+| Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao/`](https://machadogestao.com/validacao/) |
 | Platform device warning | [plataforma_v2/aviso-dispositivo/index.html](plataforma_v2/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
 | Platform browser warning | [plataforma_v2/aviso-navegador/index.html](plataforma_v2/aviso-navegador/index.html) | [`/plataforma_v2/aviso-navegador/`](https://machadogestao.com/plataforma_v2/aviso-navegador/) |
 | Platform initial notices | [plataforma_v2/avisos-iniciais/index.html](plataforma_v2/avisos-iniciais/index.html) | [`/plataforma_v2/avisos-iniciais/`](https://machadogestao.com/plataforma_v2/avisos-iniciais/) |

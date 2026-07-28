@@ -159,7 +159,7 @@ open threads, next steps) so the new one starts oriented.
   Report those results separately in the pre-merge briefing.
 
 ## Legacy folders — don't touch
-Every frontend source directory in this repo **except `formulario`, `validação`
+Every frontend source directory in this repo **except `formulario`, `apps/certificate-validation`
 and `apps/conecta/referral-form`** is legacy: built in an older style,
 **running in production and business-critical**. Don't
 edit or restyle them unless I explicitly ask; if I do, match their existing
