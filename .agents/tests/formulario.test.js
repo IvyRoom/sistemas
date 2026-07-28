@@ -1,6 +1,6 @@
 'use strict';
 
-// Node harness for formulario/main.js's pure helpers. Run: node .agents/tests/formulario.test.js
+// Node harness for apps/client-intake/main.js's pure helpers. Run: node .agents/tests/formulario.test.js
 // Loads the real main.js in a stubbed DOM so the logic under test is never duplicated.
 
 const fs = require('node:fs');
@@ -40,7 +40,7 @@ const sandbox = {
 };
 
 const context = vm.createContext(sandbox);
-vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'formulario', 'main.js'), 'utf8'), context);
+vm.runInContext(fs.readFileSync(path.join(__dirname, '..', '..', 'apps', 'client-intake', 'main.js'), 'utf8'), context);
 const { enforceDeviceGate, isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase } = context;
 
 sandbox.window.innerWidth = 1024;

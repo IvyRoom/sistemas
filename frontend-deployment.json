@@ -71,7 +71,7 @@
       "id": "client-intake",
       "mappings": [
         {
-          "source": "formulario",
+          "source": "apps/client-intake",
           "output": "formulario"
         }
       ],
