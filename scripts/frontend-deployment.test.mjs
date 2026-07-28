@@ -218,6 +218,67 @@ test("source preview and deployment references resolve to the same mapped asset"
   );
 });
 
+test("client intake normalizes only its slashless public route before assets load", async () => {
+  const html = await readFile(
+    new URL("../formulario/index.html", import.meta.url),
+    "utf8"
+  );
+  const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
+  assert.ok(inlineScript);
+  assert.ok(inlineScript.index < html.indexOf('<link rel="icon"'));
+
+  for (const testCase of [
+    {
+      label: "slashless route",
+      pathname: "/formulario",
+      search: "",
+      hash: "",
+      expected: "/formulario/"
+    },
+    {
+      label: "query preservation",
+      pathname: "/formulario",
+      search: "?cliente=Lucas%20Machado&origem=convite",
+      hash: "",
+      expected: "/formulario/?cliente=Lucas%20Machado&origem=convite"
+    },
+    {
+      label: "fragment preservation",
+      pathname: "/formulario",
+      search: "",
+      hash: "#participantes",
+      expected: "/formulario/#participantes"
+    },
+    {
+      label: "canonical route",
+      pathname: "/formulario/",
+      search: "?cliente=Lucas%20Machado",
+      hash: "#participantes",
+      expected: null
+    },
+    {
+      label: "explicit index and repository source preview",
+      pathname: "/formulario/index.html",
+      search: "?preview=source",
+      hash: "#formulario",
+      expected: null
+    }
+  ]) {
+    let replacement = null;
+    const location = {
+      hash: testCase.hash,
+      pathname: testCase.pathname,
+      replace(value) {
+        replacement = value;
+      },
+      search: testCase.search
+    };
+
+    runInNewContext(inlineScript[1], { window: { location } });
+    assert.equal(replacement, testCase.expected, testCase.label);
+  }
+});
+
 test("Conecta normalizes only extensionless entry URLs before assets load", async () => {
   const html = await readFile(
     new URL("../apps/conecta/referral-form/index.html", import.meta.url),
