@@ -88,13 +88,13 @@
       "mappings": [
         {
           "source": "apps/certificate-validation",
-          "output": "validacao"
+          "output": "validacao-certificados"
         }
       ],
       "publicEntries": [
         {
-          "path": "/validacao/",
-          "file": "validacao/index.html"
+          "path": "/validacao-certificados/",
+          "file": "validacao-certificados/index.html"
         }
       ],
       "publicDownloads": []
@@ -160,7 +160,10 @@
     "/route-contract-not-found/",
     "/conecta/",
     "/principal/",
-    "/plataforma_v2/"
+    "/plataforma_v2/",
+    "/validacao",
+    "/validacao/",
+    "/validacao/index.html"
   ],
   "repositoryOnlyPaths": [
     "/AGENTS.md",
