@@ -45,7 +45,30 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       file: "conecta/cadastro-recomendacoes/index.html"
     }
   );
+  assert.deepEqual(
+    validation.files.find(
+      (file) => file.output === "validacao-certificados/index.html"
+    ),
+    {
+      applicationId: "certificate-validation",
+      source: "apps/certificate-validation/index.html",
+      output: "validacao-certificados/index.html"
+    }
+  );
+  assert.deepEqual(
+    validation.entries.find(
+      (entry) => entry.applicationId === "certificate-validation"
+    ),
+    {
+      applicationId: "certificate-validation",
+      path: "/validacao-certificados/",
+      file: "validacao-certificados/index.html"
+    }
+  );
   assert.ok(manifest.notFoundPaths.includes("/conecta/"));
+  assert.ok(manifest.notFoundPaths.includes("/validacao"));
+  assert.ok(manifest.notFoundPaths.includes("/validacao/"));
+  assert.ok(manifest.notFoundPaths.includes("/validacao/index.html"));
   assert.deepEqual(
     await assertReadmeContract(manifest),
     { entries: 13, downloads: 3 }
@@ -244,8 +267,24 @@ test("certificate validation normalizes only its slashless public route before a
 
   for (const testCase of [
     {
+      pathname: "/validacao-certificados",
+      expected: "/validacao-certificados/?certificateId=FMG-1234#validator"
+    },
+    {
+      pathname: "/validacao-certificados/",
+      expected: null
+    },
+    {
+      pathname: "/validacao-certificados/index.html",
+      expected: null
+    },
+    {
+      pathname: "/apps/certificate-validation/index.html",
+      expected: null
+    },
+    {
       pathname: "/validacao",
-      expected: "/validacao/?certificateId=FMG-1234#validator"
+      expected: null
     },
     {
       pathname: "/validacao/",
@@ -269,4 +308,18 @@ test("certificate validation normalizes only its slashless public route before a
     runInNewContext(inlineScript[1], { window: { location } });
     assert.equal(replacement, testCase.expected);
   }
+});
+
+test("generated certificates print the canonical validation URL", async () => {
+  const platformSource = await readFile(
+    new URL("../plataforma_v2/estudo/main.js", import.meta.url),
+    "utf8"
+  );
+  const validationUrls = platformSource.match(
+    /https:\/\/machadogestao\.com\/validacao[^'"]*/g
+  );
+
+  assert.deepEqual(validationUrls, [
+    "https://machadogestao.com/validacao-certificados/"
+  ]);
 });

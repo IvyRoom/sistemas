@@ -183,6 +183,10 @@ to the **same conventions as `formulario`** below (design tokens, English
 identifiers / Portuguese visible text, HTML↔CSS↔JS kept in sync). Pairs with a
 thin backend lookup endpoint that returns only a public-safe verdict
 (valid + holder name + score), never private data (email, CPF, address).
+Public route: `/validacao-certificados/`. Normalize its slashless spelling
+before external assets load while preserving query and fragment. The former
+`/validacao`, `/validacao/`, and `/validacao/index.html` routes are intentionally
+retired without redirects.
 
 ## conecta — new-style (fully editable)
 Public page of the Machado Conecta referral program: employees of client
