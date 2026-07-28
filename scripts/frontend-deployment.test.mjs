@@ -32,8 +32,28 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     {
       applicationId: "client-intake",
       source: "apps/client-intake",
-      output: "formulario",
+      output: "formulario-informacoes-iniciais",
       sourceType: "directory"
+    }
+  );
+  assert.deepEqual(
+    validation.files.find(
+      (file) => file.output === "formulario-informacoes-iniciais/index.html"
+    ),
+    {
+      applicationId: "client-intake",
+      source: "apps/client-intake/index.html",
+      output: "formulario-informacoes-iniciais/index.html"
+    }
+  );
+  assert.deepEqual(
+    validation.entries.find(
+      (entry) => entry.applicationId === "client-intake"
+    ),
+    {
+      applicationId: "client-intake",
+      path: "/formulario-informacoes-iniciais/",
+      file: "formulario-informacoes-iniciais/index.html"
     }
   );
   assert.deepEqual(
@@ -77,6 +97,9 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     }
   );
   assert.ok(manifest.notFoundPaths.includes("/conecta/"));
+  assert.ok(manifest.notFoundPaths.includes("/formulario"));
+  assert.ok(manifest.notFoundPaths.includes("/formulario/"));
+  assert.ok(manifest.notFoundPaths.includes("/formulario/index.html"));
   assert.ok(manifest.notFoundPaths.includes("/validacao"));
   assert.ok(manifest.notFoundPaths.includes("/validacao/"));
   assert.ok(manifest.notFoundPaths.includes("/validacao/index.html"));
@@ -241,35 +264,35 @@ test("client intake normalizes only its slashless public route before assets loa
   for (const testCase of [
     {
       label: "slashless route",
-      pathname: "/formulario",
+      pathname: "/formulario-informacoes-iniciais",
       search: "",
       hash: "",
-      expected: "/formulario/"
+      expected: "/formulario-informacoes-iniciais/"
     },
     {
       label: "query preservation",
-      pathname: "/formulario",
+      pathname: "/formulario-informacoes-iniciais",
       search: "?cliente=Lucas%20Machado&origem=convite",
       hash: "",
-      expected: "/formulario/?cliente=Lucas%20Machado&origem=convite"
+      expected: "/formulario-informacoes-iniciais/?cliente=Lucas%20Machado&origem=convite"
     },
     {
       label: "fragment preservation",
-      pathname: "/formulario",
+      pathname: "/formulario-informacoes-iniciais",
       search: "",
       hash: "#participantes",
-      expected: "/formulario/#participantes"
+      expected: "/formulario-informacoes-iniciais/#participantes"
     },
     {
       label: "canonical route",
-      pathname: "/formulario/",
+      pathname: "/formulario-informacoes-iniciais/",
       search: "?cliente=Lucas%20Machado",
       hash: "#participantes",
       expected: null
     },
     {
       label: "explicit index",
-      pathname: "/formulario/index.html",
+      pathname: "/formulario-informacoes-iniciais/index.html",
       search: "",
       hash: "",
       expected: null
@@ -279,6 +302,27 @@ test("client intake normalizes only its slashless public route before assets loa
       pathname: "/apps/client-intake/index.html",
       search: "?preview=source",
       hash: "#formulario",
+      expected: null
+    },
+    {
+      label: "retired slashless route",
+      pathname: "/formulario",
+      search: "?cliente=Lucas%20Machado",
+      hash: "#participantes",
+      expected: null
+    },
+    {
+      label: "retired directory route",
+      pathname: "/formulario/",
+      search: "",
+      hash: "",
+      expected: null
+    },
+    {
+      label: "retired explicit index",
+      pathname: "/formulario/index.html",
+      search: "",
+      hash: "",
       expected: null
     }
   ]) {

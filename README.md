@@ -40,7 +40,7 @@ points. The deployment contract requires every listed route to return HTTP
 | Main marketing site (`principal/` contains its assets) | [index.html](index.html) | [`/`](https://machadogestao.com/) |
 | Quote request | [solicitação/index.html](solicita%C3%A7%C3%A3o/index.html) | [`/solicitação/`](https://machadogestao.com/solicita%C3%A7%C3%A3o/) |
 | Quote-request confirmation | [confirmação/index.html](confirma%C3%A7%C3%A3o/index.html) | [`/confirmação/`](https://machadogestao.com/confirma%C3%A7%C3%A3o/) |
-| Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario/`](https://machadogestao.com/formulario/) |
+| Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
 | Platform device warning | [plataforma_v2/aviso-dispositivo/index.html](plataforma_v2/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
@@ -64,6 +64,11 @@ referral-form route:
 Values must be URL-encoded before the link is shared. `/conecta/` is reserved
 for a future program hub and does not currently resolve to a page.
 
+Client intake links use `/formulario-informacoes-iniciais/`. The slashless
+spelling normalizes before external assets load while preserving its query
+string and fragment. The former `/formulario`, `/formulario/`, and
+`/formulario/index.html` routes are retired without redirects.
+
 Certificate links use `/validacao-certificados/`. The slashless spelling
 normalizes before external assets load while preserving its query string and
 fragment. The former `/validacao` route and its directory variants are retired
@@ -84,9 +89,10 @@ status.
 
 ## Relative and absolute links
 
-- Use root-relative paths such as `/formulario/` for public navigation and
-  cross-application route contracts. They keep the same public path on the
-  canonical site and on Azure previews without coupling the code to a hostname.
+- Use root-relative paths such as `/formulario-informacoes-iniciais/` for public
+  navigation and cross-application route contracts. They keep the same public
+  path on the canonical site and on Azure previews without coupling the code to
+  a hostname.
 - Use document-relative paths such as `./style.css` and `./img/LOGO.png` for
   assets packaged with an application. This keeps source previews working when
   repository paths and public deployment paths differ.
