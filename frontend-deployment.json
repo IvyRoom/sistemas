@@ -39,7 +39,7 @@
       "id": "quote-request",
       "mappings": [
         {
-          "source": "solicitação",
+          "source": "apps/quote-request",
           "output": "solicitação"
         }
       ],
@@ -55,7 +55,7 @@
       "id": "quote-request-confirmation",
       "mappings": [
         {
-          "source": "confirmação",
+          "source": "apps/quote-request-confirmation",
           "output": "confirmação"
         }
       ],
