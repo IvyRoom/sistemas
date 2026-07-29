@@ -40,29 +40,13 @@
       "mappings": [
         {
           "source": "apps/quote-request",
-          "output": "solicitação"
+          "output": "solicitacao-orcamento"
         }
       ],
       "publicEntries": [
         {
-          "path": "/solicitação/",
-          "file": "solicitação/index.html"
-        }
-      ],
-      "publicDownloads": []
-    },
-    {
-      "id": "quote-request-confirmation",
-      "mappings": [
-        {
-          "source": "apps/quote-request-confirmation",
-          "output": "confirmação"
-        }
-      ],
-      "publicEntries": [
-        {
-          "path": "/confirmação/",
-          "file": "confirmação/index.html"
+          "path": "/solicitacao-orcamento/",
+          "file": "solicitacao-orcamento/index.html"
         }
       ],
       "publicDownloads": []
@@ -159,6 +143,12 @@
   "notFoundPaths": [
     "/route-contract-not-found/",
     "/conecta/",
+    "/solicitação",
+    "/solicitação/",
+    "/solicitação/index.html",
+    "/confirmação",
+    "/confirmação/",
+    "/confirmação/index.html",
     "/formulario",
     "/formulario/",
     "/formulario/index.html",

@@ -48,27 +48,18 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   const manifest = await readDeploymentManifest();
   const validation = await validateDeploymentManifest(manifest);
 
-  assert.equal(publicEntries(manifest).length, 13);
+  assert.equal(publicEntries(manifest).length, 12);
   assert.equal(publicDownloads(manifest).length, 3);
-  assert.equal(validation.files.length, 227);
+  assert.equal(validation.files.length, 224);
   assert.deepEqual(
     validation.mappings.filter(
-      (mapping) => [
-        "quote-request",
-        "quote-request-confirmation"
-      ].includes(mapping.applicationId)
+      (mapping) => mapping.applicationId === "quote-request"
     ),
     [
       {
         applicationId: "quote-request",
         source: "apps/quote-request",
-        output: "solicitação",
-        sourceType: "directory"
-      },
-      {
-        applicationId: "quote-request-confirmation",
-        source: "apps/quote-request-confirmation",
-        output: "confirmação",
+        output: "solicitacao-orcamento",
         sourceType: "directory"
       }
     ]
@@ -145,6 +136,12 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     }
   );
   assert.ok(manifest.notFoundPaths.includes("/conecta/"));
+  assert.ok(manifest.notFoundPaths.includes("/solicitação"));
+  assert.ok(manifest.notFoundPaths.includes("/solicitação/"));
+  assert.ok(manifest.notFoundPaths.includes("/solicitação/index.html"));
+  assert.ok(manifest.notFoundPaths.includes("/confirmação"));
+  assert.ok(manifest.notFoundPaths.includes("/confirmação/"));
+  assert.ok(manifest.notFoundPaths.includes("/confirmação/index.html"));
   assert.ok(manifest.notFoundPaths.includes("/formulario"));
   assert.ok(manifest.notFoundPaths.includes("/formulario/"));
   assert.ok(manifest.notFoundPaths.includes("/formulario/index.html"));
@@ -153,7 +150,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(manifest.notFoundPaths.includes("/validacao/index.html"));
   assert.deepEqual(
     await assertReadmeContract(manifest),
-    { entries: 13, downloads: 3 }
+    { entries: 12, downloads: 3 }
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
@@ -161,7 +158,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)
     .filter((path) => /[^\x00-\x7F]/.test(path));
-  assert.deepEqual(accentedPaths, ["/solicitação/", "/confirmação/"]);
+  assert.deepEqual(accentedPaths, []);
 
   for (const path of accentedPaths) {
     const encodedPath = new URL(path, manifest.canonicalOrigin).pathname;
@@ -303,15 +300,9 @@ test("source preview and deployment references resolve to the same mapped asset"
 for (const page of [
   {
     label: "quote request",
-    publicPath: "/solicitação",
+    publicPath: "/solicitacao-orcamento",
     sourcePath: "../apps/quote-request/index.html",
     sourcePreviewPath: "/apps/quote-request/index.html"
-  },
-  {
-    label: "quote-request confirmation",
-    publicPath: "/confirmação",
-    sourcePath: "../apps/quote-request-confirmation/index.html",
-    sourcePreviewPath: "/apps/quote-request-confirmation/index.html"
   }
 ]) {
   test(`${page.label} normalizes only its slashless public route before assets load`, async () => {
@@ -323,12 +314,12 @@ for (const page of [
 
     for (const testCase of [
       {
-        label: "slashless accented route",
+        label: "slashless route",
         pathname: page.publicPath,
         expected: `${page.publicPath}/`
       },
       {
-        label: "slashless percent-encoded route",
+        label: "slashless URL path",
         pathname: encodedPublicPath,
         expected: `${page.publicPath}/`
       },
@@ -378,22 +369,60 @@ for (const page of [
   });
 }
 
-test("successful quote submission navigates to the public confirmation route", async () => {
+test("marketing quote CTA targets the canonical quote route", async () => {
+  const source = await readFile(
+    new URL("../principal/main.js", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(
+    source,
+    /BotãoPrincipal\.addEventListener\("click",[\s\S]*?window\.location\.href = "\/solicitacao-orcamento\/";/
+  );
+  assert.doesNotMatch(source, /window\.location\.href = "solicitação\/";/);
+});
+
+async function runQuoteSubmission({ presentationError = null, responseOk }) {
   const source = await readFile(
     new URL("../apps/quote-request/main.js", import.meta.url),
     "utf8"
   );
   const elements = new Map();
   const listeners = new Map();
+  let alertMessage = null;
+  const consoleErrors = [];
+  let successFocusOptions = null;
+  let successScrollOptions = null;
   const document = {
     body: { style: {} },
     getElementById(id) {
       if (!elements.has(id)) {
+        const classes = new Set();
         elements.set(id, {
           addEventListener(type, listener) {
             listeners.set(`${id}:${type}`, listener);
           },
+          classList: {
+            add(value) {
+              classes.add(value);
+            },
+            contains(value) {
+              return classes.has(value);
+            }
+          },
           disabled: false,
+          focus(options) {
+            if (id === "Confirmação-de-Solicitação") {
+              if (presentationError === "focus") throw new Error("Focus unavailable");
+              successFocusOptions = options;
+            }
+          },
+          scrollIntoView(options) {
+            if (id === "Confirmação-de-Solicitação") {
+              if (presentationError === "scroll") throw new Error("Scroll unavailable");
+              successScrollOptions = options;
+            }
+          },
           style: {},
           value: ""
         });
@@ -402,33 +431,39 @@ test("successful quote submission navigates to the public confirmation route", a
       return elements.get(id);
     }
   };
-  let destination = null;
   let fetchCalls = 0;
-  const location = {};
-
-  Object.defineProperty(location, "href", {
-    set(value) {
-      destination = value;
+  let defaultPrevented = false;
+  const initialUrl = "https://example.com/solicitacao-orcamento/?origem=teste#detalhes";
+  const window = {
+    location: { href: initialUrl },
+    matchMedia(query) {
+      assert.equal(query, "(prefers-reduced-motion: reduce)");
+      return { matches: false };
     }
-  });
+  };
 
   runInNewContext(source, {
-    alert() {
-      assert.fail("The successful submission path must not show an error");
+    alert(message) {
+      alertMessage = message;
+    },
+    console: {
+      error(...args) {
+        consoleErrors.push(args);
+      }
     },
     document,
     fetch: async () => {
       fetchCalls += 1;
       return {
-        json: async () => ({}),
-        ok: true
+        json: async () => responseOk ? {} : { error: "Erro_teste" },
+        ok: responseOk,
+        status: responseOk ? 200 : 500
       };
     },
-    window: { location }
+    window
   });
 
   const submit = listeners.get("Formulário-de-Solicitação:submit");
-  let defaultPrevented = false;
 
   assert.ok(submit);
   submit({
@@ -438,9 +473,90 @@ test("successful quote submission navigates to the public confirmation route", a
   });
   await new Promise(setImmediate);
 
-  assert.equal(defaultPrevented, true);
-  assert.equal(fetchCalls, 1);
-  assert.equal(destination, "/confirmação/");
+  return {
+    alertMessage,
+    consoleErrors,
+    defaultPrevented,
+    document,
+    elements,
+    fetchCalls,
+    initialUrl,
+    successFocusOptions,
+    successScrollOptions,
+    window
+  };
+}
+
+test("successful quote submission shows the inline success state without navigating", async () => {
+  const html = await readFile(
+    new URL("../apps/quote-request/index.html", import.meta.url),
+    "utf8"
+  );
+  const result = await runQuoteSubmission({ responseOk: true });
+
+  assert.equal(result.alertMessage, null);
+  assert.equal(result.consoleErrors.length, 0);
+  assert.equal(result.defaultPrevented, true);
+  assert.equal(result.fetchCalls, 1);
+  assert.equal(result.window.location.href, result.initialUrl);
+  assert.equal(
+    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    true
+  );
+  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, true);
+  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
+  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.successFocusOptions.preventScroll, true);
+  assert.equal(result.successScrollOptions.block, "center");
+  assert.equal(result.successScrollOptions.behavior, "smooth");
+  assert.match(html, /<html lang="pt-BR">/);
+  assert.match(html, /role="status" aria-live="polite" tabindex="-1"/);
+  assert.match(html, /Solicitação enviada com sucesso!/);
+  assert.match(html, /Basta aguardar\. Logo entraremos em contato\./);
+  assert.equal((html.match(/<button\b/g) || []).length, 1);
+});
+
+test("failed quote submission restores the form controls", async () => {
+  const result = await runQuoteSubmission({ responseOk: false });
+
+  assert.equal(result.consoleErrors.length, 0);
+  assert.equal(result.defaultPrevented, true);
+  assert.equal(result.fetchCalls, 1);
+  assert.equal(result.window.location.href, result.initialUrl);
+  assert.equal(
+    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    false
+  );
+  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, false);
+  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").style.display, "block");
+  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
+  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.successFocusOptions, null);
+  assert.equal(result.successScrollOptions, null);
+  assert.equal(
+    result.alertMessage,
+    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+  );
+});
+
+test("success presentation errors do not report an accepted quote as a transport failure", async () => {
+  const result = await runQuoteSubmission({
+    presentationError: "focus",
+    responseOk: true
+  });
+
+  assert.equal(result.alertMessage, null);
+  assert.equal(result.consoleErrors.length, 1);
+  assert.equal(
+    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    true
+  );
+  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, true);
+  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
+  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.successFocusOptions, null);
+  assert.equal(result.successScrollOptions.block, "center");
+  assert.equal(result.successScrollOptions.behavior, "smooth");
 });
 
 test("client intake normalizes only its slashless public route before assets load", async () => {

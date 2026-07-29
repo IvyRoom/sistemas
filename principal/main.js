@@ -384,7 +384,7 @@ window.onscroll = function() {
 
 BotãoPrincipal.addEventListener("click", function(event){
     event.preventDefault();
-    window.location.href = "solicitação/";
+    window.location.href = "/solicitacao-orcamento/";
 })
 
 /*/////////////////////////////////////////////////////////////////////////////////////*/
