@@ -295,7 +295,7 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
         return data;
     })
 
-    .then(data => { window.location.href = "../confirmação/" })
+    .then(data => { window.location.href = "/confirmação/" })
 
     .catch(err => {
 
