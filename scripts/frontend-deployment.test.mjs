@@ -52,6 +52,28 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.equal(publicDownloads(manifest).length, 3);
   assert.equal(validation.files.length, 227);
   assert.deepEqual(
+    validation.mappings.filter(
+      (mapping) => [
+        "quote-request",
+        "quote-request-confirmation"
+      ].includes(mapping.applicationId)
+    ),
+    [
+      {
+        applicationId: "quote-request",
+        source: "apps/quote-request",
+        output: "solicitação",
+        sourceType: "directory"
+      },
+      {
+        applicationId: "quote-request-confirmation",
+        source: "apps/quote-request-confirmation",
+        output: "confirmação",
+        sourceType: "directory"
+      }
+    ]
+  );
+  assert.deepEqual(
     validation.mappings.find(
       (mapping) => mapping.applicationId === "client-intake"
     ),
@@ -282,12 +304,14 @@ for (const page of [
   {
     label: "quote request",
     publicPath: "/solicitação",
-    sourcePath: "../solicitação/index.html"
+    sourcePath: "../apps/quote-request/index.html",
+    sourcePreviewPath: "/apps/quote-request/index.html"
   },
   {
     label: "quote-request confirmation",
     publicPath: "/confirmação",
-    sourcePath: "../confirmação/index.html"
+    sourcePath: "../apps/quote-request-confirmation/index.html",
+    sourcePreviewPath: "/apps/quote-request-confirmation/index.html"
   }
 ]) {
   test(`${page.label} normalizes only its slashless public route before assets load`, async () => {
@@ -339,7 +363,7 @@ for (const page of [
       },
       {
         label: "repository source preview",
-        pathname: `${encodedPublicPath}/index.html`,
+        pathname: page.sourcePreviewPath,
         search: "?preview=source",
         hash: "#detalhes",
         expected: null
@@ -356,7 +380,7 @@ for (const page of [
 
 test("successful quote submission navigates to the public confirmation route", async () => {
   const source = await readFile(
-    new URL("../solicitação/main.js", import.meta.url),
+    new URL("../apps/quote-request/main.js", import.meta.url),
     "utf8"
   );
   const elements = new Map();
