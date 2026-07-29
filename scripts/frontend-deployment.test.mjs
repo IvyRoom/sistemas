@@ -18,6 +18,32 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+async function readEarlyInlineScript(relativePath) {
+  const html = await readFile(new URL(relativePath, import.meta.url), "utf8");
+  const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
+
+  assert.ok(inlineScript);
+  assert.ok(inlineScript.index < html.indexOf("<link"));
+
+  return inlineScript[1];
+}
+
+function runLocationNormalizer(inlineScript, { pathname, search = "", hash = "" }) {
+  let replacement = null;
+  const location = {
+    hash,
+    pathname,
+    replace(value) {
+      replacement = value;
+    },
+    search
+  };
+
+  runInNewContext(inlineScript, { window: { location } });
+
+  return replacement;
+}
+
 test("real deployment manifest defines the reviewed route contract", async () => {
   const manifest = await readDeploymentManifest();
   const validation = await validateDeploymentManifest(manifest);
@@ -250,6 +276,147 @@ test("source preview and deployment references resolve to the same mapped asset"
     ),
     null
   );
+});
+
+for (const page of [
+  {
+    label: "quote request",
+    publicPath: "/solicitação",
+    sourcePath: "../solicitação/index.html"
+  },
+  {
+    label: "quote-request confirmation",
+    publicPath: "/confirmação",
+    sourcePath: "../confirmação/index.html"
+  }
+]) {
+  test(`${page.label} normalizes only its slashless public route before assets load`, async () => {
+    const inlineScript = await readEarlyInlineScript(page.sourcePath);
+    const encodedPublicPath = new URL(
+      page.publicPath,
+      "https://example.com"
+    ).pathname;
+
+    for (const testCase of [
+      {
+        label: "slashless accented route",
+        pathname: page.publicPath,
+        expected: `${page.publicPath}/`
+      },
+      {
+        label: "slashless percent-encoded route",
+        pathname: encodedPublicPath,
+        expected: `${page.publicPath}/`
+      },
+      {
+        label: "query preservation",
+        pathname: encodedPublicPath,
+        search: "?origem=site&cliente=Lucas%20Machado",
+        expected: `${page.publicPath}/?origem=site&cliente=Lucas%20Machado`
+      },
+      {
+        label: "fragment preservation",
+        pathname: page.publicPath,
+        hash: "#detalhes",
+        expected: `${page.publicPath}/#detalhes`
+      },
+      {
+        label: "canonical route",
+        pathname: `${page.publicPath}/`,
+        search: "?origem=site",
+        hash: "#detalhes",
+        expected: null
+      },
+      {
+        label: "percent-encoded canonical route",
+        pathname: `${encodedPublicPath}/`,
+        expected: null
+      },
+      {
+        label: "explicit index",
+        pathname: `${page.publicPath}/index.html`,
+        expected: null
+      },
+      {
+        label: "repository source preview",
+        pathname: `${encodedPublicPath}/index.html`,
+        search: "?preview=source",
+        hash: "#detalhes",
+        expected: null
+      }
+    ]) {
+      assert.equal(
+        runLocationNormalizer(inlineScript, testCase),
+        testCase.expected,
+        testCase.label
+      );
+    }
+  });
+}
+
+test("successful quote submission navigates to the public confirmation route", async () => {
+  const source = await readFile(
+    new URL("../solicitação/main.js", import.meta.url),
+    "utf8"
+  );
+  const elements = new Map();
+  const listeners = new Map();
+  const document = {
+    body: { style: {} },
+    getElementById(id) {
+      if (!elements.has(id)) {
+        elements.set(id, {
+          addEventListener(type, listener) {
+            listeners.set(`${id}:${type}`, listener);
+          },
+          disabled: false,
+          style: {},
+          value: ""
+        });
+      }
+
+      return elements.get(id);
+    }
+  };
+  let destination = null;
+  let fetchCalls = 0;
+  const location = {};
+
+  Object.defineProperty(location, "href", {
+    set(value) {
+      destination = value;
+    }
+  });
+
+  runInNewContext(source, {
+    alert() {
+      assert.fail("The successful submission path must not show an error");
+    },
+    document,
+    fetch: async () => {
+      fetchCalls += 1;
+      return {
+        json: async () => ({}),
+        ok: true
+      };
+    },
+    window: { location }
+  });
+
+  const submit = listeners.get("Formulário-de-Solicitação:submit");
+  let defaultPrevented = false;
+
+  assert.ok(submit);
+  submit({
+    preventDefault() {
+      defaultPrevented = true;
+    }
+  });
+  await new Promise(setImmediate);
+
+  assert.equal(defaultPrevented, true);
+  assert.equal(fetchCalls, 1);
+  assert.equal(destination, "/confirmação/");
 });
 
 test("client intake normalizes only its slashless public route before assets load", async () => {

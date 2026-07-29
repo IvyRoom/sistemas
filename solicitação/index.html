@@ -6,14 +6,19 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitação de Orçamento</title>
-    <link defer rel="stylesheet" href="/solicitação/style.css">
+    <script>
+        if (decodeURI(window.location.pathname) === "/solicitação") {
+            window.location.replace("/solicitação/" + window.location.search + window.location.hash);
+        }
+    </script>
+    <link defer rel="stylesheet" href="./style.css">
 </head>
     
     <body>
 
         <section id="Seção-Solicitação">
 
-            <img id="Logo-Machado" src="/solicitação/img/LOGO_MACHADO.png" alt="">
+            <img id="Logo-Machado" src="./img/LOGO_MACHADO.png" alt="">
 
             <form id="Formulário-de-Solicitação">
 
@@ -89,7 +94,7 @@
 
         </section>
 
-        <script async src="/solicitação/main.js"></script>
+        <script async src="./main.js"></script>
     
     </body>
 
