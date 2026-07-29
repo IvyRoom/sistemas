@@ -223,6 +223,10 @@ Portuguese; code identifiers are English.** Preserve the wine/grey/green visual
 identity — don't restyle unprompted. Keep HTML, CSS, and JS in sync: a rename in
 one file must be reflected in the others (classes, ids, the `__INDEX__`
 contract); flag any mismatch you notice.
+Public route: `/formulario-informacoes-iniciais/`. Normalize its slashless
+spelling before external assets load while preserving query and fragment. The
+former `/formulario`, `/formulario/`, and `/formulario/index.html` routes are
+intentionally retired without redirects.
 
 Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
 (behaviour: validation, participant cloning, same-address copy, device gate).

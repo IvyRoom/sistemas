@@ -72,13 +72,13 @@
       "mappings": [
         {
           "source": "apps/client-intake",
-          "output": "formulario"
+          "output": "formulario-informacoes-iniciais"
         }
       ],
       "publicEntries": [
         {
-          "path": "/formulario/",
-          "file": "formulario/index.html"
+          "path": "/formulario-informacoes-iniciais/",
+          "file": "formulario-informacoes-iniciais/index.html"
         }
       ],
       "publicDownloads": []
@@ -159,6 +159,9 @@
   "notFoundPaths": [
     "/route-contract-not-found/",
     "/conecta/",
+    "/formulario",
+    "/formulario/",
+    "/formulario/index.html",
     "/principal/",
     "/plataforma_v2/",
     "/validacao",
