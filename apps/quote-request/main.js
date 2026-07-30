@@ -18,6 +18,11 @@ var Observações = document.getElementById("Observações");
 var BotãoSolicitarOrçamento = document.getElementById("Botão-Solicitar-Orçamento");
 var AvisoEmailsDivergentesBotão = document.getElementById("Aviso-Emails-Divergentes-Botão");
 var AvisoProcessando = document.getElementById("Aviso-Processando");
+var ConfirmaçãodeSolicitação = document.getElementById("Confirmação-de-Solicitação");
+
+function ComportamentodeRolagemPreferido() {
+    return typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+}
 
 /*////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -295,9 +300,25 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
         return data;
     })
 
-    .then(data => { window.location.href = "/confirmação/" })
+    .then(() => {
 
-    .catch(err => {
+        document.body.style.cursor = 'default';
+        AvisoProcessando.style.display = "none";
+        FormuláriodeSolicitação.classList.add("form--submitted");
+
+        try {
+            ConfirmaçãodeSolicitação.focus({ preventScroll: true });
+        } catch (err) {
+            console.error("Falha ao focar a confirmação da solicitação:", err);
+        }
+
+        try {
+            window.scrollTo({ top: 0, behavior: ComportamentodeRolagemPreferido() });
+        } catch (err) {
+            console.error("Falha ao posicionar a confirmação da solicitação:", err);
+        }
+
+    }, err => {
 
         document.body.style.cursor = 'default';
         BotãoSolicitarOrçamento.disabled = false;

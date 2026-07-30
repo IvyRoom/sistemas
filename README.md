@@ -24,10 +24,9 @@ make the Azure hostname canonical.
 
 Path spellings are part of the contract. The directory routes below are written
 with a trailing slash; preserve existing working references rather than
-normalizing them during unrelated work. The Conecta referral form normalizes
-its slashless spelling before loading external assets while preserving its
-query string. In particular, `/solicitação/` and `/confirmação/` are accented,
-while `/validacao-certificados/` is not.
+normalizing them during unrelated work. The quote request and Conecta referral
+forms normalize their slashless spellings before loading external assets while
+preserving the query string and fragment.
 
 ## Frontend structure and public routes
 
@@ -38,8 +37,7 @@ points. The deployment contract requires every listed route to return HTTP
 | Frontend | Repository entry point | Public route |
 | --- | --- | --- |
 | Main marketing site (`principal/` contains its assets) | [index.html](index.html) | [`/`](https://machadogestao.com/) |
-| Quote request | [apps/quote-request/index.html](apps/quote-request/index.html) | [`/solicitação/`](https://machadogestao.com/solicita%C3%A7%C3%A3o/) |
-| Quote-request confirmation | [apps/quote-request-confirmation/index.html](apps/quote-request-confirmation/index.html) | [`/confirmação/`](https://machadogestao.com/confirma%C3%A7%C3%A3o/) |
+| Quote request | [apps/quote-request/index.html](apps/quote-request/index.html) | [`/solicitacao-orcamento/`](https://machadogestao.com/solicitacao-orcamento/) |
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
@@ -63,6 +61,13 @@ referral-form route:
 `/conecta/cadastro-recomendacoes/?ncr=<URL-encoded recommender name>&eb=<URL-encoded benefited company>`.
 Values must be URL-encoded before the link is shared. `/conecta/` is reserved
 for a future program hub and does not currently resolve to a page.
+
+Quote request links use `/solicitacao-orcamento/`. The slashless spelling
+normalizes before external assets load while preserving its query string and
+fragment. A successful submission stays on the same page and replaces the form
+with its confirmation message. The former `/solicitação`, `/solicitação/`,
+`/solicitação/index.html`, `/confirmação`, `/confirmação/`, and
+`/confirmação/index.html` routes are retired without redirects.
 
 Client intake links use `/formulario-informacoes-iniciais/`. The slashless
 spelling normalizes before external assets load while preserving its query

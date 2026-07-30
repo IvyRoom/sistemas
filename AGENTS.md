@@ -174,6 +174,25 @@ edit or restyle them unless I explicitly ask; if I do, match their existing
 style — never impose the conventions below. `apps/client-intake`'s only tie to a legacy
 folder is a redirect into `plataforma_v2`.
 
+## quote request — legacy form, scoped modernization
+The quote-request source remains a legacy application in `apps/quote-request/`;
+its existing visual and coding style is still the default. The following
+route and completion-flow contracts are intentionally modernized:
+- Public route: `/solicitacao-orcamento/`. Normalize its slashless spelling
+  before external assets load while preserving query and fragment.
+- The former `/solicitação`, `/solicitação/`, `/solicitação/index.html`,
+  `/confirmação`, `/confirmação/`, and `/confirmação/index.html` routes are
+  retired without redirects.
+- Backend contract: POST the existing payload to
+  `/landingpage/solicitacaoorcamento`; do not change the endpoint or fields
+  during presentation work.
+- After a successful response, stay on the quote page, replace the form with
+  “Solicitação enviada com sucesso!” and “Basta aguardar. Logo entraremos em
+  contato.”, keep the logo in its existing position, vertically center only
+  that focused message in the viewport, scroll the page to the top, and offer
+  no new-request action.
+- On failure, keep the form available and restore its submission controls.
+
 ## Error codes (Erro_XXX)
 The canonical registry lives in `backend/AGENTS.md` (moved out of the old
 dictionary at the top of `plataforma_v2/login/main.js`). Frontends own the

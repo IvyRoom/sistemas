@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
@@ -7,8 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitação de Orçamento</title>
     <script>
-        if (decodeURI(window.location.pathname) === "/solicitação") {
-            window.location.replace("/solicitação/" + window.location.search + window.location.hash);
+        if (decodeURI(window.location.pathname) === "/solicitacao-orcamento") {
+            window.location.replace("/solicitacao-orcamento/" + window.location.search + window.location.hash);
         }
     </script>
     <link defer rel="stylesheet" href="./style.css">
@@ -20,7 +20,7 @@
 
             <img id="Logo-Machado" src="./img/LOGO_MACHADO.png" alt="">
 
-            <form id="Formulário-de-Solicitação">
+            <form class="form" id="Formulário-de-Solicitação">
 
                 <div id="Título-Formulário-de-Solicitação"><b>Solicitação de Orçamento:</b><br>Solução em Método Gerencial</div>
 
@@ -87,6 +87,14 @@
                     <div id="Aviso-Emails-Divergentes-Botão">⮾ E-mails divergentes.</div>
 
                     <div id="Aviso-Processando">Processando informações...</div>
+
+                </div>
+
+                <div class="form-success" id="Confirmação-de-Solicitação" role="status" aria-live="polite" tabindex="-1">
+
+                    <div id="Confirmação-Título"><b>Solicitação enviada com sucesso!</b></div>
+
+                    <div id="Confirmação-Explicação">Basta aguardar. Logo entraremos em contato.</div>
 
                 </div>
                 
