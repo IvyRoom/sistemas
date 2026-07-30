@@ -148,7 +148,7 @@ function handleIntersection(entries, observer) {
 
             ContainerInternoVídeoPrincipal.setAttribute("data-shaka-player-container", "");
             VídeoPrincipal.setAttribute("data-shaka-player", "");
-            VídeoPrincipal.setAttribute("poster", "/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
+            VídeoPrincipal.setAttribute("poster", "./principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
             VídeoPrincipal.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8");
 
             const player = new shaka.Player(VídeoPrincipal);

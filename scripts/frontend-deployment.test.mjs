@@ -82,6 +82,23 @@ test("real deployment manifest defines the reviewed route contract", async () =>
 
   assert.equal(publicEntries(manifest).length, 12);
   assert.equal(publicDownloads(manifest).length, 3);
+  assert.deepEqual(
+    publicDownloads(manifest),
+    [
+      {
+        path: "/principal/pdf/EMENTA E SOFTWARES.pdf",
+        file: "principal/pdf/EMENTA E SOFTWARES.pdf"
+      },
+      {
+        path: "/principal/pdf/BIBLIOGRAFIA.pdf",
+        file: "principal/pdf/BIBLIOGRAFIA.pdf"
+      },
+      {
+        path: "/principal/pdf/CRONOGRAMA.pdf",
+        file: "principal/pdf/CRONOGRAMA.pdf"
+      }
+    ]
+  );
   assert.equal(validation.files.length, 224);
   assert.deepEqual(
     validation.mappings.filter(
@@ -488,6 +505,34 @@ for (const page of [
   });
 }
 
+test("marketing internal assets are document-relative", async () => {
+  const [html, source] = await Promise.all([
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+    readFile(new URL("../principal/main.js", import.meta.url), "utf8")
+  ]);
+  const principalReferences = extractHtmlReferences(html).filter(
+    ({ value }) => value.startsWith("/principal/")
+      || value.startsWith("./principal/")
+  );
+
+  assert.equal(principalReferences.length, 47);
+  for (const reference of principalReferences) {
+    assert.match(
+      reference.value,
+      /^\.\/principal\//,
+      `${reference.tag} ${reference.attribute} ${reference.value}`
+    );
+  }
+  assert.match(
+    source,
+    /VídeoPrincipal\.setAttribute\("poster", "\.\/principal\/img\/CAPA_VÍDEO_PRINCIPAL\.jpg"\);/
+  );
+  assert.doesNotMatch(
+    source,
+    /VídeoPrincipal\.setAttribute\("poster", "\/principal\//
+  );
+});
+
 test("marketing quote CTA targets the canonical quote route", async () => {
   const source = await readFile(
     new URL("../principal/main.js", import.meta.url),
@@ -499,6 +544,28 @@ test("marketing quote CTA targets the canonical quote route", async () => {
     /BotãoPrincipal\.addEventListener\("click",[\s\S]*?window\.location\.href = "\/solicitacao-orcamento\/";/
   );
   assert.doesNotMatch(source, /window\.location\.href = "solicitação\/";/);
+});
+
+test("marketing PDF actions target the public download routes", async () => {
+  const source = await readFile(
+    new URL("../principal/main.js", import.meta.url),
+    "utf8"
+  );
+  const downloadPaths = Array.from(
+    source.matchAll(
+      /window\.open\("(\/principal\/pdf\/[^"]+)",\s*"_blank"\);/g
+    ),
+    ([, path]) => path
+  );
+
+  assert.deepEqual(
+    downloadPaths,
+    [
+      "/principal/pdf/EMENTA E SOFTWARES.pdf",
+      "/principal/pdf/BIBLIOGRAFIA.pdf",
+      "/principal/pdf/CRONOGRAMA.pdf"
+    ]
+  );
 });
 
 async function runQuoteSubmission({ presentationError = null, responseOk }) {
