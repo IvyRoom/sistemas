@@ -1,0 +1,431 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const test = require("node:test");
+const vm = require("node:vm");
+
+const source = fs.readFileSync(
+  path.join(__dirname, "..", "..", "apps", "quote-request", "main.js"),
+  "utf8"
+);
+
+const REQUIRED_FIELD_IDS = [
+  "full-name",
+  "email",
+  "email-confirm",
+  "phone",
+  "role",
+  "company-name",
+  "company-cnpj",
+  "participant-count"
+];
+
+function createClassList() {
+  const classes = new Set();
+
+  return {
+    add(...names) {
+      names.forEach((name) => classes.add(name));
+    },
+    contains(name) {
+      return classes.has(name);
+    },
+    remove(...names) {
+      names.forEach((name) => classes.delete(name));
+    },
+    toggle(name, force) {
+      if (force === undefined) {
+        if (classes.has(name)) {
+          classes.delete(name);
+          return false;
+        }
+        classes.add(name);
+        return true;
+      }
+
+      if (force) classes.add(name);
+      else classes.delete(name);
+      return force;
+    }
+  };
+}
+
+function createHarness({
+  fetchImplementation = async () => ({ ok: true, status: 200 }),
+  hostname = "machadogestao.com",
+  presentationError = null,
+  reducedMotion = false
+} = {}) {
+  const elements = new Map();
+  const listeners = new Map();
+  const fetchCalls = [];
+  const alerts = [];
+  const consoleErrors = [];
+  const timeoutCalls = [];
+  const clearedTimeouts = [];
+  let focusOptions = null;
+  let scrollOptions = null;
+
+  function createElement(id) {
+    const attributes = new Map();
+    const element = {
+      classList: createClassList(),
+      disabled: false,
+      hidden: id === "email-mismatch-warning",
+      textContent: "",
+      validationMessage: "",
+      value: "",
+      addEventListener(type, listener) {
+        listeners.set(`${id}:${type}`, listener);
+      },
+      focus(options) {
+        if (id !== "form-success") return;
+        if (presentationError === "focus") throw new Error("Focus unavailable");
+        focusOptions = options;
+      },
+      getAttribute(name) {
+        return attributes.get(name) ?? null;
+      },
+      setAttribute(name, value) {
+        attributes.set(name, String(value));
+      },
+      setCustomValidity(message) {
+        this.validationMessage = message;
+      }
+    };
+
+    return element;
+  }
+
+  function element(id) {
+    if (!elements.has(id)) elements.set(id, createElement(id));
+    return elements.get(id);
+  }
+
+  const body = createElement("body");
+  const form = element("quote-form");
+  form.reportValidity = () => REQUIRED_FIELD_IDS.every((id) => {
+    const field = element(id);
+    return field.value.trim() !== "" && field.validationMessage === "";
+  });
+
+  let nextTimeoutId = 1;
+  const initialHref = `https://${hostname}/solicitacao-orcamento/?origem=teste#detalhes`;
+  const window = {
+    location: {
+      hash: "#detalhes",
+      hostname,
+      href: initialHref,
+      pathname: "/solicitacao-orcamento/",
+      search: "?origem=teste"
+    },
+    clearTimeout(timeoutId) {
+      clearedTimeouts.push(timeoutId);
+    },
+    matchMedia(query) {
+      assert.equal(query, "(prefers-reduced-motion: reduce)");
+      return { matches: reducedMotion };
+    },
+    scrollTo(options) {
+      if (presentationError === "scroll") throw new Error("Scroll unavailable");
+      scrollOptions = options;
+    },
+    setTimeout(callback, delay) {
+      const timeoutId = nextTimeoutId;
+      nextTimeoutId += 1;
+      timeoutCalls.push({ callback, delay, timeoutId });
+      return timeoutId;
+    }
+  };
+
+  const sandbox = {
+    AbortController,
+    alert(message) {
+      alerts.push(message);
+    },
+    console: {
+      error(...args) {
+        consoleErrors.push(args);
+      }
+    },
+    document: {
+      body,
+      getElementById: element
+    },
+    fetch: async (url, options) => {
+      fetchCalls.push({ options, url });
+      return fetchImplementation(url, options);
+    },
+    window
+  };
+
+  const context = vm.createContext(sandbox);
+  vm.runInContext(source, context);
+
+  function fillValidForm() {
+    element("full-name").value = "Lucas Machado";
+    element("email").value = "lucas@example.com";
+    element("email-confirm").value = "lucas@example.com";
+    element("phone").value = "(11) 98765-4321";
+    element("role").value = "Diretor";
+    element("company-name").value = "Empresa Exemplo";
+    element("company-cnpj").value = "11.222.333/0001-81";
+    element("participant-count").value = "5";
+    element("notes").value = "";
+  }
+
+  function submitEvent() {
+    let defaultPrevented = false;
+
+    return {
+      event: {
+        preventDefault() {
+          defaultPrevented = true;
+        }
+      },
+      get defaultPrevented() {
+        return defaultPrevented;
+      }
+    };
+  }
+
+  return {
+    alerts,
+    body,
+    clearedTimeouts,
+    consoleErrors,
+    context,
+    element,
+    fetchCalls,
+    fillValidForm,
+    form,
+    get focusOptions() {
+      return focusOptions;
+    },
+    initialHref,
+    listeners,
+    get scrollOptions() {
+      return scrollOptions;
+    },
+    submit: listeners.get("quote-form:submit"),
+    submitEvent,
+    timeoutCalls,
+    window
+  };
+}
+
+test("pure masks and validators cover mobile input and current CNPJ formats", () => {
+  const harness = createHarness();
+  const {
+    collapseSpaces,
+    isCompletePhone,
+    isLocalHostname,
+    isValidCnpj,
+    maskCnpj,
+    maskPhone
+  } = vm.runInContext(
+    "({ collapseSpaces, isCompletePhone, isLocalHostname, isValidCnpj, maskCnpj, maskPhone })",
+    harness.context
+  );
+
+  assert.equal(maskPhone(""), "");
+  assert.equal(maskPhone("11"), "(11");
+  assert.equal(maskPhone("1134567890"), "(11) 3456-7890");
+  assert.equal(maskPhone("11987654321"), "(11) 98765-4321");
+  assert.equal(maskPhone("(11) 98765-4321"), "(11) 98765-4321");
+  assert.equal(maskPhone("11 98765-4321 extra 999"), "(11) 98765-4321");
+  assert.equal(isCompletePhone("(11) 3456-7890"), true);
+  assert.equal(isCompletePhone("(11) 98765-4321"), true);
+  assert.equal(isCompletePhone("(11) 9876-543"), false);
+  assert.equal(isCompletePhone("119876543210"), false);
+
+  assert.equal(maskCnpj("11222333000181"), "11.222.333/0001-81");
+  assert.equal(maskCnpj("12abc34501de35"), "12.ABC.345/01DE-35");
+  assert.equal(maskCnpj("11222"), "11.222");
+  assert.equal(maskCnpj("12abc34501de35overflow"), "12.ABC.345/01DE-35");
+  assert.equal(isValidCnpj("11.222.333/0001-81"), true);
+  assert.equal(isValidCnpj("33.000.167/0001-01"), true);
+  assert.equal(isValidCnpj("12.ABC.345/01DE-35"), true);
+  assert.equal(isValidCnpj("11.222.333/0001-82"), false);
+  assert.equal(isValidCnpj("00.000.000/0000-00"), false);
+  assert.equal(isValidCnpj("12.ABC.345/01DE-AB"), false);
+
+  assert.equal(collapseSpaces("  Lucas   de   Machado  "), "Lucas de Machado");
+  assert.equal(isLocalHostname("localhost"), true);
+  assert.equal(isLocalHostname("127.0.0.1"), true);
+  assert.equal(isLocalHostname("[::1]"), true);
+  assert.equal(isLocalHostname("machadogestao.com"), false);
+});
+
+test("valid production submission sends the exact normalized payload and presents success", async () => {
+  const harness = createHarness();
+  harness.fillValidForm();
+  harness.element("full-name").value = "  Lucas   Machado  ";
+  harness.element("email").value = " lucas@example.com ";
+  harness.element("email-confirm").value = " LUCAS@example.com ";
+  harness.element("phone").value = "11987654321";
+  harness.element("role").value = "  Diretor   Executivo ";
+  harness.element("company-name").value = "  Empresa   Exemplo ";
+  harness.element("company-cnpj").value = "11222333000181";
+  harness.element("participant-count").value = ">20";
+  harness.element("notes").value = "  Quero conversar.  ";
+  const event = harness.submitEvent();
+
+  await harness.submit(event.event);
+
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(harness.fetchCalls.length, 1);
+  const [{ options, url }] = harness.fetchCalls;
+  assert.equal(
+    url,
+    "https://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento"
+  );
+  assert.equal(options.method, "POST");
+  assert.deepEqual({ ...options.headers }, { "Content-Type": "application/json" });
+  assert.equal(typeof options.signal.aborted, "boolean");
+  assert.deepEqual(JSON.parse(options.body), {
+    Solicitante_NomeCompleto: "Lucas Machado",
+    Solicitante_Email: "lucas@example.com",
+    Solicitante_Telefone: "(11) 98765-4321",
+    Solicitante_Cargo: "Diretor Executivo",
+    Solicitante_NomeEmpresa: "Empresa Exemplo",
+    Solicitante_CNPJ: "11.222.333/0001-81",
+    Solicitante_NúmerodeParticipantes: ">20",
+    Solicitante_Observações: "Quero conversar."
+  });
+  assert.equal(harness.alerts.length, 0);
+  assert.equal(harness.body.classList.contains("is-submitting"), false);
+  assert.equal(harness.form.getAttribute("aria-busy"), "false");
+  assert.equal(harness.element("submit-button").disabled, false);
+  assert.equal(harness.element("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(harness.form.classList.contains("quote-form--submitted"), true);
+  assert.equal(harness.focusOptions.preventScroll, true);
+  assert.equal(harness.scrollOptions.top, 0);
+  assert.equal(harness.scrollOptions.behavior, "smooth");
+  assert.equal(harness.window.location.href, harness.initialHref);
+  assert.equal(harness.timeoutCalls[0].delay, 60000);
+  assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
+});
+
+test("local source previews never post quote data to production", async () => {
+  for (const hostname of ["localhost", "127.0.0.1", "[::1]"]) {
+    const harness = createHarness({ hostname });
+    harness.fillValidForm();
+    const event = harness.submitEvent();
+
+    await harness.submit(event.event);
+
+    assert.equal(event.defaultPrevented, true, hostname);
+    assert.equal(harness.fetchCalls.length, 1, hostname);
+    assert.equal(
+      harness.fetchCalls[0].url,
+      "http://localhost:3000/landingpage/solicitacaoorcamento",
+      hostname
+    );
+  }
+});
+
+test("mismatched emails block submission and expose an accessible warning", async () => {
+  const harness = createHarness();
+  harness.fillValidForm();
+  harness.element("email-confirm").value = "outro@example.com";
+  const event = harness.submitEvent();
+
+  await harness.submit(event.event);
+
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(harness.fetchCalls.length, 0);
+  assert.equal(harness.element("email-mismatch-warning").hidden, false);
+  assert.equal(harness.element("email-confirm").validationMessage, "E-mails diferentes.");
+  assert.equal(harness.element("email-confirm").getAttribute("aria-invalid"), "true");
+  assert.equal(harness.body.classList.contains("is-submitting"), false);
+  assert.equal(harness.element("submit-button").disabled, false);
+});
+
+test("duplicate submits are prevented while the first request is pending", async () => {
+  let resolveResponse;
+  const pendingResponse = new Promise((resolve) => {
+    resolveResponse = resolve;
+  });
+  const harness = createHarness({
+    fetchImplementation: () => pendingResponse
+  });
+  harness.fillValidForm();
+  const firstEvent = harness.submitEvent();
+  const secondEvent = harness.submitEvent();
+
+  const firstSubmission = harness.submit(firstEvent.event);
+  const secondSubmission = harness.submit(secondEvent.event);
+
+  assert.equal(firstEvent.defaultPrevented, true);
+  assert.equal(secondEvent.defaultPrevented, true);
+  assert.equal(harness.fetchCalls.length, 1);
+  assert.equal(harness.body.classList.contains("is-submitting"), true);
+  assert.equal(harness.form.getAttribute("aria-busy"), "true");
+  assert.equal(harness.element("submit-button").disabled, true);
+  assert.equal(harness.element("submit-button").getAttribute("aria-busy"), "true");
+  assert.equal(harness.element("submit-label").textContent, "Processando informações...");
+
+  resolveResponse({ ok: true, status: 200 });
+  await Promise.all([firstSubmission, secondSubmission]);
+
+  assert.equal(harness.body.classList.contains("is-submitting"), false);
+  assert.equal(harness.form.classList.contains("quote-form--submitted"), true);
+});
+
+test("failed submission restores controls and preserves the completed form", async () => {
+  const harness = createHarness({
+    fetchImplementation: async () => ({ ok: false, status: 500 })
+  });
+  harness.fillValidForm();
+  harness.element("notes").value = "  Não apagar estes dados.  ";
+  const event = harness.submitEvent();
+
+  await harness.submit(event.event);
+
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(harness.fetchCalls.length, 1);
+  assert.equal(harness.body.classList.contains("is-submitting"), false);
+  assert.equal(harness.form.getAttribute("aria-busy"), "false");
+  assert.equal(harness.element("submit-button").disabled, false);
+  assert.equal(harness.element("submit-button").getAttribute("aria-busy"), "false");
+  assert.equal(harness.element("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(harness.form.classList.contains("quote-form--submitted"), false);
+  assert.equal(harness.element("notes").value, "Não apagar estes dados.");
+  assert.equal(harness.focusOptions, null);
+  assert.equal(harness.scrollOptions, null);
+  assert.deepEqual(harness.alerts, [
+    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+  ]);
+  assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
+});
+
+test("timed-out submission aborts the request and restores controls", async () => {
+  const harness = createHarness({
+    fetchImplementation: async (_url, options) => new Promise((resolve, reject) => {
+      options.signal.addEventListener("abort", () => reject(new Error("Aborted")));
+    })
+  });
+  harness.fillValidForm();
+  const event = harness.submitEvent();
+  const submission = harness.submit(event.event);
+
+  assert.equal(harness.timeoutCalls.length, 1);
+  assert.equal(harness.timeoutCalls[0].delay, 60000);
+  harness.timeoutCalls[0].callback();
+  await submission;
+
+  assert.equal(event.defaultPrevented, true);
+  assert.equal(harness.fetchCalls.length, 1);
+  assert.equal(harness.body.classList.contains("is-submitting"), false);
+  assert.equal(harness.form.getAttribute("aria-busy"), "false");
+  assert.equal(harness.element("submit-button").disabled, false);
+  assert.equal(harness.element("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(harness.form.classList.contains("quote-form--submitted"), false);
+  assert.deepEqual(harness.alerts, [
+    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+  ]);
+  assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
+});

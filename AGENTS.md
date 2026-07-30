@@ -167,31 +167,44 @@ open threads, next steps) so the new one starts oriented.
   Report those results separately in the pre-merge briefing.
 
 ## Legacy folders — don't touch
-Every frontend source directory in this repo **except `apps/client-intake`, `apps/certificate-validation`
-and `apps/conecta/referral-form`** is legacy: built in an older style,
+Every frontend source directory in this repo **except `apps/client-intake`, `apps/certificate-validation`,
+`apps/conecta/referral-form`, and `apps/quote-request`** is legacy: built in an older style,
 **running in production and business-critical**. Don't
 edit or restyle them unless I explicitly ask; if I do, match their existing
 style — never impose the conventions below. `apps/client-intake`'s only tie to a legacy
 folder is a redirect into `plataforma_v2`.
 
-## quote request — legacy form, scoped modernization
-The quote-request source remains a legacy application in `apps/quote-request/`;
-its existing visual and coding style is still the default. The following
-route and completion-flow contracts are intentionally modernized:
+## quote request — new-style, mobile-first (fully editable)
+Public quote form in `apps/quote-request/`, built with the new-style semantic,
+English-identifier conventions while preserving its established
+wine/grey/green identity. Specifics:
 - Public route: `/solicitacao-orcamento/`. Normalize its slashless spelling
   before external assets load while preserving query and fragment.
 - The former `/solicitação`, `/solicitação/`, `/solicitação/index.html`,
   `/confirmação`, `/confirmação/`, and `/confirmação/index.html` routes are
   retired without redirects.
-- Backend contract: POST the existing payload to
-  `/landingpage/solicitacaoorcamento`; do not change the endpoint or fields
-  during presentation work.
+- This acquisition flow is intentionally phone-first. Cap the page at `430px`
+  and center that phone-width column on larger screens; do not add a device
+  gate or a separate laptop layout.
+- Backend contract: POST the existing eight `Solicitante_*` fields to
+  `/landingpage/solicitacaoorcamento`. Localhost previews use the local backend
+  at port `3000`; they must never post to production.
+- Input masks run on `input` so paste and autofill work. Phone accepts valid
+  Brazilian 10- or 11-digit numbers. CNPJ accepts both existing numeric values
+  and the 12-alphanumeric + 2-numeric-check-digit format introduced in 2026.
+  E-mail confirmation is real validation and blocks mismatched submissions.
+- While submitting, keep the 60px action in place, disable it, replace its
+  label with “Processando informações...”, and show the wait cursor over every
+  descendant. Time out stalled requests and restore the form on failure.
 - After a successful response, stay on the quote page, replace the form with
   “Solicitação enviada com sucesso!” and “Basta aguardar. Logo entraremos em
   contato.”, keep the logo in its existing position, vertically center only
   that focused message in the viewport, scroll the page to the top, and offer
   no new-request action.
 - On failure, keep the form available and restore its submission controls.
+- Tests: run `node .agents/tests/quote-request.test.js` after touching
+  `main.js`; extend it when adding pure logic. The deployment suite separately
+  covers the real submission integration.
 
 ## Error codes (Erro_XXX)
 The canonical registry lives in `backend/AGENTS.md` (moved out of the old

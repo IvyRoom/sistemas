@@ -1,109 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solicitação de Orçamento</title>
-    <script>
-        if (decodeURI(window.location.pathname) === "/solicitacao-orcamento") {
-            window.location.replace("/solicitacao-orcamento/" + window.location.search + window.location.hash);
-        }
-    </script>
-    <link defer rel="stylesheet" href="./style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solicitação de Orçamento</title>
+  <script>
+    if (decodeURI(window.location.pathname) === "/solicitacao-orcamento") {
+      window.location.replace("/solicitacao-orcamento/" + window.location.search + window.location.hash);
+    }
+  </script>
+  <link rel="stylesheet" href="./style.css?v=3">
+  <script defer src="./main.js?v=3"></script>
 </head>
-    
-    <body>
+<body>
+  <main class="page">
+    <img class="brand-logo" src="./img/LOGO_MACHADO.png" alt="Machado" width="1871" height="567" draggable="false">
 
-        <section id="Seção-Solicitação">
+    <form class="quote-form" id="quote-form" novalidate>
+      <div class="form-content">
+        <header class="form-header">
+          <h1>Solicitação de Orçamento:</h1>
+          <p>Solução em Método Gerencial</p>
+        </header>
 
-            <img id="Logo-Machado" src="./img/LOGO_MACHADO.png" alt="">
+        <div class="form-card">
+          <fieldset class="form-section">
+            <legend>Seus dados:</legend>
 
-            <form class="form" id="Formulário-de-Solicitação">
+            <div class="field">
+              <label for="full-name">Nome Completo*</label>
+              <input class="text-input" id="full-name" name="full-name" type="text" autocomplete="name" autocapitalize="words" placeholder="Digite seu nome completo" required>
+            </div>
 
-                <div id="Título-Formulário-de-Solicitação"><b>Solicitação de Orçamento:</b><br>Solução em Método Gerencial</div>
+            <div class="field">
+              <label for="email">E-mail*</label>
+              <input class="text-input" id="email" name="email" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" placeholder="Digite seu e-mail" required>
+            </div>
 
-                <div id="Background-Branco-Cinza">
+            <div class="field">
+              <label for="email-confirm">Confirmação E-mail*</label>
+              <input class="text-input" id="email-confirm" name="email-confirm" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="email-mismatch-warning" placeholder="Confirme seu e-mail" required>
+              <p class="field-warning" id="email-mismatch-warning" role="alert" hidden>⮾ E-mails divergentes.</p>
+            </div>
 
-                    <div id="Título-1"><b>Seus dados:</b></div>
+            <div class="field">
+              <label for="phone">Telefone com DDD*</label>
+              <input class="text-input" id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" maxlength="15" placeholder="(11) 99999-9999" required>
+            </div>
 
-                    <p class="Títulos-de-Preenchimento">Nome Completo*</p>
-                    <input class="Campos-de-Preenchimento" id="Nome-Completo" autocomplete="off" type="text" placeholder="Digite seu nome completo" required>
-                        
-                    <p class="Títulos-de-Preenchimento">E-mail*</p>
-                    <input class="Campos-de-Preenchimento" id="Email" type="text" placeholder="Digite seu e-mail" required>
+            <div class="field">
+              <label for="role">Cargo*</label>
+              <input class="text-input" id="role" name="role" type="text" autocomplete="organization-title" placeholder="Digite seu cargo" required>
+            </div>
+          </fieldset>
 
-                    <p class="Títulos-de-Preenchimento">Confirmação E-mail*</p>
-                    <input class="Campos-de-Preenchimento" id="Confirmação-Email" type="text" placeholder="Confirme seu e-mail" required>
+          <fieldset class="form-section form-section--company">
+            <legend>Dados da Empresa:</legend>
 
-                    <div id="Aviso-Emails-Divergentes-Campo">⮾ E-mails divergentes.</div>
+            <div class="field">
+              <label for="company-name">Nome da Empresa*</label>
+              <input class="text-input" id="company-name" name="company-name" type="text" autocomplete="organization" placeholder="Digite o nome da empresa" required>
+            </div>
 
-                    <p class="Títulos-de-Preenchimento">Telefone com DDD*</p>
-                    <input class="Campos-de-Preenchimento" id="Telefone-com-DDD" type="text" placeholder="(11) 99999-9999" required>
+            <div class="field">
+              <label for="company-cnpj">CNPJ*</label>
+              <input class="text-input" id="company-cnpj" name="company-cnpj" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="18" placeholder="Digite o CNPJ" required>
+            </div>
 
-                    <p class="Títulos-de-Preenchimento">Cargo*</p>
-                    <input class="Campos-de-Preenchimento" id="Cargo" type="text" placeholder="Digite seu cargo" required>
+            <div class="field">
+              <label for="participant-count">Número aproximado de funcionários que participarão da Solução*</label>
+              <select class="text-input" id="participant-count" name="participant-count" required>
+                <option value="" disabled selected hidden>-</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
+                <option value="14">14</option>
+                <option value="15">15</option>
+                <option value="16">16</option>
+                <option value="17">17</option>
+                <option value="18">18</option>
+                <option value="19">19</option>
+                <option value="20">20</option>
+                <option value=">20">&gt;20</option>
+              </select>
+            </div>
 
-                    <div id="Título-2"><b>Dados da Empresa:</b></div>
+            <div class="field">
+              <label for="notes">Observações</label>
+              <textarea class="text-input notes-input" id="notes" name="notes" maxlength="300" rows="6" placeholder="Digite suas observações"></textarea>
+            </div>
+          </fieldset>
 
-                    <p class="Títulos-de-Preenchimento">Nome da Empresa*</p>
-                    <input class="Campos-de-Preenchimento" id="Nome-Empresa" type="text" placeholder="Digite o nome da empresa" required>
+          <button class="submit-button" id="submit-button" type="submit" aria-live="polite">
+            <span id="submit-label">SOLICITAR ORÇAMENTO</span>
+          </button>
+        </div>
+      </div>
 
-                    <p class="Títulos-de-Preenchimento">CNPJ*</p>
-                    <input class="Campos-de-Preenchimento" id="CNPJ" type="text" placeholder="Digite o CNPJ" required>
-                        
-                    <p class="Títulos-de-Preenchimento">Número aproximado de funcionários que participarão da Solução*</p>
-                    <select class="Campos-de-Preenchimento" id="Número-de-Participantes" type="number" placeholder="Selecione o número" required>
-                        <option value="" disabled selected hidden>-</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="13">13</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                        <option value="16">16</option>
-                        <option value="17">17</option>
-                        <option value="18">18</option>
-                        <option value="19">19</option>
-                        <option value="20">20</option>
-                        <option value=">20">>20</option>
-                    </select>
-
-                    <p class="Títulos-de-Preenchimento">Observações</p>
-                    <textarea id="Observações" maxlength="300" placeholder="Digite suas observações"></textarea>
-
-                    <button id="Botão-Solicitar-Orçamento" type="Submit">SOLICITAR ORÇAMENTO</button>
-
-                    <div id="Aviso-Emails-Divergentes-Botão">⮾ E-mails divergentes.</div>
-
-                    <div id="Aviso-Processando">Processando informações...</div>
-
-                </div>
-
-                <div class="form-success" id="Confirmação-de-Solicitação" role="status" aria-live="polite" tabindex="-1">
-
-                    <div id="Confirmação-Título"><b>Solicitação enviada com sucesso!</b></div>
-
-                    <div id="Confirmação-Explicação">Basta aguardar. Logo entraremos em contato.</div>
-
-                </div>
-                
-            </form>
-
-        </section>
-
-        <script async src="./main.js"></script>
-    
-    </body>
-
+      <section class="form-success" id="form-success" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
+        <h2>Solicitação enviada com sucesso!</h2>
+        <p>Basta aguardar. Logo entraremos em contato.</p>
+      </section>
+    </form>
+  </main>
+</body>
 </html>
