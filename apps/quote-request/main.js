@@ -5,8 +5,9 @@ const LOCAL_API_URL = "http://localhost:3000/landingpage/solicitacaoorcamento";
 const REQUEST_TIMEOUT_MS = 60000;
 const SUBMIT_LABEL = "SOLICITAR ORÇAMENTO";
 const SUBMITTING_LABEL = "Processando informações...";
-const SUBMIT_ERROR_MESSAGE = "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.";
+const SUBMIT_ERROR_MESSAGE = "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.";
 const CNPJ_CHECK_WEIGHTS = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+const TITLE_CASE_CONNECTORS = new Set(["de", "da", "do", "das", "dos", "e"]);
 
 const form = document.getElementById("quote-form");
 const fullNameInput = document.getElementById("full-name");
@@ -21,6 +22,7 @@ const participantCountInput = document.getElementById("participant-count");
 const notesInput = document.getElementById("notes");
 const submitButton = document.getElementById("submit-button");
 const submitLabel = document.getElementById("submit-label");
+const submissionStatus = document.getElementById("submission-status");
 const successMessage = document.getElementById("form-success");
 
 let isSubmitting = false;
@@ -89,8 +91,36 @@ function collapseSpaces(value) {
   return value.trim().replace(/\s+/g, " ");
 }
 
+function hasIntentionalMixedCase(word) {
+  return /\p{Ll}/u.test(word) && /\p{Lu}/u.test(word.slice(1));
+}
+
+function isAcronymLike(word) {
+  if (/^\p{Lu}{2,3}$/u.test(word)) return true;
+  const uppercaseLetters = word.match(/\p{Lu}/gu) || [];
+  return uppercaseLetters.length >= 2
+    && /[\d&/]/u.test(word)
+    && !/\p{Ll}/u.test(word);
+}
+
+function titleCaseWord(word, lowercaseConnector, preserveAcronyms) {
+  if (!word) return word;
+  const lower = word.toLowerCase();
+  if (lowercaseConnector && TITLE_CASE_CONNECTORS.has(lower)) return lower;
+  if (hasIntentionalMixedCase(word)) return word;
+  if (preserveAcronyms && isAcronymLike(word)) return word;
+  return lower.replace(/(^|[-'’])(.)/gu, (match, separator, char) => separator + char.toUpperCase());
+}
+
+function toTitleCase(value, { preserveAcronyms = false, capitalizeFirst = true } = {}) {
+  return collapseSpaces(value)
+    .split(" ")
+    .map((word, index) => titleCaseWord(word, !(index === 0 && capitalizeFirst), preserveAcronyms))
+    .join(" ");
+}
+
 function normalizeEmail(value) {
-  return value.trim();
+  return value.trim().toLowerCase();
 }
 
 function preferredScrollBehavior() {
@@ -114,13 +144,18 @@ function setFieldValidity(input, message) {
 }
 
 function validateEmailPair() {
-  const email = normalizeEmail(emailInput.value).toLowerCase();
-  const confirmation = normalizeEmail(emailConfirmInput.value).toLowerCase();
+  const email = normalizeEmail(emailInput.value);
+  const confirmation = normalizeEmail(emailConfirmInput.value);
   const mismatch = confirmation !== "" && email !== confirmation;
 
   emailMismatchWarning.hidden = !mismatch;
-  setFieldValidity(emailConfirmInput, mismatch ? "E-mails diferentes." : "");
+  setFieldValidity(emailConfirmInput, mismatch ? "E-mails divergentes." : "");
   return !mismatch;
+}
+
+function clearEmailMismatch() {
+  emailMismatchWarning.hidden = true;
+  setFieldValidity(emailConfirmInput, "");
 }
 
 function validatePhone() {
@@ -140,11 +175,11 @@ function validateCnpj() {
 }
 
 function normalizeFormValues() {
-  fullNameInput.value = collapseSpaces(fullNameInput.value);
+  fullNameInput.value = toTitleCase(fullNameInput.value);
   emailInput.value = normalizeEmail(emailInput.value);
   emailConfirmInput.value = normalizeEmail(emailConfirmInput.value);
   phoneInput.value = maskPhone(phoneInput.value);
-  roleInput.value = collapseSpaces(roleInput.value);
+  roleInput.value = toTitleCase(roleInput.value, { preserveAcronyms: true });
   companyNameInput.value = collapseSpaces(companyNameInput.value);
   companyCnpjInput.value = maskCnpj(companyCnpjInput.value);
   notesInput.value = notesInput.value.trim();
@@ -170,6 +205,7 @@ function setSubmitting(submitting) {
   submitButton.disabled = submitting;
   submitButton.setAttribute("aria-busy", String(submitting));
   submitLabel.textContent = submitting ? SUBMITTING_LABEL : SUBMIT_LABEL;
+  submissionStatus.textContent = submitting ? SUBMITTING_LABEL : "";
 }
 
 function presentSuccess() {
@@ -213,6 +249,7 @@ async function submitQuote(event) {
     if (!response.ok) throw new Error(`Quote request failed with status ${response.status}.`);
   } catch (error) {
     setSubmitting(false);
+    console.error("Falha no envio da solicitação de orçamento:", error);
     alert(SUBMIT_ERROR_MESSAGE);
     return;
   } finally {
@@ -224,17 +261,49 @@ async function submitQuote(event) {
   presentSuccess();
 }
 
-emailInput.addEventListener("input", validateEmailPair);
-emailConfirmInput.addEventListener("input", validateEmailPair);
+fullNameInput.addEventListener("blur", () => {
+  fullNameInput.value = toTitleCase(fullNameInput.value);
+});
+
+emailInput.addEventListener("input", clearEmailMismatch);
+emailConfirmInput.addEventListener("input", clearEmailMismatch);
+
+emailInput.addEventListener("blur", () => {
+  emailInput.value = normalizeEmail(emailInput.value);
+  emailConfirmInput.value = normalizeEmail(emailConfirmInput.value);
+  validateEmailPair();
+});
+
+emailConfirmInput.addEventListener("blur", () => {
+  emailInput.value = normalizeEmail(emailInput.value);
+  emailConfirmInput.value = normalizeEmail(emailConfirmInput.value);
+  validateEmailPair();
+});
 
 phoneInput.addEventListener("input", () => {
   phoneInput.value = maskPhone(phoneInput.value);
-  validatePhone();
+  setFieldValidity(phoneInput, "");
+});
+
+phoneInput.addEventListener("blur", validatePhone);
+
+roleInput.addEventListener("blur", () => {
+  roleInput.value = toTitleCase(roleInput.value, { preserveAcronyms: true });
+});
+
+companyNameInput.addEventListener("blur", () => {
+  companyNameInput.value = collapseSpaces(companyNameInput.value);
 });
 
 companyCnpjInput.addEventListener("input", () => {
   companyCnpjInput.value = maskCnpj(companyCnpjInput.value);
-  validateCnpj();
+  setFieldValidity(companyCnpjInput, "");
+});
+
+companyCnpjInput.addEventListener("blur", validateCnpj);
+
+notesInput.addEventListener("blur", () => {
+  notesInput.value = notesInput.value.trim();
 });
 
 form.addEventListener("submit", submitQuote);

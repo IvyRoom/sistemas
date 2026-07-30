@@ -191,12 +191,19 @@ function createHarness({
     };
   }
 
+  function dispatch(id, type) {
+    const listener = listeners.get(`${id}:${type}`);
+    assert.ok(listener, `Missing ${type} listener for #${id}`);
+    return listener({ target: element(id) });
+  }
+
   return {
     alerts,
     body,
     clearedTimeouts,
     consoleErrors,
     context,
+    dispatch,
     element,
     fetchCalls,
     fillValidForm,
@@ -224,9 +231,11 @@ test("pure masks and validators cover mobile input and current CNPJ formats", ()
     isLocalHostname,
     isValidCnpj,
     maskCnpj,
-    maskPhone
+    maskPhone,
+    normalizeEmail,
+    toTitleCase
   } = vm.runInContext(
-    "({ collapseSpaces, isCompletePhone, isLocalHostname, isValidCnpj, maskCnpj, maskPhone })",
+    "({ collapseSpaces, isCompletePhone, isLocalHostname, isValidCnpj, maskCnpj, maskPhone, normalizeEmail, toTitleCase })",
     harness.context
   );
 
@@ -253,6 +262,26 @@ test("pure masks and validators cover mobile input and current CNPJ formats", ()
   assert.equal(isValidCnpj("12.ABC.345/01DE-AB"), false);
 
   assert.equal(collapseSpaces("  Lucas   de   Machado  "), "Lucas de Machado");
+  assert.equal(toTitleCase("  joão   da   silva  "), "João da Silva");
+  assert.equal(
+    toTitleCase("  CEO   de vendas ", { preserveAcronyms: true }),
+    "CEO de Vendas"
+  );
+  assert.equal(
+    toTitleCase("diretor de P&D", { preserveAcronyms: true }),
+    "Diretor de P&D"
+  );
+  assert.equal(
+    toTitleCase("CEO/CFO", { preserveAcronyms: true }),
+    "CEO/CFO"
+  );
+  assert.equal(
+    toTitleCase("head B2B", { preserveAcronyms: true }),
+    "Head B2B"
+  );
+  assert.equal(toTitleCase("mariana McDonald"), "Mariana McDonald");
+  assert.equal(normalizeEmail(" LUCAS@EXAMPLE.COM "), "lucas@example.com");
+  assert.equal(normalizeEmail(" LUCAS @EXAMPLE.COM "), "lucas @example.com");
   assert.equal(isLocalHostname("localhost"), true);
   assert.equal(isLocalHostname("127.0.0.1"), true);
   assert.equal(isLocalHostname("[::1]"), true);
@@ -262,15 +291,15 @@ test("pure masks and validators cover mobile input and current CNPJ formats", ()
 test("valid production submission sends the exact normalized payload and presents success", async () => {
   const harness = createHarness();
   harness.fillValidForm();
-  harness.element("full-name").value = "  Lucas   Machado  ";
-  harness.element("email").value = " lucas@example.com ";
+  harness.element("full-name").value = "  lucas   de   machado  ";
+  harness.element("email").value = " LUCAS@EXAMPLE.COM ";
   harness.element("email-confirm").value = " LUCAS@example.com ";
   harness.element("phone").value = "11987654321";
-  harness.element("role").value = "  Diretor   Executivo ";
-  harness.element("company-name").value = "  Empresa   Exemplo ";
+  harness.element("role").value = "  CEO   de vendas ";
+  harness.element("company-name").value = "  iFood   LTDA ";
   harness.element("company-cnpj").value = "11222333000181";
   harness.element("participant-count").value = ">20";
-  harness.element("notes").value = "  Quero conversar.  ";
+  harness.element("notes").value = "  Linha  1\n\nLinha 2  ";
   const event = harness.submitEvent();
 
   await harness.submit(event.event);
@@ -286,14 +315,14 @@ test("valid production submission sends the exact normalized payload and present
   assert.deepEqual({ ...options.headers }, { "Content-Type": "application/json" });
   assert.equal(typeof options.signal.aborted, "boolean");
   assert.deepEqual(JSON.parse(options.body), {
-    Solicitante_NomeCompleto: "Lucas Machado",
+    Solicitante_NomeCompleto: "Lucas de Machado",
     Solicitante_Email: "lucas@example.com",
     Solicitante_Telefone: "(11) 98765-4321",
-    Solicitante_Cargo: "Diretor Executivo",
-    Solicitante_NomeEmpresa: "Empresa Exemplo",
+    Solicitante_Cargo: "CEO de Vendas",
+    Solicitante_NomeEmpresa: "iFood LTDA",
     Solicitante_CNPJ: "11.222.333/0001-81",
     Solicitante_NúmerodeParticipantes: ">20",
-    Solicitante_Observações: "Quero conversar."
+    Solicitante_Observações: "Linha  1\n\nLinha 2"
   });
   assert.equal(harness.alerts.length, 0);
   assert.equal(harness.body.classList.contains("is-submitting"), false);
@@ -327,6 +356,86 @@ test("local source previews never post quote data to production", async () => {
   }
 });
 
+test("text fields normalize only after editing finishes", () => {
+  const harness = createHarness();
+  harness.element("full-name").value = "  joão   da   silva  ";
+  harness.element("email").value = " LUCAS@EXAMPLE.COM ";
+  harness.element("email-confirm").value = " lucas@example.com ";
+  harness.element("role").value = "  CEO   de vendas ";
+  harness.element("company-name").value = "  iFood   LTDA ";
+  harness.element("notes").value = "  Linha  1\n\nLinha 2  ";
+
+  for (const id of ["full-name", "role", "company-name", "notes"]) {
+    assert.equal(harness.listeners.has(`${id}:input`), false, id);
+  }
+  assert.equal(harness.element("full-name").value, "  joão   da   silva  ");
+  harness.dispatch("full-name", "blur");
+  harness.dispatch("email", "blur");
+  harness.dispatch("role", "blur");
+  harness.dispatch("company-name", "blur");
+  harness.dispatch("notes", "blur");
+
+  assert.equal(harness.element("full-name").value, "João da Silva");
+  assert.equal(harness.element("email").value, "lucas@example.com");
+  assert.equal(harness.element("email-confirm").value, "lucas@example.com");
+  assert.equal(harness.element("role").value, "CEO de Vendas");
+  assert.equal(harness.element("company-name").value, "iFood LTDA");
+  assert.equal(harness.element("notes").value, "Linha  1\n\nLinha 2");
+});
+
+test("email mismatch warning waits for blur and clears on the next edit", () => {
+  const harness = createHarness();
+  harness.element("email").value = "lucas@example.com";
+  harness.element("email-confirm").value = "outro@example.com";
+
+  harness.dispatch("email-confirm", "input");
+
+  assert.equal(harness.element("email-mismatch-warning").hidden, true);
+  assert.equal(harness.element("email-confirm").validationMessage, "");
+  assert.equal(harness.element("email-confirm").getAttribute("aria-invalid"), "false");
+
+  harness.dispatch("email-confirm", "blur");
+
+  assert.equal(harness.element("email-mismatch-warning").hidden, false);
+  assert.equal(harness.element("email-confirm").validationMessage, "E-mails divergentes.");
+  assert.equal(harness.element("email-confirm").getAttribute("aria-invalid"), "true");
+
+  harness.element("email-confirm").value = "lucas@";
+  harness.dispatch("email-confirm", "input");
+
+  assert.equal(harness.element("email-mismatch-warning").hidden, true);
+  assert.equal(harness.element("email-confirm").validationMessage, "");
+  assert.equal(harness.element("email-confirm").getAttribute("aria-invalid"), "false");
+});
+
+test("phone and CNPJ masks stay live while validation waits for blur", () => {
+  const harness = createHarness();
+  harness.element("phone").value = "1198";
+  harness.element("company-cnpj").value = "11222";
+
+  harness.dispatch("phone", "input");
+  harness.dispatch("company-cnpj", "input");
+
+  assert.equal(harness.element("phone").value, "(11) 98");
+  assert.equal(harness.element("company-cnpj").value, "11.222");
+  assert.equal(harness.element("phone").validationMessage, "");
+  assert.equal(harness.element("company-cnpj").validationMessage, "");
+
+  harness.dispatch("phone", "blur");
+  harness.dispatch("company-cnpj", "blur");
+
+  assert.equal(harness.element("phone").validationMessage, "Informe um telefone com DDD válido.");
+  assert.equal(harness.element("company-cnpj").validationMessage, "Informe um CNPJ válido.");
+
+  harness.element("phone").value = "11987654321";
+  harness.element("company-cnpj").value = "11222333000181";
+  harness.dispatch("phone", "input");
+  harness.dispatch("company-cnpj", "input");
+
+  assert.equal(harness.element("phone").validationMessage, "");
+  assert.equal(harness.element("company-cnpj").validationMessage, "");
+});
+
 test("mismatched emails block submission and expose an accessible warning", async () => {
   const harness = createHarness();
   harness.fillValidForm();
@@ -338,7 +447,7 @@ test("mismatched emails block submission and expose an accessible warning", asyn
   assert.equal(event.defaultPrevented, true);
   assert.equal(harness.fetchCalls.length, 0);
   assert.equal(harness.element("email-mismatch-warning").hidden, false);
-  assert.equal(harness.element("email-confirm").validationMessage, "E-mails diferentes.");
+  assert.equal(harness.element("email-confirm").validationMessage, "E-mails divergentes.");
   assert.equal(harness.element("email-confirm").getAttribute("aria-invalid"), "true");
   assert.equal(harness.body.classList.contains("is-submitting"), false);
   assert.equal(harness.element("submit-button").disabled, false);
@@ -367,11 +476,13 @@ test("duplicate submits are prevented while the first request is pending", async
   assert.equal(harness.element("submit-button").disabled, true);
   assert.equal(harness.element("submit-button").getAttribute("aria-busy"), "true");
   assert.equal(harness.element("submit-label").textContent, "Processando informações...");
+  assert.equal(harness.element("submission-status").textContent, "Processando informações...");
 
   resolveResponse({ ok: true, status: 200 });
   await Promise.all([firstSubmission, secondSubmission]);
 
   assert.equal(harness.body.classList.contains("is-submitting"), false);
+  assert.equal(harness.element("submission-status").textContent, "");
   assert.equal(harness.form.classList.contains("quote-form--submitted"), true);
 });
 
@@ -392,12 +503,14 @@ test("failed submission restores controls and preserves the completed form", asy
   assert.equal(harness.element("submit-button").disabled, false);
   assert.equal(harness.element("submit-button").getAttribute("aria-busy"), "false");
   assert.equal(harness.element("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(harness.element("submission-status").textContent, "");
   assert.equal(harness.form.classList.contains("quote-form--submitted"), false);
   assert.equal(harness.element("notes").value, "Não apagar estes dados.");
   assert.equal(harness.focusOptions, null);
   assert.equal(harness.scrollOptions, null);
+  assert.equal(harness.consoleErrors.length, 1);
   assert.deepEqual(harness.alerts, [
-    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+    "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
   ]);
   assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
 });
@@ -423,9 +536,11 @@ test("timed-out submission aborts the request and restores controls", async () =
   assert.equal(harness.form.getAttribute("aria-busy"), "false");
   assert.equal(harness.element("submit-button").disabled, false);
   assert.equal(harness.element("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(harness.element("submission-status").textContent, "");
   assert.equal(harness.form.classList.contains("quote-form--submitted"), false);
+  assert.equal(harness.consoleErrors.length, 1);
   assert.deepEqual(harness.alerts, [
-    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+    "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
   ]);
   assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
 });

@@ -561,7 +561,9 @@ test("successful quote submission shows the inline success state without navigat
   assert.equal(result.successScrollOptions.top, 0);
   assert.equal(result.successScrollOptions.behavior, "smooth");
   assert.match(html, /<html lang="pt-BR">/);
+  assert.match(html, /<form class="quote-form" id="quote-form" action="#" method="post" novalidate>/);
   assert.match(html, /id="form-success" role="status"/);
+  assert.match(html, /id="submission-status" role="status" aria-live="polite" aria-atomic="true"/);
   assert.match(html, /aria-live="polite"/);
   assert.match(html, /tabindex="-1"/);
   assert.match(html, /Solicitação enviada com sucesso!/);
@@ -570,6 +572,19 @@ test("successful quote submission shows the inline success state without navigat
   assert.match(
     css,
     /body\.is-submitting,\s*body\.is-submitting \*\s*{[^}]*cursor:\s*wait !important;/s
+  );
+  assert.match(css, /--color-input-text:\s*#000000;/);
+  assert.match(
+    css,
+    /\.form-section--company\s*{[^}]*margin-top:\s*var\(--space-lg\);/s
+  );
+  assert.match(
+    css,
+    /\.text-input\s*{[^}]*color:\s*var\(--color-input-text\);/s
+  );
+  assert.match(
+    css,
+    /\.submit-button:disabled\s*{[^}]*color:\s*var\(--color-text-accent\);[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s
   );
   assert.match(
     css,
@@ -580,7 +595,7 @@ test("successful quote submission shows the inline success state without navigat
 test("failed quote submission restores the form controls", async () => {
   const result = await runQuoteSubmission({ responseOk: false });
 
-  assert.equal(result.consoleErrors.length, 0);
+  assert.equal(result.consoleErrors.length, 1);
   assert.equal(result.defaultPrevented, true);
   assert.equal(result.fetchCalls, 1);
   assert.equal(result.window.location.href, result.initialUrl);
@@ -596,7 +611,7 @@ test("failed quote submission restores the form controls", async () => {
   assert.equal(result.successScrollOptions, null);
   assert.equal(
     result.alertMessage,
-    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+    "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
   );
 });
 

@@ -189,19 +189,25 @@ wine/grey/green identity. Specifics:
 - Backend contract: POST the existing eight `Solicitante_*` fields to
   `/landingpage/solicitacaoorcamento`. Localhost previews use the local backend
   at port `3000`; they must never post to production.
-- Input masks run on `input` so paste and autofill work. Phone accepts valid
-  Brazilian 10- or 11-digit numbers. CNPJ accepts both existing numeric values
-  and the 12-alphanumeric + 2-numeric-check-digit format introduced in 2026.
-  E-mail confirmation is real validation and blocks mismatched submissions.
+- Input masks run on `input` so paste and autofill work. Text normalization runs
+  on blur and again on submit; names and roles follow the client-intake
+  title-case pattern while preserving intentional mixed casing and compound
+  role acronyms, and company names preserve deliberate brand casing. Phone
+  accepts valid Brazilian 10- or 11-digit numbers. CNPJ accepts both existing
+  numeric values and the 12-alphanumeric + 2-numeric-check-digit format
+  introduced in 2026. E-mail, phone, and CNPJ validation waits until blur or
+  submit. E-mail confirmation blocks mismatched submissions.
 - While submitting, keep the 60px action in place, disable it, replace its
-  label with “Processando informações...”, and show the wait cursor over every
-  descendant. Time out stalled requests and restore the form on failure.
+  visual chrome with the wine-colored text “Processando informações...”, and
+  show the wait cursor over every descendant. Time out stalled requests and
+  restore the form on failure.
 - After a successful response, stay on the quote page, replace the form with
   “Solicitação enviada com sucesso!” and “Basta aguardar. Logo entraremos em
   contato.”, keep the logo in its existing position, vertically center only
   that focused message in the viewport, scroll the page to the top, and offer
   no new-request action.
-- On failure, keep the form available and restore its submission controls.
+- On failure, keep the form available, restore its submission controls, and
+  show the frontend-owned `Erro_000` fallback.
 - Tests: run `node .agents/tests/quote-request.test.js` after touching
   `main.js`; extend it when adding pure logic. The deployment suite separately
   covers the real submission integration.

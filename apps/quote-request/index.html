@@ -9,14 +9,14 @@
       window.location.replace("/solicitacao-orcamento/" + window.location.search + window.location.hash);
     }
   </script>
-  <link rel="stylesheet" href="./style.css?v=3">
-  <script defer src="./main.js?v=3"></script>
+  <link rel="stylesheet" href="./style.css?v=4">
+  <script defer src="./main.js?v=4"></script>
 </head>
 <body>
   <main class="page">
     <img class="brand-logo" src="./img/LOGO_MACHADO.png" alt="Machado" width="1871" height="567" draggable="false">
 
-    <form class="quote-form" id="quote-form" novalidate>
+    <form class="quote-form" id="quote-form" action="#" method="post" novalidate>
       <div class="form-content">
         <header class="form-header">
           <h1>Solicitação de Orçamento:</h1>
@@ -50,7 +50,7 @@
 
             <div class="field">
               <label for="role">Cargo*</label>
-              <input class="text-input" id="role" name="role" type="text" autocomplete="organization-title" placeholder="Digite seu cargo" required>
+              <input class="text-input" id="role" name="role" type="text" autocomplete="organization-title" autocapitalize="words" placeholder="Digite seu cargo" required>
             </div>
           </fieldset>
 
@@ -101,7 +101,7 @@
             </div>
           </fieldset>
 
-          <button class="submit-button" id="submit-button" type="submit" aria-live="polite">
+          <button class="submit-button" id="submit-button" type="submit">
             <span id="submit-label">SOLICITAR ORÇAMENTO</span>
           </button>
         </div>
@@ -112,6 +112,8 @@
         <p>Basta aguardar. Logo entraremos em contato.</p>
       </section>
     </form>
+
+    <p class="visually-hidden" id="submission-status" role="status" aria-live="polite" aria-atomic="true"></p>
   </main>
 </body>
 </html>
