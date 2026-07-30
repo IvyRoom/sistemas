@@ -369,6 +369,11 @@ test("text fields normalize only after editing finishes", () => {
     assert.equal(harness.listeners.has(`${id}:input`), false, id);
   }
   assert.equal(harness.element("full-name").value, "  joão   da   silva  ");
+  harness.dispatch("email", "input");
+  harness.dispatch("email-confirm", "input");
+  assert.equal(harness.element("email").value, " LUCAS@EXAMPLE.COM ");
+  assert.equal(harness.element("email-confirm").value, " lucas@example.com ");
+
   harness.dispatch("full-name", "blur");
   harness.dispatch("email", "blur");
   harness.dispatch("role", "blur");

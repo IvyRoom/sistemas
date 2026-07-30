@@ -562,6 +562,8 @@ test("successful quote submission shows the inline success state without navigat
   assert.equal(result.successScrollOptions.behavior, "smooth");
   assert.match(html, /<html lang="pt-BR">/);
   assert.match(html, /<form class="quote-form" id="quote-form" action="#" method="post" novalidate>/);
+  assert.match(html, /id="email" name="email" type="email"/);
+  assert.match(html, /id="email-confirm" name="email-confirm" type="email"/);
   assert.match(html, /id="form-success" role="status"/);
   assert.match(html, /id="submission-status" role="status" aria-live="polite" aria-atomic="true"/);
   assert.match(html, /aria-live="polite"/);
