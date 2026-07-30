@@ -161,6 +161,11 @@ open threads, next steps) so the new one starts oriented.
 ## Source, deployment, and preview paths
 - Application-internal assets use document-relative URLs. Root-relative URLs
   are for stable public navigation and explicit cross-application contracts.
+- Preview repository sources with `node scripts/serve-frontend.mjs` and exercise
+  root-relative navigation through the canonical public paths it derives from
+  `frontend-deployment.json`. The server also preserves direct mapped source
+  paths when a source-location check is needed; do not use a generic
+  repository-root server for cross-application navigation.
 - Source locations, deployment locations, and public URLs are independent.
   When any one changes, validate the application from its repository source
   path and validate the generated `dist/` tree with `dist/` as the web root.

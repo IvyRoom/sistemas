@@ -123,8 +123,12 @@ repository-local `dist/` directory, copy mapped tracked files, and validate the
 route contract, references, file set, bytes, repeatability, and expected `404`
 responses.
 
-- To preview source, serve the repository root and open the repository entry
-  point, such as `/apps/conecta/referral-form/index.html`.
+- To preview source, run `node scripts/serve-frontend.mjs` from the repository
+  root and open `http://127.0.0.1:4173/` or another documented public route.
+  The server validates `frontend-deployment.json`, maps public routes and their
+  document-relative assets back to tracked sources, and also preserves direct
+  mapped source paths such as `/apps/quote-request/index.html`. It rejects
+  repository-only and unknown paths. Stop it with `Ctrl+C`.
 - To preview the deployment artifact, serve `dist/` as the web root and open
   the public route. Opening `/dist/...` through a repository-root server does
   not reproduce Azure's web-root behavior.

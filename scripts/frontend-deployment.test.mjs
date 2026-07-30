@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { request as httpRequest } from "node:http";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
@@ -11,11 +12,42 @@ import {
   publicDownloads,
   publicEntries,
   readDeploymentManifest,
+  startSourcePreviewServer,
   validateDeploymentManifest
 } from "./frontend-deployment-lib.mjs";
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function requestPreview(baseUrl, path, method = "GET") {
+  const serverUrl = new URL(baseUrl);
+
+  return new Promise((resolveRequest, rejectRequest) => {
+    const request = httpRequest(
+      {
+        hostname: serverUrl.hostname,
+        method,
+        path,
+        port: serverUrl.port
+      },
+      (response) => {
+        const chunks = [];
+
+        response.on("data", (chunk) => chunks.push(chunk));
+        response.on("end", () => {
+          resolveRequest({
+            body: Buffer.concat(chunks),
+            headers: response.headers,
+            status: response.statusCode
+          });
+        });
+      }
+    );
+
+    request.on("error", rejectRequest);
+    request.end();
+  });
 }
 
 async function readEarlyInlineScript(relativePath) {
@@ -164,6 +196,93 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     const encodedPath = new URL(path, manifest.canonicalOrigin).pathname;
     assert.match(encodedPath, /%[0-9A-F]{2}/i);
     assert.equal(decodeURIComponent(encodedPath), path);
+  }
+});
+
+test("source preview serves only manifest-mapped routes and files", async () => {
+  const server = await startSourcePreviewServer();
+
+  try {
+    const marketingHtml = await readFile(new URL("../index.html", import.meta.url));
+    const quoteHtml = await readFile(
+      new URL("../apps/quote-request/index.html", import.meta.url)
+    );
+    const quoteCss = await readFile(
+      new URL("../apps/quote-request/style.css", import.meta.url)
+    );
+
+    for (const path of [
+      "/solicitacao-orcamento/",
+      "/solicitacao-orcamento/?origem=site&cliente=Lucas%20Machado",
+      "/solicitacao-orcamento?origem=site&cliente=Lucas%20Machado",
+      "/solicitacao-orcamento/index.html",
+      "/apps/quote-request/index.html?preview=source"
+    ]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
+      assert.deepEqual(response.body, quoteHtml, path);
+    }
+
+    const rootResponse = await requestPreview(server.baseUrl, "/");
+    assert.equal(rootResponse.status, 200);
+    assert.equal(rootResponse.headers["content-type"], "text/html; charset=utf-8");
+    assert.deepEqual(rootResponse.body, marketingHtml);
+
+    for (const path of [
+      "/solicitacao-orcamento/style.css?v=4",
+      "/apps/quote-request/style.css"
+    ]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers["content-type"], "text/css; charset=utf-8", path);
+      assert.deepEqual(response.body, quoteCss, path);
+    }
+
+    const headResponse = await requestPreview(
+      server.baseUrl,
+      "/solicitacao-orcamento/style.css?head=1",
+      "HEAD"
+    );
+    assert.equal(headResponse.status, 200);
+    assert.equal(headResponse.headers["content-type"], "text/css; charset=utf-8");
+    assert.equal(headResponse.headers["content-length"], String(quoteCss.length));
+    assert.equal(headResponse.body.length, 0);
+
+    for (const path of [
+      "/unknown/",
+      "/README.md",
+      "/frontend-deployment.json",
+      "/scripts/serve-frontend.mjs",
+      "/apps/quote-request/not-mapped.txt"
+    ]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 404, path);
+    }
+
+    for (const path of [
+      "/%E0%A4%A",
+      "/apps/quote-request/../../README.md",
+      "/apps/quote-request/%2e%2e/%2e%2e/README.md",
+      "/apps/quote-request/%2e%2e%5cREADME.md"
+    ]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 400, path);
+    }
+
+    const postResponse = await requestPreview(
+      server.baseUrl,
+      "/solicitacao-orcamento/",
+      "POST"
+    );
+    assert.equal(postResponse.status, 405);
+    assert.equal(postResponse.headers.allow, "GET, HEAD");
+  } finally {
+    await server.close();
   }
 });
 

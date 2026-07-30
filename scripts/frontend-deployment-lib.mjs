@@ -861,62 +861,108 @@ function contentType(file) {
   ]).get(extension) ?? "application/octet-stream";
 }
 
-export async function startDistServer() {
-  const artifactFiles = new Set(await listTreeFiles(distRoot));
+function safeRequestPath(requestUrl) {
+  if (typeof requestUrl !== "string" || !requestUrl.startsWith("/")) {
+    return null;
+  }
 
-  const server = createServer(async (request, response) => {
-    try {
-      const requestUrl = new URL(request.url, "http://127.0.0.1");
-      let decodedPath;
+  const queryIndex = requestUrl.indexOf("?");
+  const encodedPath = queryIndex === -1
+    ? requestUrl
+    : requestUrl.slice(0, queryIndex);
+  let decodedPath;
 
-      try {
-        decodedPath = decodeURIComponent(requestUrl.pathname).normalize("NFC");
-      } catch {
-        response.writeHead(400);
-        response.end("Bad Request");
-        return;
-      }
+  try {
+    decodedPath = decodeURIComponent(encodedPath).normalize("NFC");
+  } catch {
+    return null;
+  }
 
-      const normalizedPath = posix.normalize(decodedPath);
-      if (normalizedPath !== decodedPath) {
-        response.writeHead(400);
-        response.end("Bad Request");
-        return;
-      }
+  if (
+    decodedPath.includes("\\")
+    || /[\u0000-\u001F\u007F]/.test(decodedPath)
+    || posix.normalize(decodedPath) !== decodedPath
+  ) {
+    return null;
+  }
 
-      const relativePath = decodedPath.replace(/^\/+/, "");
-      const candidates = relativePath === ""
-        ? ["index.html"]
-        : decodedPath.endsWith("/")
-          ? [posix.join(relativePath, "index.html")]
-          : [relativePath, posix.join(relativePath, "index.html")];
-      const file = candidates.find((candidate) => artifactFiles.has(candidate));
+  return decodedPath;
+}
 
-      if (!file) {
-        response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-        response.end("Not Found");
-        return;
-      }
+function sendResponse(request, response, status, headers, body) {
+  const contents = Buffer.isBuffer(body) ? body : Buffer.from(body, "utf8");
 
-      const contents = await readFile(resolve(distRoot, ...file.split("/")));
-      response.writeHead(200, {
-        "content-length": contents.length,
-        "content-type": contentType(file)
-      });
-      response.end(contents);
-    } catch {
-      response.writeHead(500);
-      response.end("Internal Server Error");
+  response.writeHead(status, {
+    "content-length": contents.length,
+    ...headers
+  });
+  response.end(request.method === "HEAD" ? undefined : contents);
+}
+
+function sendStatus(request, response, status, message, headers = {}) {
+  sendResponse(
+    request,
+    response,
+    status,
+    {
+      "content-type": "text/plain; charset=utf-8",
+      ...headers
+    },
+    message
+  );
+}
+
+function addSourcePreviewRoute(routes, route, source) {
+  const existingSource = routes.get(route);
+
+  invariant(
+    existingSource === undefined || existingSource === source,
+    `Source preview route maps multiple files: ${route}`
+  );
+  routes.set(route, source);
+}
+
+function sourcePreviewRoutes(validation) {
+  const routes = new Map();
+  const sourceByOutput = new Map(
+    validation.files.map((file) => [file.output, file.source])
+  );
+
+  for (const file of validation.files) {
+    addSourcePreviewRoute(routes, `/${file.output}`, file.source);
+    addSourcePreviewRoute(routes, `/${file.source}`, file.source);
+  }
+
+  for (const contract of [...validation.entries, ...validation.downloads]) {
+    addSourcePreviewRoute(routes, contract.path, sourceByOutput.get(contract.file));
+  }
+
+  for (const entry of validation.entries) {
+    if (entry.path !== "/") {
+      addSourcePreviewRoute(
+        routes,
+        entry.path.slice(0, -1),
+        sourceByOutput.get(entry.file)
+      );
     }
-  });
+  }
 
-  await new Promise((resolveListen, rejectListen) => {
+  return routes;
+}
+
+function listen(server, port) {
+  return new Promise((resolveListen, rejectListen) => {
     server.once("error", rejectListen);
-    server.listen(0, "127.0.0.1", resolveListen);
+    server.listen(port, "127.0.0.1", () => {
+      server.off("error", rejectListen);
+      resolveListen();
+    });
   });
+}
 
+function runningServer(server, label) {
   const address = server.address();
-  invariant(address && typeof address === "object", "Local dist server did not expose an address.");
+  invariant(address && typeof address === "object", `${label} did not expose an address.`);
 
   return {
     baseUrl: `http://127.0.0.1:${address.port}`,
@@ -924,6 +970,102 @@ export async function startDistServer() {
       server.close((error) => error ? rejectClose(error) : resolveClose());
     })
   };
+}
+
+export async function startSourcePreviewServer({ manifest = null, port = 0 } = {}) {
+  invariant(
+    Number.isInteger(port) && port >= 0 && port <= 65535,
+    `Source preview port must be an integer from 0 through 65535: ${port}`
+  );
+
+  const deploymentManifest = manifest ?? await readDeploymentManifest();
+  const validation = await validateDeploymentManifest(deploymentManifest);
+  const routes = sourcePreviewRoutes(validation);
+
+  const server = createServer(async (request, response) => {
+    try {
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        sendStatus(request, response, 405, "Method Not Allowed", {
+          allow: "GET, HEAD"
+        });
+        return;
+      }
+
+      const requestPath = safeRequestPath(request.url);
+      if (requestPath === null) {
+        sendStatus(request, response, 400, "Bad Request");
+        return;
+      }
+
+      const source = routes.get(requestPath);
+      if (!source) {
+        sendStatus(request, response, 404, "Not Found");
+        return;
+      }
+
+      const contents = await readFile(toLocalPath(source));
+      sendResponse(
+        request,
+        response,
+        200,
+        { "content-type": contentType(source) },
+        contents
+      );
+    } catch {
+      sendStatus(request, response, 500, "Internal Server Error");
+    }
+  });
+
+  await listen(server, port);
+  return runningServer(server, "Local source preview server");
+}
+
+export async function startDistServer() {
+  const artifactFiles = new Set(await listTreeFiles(distRoot));
+
+  const server = createServer(async (request, response) => {
+    try {
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        sendStatus(request, response, 405, "Method Not Allowed", {
+          allow: "GET, HEAD"
+        });
+        return;
+      }
+
+      const requestPath = safeRequestPath(request.url);
+      if (requestPath === null) {
+        sendStatus(request, response, 400, "Bad Request");
+        return;
+      }
+
+      const relativePath = requestPath.replace(/^\/+/, "");
+      const candidates = relativePath === ""
+        ? ["index.html"]
+        : requestPath.endsWith("/")
+          ? [posix.join(relativePath, "index.html")]
+          : [relativePath, posix.join(relativePath, "index.html")];
+      const file = candidates.find((candidate) => artifactFiles.has(candidate));
+
+      if (!file) {
+        sendStatus(request, response, 404, "Not Found");
+        return;
+      }
+
+      const contents = await readFile(resolve(distRoot, ...file.split("/")));
+      sendResponse(
+        request,
+        response,
+        200,
+        { "content-type": contentType(file) },
+        contents
+      );
+    } catch {
+      sendStatus(request, response, 500, "Internal Server Error");
+    }
+  });
+
+  await listen(server, 0);
+  return runningServer(server, "Local dist server");
 }
 
 async function fetchWithoutRedirect(url) {
