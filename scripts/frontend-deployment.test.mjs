@@ -393,34 +393,62 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
   const consoleErrors = [];
   let successFocusOptions = null;
   let successScrollOptions = null;
-  const document = {
-    body: { style: {} },
-    getElementById(id) {
-      if (!elements.has(id)) {
-        const classes = new Set();
-        elements.set(id, {
-          addEventListener(type, listener) {
-            listeners.set(`${id}:${type}`, listener);
-          },
-          classList: {
-            add(value) {
-              classes.add(value);
-            },
-            contains(value) {
-              return classes.has(value);
-            }
-          },
-          disabled: false,
-          focus(options) {
-            if (id === "Confirmação-de-Solicitação") {
-              if (presentationError === "focus") throw new Error("Focus unavailable");
-              successFocusOptions = options;
-            }
-          },
-          style: {},
-          value: ""
-        });
+
+  function createClassList() {
+    const classes = new Set();
+
+    return {
+      add(...values) {
+        values.forEach((value) => classes.add(value));
+      },
+      contains(value) {
+        return classes.has(value);
+      },
+      remove(...values) {
+        values.forEach((value) => classes.delete(value));
+      },
+      toggle(value, force) {
+        if (force) classes.add(value);
+        else classes.delete(value);
       }
+    };
+  }
+
+  function createElement(id) {
+    const attributes = new Map();
+
+    return {
+      addEventListener(type, listener) {
+        listeners.set(`${id}:${type}`, listener);
+      },
+      classList: createClassList(),
+      disabled: false,
+      focus(options) {
+        if (id === "form-success") {
+          if (presentationError === "focus") throw new Error("Focus unavailable");
+          successFocusOptions = options;
+        }
+      },
+      getAttribute(name) {
+        return attributes.get(name) ?? null;
+      },
+      hidden: id === "email-mismatch-warning",
+      reportValidity() {
+        return true;
+      },
+      setAttribute(name, value) {
+        attributes.set(name, String(value));
+      },
+      setCustomValidity() {},
+      textContent: "",
+      value: ""
+    };
+  }
+
+  const document = {
+    body: { classList: createClassList() },
+    getElementById(id) {
+      if (!elements.has(id)) elements.set(id, createElement(id));
 
       return elements.get(id);
     }
@@ -429,7 +457,11 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
   let defaultPrevented = false;
   const initialUrl = "https://example.com/solicitacao-orcamento/?origem=teste#detalhes";
   const window = {
-    location: { href: initialUrl },
+    clearTimeout() {},
+    location: {
+      hostname: "example.com",
+      href: initialUrl
+    },
     matchMedia(query) {
       assert.equal(query, "(prefers-reduced-motion: reduce)");
       return { matches: false };
@@ -437,10 +469,14 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
     scrollTo(options) {
       if (presentationError === "scroll") throw new Error("Scroll unavailable");
       successScrollOptions = options;
+    },
+    setTimeout() {
+      return 1;
     }
   };
 
   runInNewContext(source, {
+    AbortController,
     alert(message) {
       alertMessage = message;
     },
@@ -453,7 +489,6 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
     fetch: async () => {
       fetchCalls += 1;
       return {
-        json: async () => responseOk ? {} : { error: "Erro_teste" },
         ok: responseOk,
         status: responseOk ? 200 : 500
       };
@@ -461,15 +496,28 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
     window
   });
 
-  const submit = listeners.get("Formulário-de-Solicitação:submit");
+  Object.entries({
+    "company-cnpj": "11.222.333/0001-81",
+    "company-name": "Empresa Exemplo",
+    "email-confirm": "lucas@example.com",
+    email: "lucas@example.com",
+    "full-name": "Lucas Machado",
+    notes: "",
+    "participant-count": "5",
+    phone: "(11) 98765-4321",
+    role: "Diretor"
+  }).forEach(([id, value]) => {
+    document.getElementById(id).value = value;
+  });
+
+  const submit = listeners.get("quote-form:submit");
 
   assert.ok(submit);
-  submit({
+  await submit({
     preventDefault() {
       defaultPrevented = true;
     }
   });
-  await new Promise(setImmediate);
 
   return {
     alertMessage,
@@ -502,47 +550,70 @@ test("successful quote submission shows the inline success state without navigat
   assert.equal(result.fetchCalls, 1);
   assert.equal(result.window.location.href, result.initialUrl);
   assert.equal(
-    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    result.elements.get("quote-form").classList.contains("quote-form--submitted"),
     true
   );
-  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, true);
-  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
-  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.elements.get("submit-button").disabled, false);
+  assert.equal(result.elements.get("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(result.elements.get("quote-form").getAttribute("aria-busy"), "false");
+  assert.equal(result.document.body.classList.contains("is-submitting"), false);
   assert.equal(result.successFocusOptions.preventScroll, true);
   assert.equal(result.successScrollOptions.top, 0);
   assert.equal(result.successScrollOptions.behavior, "smooth");
   assert.match(html, /<html lang="pt-BR">/);
-  assert.match(html, /role="status" aria-live="polite" tabindex="-1"/);
+  assert.match(html, /<form class="quote-form" id="quote-form" action="#" method="post" novalidate>/);
+  assert.match(html, /id="email" name="email" type="email"/);
+  assert.match(html, /id="email-confirm" name="email-confirm" type="email"/);
+  assert.match(html, /id="form-success" role="status"/);
+  assert.match(html, /id="submission-status" role="status" aria-live="polite" aria-atomic="true"/);
+  assert.match(html, /aria-live="polite"/);
+  assert.match(html, /tabindex="-1"/);
   assert.match(html, /Solicitação enviada com sucesso!/);
   assert.match(html, /Basta aguardar\. Logo entraremos em contato\./);
   assert.equal((html.match(/<button\b/g) || []).length, 1);
-  assert.match(css, /#Seção-Solicitação\s*{[^}]*position:\s*relative;/s);
   assert.match(
     css,
-    /\.form--submitted\s*{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*display:\s*flex;[^}]*align-items:\s*center;/s
+    /body\.is-submitting,\s*body\.is-submitting \*\s*{[^}]*cursor:\s*wait !important;/s
+  );
+  assert.match(css, /--color-input-text:\s*#000000;/);
+  assert.match(
+    css,
+    /\.form-section--company\s*{[^}]*margin-top:\s*var\(--space-lg\);/s
+  );
+  assert.match(
+    css,
+    /\.text-input\s*{[^}]*color:\s*var\(--color-input-text\);/s
+  );
+  assert.match(
+    css,
+    /\.submit-button:disabled\s*{[^}]*color:\s*var\(--color-text-accent\);[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s
+  );
+  assert.match(
+    css,
+    /\.quote-form--submitted\s*{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*display:\s*flex;[^}]*align-items:\s*center;/s
   );
 });
 
 test("failed quote submission restores the form controls", async () => {
   const result = await runQuoteSubmission({ responseOk: false });
 
-  assert.equal(result.consoleErrors.length, 0);
+  assert.equal(result.consoleErrors.length, 1);
   assert.equal(result.defaultPrevented, true);
   assert.equal(result.fetchCalls, 1);
   assert.equal(result.window.location.href, result.initialUrl);
   assert.equal(
-    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    result.elements.get("quote-form").classList.contains("quote-form--submitted"),
     false
   );
-  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, false);
-  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").style.display, "block");
-  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
-  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.elements.get("submit-button").disabled, false);
+  assert.equal(result.elements.get("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(result.elements.get("quote-form").getAttribute("aria-busy"), "false");
+  assert.equal(result.document.body.classList.contains("is-submitting"), false);
   assert.equal(result.successFocusOptions, null);
   assert.equal(result.successScrollOptions, null);
   assert.equal(
     result.alertMessage,
-    "Falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+    "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
   );
 });
 
@@ -555,12 +626,12 @@ test("success presentation errors do not report an accepted quote as a transport
   assert.equal(result.alertMessage, null);
   assert.equal(result.consoleErrors.length, 1);
   assert.equal(
-    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    result.elements.get("quote-form").classList.contains("quote-form--submitted"),
     true
   );
-  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, true);
-  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
-  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.elements.get("submit-button").disabled, false);
+  assert.equal(result.elements.get("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(result.document.body.classList.contains("is-submitting"), false);
   assert.equal(result.successFocusOptions, null);
   assert.equal(result.successScrollOptions.top, 0);
   assert.equal(result.successScrollOptions.behavior, "smooth");
@@ -575,12 +646,12 @@ test("success scroll errors do not report an accepted quote as a transport failu
   assert.equal(result.alertMessage, null);
   assert.equal(result.consoleErrors.length, 1);
   assert.equal(
-    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    result.elements.get("quote-form").classList.contains("quote-form--submitted"),
     true
   );
-  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, true);
-  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
-  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.elements.get("submit-button").disabled, false);
+  assert.equal(result.elements.get("submit-label").textContent, "SOLICITAR ORÇAMENTO");
+  assert.equal(result.document.body.classList.contains("is-submitting"), false);
   assert.equal(result.successFocusOptions.preventScroll, true);
   assert.equal(result.successScrollOptions, null);
 });

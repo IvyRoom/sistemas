@@ -1,188 +1,244 @@
-*{
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI';
-    user-select: none;
-}
-
 :root {
-    --considered-screen-width: 100vw;
-    --considered-margin-left: 0px;
+  --color-page-start: #000000;
+  --color-page-end: #4a0816;
+  --color-surface-start: #ffffff;
+  --color-surface-end: #d2d2d2;
+  --color-text-on-dark: #ffffff;
+  --color-text-accent: #4a0816;
+  --color-input-text: #000000;
+  --color-border: #929292;
+  --color-danger: #dc0638;
+  --color-action: #056839;
+  --color-focus: #7f1730;
+  --color-outer-page: #f3f3f3;
+  --shadow-action: 0 4px 6px rgba(0, 0, 0, 0.65);
+  --page-max-width: 430px;
+  --space-xs: 5px;
+  --space-sm: 10px;
+  --space-md: 20px;
+  --space-lg: 30px;
+  --space-xl: 40px;
+  --radius-control: 5px;
+  --radius-button: 10px;
+  --radius-card: 20px;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////// Configura a página para Desktops. ////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
-
-@media (min-width: 431px) {
-    
-    :root {
-        --considered-screen-width: 430px;
-        --considered-margin-left: calc(50vw - (var(--considered-screen-width)/2));
-    }
-
+* {
+  box-sizing: border-box;
 }
 
-
-/*/////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////// Seção_Solicitação ////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
-
-#Seção-Solicitação{
-    background: linear-gradient(165deg, #000, #4a0816);
-    width: var(--considered-screen-width);
-    margin-left: var(--considered-margin-left);
-    min-height: 100vh;
-    padding-bottom: 40px;
-    position: relative;
+html {
+  min-height: 100%;
+  background: var(--color-outer-page);
 }
 
-#Logo-Machado{
-    height: auto;
-    width: 120px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: 40px;
-    margin-bottom: 40px;
+body {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+  color: var(--color-text-accent);
+  background: var(--color-outer-page);
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-#Título-Formulário-de-Solicitação{
-    font-size:24px;
-    color: #fff;
-    text-align: center;
-    margin-bottom: 30px;
+body.is-submitting,
+body.is-submitting * {
+  cursor: wait !important;
 }
 
-#Background-Branco-Cinza{
-    background: linear-gradient(165deg, #fff, #d2d2d2);
-    width: 95%;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 20px;
-    border-radius: 20px;
-    padding-top: 30px;
-    padding-bottom: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }
 
-#Título-1{
-    font-size:22px;
-    color: #4a0816;
-    text-align: center;
-    margin-bottom: 20px;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.Títulos-de-Preenchimento{
-    font-size:16px;
-    color: #4a0816;
+.page {
+  position: relative;
+  width: min(100%, var(--page-max-width));
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: var(--space-xl) var(--space-sm);
+  background: linear-gradient(165deg, var(--color-page-start), var(--color-page-end));
 }
 
-.Campos-de-Preenchimento{
-    width: 100%;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-bottom: 20px;
-    font-size: 16px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
+.brand-logo {
+  display: block;
+  width: 120px;
+  height: auto;
+  margin: 0 auto var(--space-xl);
 }
 
-#Aviso-Emails-Divergentes-Campo{
-    color: #dc0638;
-    display: none;
-    font-size: 14px;
-    margin-top: -15px;
-    margin-bottom: 20px;
+.quote-form {
+  width: 100%;
 }
 
-#Título-2{
-    font-size:22px;
-    color: #4a0816;
-    text-align: center;
-    margin-top: 40px;
-    margin-bottom: 20px;
+.form-header {
+  margin-bottom: var(--space-lg);
+  color: var(--color-text-on-dark);
+  text-align: center;
 }
 
-#Observações{
-    width: 100%;
-    height: 200px;
-    display: block;
-    padding: 8px;
-    margin-top:5px;
-    margin-bottom: 20px;
-    font-size: 16px;
-    border: 1px solid rgb(146, 146, 146);
-    border-radius: 5px;
-    resize: none;
+.form-header h1,
+.form-header p {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.25;
 }
 
-#Botão-Solicitar-Orçamento{
-    height: 60px;
-    width: 100%;
-    color: #fff;
-    margin-top: 10px;
-    margin-bottom: 20px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: none;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
-    background-color: #056839;
+.form-header h1 {
+  font-weight: 700;
 }
 
-#Aviso-Emails-Divergentes-Botão{
-    color: #dc0638;
-    display: none;
-    justify-content: center;
-    font-size: 14px;
-    margin-top: -10px;
-    margin-bottom: 10px;
+.form-card {
+  width: 100%;
+  padding: var(--space-lg) var(--space-md) var(--space-md);
+  border-radius: var(--radius-card);
+  background: linear-gradient(165deg, var(--color-surface-start), var(--color-surface-end));
 }
 
-#Aviso-Processando{
-    display: none;
-    justify-content: center;
-    align-items: center;
-    height: 60px;
-    margin-top: 25px;
-    margin-bottom: 25px;
-    margin-left: auto;
-    margin-right: auto;
+.form-section {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.form-success{
-    display: none;
-    width: 90%;
-    color: #fff;
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
+.form-section legend {
+  width: 100%;
+  margin-bottom: var(--space-md);
+  padding: 0;
+  color: var(--color-text-accent);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
 }
 
-.form--submitted{
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
+.form-section--company {
+  margin-top: var(--space-lg);
 }
 
-.form--submitted #Título-Formulário-de-Solicitação,
-.form--submitted #Background-Branco-Cinza{
-    display: none;
+.field {
+  margin-bottom: var(--space-md);
 }
 
-.form--submitted .form-success{
-    display: block;
+.field label {
+  display: inline-block;
+  margin-bottom: var(--space-xs);
+  font-size: 16px;
+  line-height: 1.35;
 }
 
-#Confirmação-Título{
-    font-size: 24px;
-    margin-bottom: 30px;
+.text-input {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-input-text);
+  background: var(--color-surface-start);
+  font-size: 16px;
 }
 
-#Confirmação-Explicação{
-    font-size: 20px;
+.text-input:focus-visible,
+.submit-button:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.field-warning {
+  margin: var(--space-xs) 0 0;
+  color: var(--color-danger);
+  font-size: 14px;
+}
+
+.field-warning[hidden] {
+  display: none;
+}
+
+.notes-input {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.submit-button {
+  width: 100%;
+  min-height: 60px;
+  margin-top: var(--space-sm);
+  border: 0;
+  border-radius: var(--radius-button);
+  color: var(--color-text-on-dark);
+  background: var(--color-action);
+  box-shadow: var(--shadow-action);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.submit-button:disabled {
+  color: var(--color-text-accent);
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.form-success {
+  display: none;
+  width: 90%;
+  margin-inline: auto;
+  color: var(--color-text-on-dark);
+  text-align: center;
+}
+
+.form-success h2 {
+  margin: 0 0 var(--space-lg);
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.form-success p {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.form-success:focus-visible {
+  outline: 3px solid var(--color-text-on-dark);
+  outline-offset: 4px;
+}
+
+.quote-form--submitted {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+}
+
+.quote-form--submitted .form-content {
+  display: none;
+}
+
+.quote-form--submitted .form-success {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
 }
