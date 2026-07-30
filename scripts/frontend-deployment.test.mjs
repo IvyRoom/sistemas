@@ -417,12 +417,6 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
               successFocusOptions = options;
             }
           },
-          scrollIntoView(options) {
-            if (id === "Confirmação-de-Solicitação") {
-              if (presentationError === "scroll") throw new Error("Scroll unavailable");
-              successScrollOptions = options;
-            }
-          },
           style: {},
           value: ""
         });
@@ -439,6 +433,10 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
     matchMedia(query) {
       assert.equal(query, "(prefers-reduced-motion: reduce)");
       return { matches: false };
+    },
+    scrollTo(options) {
+      if (presentationError === "scroll") throw new Error("Scroll unavailable");
+      successScrollOptions = options;
     }
   };
 
@@ -492,6 +490,10 @@ test("successful quote submission shows the inline success state without navigat
     new URL("../apps/quote-request/index.html", import.meta.url),
     "utf8"
   );
+  const css = await readFile(
+    new URL("../apps/quote-request/style.css", import.meta.url),
+    "utf8"
+  );
   const result = await runQuoteSubmission({ responseOk: true });
 
   assert.equal(result.alertMessage, null);
@@ -507,13 +509,18 @@ test("successful quote submission shows the inline success state without navigat
   assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
   assert.equal(result.document.body.style.cursor, "default");
   assert.equal(result.successFocusOptions.preventScroll, true);
-  assert.equal(result.successScrollOptions.block, "center");
+  assert.equal(result.successScrollOptions.top, 0);
   assert.equal(result.successScrollOptions.behavior, "smooth");
   assert.match(html, /<html lang="pt-BR">/);
   assert.match(html, /role="status" aria-live="polite" tabindex="-1"/);
   assert.match(html, /Solicitação enviada com sucesso!/);
   assert.match(html, /Basta aguardar\. Logo entraremos em contato\./);
   assert.equal((html.match(/<button\b/g) || []).length, 1);
+  assert.match(css, /#Seção-Solicitação\s*{[^}]*position:\s*relative;/s);
+  assert.match(
+    css,
+    /\.form--submitted\s*{[^}]*position:\s*absolute;[^}]*inset:\s*0;[^}]*display:\s*flex;[^}]*align-items:\s*center;/s
+  );
 });
 
 test("failed quote submission restores the form controls", async () => {
@@ -555,8 +562,27 @@ test("success presentation errors do not report an accepted quote as a transport
   assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
   assert.equal(result.document.body.style.cursor, "default");
   assert.equal(result.successFocusOptions, null);
-  assert.equal(result.successScrollOptions.block, "center");
+  assert.equal(result.successScrollOptions.top, 0);
   assert.equal(result.successScrollOptions.behavior, "smooth");
+});
+
+test("success scroll errors do not report an accepted quote as a transport failure", async () => {
+  const result = await runQuoteSubmission({
+    presentationError: "scroll",
+    responseOk: true
+  });
+
+  assert.equal(result.alertMessage, null);
+  assert.equal(result.consoleErrors.length, 1);
+  assert.equal(
+    result.elements.get("Formulário-de-Solicitação").classList.contains("form--submitted"),
+    true
+  );
+  assert.equal(result.elements.get("Botão-Solicitar-Orçamento").disabled, true);
+  assert.equal(result.elements.get("Aviso-Processando").style.display, "none");
+  assert.equal(result.document.body.style.cursor, "default");
+  assert.equal(result.successFocusOptions.preventScroll, true);
+  assert.equal(result.successScrollOptions, null);
 });
 
 test("client intake normalizes only its slashless public route before assets load", async () => {

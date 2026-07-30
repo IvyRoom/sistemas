@@ -313,7 +313,7 @@ FormuláriodeSolicitação.addEventListener('submit', (event) => {
         }
 
         try {
-            ConfirmaçãodeSolicitação.scrollIntoView({ block: "center", behavior: ComportamentodeRolagemPreferido() });
+            window.scrollTo({ top: 0, behavior: ComportamentodeRolagemPreferido() });
         } catch (err) {
             console.error("Falha ao posicionar a confirmação da solicitação:", err);
         }

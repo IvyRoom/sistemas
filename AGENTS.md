@@ -188,8 +188,9 @@ route and completion-flow contracts are intentionally modernized:
   during presentation work.
 - After a successful response, stay on the quote page, replace the form with
   “Solicitação enviada com sucesso!” and “Basta aguardar. Logo entraremos em
-  contato.”, move focus and the viewport to that message, and offer no
-  new-request action.
+  contato.”, keep the logo in its existing position, vertically center only
+  that focused message in the viewport, scroll the page to the top, and offer
+  no new-request action.
 - On failure, keep the form available and restore its submission controls.
 
 ## Error codes (Erro_XXX)
