@@ -6,11 +6,11 @@
       "id": "marketing-site",
       "mappings": [
         {
-          "source": "index.html",
+          "source": "apps/marketing-site/index.html",
           "output": "index.html"
         },
         {
-          "source": "principal",
+          "source": "apps/marketing-site/principal",
           "output": "principal"
         }
       ],

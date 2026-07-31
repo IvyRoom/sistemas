@@ -102,6 +102,25 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.equal(validation.files.length, 224);
   assert.deepEqual(
     validation.mappings.filter(
+      (mapping) => mapping.applicationId === "marketing-site"
+    ),
+    [
+      {
+        applicationId: "marketing-site",
+        source: "apps/marketing-site/index.html",
+        output: "index.html",
+        sourceType: "file"
+      },
+      {
+        applicationId: "marketing-site",
+        source: "apps/marketing-site/principal",
+        output: "principal",
+        sourceType: "directory"
+      }
+    ]
+  );
+  assert.deepEqual(
+    validation.mappings.filter(
       (mapping) => mapping.applicationId === "quote-request"
     ),
     [
@@ -220,7 +239,9 @@ test("source preview serves only manifest-mapped routes and files", async () => 
   const server = await startSourcePreviewServer();
 
   try {
-    const marketingHtml = await readFile(new URL("../index.html", import.meta.url));
+    const marketingHtml = await readFile(
+      new URL("../apps/marketing-site/index.html", import.meta.url)
+    );
     const quoteHtml = await readFile(
       new URL("../apps/quote-request/index.html", import.meta.url)
     );
@@ -242,10 +263,62 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       assert.deepEqual(response.body, quoteHtml, path);
     }
 
-    const rootResponse = await requestPreview(server.baseUrl, "/");
-    assert.equal(rootResponse.status, 200);
-    assert.equal(rootResponse.headers["content-type"], "text/html; charset=utf-8");
-    assert.deepEqual(rootResponse.body, marketingHtml);
+    for (const path of [
+      "/",
+      "/index.html",
+      "/apps/marketing-site/index.html"
+    ]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
+      assert.deepEqual(response.body, marketingHtml, path);
+    }
+
+    for (const asset of [
+      {
+        contentType: "text/css; charset=utf-8",
+        paths: [
+          "/principal/style.css",
+          "/apps/marketing-site/principal/style.css"
+        ],
+        source: "../apps/marketing-site/principal/style.css"
+      },
+      {
+        contentType: "text/javascript; charset=utf-8",
+        paths: [
+          "/principal/main.js",
+          "/apps/marketing-site/principal/main.js"
+        ],
+        source: "../apps/marketing-site/principal/main.js"
+      },
+      {
+        contentType: "image/png",
+        paths: [
+          "/principal/img/LOGO_MACHADO.png",
+          "/apps/marketing-site/principal/img/LOGO_MACHADO.png"
+        ],
+        source: "../apps/marketing-site/principal/img/LOGO_MACHADO.png"
+      },
+      {
+        contentType: "image/jpeg",
+        paths: [
+          "/principal/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg",
+          "/apps/marketing-site/principal/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg"
+        ],
+        source: "../apps/marketing-site/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+      }
+    ]) {
+      const expected = await readFile(new URL(asset.source, import.meta.url));
+
+      for (const path of asset.paths) {
+        const response = await requestPreview(server.baseUrl, path);
+
+        assert.equal(response.status, 200, path);
+        assert.equal(response.headers["content-type"], asset.contentType, path);
+        assert.deepEqual(response.body, expected, path);
+      }
+    }
 
     for (const path of [
       "/solicitacao-orcamento/style.css?v=4",
@@ -507,13 +580,19 @@ for (const page of [
 
 test("marketing internal assets are document-relative", async () => {
   const [html, source] = await Promise.all([
-    readFile(new URL("../index.html", import.meta.url), "utf8"),
-    readFile(new URL("../principal/main.js", import.meta.url), "utf8")
+    readFile(new URL("../apps/marketing-site/index.html", import.meta.url), "utf8"),
+    readFile(
+      new URL("../apps/marketing-site/principal/main.js", import.meta.url),
+      "utf8"
+    )
   ]);
   const principalReferences = extractHtmlReferences(html).filter(
     ({ value }) => value.startsWith("/principal/")
       || value.startsWith("./principal/")
   );
+  const posterReference = source.match(
+    /setAttribute\("poster", "([^"]+)"\)/
+  )?.[1];
 
   assert.equal(principalReferences.length, 47);
   for (const reference of principalReferences) {
@@ -531,11 +610,31 @@ test("marketing internal assets are document-relative", async () => {
     source,
     /VídeoPrincipal\.setAttribute\("poster", "\/principal\//
   );
+
+  assert.equal(
+    posterReference,
+    "./principal/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+  );
+  const validation = await validateDeploymentManifest(
+    await readDeploymentManifest()
+  );
+  const posterMapping = compareSourcePreviewReference(
+    posterReference,
+    "index.html",
+    "apps/marketing-site/index.html",
+    validation.files
+  );
+  assert.equal(posterMapping.output, "principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
+  assert.equal(
+    posterMapping.expectedSource,
+    "apps/marketing-site/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+  );
+  assert.equal(posterMapping.matches, true);
 });
 
 test("marketing quote CTA targets the canonical quote route", async () => {
   const source = await readFile(
-    new URL("../principal/main.js", import.meta.url),
+    new URL("../apps/marketing-site/principal/main.js", import.meta.url),
     "utf8"
   );
 
@@ -548,7 +647,7 @@ test("marketing quote CTA targets the canonical quote route", async () => {
 
 test("marketing PDF actions target the public download routes", async () => {
   const source = await readFile(
-    new URL("../principal/main.js", import.meta.url),
+    new URL("../apps/marketing-site/principal/main.js", import.meta.url),
     "utf8"
   );
   const downloadPaths = Array.from(
