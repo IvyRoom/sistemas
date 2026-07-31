@@ -37,7 +37,7 @@ points. The deployment contract requires every listed route to return HTTP
 
 | Frontend | Repository entry point | Public route |
 | --- | --- | --- |
-| Main marketing site (`site-marketing/` contains its deployed assets) | [apps/marketing-site/index.html](apps/marketing-site/index.html) | [`/`](https://machadogestao.com/) |
+| Main marketing site (`landing-page/` contains its deployed assets) | [apps/marketing-site/index.html](apps/marketing-site/index.html) | [`/`](https://machadogestao.com/) |
 | Quote request | [apps/quote-request/index.html](apps/quote-request/index.html) | [`/solicitacao-orcamento/`](https://machadogestao.com/solicitacao-orcamento/) |
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
@@ -52,7 +52,7 @@ points. The deployment contract requires every listed route to return HTTP
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply device, browser, query-parameter, authentication, or
-session checks after its static HTML loads. The deployed `site-marketing/`
+session checks after its static HTML loads. The deployed `landing-page/`
 namespace and the `plataforma_v2/` source directory do not contain root
 `index.html` files and therefore are not independent routes. There is no
 single-page-application fallback: those namespaces and unknown paths return
@@ -85,9 +85,9 @@ The main site also exposes these public downloads:
 
 | Document | Repository file | Canonical path |
 | --- | --- | --- |
-| Ementa e softwares | [apps/marketing-site/pdf/EMENTA E SOFTWARES.pdf](apps/marketing-site/pdf/EMENTA%20E%20SOFTWARES.pdf) | [`/site-marketing/pdf/EMENTA%20E%20SOFTWARES.pdf`](https://machadogestao.com/site-marketing/pdf/EMENTA%20E%20SOFTWARES.pdf) |
-| Bibliografia | [apps/marketing-site/pdf/BIBLIOGRAFIA.pdf](apps/marketing-site/pdf/BIBLIOGRAFIA.pdf) | [`/site-marketing/pdf/BIBLIOGRAFIA.pdf`](https://machadogestao.com/site-marketing/pdf/BIBLIOGRAFIA.pdf) |
-| Cronograma | [apps/marketing-site/pdf/CRONOGRAMA.pdf](apps/marketing-site/pdf/CRONOGRAMA.pdf) | [`/site-marketing/pdf/CRONOGRAMA.pdf`](https://machadogestao.com/site-marketing/pdf/CRONOGRAMA.pdf) |
+| Ementa e softwares | [apps/marketing-site/pdf/EMENTA E SOFTWARES.pdf](apps/marketing-site/pdf/EMENTA%20E%20SOFTWARES.pdf) | [`/landing-page/pdf/EMENTA%20E%20SOFTWARES.pdf`](https://machadogestao.com/landing-page/pdf/EMENTA%20E%20SOFTWARES.pdf) |
+| Bibliografia | [apps/marketing-site/pdf/BIBLIOGRAFIA.pdf](apps/marketing-site/pdf/BIBLIOGRAFIA.pdf) | [`/landing-page/pdf/BIBLIOGRAFIA.pdf`](https://machadogestao.com/landing-page/pdf/BIBLIOGRAFIA.pdf) |
+| Cronograma | [apps/marketing-site/pdf/CRONOGRAMA.pdf](apps/marketing-site/pdf/CRONOGRAMA.pdf) | [`/landing-page/pdf/CRONOGRAMA.pdf`](https://machadogestao.com/landing-page/pdf/CRONOGRAMA.pdf) |
 
 The former `/principal/...` asset and download paths are retired without
 redirects.

@@ -11,19 +11,19 @@
         },
         {
           "source": "apps/marketing-site/style.css",
-          "output": "site-marketing/style.css"
+          "output": "landing-page/style.css"
         },
         {
           "source": "apps/marketing-site/main.js",
-          "output": "site-marketing/main.js"
+          "output": "landing-page/main.js"
         },
         {
           "source": "apps/marketing-site/img",
-          "output": "site-marketing/img"
+          "output": "landing-page/img"
         },
         {
           "source": "apps/marketing-site/pdf",
-          "output": "site-marketing/pdf"
+          "output": "landing-page/pdf"
         }
       ],
       "publicEntries": [
@@ -34,16 +34,16 @@
       ],
       "publicDownloads": [
         {
-          "path": "/site-marketing/pdf/EMENTA E SOFTWARES.pdf",
-          "file": "site-marketing/pdf/EMENTA E SOFTWARES.pdf"
+          "path": "/landing-page/pdf/EMENTA E SOFTWARES.pdf",
+          "file": "landing-page/pdf/EMENTA E SOFTWARES.pdf"
         },
         {
-          "path": "/site-marketing/pdf/BIBLIOGRAFIA.pdf",
-          "file": "site-marketing/pdf/BIBLIOGRAFIA.pdf"
+          "path": "/landing-page/pdf/BIBLIOGRAFIA.pdf",
+          "file": "landing-page/pdf/BIBLIOGRAFIA.pdf"
         },
         {
-          "path": "/site-marketing/pdf/CRONOGRAMA.pdf",
-          "file": "site-marketing/pdf/CRONOGRAMA.pdf"
+          "path": "/landing-page/pdf/CRONOGRAMA.pdf",
+          "file": "landing-page/pdf/CRONOGRAMA.pdf"
         }
       ]
     },
@@ -172,7 +172,7 @@
     "/principal/pdf/EMENTA E SOFTWARES.pdf",
     "/principal/pdf/BIBLIOGRAFIA.pdf",
     "/principal/pdf/CRONOGRAMA.pdf",
-    "/site-marketing/",
+    "/landing-page/",
     "/plataforma_v2/",
     "/validacao",
     "/validacao/",

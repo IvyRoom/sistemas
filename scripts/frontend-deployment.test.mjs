@@ -86,16 +86,16 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     publicDownloads(manifest),
     [
       {
-        path: "/site-marketing/pdf/EMENTA E SOFTWARES.pdf",
-        file: "site-marketing/pdf/EMENTA E SOFTWARES.pdf"
+        path: "/landing-page/pdf/EMENTA E SOFTWARES.pdf",
+        file: "landing-page/pdf/EMENTA E SOFTWARES.pdf"
       },
       {
-        path: "/site-marketing/pdf/BIBLIOGRAFIA.pdf",
-        file: "site-marketing/pdf/BIBLIOGRAFIA.pdf"
+        path: "/landing-page/pdf/BIBLIOGRAFIA.pdf",
+        file: "landing-page/pdf/BIBLIOGRAFIA.pdf"
       },
       {
-        path: "/site-marketing/pdf/CRONOGRAMA.pdf",
-        file: "site-marketing/pdf/CRONOGRAMA.pdf"
+        path: "/landing-page/pdf/CRONOGRAMA.pdf",
+        file: "landing-page/pdf/CRONOGRAMA.pdf"
       }
     ]
   );
@@ -114,25 +114,25 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       {
         applicationId: "marketing-site",
         source: "apps/marketing-site/style.css",
-        output: "site-marketing/style.css",
+        output: "landing-page/style.css",
         sourceType: "file"
       },
       {
         applicationId: "marketing-site",
         source: "apps/marketing-site/main.js",
-        output: "site-marketing/main.js",
+        output: "landing-page/main.js",
         sourceType: "file"
       },
       {
         applicationId: "marketing-site",
         source: "apps/marketing-site/img",
-        output: "site-marketing/img",
+        output: "landing-page/img",
         sourceType: "directory"
       },
       {
         applicationId: "marketing-site",
         source: "apps/marketing-site/pdf",
-        output: "site-marketing/pdf",
+        output: "landing-page/pdf",
         sourceType: "directory"
       }
     ]
@@ -243,7 +243,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   ]) {
     assert.ok(manifest.notFoundPaths.includes(retiredMarketingPath));
   }
-  assert.ok(manifest.notFoundPaths.includes("/site-marketing/"));
+  assert.ok(manifest.notFoundPaths.includes("/landing-page/"));
   assert.ok(manifest.notFoundPaths.includes("/validacao"));
   assert.ok(manifest.notFoundPaths.includes("/validacao/"));
   assert.ok(manifest.notFoundPaths.includes("/validacao/index.html"));
@@ -310,45 +310,45 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       {
         contentType: "text/css; charset=utf-8",
         paths: [
-          "/site-marketing/style.css",
+          "/landing-page/style.css",
           "/apps/marketing-site/style.css",
-          "/apps/marketing-site/site-marketing/style.css"
+          "/apps/marketing-site/landing-page/style.css"
         ],
         source: "../apps/marketing-site/style.css"
       },
       {
         contentType: "text/javascript; charset=utf-8",
         paths: [
-          "/site-marketing/main.js",
+          "/landing-page/main.js",
           "/apps/marketing-site/main.js",
-          "/apps/marketing-site/site-marketing/main.js"
+          "/apps/marketing-site/landing-page/main.js"
         ],
         source: "../apps/marketing-site/main.js"
       },
       {
         contentType: "image/png",
         paths: [
-          "/site-marketing/img/LOGO_MACHADO.png",
+          "/landing-page/img/LOGO_MACHADO.png",
           "/apps/marketing-site/img/LOGO_MACHADO.png",
-          "/apps/marketing-site/site-marketing/img/LOGO_MACHADO.png"
+          "/apps/marketing-site/landing-page/img/LOGO_MACHADO.png"
         ],
         source: "../apps/marketing-site/img/LOGO_MACHADO.png"
       },
       {
         contentType: "image/jpeg",
         paths: [
-          "/site-marketing/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg",
+          "/landing-page/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg",
           "/apps/marketing-site/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg",
-          "/apps/marketing-site/site-marketing/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg"
+          "/apps/marketing-site/landing-page/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg"
         ],
         source: "../apps/marketing-site/img/CAPA_VÍDEO_PRINCIPAL.jpg"
       },
       {
         contentType: "application/pdf",
         paths: [
-          "/site-marketing/pdf/BIBLIOGRAFIA.pdf",
+          "/landing-page/pdf/BIBLIOGRAFIA.pdf",
           "/apps/marketing-site/pdf/BIBLIOGRAFIA.pdf",
-          "/apps/marketing-site/site-marketing/pdf/BIBLIOGRAFIA.pdf"
+          "/apps/marketing-site/landing-page/pdf/BIBLIOGRAFIA.pdf"
         ],
         source: "../apps/marketing-site/pdf/BIBLIOGRAFIA.pdf"
       }
@@ -398,7 +398,7 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       "/principal/pdf/BIBLIOGRAFIA.pdf",
       "/principal/pdf/CRONOGRAMA.pdf",
       "/apps/marketing-site/principal/style.css",
-      "/apps/marketing-site/site-marketing/not-mapped.txt",
+      "/apps/marketing-site/landing-page/not-mapped.txt",
       "/apps/quote-request/not-mapped.txt"
     ]) {
       const response = await requestPreview(server.baseUrl, path);
@@ -441,11 +441,11 @@ test("manifest validation rejects a missing source", async () => {
 
 test("manifest validation rejects overlapping destinations", async () => {
   const manifest = clone(await readDeploymentManifest());
-  manifest.applications[1].mappings[0].output = "site-marketing/img/quote-request";
+  manifest.applications[1].mappings[0].output = "landing-page/img/quote-request";
 
   await assert.rejects(
     validateDeploymentManifest(manifest),
-    /Overlapping output destinations: site-marketing\/img and site-marketing\/img\/quote-request/
+    /Overlapping output destinations: landing-page\/img and landing-page\/img\/quote-request/
   );
 });
 
@@ -529,12 +529,12 @@ test("source preview and deployment references resolve to the same mapped asset"
     {
       applicationId: "marketing-site",
       source: "apps/marketing-site/style.css",
-      output: "site-marketing/style.css"
+      output: "landing-page/style.css"
     }
   ];
   assert.deepEqual(
     compareSourcePreviewReference(
-      "./site-marketing/style.css",
+      "./landing-page/style.css",
       "index.html",
       "apps/marketing-site/index.html",
       flattenedMarketingFiles
@@ -542,16 +542,16 @@ test("source preview and deployment references resolve to the same mapped asset"
     {
       expectedSource: "apps/marketing-site/style.css",
       matches: true,
-      output: "site-marketing/style.css",
+      output: "landing-page/style.css",
       sourceCandidates: [
-        "apps/marketing-site/site-marketing/style.css",
-        "apps/marketing-site/site-marketing/style.css/index.html"
+        "apps/marketing-site/landing-page/style.css",
+        "apps/marketing-site/landing-page/style.css/index.html"
       ]
     }
   );
   assert.equal(
     compareSourcePreviewReference(
-      "/site-marketing/style.css",
+      "/landing-page/style.css",
       "index.html",
       "apps/marketing-site/index.html",
       flattenedMarketingFiles
@@ -679,8 +679,8 @@ test("marketing internal assets are document-relative", async () => {
     )
   ]);
   const marketingAssetReferences = extractHtmlReferences(html).filter(
-    ({ value }) => value.startsWith("/site-marketing/")
-      || value.startsWith("./site-marketing/")
+    ({ value }) => value.startsWith("/landing-page/")
+      || value.startsWith("./landing-page/")
   );
   const posterReference = source.match(
     /setAttribute\("poster", "([^"]+)"\)/
@@ -690,22 +690,22 @@ test("marketing internal assets are document-relative", async () => {
   for (const reference of marketingAssetReferences) {
     assert.match(
       reference.value,
-      /^\.\/site-marketing\//,
+      /^\.\/landing-page\//,
       `${reference.tag} ${reference.attribute} ${reference.value}`
     );
   }
   assert.match(
     source,
-    /VídeoPrincipal\.setAttribute\("poster", "\.\/site-marketing\/img\/CAPA_VÍDEO_PRINCIPAL\.jpg"\);/
+    /VídeoPrincipal\.setAttribute\("poster", "\.\/landing-page\/img\/CAPA_VÍDEO_PRINCIPAL\.jpg"\);/
   );
   assert.doesNotMatch(
     source,
-    /VídeoPrincipal\.setAttribute\("poster", "\/site-marketing\//
+    /VídeoPrincipal\.setAttribute\("poster", "\/landing-page\//
   );
 
   assert.equal(
     posterReference,
-    "./site-marketing/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+    "./landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg"
   );
   const validation = await validateDeploymentManifest(
     await readDeploymentManifest()
@@ -716,7 +716,7 @@ test("marketing internal assets are document-relative", async () => {
     "apps/marketing-site/index.html",
     validation.files
   );
-  assert.equal(posterMapping.output, "site-marketing/img/CAPA_VÍDEO_PRINCIPAL.jpg");
+  assert.equal(posterMapping.output, "landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg");
   assert.equal(
     posterMapping.expectedSource,
     "apps/marketing-site/img/CAPA_VÍDEO_PRINCIPAL.jpg"
@@ -744,7 +744,7 @@ test("marketing PDF actions target the public download routes", async () => {
   );
   const downloadPaths = Array.from(
     source.matchAll(
-      /window\.open\("(\/site-marketing\/pdf\/[^"]+)",\s*"_blank"\);/g
+      /window\.open\("(\/landing-page\/pdf\/[^"]+)",\s*"_blank"\);/g
     ),
     ([, path]) => path
   );
@@ -752,9 +752,9 @@ test("marketing PDF actions target the public download routes", async () => {
   assert.deepEqual(
     downloadPaths,
     [
-      "/site-marketing/pdf/EMENTA E SOFTWARES.pdf",
-      "/site-marketing/pdf/BIBLIOGRAFIA.pdf",
-      "/site-marketing/pdf/CRONOGRAMA.pdf"
+      "/landing-page/pdf/EMENTA E SOFTWARES.pdf",
+      "/landing-page/pdf/BIBLIOGRAFIA.pdf",
+      "/landing-page/pdf/CRONOGRAMA.pdf"
     ]
   );
 });
