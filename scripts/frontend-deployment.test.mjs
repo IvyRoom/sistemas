@@ -113,8 +113,26 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       },
       {
         applicationId: "marketing-site",
-        source: "apps/marketing-site/principal",
-        output: "principal",
+        source: "apps/marketing-site/style.css",
+        output: "principal/style.css",
+        sourceType: "file"
+      },
+      {
+        applicationId: "marketing-site",
+        source: "apps/marketing-site/main.js",
+        output: "principal/main.js",
+        sourceType: "file"
+      },
+      {
+        applicationId: "marketing-site",
+        source: "apps/marketing-site/img",
+        output: "principal/img",
+        sourceType: "directory"
+      },
+      {
+        applicationId: "marketing-site",
+        source: "apps/marketing-site/pdf",
+        output: "principal/pdf",
         sourceType: "directory"
       }
     ]
@@ -280,33 +298,46 @@ test("source preview serves only manifest-mapped routes and files", async () => 
         contentType: "text/css; charset=utf-8",
         paths: [
           "/principal/style.css",
+          "/apps/marketing-site/style.css",
           "/apps/marketing-site/principal/style.css"
         ],
-        source: "../apps/marketing-site/principal/style.css"
+        source: "../apps/marketing-site/style.css"
       },
       {
         contentType: "text/javascript; charset=utf-8",
         paths: [
           "/principal/main.js",
+          "/apps/marketing-site/main.js",
           "/apps/marketing-site/principal/main.js"
         ],
-        source: "../apps/marketing-site/principal/main.js"
+        source: "../apps/marketing-site/main.js"
       },
       {
         contentType: "image/png",
         paths: [
           "/principal/img/LOGO_MACHADO.png",
+          "/apps/marketing-site/img/LOGO_MACHADO.png",
           "/apps/marketing-site/principal/img/LOGO_MACHADO.png"
         ],
-        source: "../apps/marketing-site/principal/img/LOGO_MACHADO.png"
+        source: "../apps/marketing-site/img/LOGO_MACHADO.png"
       },
       {
         contentType: "image/jpeg",
         paths: [
           "/principal/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg",
+          "/apps/marketing-site/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg",
           "/apps/marketing-site/principal/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg"
         ],
-        source: "../apps/marketing-site/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+        source: "../apps/marketing-site/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+      },
+      {
+        contentType: "application/pdf",
+        paths: [
+          "/principal/pdf/BIBLIOGRAFIA.pdf",
+          "/apps/marketing-site/pdf/BIBLIOGRAFIA.pdf",
+          "/apps/marketing-site/principal/pdf/BIBLIOGRAFIA.pdf"
+        ],
+        source: "../apps/marketing-site/pdf/BIBLIOGRAFIA.pdf"
       }
     ]) {
       const expected = await readFile(new URL(asset.source, import.meta.url));
@@ -346,6 +377,7 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       "/README.md",
       "/frontend-deployment.json",
       "/scripts/serve-frontend.mjs",
+      "/apps/marketing-site/principal/not-mapped.txt",
       "/apps/quote-request/not-mapped.txt"
     ]) {
       const response = await requestPreview(server.baseUrl, path);
@@ -388,11 +420,11 @@ test("manifest validation rejects a missing source", async () => {
 
 test("manifest validation rejects overlapping destinations", async () => {
   const manifest = clone(await readDeploymentManifest());
-  manifest.applications[1].mappings[0].output = "principal/quote-request";
+  manifest.applications[1].mappings[0].output = "principal/img/quote-request";
 
   await assert.rejects(
     validateDeploymentManifest(manifest),
-    /Overlapping output destinations: principal and principal\/quote-request/
+    /Overlapping output destinations: principal\/img and principal\/img\/quote-request/
   );
 });
 
@@ -465,6 +497,45 @@ test("source preview and deployment references resolve to the same mapped asset"
         "apps/conecta/referral-form/style.css/index.html"
       ]
     }
+  );
+
+  const flattenedMarketingFiles = [
+    {
+      applicationId: "marketing-site",
+      source: "apps/marketing-site/index.html",
+      output: "index.html"
+    },
+    {
+      applicationId: "marketing-site",
+      source: "apps/marketing-site/style.css",
+      output: "principal/style.css"
+    }
+  ];
+  assert.deepEqual(
+    compareSourcePreviewReference(
+      "./principal/style.css",
+      "index.html",
+      "apps/marketing-site/index.html",
+      flattenedMarketingFiles
+    ),
+    {
+      expectedSource: "apps/marketing-site/style.css",
+      matches: true,
+      output: "principal/style.css",
+      sourceCandidates: [
+        "apps/marketing-site/principal/style.css",
+        "apps/marketing-site/principal/style.css/index.html"
+      ]
+    }
+  );
+  assert.equal(
+    compareSourcePreviewReference(
+      "/principal/style.css",
+      "index.html",
+      "apps/marketing-site/index.html",
+      flattenedMarketingFiles
+    ).matches,
+    false
   );
 
   assert.equal(
@@ -582,7 +653,7 @@ test("marketing internal assets are document-relative", async () => {
   const [html, source] = await Promise.all([
     readFile(new URL("../apps/marketing-site/index.html", import.meta.url), "utf8"),
     readFile(
-      new URL("../apps/marketing-site/principal/main.js", import.meta.url),
+      new URL("../apps/marketing-site/main.js", import.meta.url),
       "utf8"
     )
   ]);
@@ -627,14 +698,14 @@ test("marketing internal assets are document-relative", async () => {
   assert.equal(posterMapping.output, "principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
   assert.equal(
     posterMapping.expectedSource,
-    "apps/marketing-site/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg"
+    "apps/marketing-site/img/CAPA_VÍDEO_PRINCIPAL.jpg"
   );
   assert.equal(posterMapping.matches, true);
 });
 
 test("marketing quote CTA targets the canonical quote route", async () => {
   const source = await readFile(
-    new URL("../apps/marketing-site/principal/main.js", import.meta.url),
+    new URL("../apps/marketing-site/main.js", import.meta.url),
     "utf8"
   );
 
@@ -647,7 +718,7 @@ test("marketing quote CTA targets the canonical quote route", async () => {
 
 test("marketing PDF actions target the public download routes", async () => {
   const source = await readFile(
-    new URL("../apps/marketing-site/principal/main.js", import.meta.url),
+    new URL("../apps/marketing-site/main.js", import.meta.url),
     "utf8"
   );
   const downloadPaths = Array.from(

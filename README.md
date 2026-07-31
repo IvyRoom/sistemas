@@ -85,9 +85,9 @@ The main site also exposes these public downloads:
 
 | Document | Repository file | Canonical path |
 | --- | --- | --- |
-| Ementa e softwares | [apps/marketing-site/principal/pdf/EMENTA E SOFTWARES.pdf](apps/marketing-site/principal/pdf/EMENTA%20E%20SOFTWARES.pdf) | [`/principal/pdf/EMENTA%20E%20SOFTWARES.pdf`](https://machadogestao.com/principal/pdf/EMENTA%20E%20SOFTWARES.pdf) |
-| Bibliografia | [apps/marketing-site/principal/pdf/BIBLIOGRAFIA.pdf](apps/marketing-site/principal/pdf/BIBLIOGRAFIA.pdf) | [`/principal/pdf/BIBLIOGRAFIA.pdf`](https://machadogestao.com/principal/pdf/BIBLIOGRAFIA.pdf) |
-| Cronograma | [apps/marketing-site/principal/pdf/CRONOGRAMA.pdf](apps/marketing-site/principal/pdf/CRONOGRAMA.pdf) | [`/principal/pdf/CRONOGRAMA.pdf`](https://machadogestao.com/principal/pdf/CRONOGRAMA.pdf) |
+| Ementa e softwares | [apps/marketing-site/pdf/EMENTA E SOFTWARES.pdf](apps/marketing-site/pdf/EMENTA%20E%20SOFTWARES.pdf) | [`/principal/pdf/EMENTA%20E%20SOFTWARES.pdf`](https://machadogestao.com/principal/pdf/EMENTA%20E%20SOFTWARES.pdf) |
+| Bibliografia | [apps/marketing-site/pdf/BIBLIOGRAFIA.pdf](apps/marketing-site/pdf/BIBLIOGRAFIA.pdf) | [`/principal/pdf/BIBLIOGRAFIA.pdf`](https://machadogestao.com/principal/pdf/BIBLIOGRAFIA.pdf) |
+| Cronograma | [apps/marketing-site/pdf/CRONOGRAMA.pdf](apps/marketing-site/pdf/CRONOGRAMA.pdf) | [`/principal/pdf/CRONOGRAMA.pdf`](https://machadogestao.com/principal/pdf/CRONOGRAMA.pdf) |
 
 Other files under project directories are implementation assets rather than
 independent public route contracts. The platform entries above are documented
