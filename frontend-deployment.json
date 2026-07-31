@@ -11,19 +11,19 @@
         },
         {
           "source": "apps/marketing-site/style.css",
-          "output": "principal/style.css"
+          "output": "site-marketing/style.css"
         },
         {
           "source": "apps/marketing-site/main.js",
-          "output": "principal/main.js"
+          "output": "site-marketing/main.js"
         },
         {
           "source": "apps/marketing-site/img",
-          "output": "principal/img"
+          "output": "site-marketing/img"
         },
         {
           "source": "apps/marketing-site/pdf",
-          "output": "principal/pdf"
+          "output": "site-marketing/pdf"
         }
       ],
       "publicEntries": [
@@ -34,16 +34,16 @@
       ],
       "publicDownloads": [
         {
-          "path": "/principal/pdf/EMENTA E SOFTWARES.pdf",
-          "file": "principal/pdf/EMENTA E SOFTWARES.pdf"
+          "path": "/site-marketing/pdf/EMENTA E SOFTWARES.pdf",
+          "file": "site-marketing/pdf/EMENTA E SOFTWARES.pdf"
         },
         {
-          "path": "/principal/pdf/BIBLIOGRAFIA.pdf",
-          "file": "principal/pdf/BIBLIOGRAFIA.pdf"
+          "path": "/site-marketing/pdf/BIBLIOGRAFIA.pdf",
+          "file": "site-marketing/pdf/BIBLIOGRAFIA.pdf"
         },
         {
-          "path": "/principal/pdf/CRONOGRAMA.pdf",
-          "file": "principal/pdf/CRONOGRAMA.pdf"
+          "path": "/site-marketing/pdf/CRONOGRAMA.pdf",
+          "file": "site-marketing/pdf/CRONOGRAMA.pdf"
         }
       ]
     },
@@ -165,6 +165,14 @@
     "/formulario/",
     "/formulario/index.html",
     "/principal/",
+    "/principal/style.css",
+    "/principal/main.js",
+    "/principal/img/LOGO_MACHADO.png",
+    "/principal/img/CAPA_VÍDEO_PRINCIPAL.jpg",
+    "/principal/pdf/EMENTA E SOFTWARES.pdf",
+    "/principal/pdf/BIBLIOGRAFIA.pdf",
+    "/principal/pdf/CRONOGRAMA.pdf",
+    "/site-marketing/",
     "/plataforma_v2/",
     "/validacao",
     "/validacao/",

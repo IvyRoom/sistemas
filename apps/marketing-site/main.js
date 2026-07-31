@@ -148,7 +148,7 @@ function handleIntersection(entries, observer) {
 
             ContainerInternoVídeoPrincipal.setAttribute("data-shaka-player-container", "");
             VídeoPrincipal.setAttribute("data-shaka-player", "");
-            VídeoPrincipal.setAttribute("poster", "./principal/img/CAPA_VÍDEO_PRINCIPAL.jpg");
+            VídeoPrincipal.setAttribute("poster", "./site-marketing/img/CAPA_VÍDEO_PRINCIPAL.jpg");
             VídeoPrincipal.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8");
 
             const player = new shaka.Player(VídeoPrincipal);
@@ -644,17 +644,17 @@ SetaFechamentoSubseção35.addEventListener("click", function(event) {
 
 BotãoDownloadEmentaeSoftwares.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("/principal/pdf/EMENTA E SOFTWARES.pdf","_blank");
+    window.open("/site-marketing/pdf/EMENTA E SOFTWARES.pdf","_blank");
 })
 
 BotãoDownloadBibliografias.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("/principal/pdf/BIBLIOGRAFIA.pdf","_blank");
+    window.open("/site-marketing/pdf/BIBLIOGRAFIA.pdf","_blank");
 })
 
 BotãoDownloadCronograma.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("/principal/pdf/CRONOGRAMA.pdf","_blank");
+    window.open("/site-marketing/pdf/CRONOGRAMA.pdf","_blank");
 })
 
 
