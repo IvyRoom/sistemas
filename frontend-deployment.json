@@ -6,12 +6,24 @@
       "id": "marketing-site",
       "mappings": [
         {
-          "source": "index.html",
+          "source": "apps/marketing-site/index.html",
           "output": "index.html"
         },
         {
-          "source": "principal",
-          "output": "principal"
+          "source": "apps/marketing-site/style.css",
+          "output": "principal/style.css"
+        },
+        {
+          "source": "apps/marketing-site/main.js",
+          "output": "principal/main.js"
+        },
+        {
+          "source": "apps/marketing-site/img",
+          "output": "principal/img"
+        },
+        {
+          "source": "apps/marketing-site/pdf",
+          "output": "principal/pdf"
         }
       ],
       "publicEntries": [

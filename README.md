@@ -1,11 +1,12 @@
 # sistemas
 
 Static, multi-project frontend for Machado | Método Gerencial para Empresas.
-The main marketing page lives at the root, and the other frontends live in
-path-based source directories beside it. GitHub Actions generates an allowlisted
-`dist/` tree from those sources, and Azure Static Web Apps publishes only that
-tree. There is no application-wide router; public paths are independent from
-source locations and remain defined by the deployment manifest.
+The marketing-site source lives in `apps/marketing-site/`, and the other
+frontends live in their own path-based source directories. GitHub Actions
+generates an allowlisted `dist/` tree from those sources, and Azure Static Web
+Apps publishes only that tree. There is no application-wide router; public
+paths are independent from source locations and remain defined by the
+deployment manifest.
 
 ## URL contract
 
@@ -36,7 +37,7 @@ points. The deployment contract requires every listed route to return HTTP
 
 | Frontend | Repository entry point | Public route |
 | --- | --- | --- |
-| Main marketing site (`principal/` contains its assets) | [index.html](index.html) | [`/`](https://machadogestao.com/) |
+| Main marketing site (`principal/` contains its deployed assets) | [apps/marketing-site/index.html](apps/marketing-site/index.html) | [`/`](https://machadogestao.com/) |
 | Quote request | [apps/quote-request/index.html](apps/quote-request/index.html) | [`/solicitacao-orcamento/`](https://machadogestao.com/solicitacao-orcamento/) |
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
@@ -51,10 +52,11 @@ points. The deployment contract requires every listed route to return HTTP
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply device, browser, query-parameter, authentication, or
-session checks after its static HTML loads. `principal/` and
-`plataforma_v2/` do not contain root `index.html` files and therefore are not
-independent routes. There is no single-page-application fallback: those
-namespaces and unknown paths return `404` when no entry point exists.
+session checks after its static HTML loads. The deployed `principal/` namespace
+and the `plataforma_v2/` source directory do not contain root `index.html` files
+and therefore are not independent routes. There is no single-page-application
+fallback: those namespaces and unknown paths return `404` when no entry point
+exists.
 
 Machado Conecta personal links add both required query parameters to the
 referral-form route:
@@ -83,9 +85,9 @@ The main site also exposes these public downloads:
 
 | Document | Repository file | Canonical path |
 | --- | --- | --- |
-| Ementa e softwares | [principal/pdf/EMENTA E SOFTWARES.pdf](principal/pdf/EMENTA%20E%20SOFTWARES.pdf) | [`/principal/pdf/EMENTA%20E%20SOFTWARES.pdf`](https://machadogestao.com/principal/pdf/EMENTA%20E%20SOFTWARES.pdf) |
-| Bibliografia | [principal/pdf/BIBLIOGRAFIA.pdf](principal/pdf/BIBLIOGRAFIA.pdf) | [`/principal/pdf/BIBLIOGRAFIA.pdf`](https://machadogestao.com/principal/pdf/BIBLIOGRAFIA.pdf) |
-| Cronograma | [principal/pdf/CRONOGRAMA.pdf](principal/pdf/CRONOGRAMA.pdf) | [`/principal/pdf/CRONOGRAMA.pdf`](https://machadogestao.com/principal/pdf/CRONOGRAMA.pdf) |
+| Ementa e softwares | [apps/marketing-site/pdf/EMENTA E SOFTWARES.pdf](apps/marketing-site/pdf/EMENTA%20E%20SOFTWARES.pdf) | [`/principal/pdf/EMENTA%20E%20SOFTWARES.pdf`](https://machadogestao.com/principal/pdf/EMENTA%20E%20SOFTWARES.pdf) |
+| Bibliografia | [apps/marketing-site/pdf/BIBLIOGRAFIA.pdf](apps/marketing-site/pdf/BIBLIOGRAFIA.pdf) | [`/principal/pdf/BIBLIOGRAFIA.pdf`](https://machadogestao.com/principal/pdf/BIBLIOGRAFIA.pdf) |
+| Cronograma | [apps/marketing-site/pdf/CRONOGRAMA.pdf](apps/marketing-site/pdf/CRONOGRAMA.pdf) | [`/principal/pdf/CRONOGRAMA.pdf`](https://machadogestao.com/principal/pdf/CRONOGRAMA.pdf) |
 
 Other files under project directories are implementation assets rather than
 independent public route contracts. The platform entries above are documented
@@ -127,7 +129,7 @@ responses.
   root and open `http://127.0.0.1:4173/` or another documented public route.
   The server validates `frontend-deployment.json`, maps public routes and their
   document-relative assets back to tracked sources, and also preserves direct
-  mapped source paths such as `/apps/quote-request/index.html`. It rejects
+  mapped source paths such as `/apps/marketing-site/index.html`. It rejects
   repository-only and unknown paths. Stop it with `Ctrl+C`.
 - To preview the deployment artifact, serve `dist/` as the web root and open
   the public route. Opening `/dist/...` through a repository-root server does

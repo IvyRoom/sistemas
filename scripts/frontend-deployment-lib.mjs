@@ -657,11 +657,54 @@ function localReferenceCandidates(value, baseUrl) {
   return [relativePath, posix.join(relativePath, "index.html")];
 }
 
+function sourcePreviewAliases(outputFile, sourceFile, mappedFiles) {
+  const baseFile = mappedFiles.find(
+    (file) => file.output === outputFile && file.source === sourceFile
+  );
+  const applicationFiles = baseFile?.applicationId
+    ? mappedFiles.filter(
+      (file) => file.applicationId === baseFile.applicationId
+    )
+    : mappedFiles;
+  const outputDirectory = posix.dirname(outputFile);
+  const sourceDirectory = posix.dirname(sourceFile);
+  const aliases = new Map();
+
+  for (const file of applicationFiles) {
+    const outputFromEntry = posix.relative(outputDirectory, file.output);
+    const sourcePreviewRoute = posix.join(sourceDirectory, outputFromEntry);
+    addSourcePreviewRoute(aliases, sourcePreviewRoute, file.source);
+  }
+
+  return aliases;
+}
+
+function sourcePreviewRouteSources(mappedFiles, outputFile = null, sourceFile = null) {
+  const sourceByRoute = new Map();
+
+  for (const file of mappedFiles) {
+    addSourcePreviewRoute(sourceByRoute, file.source, file.source);
+  }
+
+  if (outputFile !== null && sourceFile !== null) {
+    for (const [route, source] of sourcePreviewAliases(
+      outputFile,
+      sourceFile,
+      mappedFiles
+    )) {
+      addSourcePreviewRoute(sourceByRoute, route, source);
+    }
+  }
+
+  return sourceByRoute;
+}
+
 function compareResolvedSourcePreviewReference(
   value,
   outputBaseUrl,
   sourceBaseUrl,
-  sourceByOutput
+  sourceByOutput,
+  sourceByPreviewRoute
 ) {
   const outputCandidates = localReferenceCandidates(value, outputBaseUrl);
   if (outputCandidates.length === 0) {
@@ -674,7 +717,9 @@ function compareResolvedSourcePreviewReference(
 
   return {
     expectedSource,
-    matches: expectedSource !== null && sourceCandidates.includes(expectedSource),
+    matches: expectedSource !== null && sourceCandidates.some(
+      (candidate) => sourceByPreviewRoute.get(candidate) === expectedSource
+    ),
     output,
     sourceCandidates
   };
@@ -684,12 +729,18 @@ export function compareSourcePreviewReference(value, outputFile, sourceFile, map
   const sourceByOutput = new Map(
     mappedFiles.map((file) => [file.output, file.source])
   );
+  const sourceByPreviewRoute = sourcePreviewRouteSources(
+    mappedFiles,
+    outputFile,
+    sourceFile
+  );
 
   return compareResolvedSourcePreviewReference(
     value,
     new URL(`/${outputFile}`, localOrigin),
     new URL(`/${sourceFile}`, localOrigin),
-    sourceByOutput
+    sourceByOutput,
+    sourceByPreviewRoute
   );
 }
 
@@ -707,7 +758,7 @@ function assertSourcePreviewReference(result, label, value) {
     [
       `Broken source-preview asset ${label}: ${value}.`,
       `dist/${result.output} maps to ${result.expectedSource},`,
-      `but repository-root preview resolves to ${result.sourceCandidates.join(" or ")}.`
+      `but source preview resolves to ${result.sourceCandidates.join(" or ")}.`
     ].join(" ")
   );
 
@@ -743,13 +794,20 @@ export async function assertSourcePreviewReferences(manifest) {
     const sourceBaseUrl = baseReference
       ? new URL(baseReference.value, sourceDocumentUrl)
       : sourceDocumentUrl;
+    const entry = validation.entries.find(
+      (candidate) => candidate.file === file.output
+    );
+    const sourceByPreviewRoute = entry
+      ? sourcePreviewRouteSources(validation.files, file.output, file.source)
+      : sourcePreviewRouteSources(validation.files);
 
     for (const reference of references.filter(isHtmlAssetReference)) {
       const result = compareResolvedSourcePreviewReference(
         reference.value,
         outputBaseUrl,
         sourceBaseUrl,
-        sourceByOutput
+        sourceByOutput,
+        sourceByPreviewRoute
       );
       if (assertSourcePreviewReference(
         result,
@@ -767,13 +825,15 @@ export async function assertSourcePreviewReferences(manifest) {
     const css = await readFile(toLocalPath(file.source), "utf8");
     const outputStylesheetUrl = new URL(`/${file.output}`, localOrigin);
     const sourceStylesheetUrl = new URL(`/${file.source}`, localOrigin);
+    const sourceByPreviewRoute = sourcePreviewRouteSources(validation.files);
 
     for (const reference of extractCssReferences(css)) {
       const result = compareResolvedSourcePreviewReference(
         reference,
         outputStylesheetUrl,
         sourceStylesheetUrl,
-        sourceByOutput
+        sourceByOutput,
+        sourceByPreviewRoute
       );
       if (assertSourcePreviewReference(
         result,
@@ -931,6 +991,18 @@ function sourcePreviewRoutes(validation) {
   for (const file of validation.files) {
     addSourcePreviewRoute(routes, `/${file.output}`, file.source);
     addSourcePreviewRoute(routes, `/${file.source}`, file.source);
+  }
+
+  for (const entry of validation.entries) {
+    const sourceFile = sourceByOutput.get(entry.file);
+
+    for (const [route, source] of sourcePreviewAliases(
+      entry.file,
+      sourceFile,
+      validation.files
+    )) {
+      addSourcePreviewRoute(routes, `/${route}`, source);
+    }
   }
 
   for (const contract of [...validation.entries, ...validation.downloads]) {
