@@ -23,6 +23,8 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - name: Test frontend applications
+        run: node --test .agents/tests/*.test.js
       - name: Test deployment contract
         run: node --test scripts/frontend-deployment.test.mjs
       - name: Build frontend artifact

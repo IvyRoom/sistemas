@@ -99,7 +99,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 224);
+  assert.equal(validation.files.length, 225);
   assert.deepEqual(
     validation.mappings.filter(
       (mapping) => mapping.applicationId === "marketing-site"
@@ -344,6 +344,24 @@ test("source preview serves only manifest-mapped routes and files", async () => 
         source: "../apps/marketing-site/img/CAPA_VÍDEO_PRINCIPAL.jpg"
       },
       {
+        contentType: "image/x-icon",
+        paths: [
+          "/landing-page/img/FAVICON.ico",
+          "/apps/marketing-site/img/FAVICON.ico",
+          "/apps/marketing-site/landing-page/img/FAVICON.ico"
+        ],
+        source: "../apps/marketing-site/img/FAVICON.ico"
+      },
+      {
+        contentType: "application/pdf",
+        paths: [
+          "/landing-page/pdf/EMENTA%20E%20SOFTWARES.pdf",
+          "/apps/marketing-site/pdf/EMENTA%20E%20SOFTWARES.pdf",
+          "/apps/marketing-site/landing-page/pdf/EMENTA%20E%20SOFTWARES.pdf"
+        ],
+        source: "../apps/marketing-site/pdf/EMENTA E SOFTWARES.pdf"
+      },
+      {
         contentType: "application/pdf",
         paths: [
           "/landing-page/pdf/BIBLIOGRAFIA.pdf",
@@ -351,6 +369,15 @@ test("source preview serves only manifest-mapped routes and files", async () => 
           "/apps/marketing-site/landing-page/pdf/BIBLIOGRAFIA.pdf"
         ],
         source: "../apps/marketing-site/pdf/BIBLIOGRAFIA.pdf"
+      },
+      {
+        contentType: "application/pdf",
+        paths: [
+          "/landing-page/pdf/CRONOGRAMA.pdf",
+          "/apps/marketing-site/pdf/CRONOGRAMA.pdf",
+          "/apps/marketing-site/landing-page/pdf/CRONOGRAMA.pdf"
+        ],
+        source: "../apps/marketing-site/pdf/CRONOGRAMA.pdf"
       }
     ]) {
       const expected = await readFile(new URL(asset.source, import.meta.url));
@@ -390,6 +417,8 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       "/README.md",
       "/frontend-deployment.json",
       "/scripts/serve-frontend.mjs",
+      "/landing-page/",
+      "/principal/",
       "/principal/style.css",
       "/principal/main.js",
       "/principal/img/LOGO_MACHADO.png",
@@ -686,7 +715,7 @@ test("marketing internal assets are document-relative", async () => {
     /setAttribute\("poster", "([^"]+)"\)/
   )?.[1];
 
-  assert.equal(marketingAssetReferences.length, 47);
+  assert.equal(marketingAssetReferences.length, 48);
   for (const reference of marketingAssetReferences) {
     assert.match(
       reference.value,
