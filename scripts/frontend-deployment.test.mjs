@@ -708,8 +708,10 @@ test("marketing internal assets are document-relative", async () => {
     )
   ]);
   const marketingAssetReferences = extractHtmlReferences(html).filter(
-    ({ value }) => value.startsWith("/landing-page/")
+    ({ tag, value }) => tag !== "a" && (
+      value.startsWith("/landing-page/")
       || value.startsWith("./landing-page/")
+    )
   );
   const posterReference = source.match(
     /setAttribute\("poster", "([^"]+)"\)/
@@ -754,38 +756,44 @@ test("marketing internal assets are document-relative", async () => {
 });
 
 test("marketing quote CTA targets the canonical quote route", async () => {
-  const source = await readFile(
-    new URL("../apps/marketing-site/main.js", import.meta.url),
-    "utf8"
-  );
+  const [html, source] = await Promise.all([
+    readFile(new URL("../apps/marketing-site/index.html", import.meta.url), "utf8"),
+    readFile(new URL("../apps/marketing-site/main.js", import.meta.url), "utf8")
+  ]);
 
   assert.match(
-    source,
-    /BotãoPrincipal\.addEventListener\("click",[\s\S]*?window\.location\.href = "\/solicitacao-orcamento\/";/
+    html,
+    /<a id="Botão-Principal" href="\/solicitacao-orcamento\/" aria-describedby="Explicação-Botão-Principal">SOLICITAR ORÇAMENTO<\/a>/
   );
-  assert.doesNotMatch(source, /window\.location\.href = "solicitação\/";/);
+  assert.doesNotMatch(source, /window\.location\.href\s*=/);
 });
 
 test("marketing PDF actions target the public download routes", async () => {
-  const source = await readFile(
-    new URL("../apps/marketing-site/main.js", import.meta.url),
+  const html = await readFile(
+    new URL("../apps/marketing-site/index.html", import.meta.url),
     "utf8"
   );
-  const downloadPaths = Array.from(
-    source.matchAll(
-      /window\.open\("(\/landing-page\/pdf\/[^"]+)",\s*"_blank",\s*"noopener"\);/g
-    ),
-    ([, path]) => path
+  const downloadLinks = Array.from(
+    html.matchAll(/<a class="Botões-Padrão-Download-PDFs"[^>]+>/g),
+    ([tag]) => ({
+      path: tag.match(/\bhref="([^"]+)"/)?.[1],
+      rel: tag.match(/\brel="([^"]+)"/)?.[1],
+      target: tag.match(/\btarget="([^"]+)"/)?.[1]
+    })
   );
 
   assert.deepEqual(
-    downloadPaths,
+    downloadLinks.map(({ path }) => path),
     [
       "/landing-page/pdf/EMENTA E SOFTWARES.pdf",
       "/landing-page/pdf/BIBLIOGRAFIA.pdf",
       "/landing-page/pdf/CRONOGRAMA.pdf"
     ]
   );
+  for (const link of downloadLinks) {
+    assert.equal(link.target, "_blank");
+    assert.ok(link.rel.split(/\s+/).includes("noopener"));
+  }
 });
 
 async function runQuoteSubmission({ presentationError = null, responseOk }) {

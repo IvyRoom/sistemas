@@ -10,6 +10,40 @@ h1, h2, h3, h4{
     font-weight: inherit;
 }
 
+:where(
+    button.Textos-Botões-Externos-Abertura-Seções,
+    button.Setas-Abertura-Subseções,
+    button.Setas-Fechamento-Subseções,
+    button.Botões-Tela-Cheia-Depoimentos,
+    button[id^="Seta-Fechamento-Seção-"]
+){
+    appearance: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.Textos-Botões-Externos-Abertura-Seções:focus-visible,
+.Setas-Abertura-Subseções:focus-visible,
+button[id^="Seta-Fechamento-Seção-"]:focus-visible,
+#Botão-Instagram-Direct:focus-visible,
+a.Texto-Interno-Branco:focus-visible{
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+
+.Focos-Abertura:focus{
+    outline: none;
+}
+
+.Setas-Fechamento-Subseções:focus-visible,
+.Botões-Padrão-Download-PDFs:focus-visible,
+.Botões-Tela-Cheia-Depoimentos:focus-visible,
+#Botão-Principal:focus-visible{
+    outline: 3px solid #4a0816;
+    outline-offset: 3px;
+}
+
 :root {
     --considered-screen-width: 100vw;
     --considered-margin-left: 0px;
@@ -186,6 +220,7 @@ h1, h2, h3, h4{
 
 .Containers-Externos-Seções{
     display:block;
+    position: relative;
     padding-top: 20px;
     padding-bottom: 10px;
     cursor: pointer;
@@ -212,6 +247,7 @@ h1, h2, h3, h4{
 }
 
 .Textos-Botões-Externos-Abertura-Seções{
+    display: block;
     background-color: #0aa15b;
     font-size: 14px;
     width: 120px;
@@ -224,6 +260,13 @@ h1, h2, h3, h4{
     margin-right: auto;
     margin-bottom: 5px;
     animation: Pulsos-Botões-Externos-Abertura-Seções 3s ease-out infinite;
+}
+
+.Textos-Botões-Externos-Abertura-Seções::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
 }
 
 @keyframes Pulsos-Botões-Externos-Abertura-Seções {
@@ -495,6 +538,7 @@ h1, h2, h3, h4{
 /*////////////////////////// Configurações Padrão Subseções /////////////////////////////*/
 
 .Subseções-Fechadas{
+    position: relative;
     background: linear-gradient(165deg, #000000, #4a0816);
     width: 95%;
     margin-left: auto;
@@ -531,6 +575,14 @@ h1, h2, h3, h4{
     border-radius: 13px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.Setas-Abertura-Subseções::after{
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 20px;
+    z-index: 1;
 }
 
 .Subseções-Abertas{
@@ -577,6 +629,7 @@ h1, h2, h3, h4{
 }
 
 .Botões-Padrão-Download-PDFs{
+    display: block;
     width: 60%;
     background-color: #4a0816;
     color: #fff;
@@ -590,6 +643,17 @@ h1, h2, h3, h4{
     border-radius: 20px;
     cursor: pointer;
     box-shadow: 5px 5px 5px #282828;
+    text-decoration: none;
+}
+
+#Botão-Instagram-Direct{
+    text-decoration: none;
+}
+
+#Botão-Instagram-Direct img{
+    display: block;
+    width: 100%;
+    height: auto;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -1046,7 +1110,9 @@ h1, h2, h3, h4{
 }
 
 #Botão-Principal{
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 60px;
     width: 85%;
     padding-left: 20px;
@@ -1060,4 +1126,5 @@ h1, h2, h3, h4{
     border: none;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
     background-color: #0aa15b;
+    text-decoration: none;
 }
