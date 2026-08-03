@@ -155,8 +155,8 @@ function createHarness({ userAgent = "Mozilla/5.0" } = {}) {
     location: { href: "https://machadogestao.com/" },
     onscroll: null,
     scrollY: 0,
-    open(url, target) {
-      openCalls.push({ target, url });
+    open(url, target, features) {
+      openCalls.push({ features, target, url });
     }
   };
 
@@ -241,6 +241,85 @@ test("marketing selectors, local references, script order, and timing remain exa
   assert.match(css, /animation: Teste 12s ease-in infinite;/);
   assert.match(css, /animation: Pulsos-Botões-Externos-Abertura-Seções 3s ease-out infinite;/);
   assert.doesNotMatch(source, /\b(?:setTimeout|setInterval|requestAnimationFrame)\s*\(/);
+});
+
+test("document language, landmarks, and heading hierarchy describe the current page", () => {
+  assert.match(html, /^<!DOCTYPE html>\r?\n<html lang="pt-BR">/);
+  assert.equal((html.match(/<header\b/g) ?? []).length, 1);
+  assert.equal((html.match(/<main\b/g) ?? []).length, 1);
+  assert.equal((html.match(/<aside\b/g) ?? []).length, 1);
+  assert.match(html, /<header id="Seção-Inicial">/);
+  assert.match(
+    html,
+    /<aside id="Container-Botão-Principal" aria-labelledby="Explicação-Botão-Principal">/
+  );
+
+  const headerStart = html.indexOf("<header id=\"Seção-Inicial\">");
+  const headerEnd = html.indexOf("</header>");
+  const mainStart = html.indexOf("<main>");
+  const mainEnd = html.indexOf("</main>");
+  const asideStart = html.indexOf("<aside id=\"Container-Botão-Principal\"");
+  const asideEnd = html.indexOf("</aside>");
+  assert.ok(headerStart < headerEnd);
+  assert.ok(headerEnd < mainStart);
+  assert.ok(mainStart < mainEnd);
+  assert.ok(mainEnd < asideStart);
+  assert.ok(asideStart < asideEnd);
+
+  for (let number = 1; number <= 4; number += 1) {
+    assert.match(
+      html,
+      new RegExp(
+        `<section class="Seções" id="Seção-${number}" aria-labelledby="Texto-Externo-Chamada-Seção-${number}">`
+      )
+    );
+    assert.match(
+      html,
+      new RegExp(
+        `<h2 class="Textos-Externos-Chamadas-Seções" id="Texto-Externo-Chamada-Seção-${number}">`
+      )
+    );
+    assert.match(html, new RegExp(`<h2 id="Texto-Interno-Chamada-Seção-${number}">`));
+  }
+
+  const headingLevels = Array.from(
+    html.matchAll(/<h([1-6])\b/g),
+    ([, level]) => Number(level)
+  );
+  assert.deepEqual(
+    headingLevels.reduce((counts, level) => {
+      counts[level] += 1;
+      return counts;
+    }, [0, 0, 0, 0, 0, 0, 0]),
+    [0, 1, 8, 18, 16, 0, 0]
+  );
+  assert.match(html, /<h1 id="Seção-Inicial-Manchete">/);
+  assert.doesNotMatch(html, /<h[5-6]\b/);
+  for (let index = 1; index < headingLevels.length; index += 1) {
+    assert.ok(
+      headingLevels[index] <= headingLevels[index - 1] + 1,
+      `heading level jumps from h${headingLevels[index - 1]} to h${headingLevels[index]}`
+    );
+  }
+  assert.match(css, /h1, h2, h3, h4\{\s*font-weight: inherit;\s*\}/);
+});
+
+test("every new-tab navigation prevents opener access without changing its destination", () => {
+  assert.deepEqual(
+    Array.from(html.matchAll(/<a\b[^>]*\btarget="_blank"[^>]*>/g), ([tag]) => tag),
+    [
+      "<a href=\"https://online.hbs.edu/blog/post/from-core-to-connext-2019\" class=\"Texto-Interno-Branco\" target=\"_blank\" rel=\"noopener\">"
+    ]
+  );
+  assert.deepEqual(
+    Array.from(source.matchAll(/window\.open\(([^;]+)\);/g), ([, argumentsList]) => argumentsList),
+    [
+      "\"https://ig.me/m/machado.gestao\",\"_blank\",\"noopener\"",
+      "\"/landing-page/pdf/EMENTA E SOFTWARES.pdf\",\"_blank\",\"noopener\"",
+      "\"/landing-page/pdf/BIBLIOGRAFIA.pdf\",\"_blank\",\"noopener\"",
+      "\"/landing-page/pdf/CRONOGRAMA.pdf\",\"_blank\",\"noopener\""
+    ]
+  );
 });
 
 test("external article, media, Instagram, and Shaka URLs remain exact", () => {
@@ -555,6 +634,7 @@ test("Instagram user-agent handling preserves controls and Direct positioning", 
   const directEvent = ordinary.dispatch("Botão-Instagram-Direct");
   assert.equal(directEvent.defaultPrevented, true);
   assert.deepEqual(ordinary.openCalls.at(-1), {
+    features: "noopener",
     target: "_blank",
     url: "https://ig.me/m/machado.gestao"
   });
@@ -580,7 +660,7 @@ test("download controls preserve all three public PDF destinations", () => {
   for (const [id, url] of downloads) {
     const event = harness.dispatch(id);
     assert.equal(event.defaultPrevented, true);
-    assert.deepEqual(harness.openCalls.at(-1), { target: "_blank", url });
+    assert.deepEqual(harness.openCalls.at(-1), { features: "noopener", target: "_blank", url });
   }
 });
 

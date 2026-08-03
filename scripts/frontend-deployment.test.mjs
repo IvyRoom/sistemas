@@ -773,7 +773,7 @@ test("marketing PDF actions target the public download routes", async () => {
   );
   const downloadPaths = Array.from(
     source.matchAll(
-      /window\.open\("(\/landing-page\/pdf\/[^"]+)",\s*"_blank"\);/g
+      /window\.open\("(\/landing-page\/pdf\/[^"]+)",\s*"_blank",\s*"noopener"\);/g
     ),
     ([, path]) => path
   );
