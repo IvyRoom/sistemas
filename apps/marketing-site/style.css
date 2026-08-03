@@ -27,10 +27,13 @@ h1, h2, h3, h4{
 .Setas-Abertura-Subseções:focus-visible,
 button[id^="Seta-Fechamento-Seção-"]:focus-visible,
 #Botão-Instagram-Direct:focus-visible,
-a.Texto-Interno-Branco:focus-visible,
-.Focos-Abertura:focus{
+a.Texto-Interno-Branco:focus-visible{
     outline: 3px solid #fff;
     outline-offset: 3px;
+}
+
+.Focos-Abertura:focus{
+    outline: none;
 }
 
 .Setas-Fechamento-Subseções:focus-visible,

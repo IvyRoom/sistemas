@@ -401,8 +401,8 @@ test("marketing interactions use native controls with complete relationships and
     /\.Setas-Abertura-Subseções::after\{[\s\S]*?position: absolute;[\s\S]*?inset: -1px;[\s\S]*?border-radius: 20px;/
   );
   assert.match(css, /:focus-visible[\s\S]*?outline: 3px solid/);
-  assert.match(css, /\.Focos-Abertura:focus\{[\s\S]*?outline: 3px solid/);
-  assert.doesNotMatch(css, /outline:\s*none/);
+  assert.match(css, /\.Focos-Abertura:focus\{[\s\S]*?outline: none;/);
+  assert.equal((css.match(/outline:\s*none/g) ?? []).length, 1);
 
   const decorativeControlSvgs = Array.from(
     html.matchAll(/<svg\b[^>]*\baria-hidden="true"[^>]*\bfocusable="false"[^>]*>/g)
