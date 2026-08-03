@@ -488,7 +488,7 @@ SetaFechamentoSeção3.addEventListener("click", function(event) {
 
 BotãoInstagramDirect.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("https://ig.me/m/machado.gestao","_blank");
+    window.open("https://ig.me/m/machado.gestao","_blank","noopener");
 })
 
 /*///////////////////////////////////// Subseção 3.1 /////////////////////////////////////*/
@@ -644,17 +644,17 @@ SetaFechamentoSubseção35.addEventListener("click", function(event) {
 
 BotãoDownloadEmentaeSoftwares.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("/landing-page/pdf/EMENTA E SOFTWARES.pdf","_blank");
+    window.open("/landing-page/pdf/EMENTA E SOFTWARES.pdf","_blank","noopener");
 })
 
 BotãoDownloadBibliografias.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("/landing-page/pdf/BIBLIOGRAFIA.pdf","_blank");
+    window.open("/landing-page/pdf/BIBLIOGRAFIA.pdf","_blank","noopener");
 })
 
 BotãoDownloadCronograma.addEventListener("click", function(event) {
     event.preventDefault();
-    window.open("/landing-page/pdf/CRONOGRAMA.pdf","_blank");
+    window.open("/landing-page/pdf/CRONOGRAMA.pdf","_blank","noopener");
 })
 
 
