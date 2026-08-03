@@ -28,8 +28,8 @@ h1, h2, h3, h4{
 button[id^="Seta-Fechamento-Seção-"]:focus-visible,
 #Botão-Instagram-Direct:focus-visible,
 a.Texto-Interno-Branco:focus-visible{
-    outline: 3px solid #fff;
-    outline-offset: 3px;
+    outline: var(--focus-outline-width) solid var(--color-white);
+    outline-offset: var(--focus-outline-offset);
 }
 
 .Focos-Abertura:focus{
@@ -40,13 +40,42 @@ a.Texto-Interno-Branco:focus-visible{
 .Botões-Padrão-Download-PDFs:focus-visible,
 .Botões-Tela-Cheia-Depoimentos:focus-visible,
 #Botão-Principal:focus-visible{
-    outline: 3px solid #4a0816;
-    outline-offset: 3px;
+    outline: var(--focus-outline-width) solid var(--color-official-machado-wine);
+    outline-offset: var(--focus-outline-offset);
 }
 
 :root {
+    --color-official-machado-wine: #4a0816;
+    --color-black: #000000;
+    --color-white: #ffffff;
+    --color-grey-light: #dddddd;
+    --color-green: #0aa15b;
+    --gradient-black-to-wine: linear-gradient(165deg, var(--color-black), var(--color-official-machado-wine));
+    --gradient-white-to-light-grey: linear-gradient(165deg, var(--color-white), var(--color-grey-light));
+    --page-max-width: 430px;
     --considered-screen-width: 100vw;
     --considered-margin-left: 0px;
+    --section-call-width: calc(var(--considered-screen-width) * 0.85);
+    --subsection-width: 95%;
+    --arrow-button-width: 80px;
+    --section-close-button-height: 30px;
+    --subsection-arrow-button-height: 26px;
+    --quote-cta-content-width: 85%;
+    --section-heading-text-offset: 14px;
+    --border-width-thin: 1px;
+    --focus-outline-width: 3px;
+    --focus-outline-offset: 3px;
+    --radius-md: 20px;
+    --radius-lg: 30px;
+    --radius-subsection-arrow: 13px;
+    --shadow-section-close-button: 0px 1px 5px var(--color-white);
+    --space-xs: 5px;
+    --space-sm: 10px;
+    --space-md: 20px;
+    --space-lg: 30px;
+    --space-xl: 40px;
+    --space-2xl: 60px;
+    --space-3xl: 80px;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +85,7 @@ a.Texto-Interno-Branco:focus-visible{
 @media (min-width: 431px) {
     
     :root {
-        --considered-screen-width: 430px;
+        --considered-screen-width: var(--page-max-width);
         --considered-margin-left: calc(50vw - (var(--considered-screen-width)/2));
     }
 
@@ -65,11 +94,11 @@ a.Texto-Interno-Branco:focus-visible{
     }
 
     #Container-Vídeo-Principal{
-        margin-bottom: 40px;
+        margin-bottom: var(--space-xl);
     }
 
     #Container-Vídeo-Depoimentos{
-        margin-bottom: 40px;
+        margin-bottom: var(--space-xl);
     }
 
 }
@@ -90,8 +119,8 @@ a.Texto-Interno-Branco:focus-visible{
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 40px;
-    background: linear-gradient(165deg, #000000, #4a0816);
+    padding-top: var(--space-xl);
+    background: var(--gradient-black-to-wine);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
 }
@@ -102,21 +131,21 @@ a.Texto-Interno-Branco:focus-visible{
     height: auto;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 40px;
+    margin-bottom: var(--space-xl);
 }
 
 #Seção-Inicial-Manchete{
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
     width: 90%;
     font-size: 21px;
-    margin-bottom: 60px;
+    margin-bottom: var(--space-2xl);
 }
 
 #Seção-Inicial-Submanchete{
-    color: #fff;
+    color: var(--color-white);
     font-size: 16px;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-lg);
 }
 
 .Seção-Inicial-Números{
@@ -124,27 +153,27 @@ a.Texto-Interno-Branco:focus-visible{
     align-items: center;
     justify-content: center;
     border-radius: 24px;
-    background-color: #fff;
-    color: #4a0816;
+    background-color: var(--color-white);
+    color: var(--color-official-machado-wine);
     height: 40px;
     width: 40px;
     font-weight: 700;
     font-size: 18px;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-md);
 }
 
 .Seção-Inicial-Explicações{
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
     width: 90%;
     font-size: 16px;
-    margin-bottom: 40px;
+    margin-bottom: var(--space-xl);
     line-height: 1.3;
 }
 
 #Explicação-Otimize-Seu-Tempo{
-    margin-top: 30px;
-    color: #fff;
+    margin-top: var(--space-lg);
+    color: var(--color-white);
     text-align: center;
 }
 
@@ -152,12 +181,12 @@ a.Texto-Interno-Branco:focus-visible{
     display: flex;
     width: calc(var(--considered-screen-width) * 0.90);
     height: auto;
-    padding: 5px;
+    padding: var(--space-xs);
     margin-left: auto;
     margin-right: auto;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    border: 1px solid #9a9a9a;
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    border: var(--border-width-thin) solid #9a9a9a;
     justify-content: center;
     align-items: center;
 }
@@ -213,7 +242,7 @@ a.Texto-Interno-Branco:focus-visible{
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
 .Seções{
-    background: linear-gradient(165deg, #000000, #4a0816);
+    background: var(--gradient-black-to-wine);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
 }
@@ -221,44 +250,44 @@ a.Texto-Interno-Branco:focus-visible{
 .Containers-Externos-Seções{
     display:block;
     position: relative;
-    padding-top: 20px;
-    padding-bottom: 10px;
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-sm);
     cursor: pointer;
 }
 
 .Chamadas-Externas-Seções{
     display: flex;
-    width: calc(var(--considered-screen-width) * 0.85);
+    width: var(--section-call-width);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-sm);
 }
 
 .Números-Externos-Chamadas-Seções{
     font-size: 64px;
-    color: #fff;
-    margin-right: 20px;
+    color: var(--color-white);
+    margin-right: var(--space-md);
 }
 
 .Textos-Externos-Chamadas-Seções{
     font-size: 22px;
-    color: #fff;
-    padding-top: 14px;
+    color: var(--color-white);
+    padding-top: var(--section-heading-text-offset);
 }
 
 .Textos-Botões-Externos-Abertura-Seções{
     display: block;
-    background-color: #0aa15b;
+    background-color: var(--color-green);
     font-size: 14px;
     width: 120px;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: var(--space-xs);
+    padding-bottom: var(--space-xs);
     text-align: center;
     color: #f2f2f2;
-    border-radius: 20px;
+    border-radius: var(--radius-md);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 5px;
+    margin-bottom: var(--space-xs);
     animation: Pulsos-Botões-Externos-Abertura-Seções 3s ease-out infinite;
 }
 
@@ -272,7 +301,7 @@ a.Texto-Interno-Branco:focus-visible{
 @keyframes Pulsos-Botões-Externos-Abertura-Seções {
     
     0% {
-      box-shadow: 0 0 0px 0 #0aa15b;
+      box-shadow: 0 0 0px 0 var(--color-green);
     }
     
     25% {
@@ -280,11 +309,11 @@ a.Texto-Interno-Branco:focus-visible{
     }
     
     50% {
-      box-shadow: 0 0 0px 10px #4a0816;
+      box-shadow: 0 0 0px 10px var(--color-official-machado-wine);
     }
 
     50.001% {
-        box-shadow: 0 0 0px 0 #0aa15b;
+        box-shadow: 0 0 0px 0 var(--color-green);
       }
 
     75% {
@@ -292,13 +321,13 @@ a.Texto-Interno-Branco:focus-visible{
     }
 
     100% {
-        box-shadow: 0 0 0px 10px #4a0816;
+        box-shadow: 0 0 0px 10px var(--color-official-machado-wine);
     }
 
 }
 
 .Setas-Chamadas-Externas-Seções{
-    stroke: #fff;
+    stroke: var(--color-white);
     text-align: center;
     margin-left: auto;
     margin-right: auto;
@@ -314,22 +343,22 @@ a.Texto-Interno-Branco:focus-visible{
 
 #Chamada-Interna-Seção-1{
     display: flex;
-    width: calc(var(--considered-screen-width) * 0.85);
+    width: var(--section-call-width);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-sm);
 }
 
 #Número-Interno-Chamada-Seção-1{
     font-size: 64px;
-    color: #fff;
-    margin-right: 20px;
+    color: var(--color-white);
+    margin-right: var(--space-md);
 }
 
 #Texto-Interno-Chamada-Seção-1{
     font-size: 22px;
-    color: #fff;
-    padding-top: 14px;
+    color: var(--color-white);
+    padding-top: var(--section-heading-text-offset);
 }
 
 #Gestão-Coração-Administração{
@@ -337,7 +366,7 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 40px;
+    margin-bottom: var(--space-xl);
 }
 
 #Gestão-Ciência-Central{
@@ -345,8 +374,8 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 40px;
-    margin-bottom: 40px;
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
 }
 
 #Sistema-de-Gestão{
@@ -354,8 +383,8 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 40px;
-    margin-bottom: 40px;
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
 }
 
 #Equação-Fundamental{
@@ -363,7 +392,7 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-md);
 }
 
 #Radical-Simplicidade{
@@ -371,8 +400,8 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
 }
 
 #PDCA{
@@ -380,7 +409,7 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-md);
 }
 
 #SDCA{
@@ -388,21 +417,21 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
 }
 
 #Seta-Fechamento-Seção-1{
     display: flex;
-    fill: #fff;
-    stroke: #fff;
+    fill: var(--color-white);
+    stroke: var(--color-white);
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
-    background-color: #4a0816;
-    width: 80px;
-    height: 30px;
-    box-shadow: 0px 1px 5px rgb(255, 255, 255);
+    border-radius: var(--radius-md);
+    background-color: var(--color-official-machado-wine);
+    width: var(--arrow-button-width);
+    height: var(--section-close-button-height);
+    box-shadow: var(--shadow-section-close-button);
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -416,37 +445,37 @@ a.Texto-Interno-Branco:focus-visible{
 
 #Chamada-Interna-Seção-2{
     display: flex;
-    width: calc(var(--considered-screen-width) * 0.85);
+    width: var(--section-call-width);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-sm);
 }
 
 #Número-Interno-Chamada-Seção-2{
     font-size: 64px;
-    color: #fff;
-    margin-right: 20px;
+    color: var(--color-white);
+    margin-right: var(--space-md);
 }
 
 #Texto-Interno-Chamada-Seção-2{
     font-size: 22px;
-    color: #fff;
-    padding-top: 14px;
+    color: var(--color-white);
+    padding-top: var(--section-heading-text-offset);
 }
 
 #Manchete-Lastro-de-Verdade{
     font-size: 28px;
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
     width: 90%;
-    margin-top: -20px;
-    margin-bottom: 40px;
+    margin-top: calc(-1 * var(--space-md));
+    margin-bottom: var(--space-xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 #Observação-Publicação-HBS{
-    color: #fff;
+    color: var(--color-white);
     font-size: 14px;
     width: 90%;
     margin-left: auto;
@@ -455,15 +484,15 @@ a.Texto-Interno-Branco:focus-visible{
 
 #Seta-Fechamento-Seção-2{
     display: flex;
-    fill: #fff;
-    stroke: #fff;
+    fill: var(--color-white);
+    stroke: var(--color-white);
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
-    background-color: #4a0816;
-    width: 80px;
-    height: 30px;
-    box-shadow: 0px 1px 5px rgb(255, 255, 255);
+    border-radius: var(--radius-md);
+    background-color: var(--color-official-machado-wine);
+    width: var(--arrow-button-width);
+    height: var(--section-close-button-height);
+    box-shadow: var(--shadow-section-close-button);
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -476,29 +505,29 @@ a.Texto-Interno-Branco:focus-visible{
 
 #Chamada-Interna-Seção-3{
     display: flex;
-    width: calc(var(--considered-screen-width) * 0.85);
+    width: var(--section-call-width);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-sm);
 }
 
 #Número-Interno-Chamada-Seção-3{
     font-size: 64px;
-    color: #fff;
-    margin-right: 20px;
+    color: var(--color-white);
+    margin-right: var(--space-md);
 }
 
 #Texto-Interno-Chamada-Seção-3{
     font-size: 22px;
-    color: #fff;
-    padding-top: 14px;
+    color: var(--color-white);
+    padding-top: var(--section-heading-text-offset);
 }
 
 #Gráfico{
     display: block;
     width: 90%;
-    margin-top: 40px;
-    margin-bottom: 40px;
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
     margin-left: auto;
     margin-right: auto;
 }
@@ -506,15 +535,15 @@ a.Texto-Interno-Branco:focus-visible{
 #Régua-de-Cargos{
     display: block;
     width: 90%;
-    margin-top: 40px;
-    margin-bottom: 40px;
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Containers-Botões-Download-PDFs{
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-lg);
 }
 
 #Plataforma{
@@ -524,30 +553,30 @@ a.Texto-Interno-Branco:focus-visible{
 
 #Seta-Fechamento-Seção-3{
     display: flex;
-    fill: #fff;
-    stroke: #fff;
+    fill: var(--color-white);
+    stroke: var(--color-white);
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
-    background-color: #4a0816;
-    width: 80px;
-    height: 30px;
-    box-shadow: 0px 1px 5px rgb(255, 255, 255);
+    border-radius: var(--radius-md);
+    background-color: var(--color-official-machado-wine);
+    width: var(--arrow-button-width);
+    height: var(--section-close-button-height);
+    box-shadow: var(--shadow-section-close-button);
 }
 
 /*////////////////////////// Configurações Padrão Subseções /////////////////////////////*/
 
 .Subseções-Fechadas{
     position: relative;
-    background: linear-gradient(165deg, #000000, #4a0816);
-    width: 95%;
+    background: var(--gradient-black-to-wine);
+    width: var(--subsection-width);
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;
+    margin-top: var(--space-md);
     margin-bottom: 0px;
-    border-radius: 20px;
-    border: 1px solid #fff;
-    padding-top: 20px;
+    border-radius: var(--radius-md);
+    border: var(--border-width-thin) solid var(--color-white);
+    padding-top: var(--space-md);
     padding-bottom: 15px;
     cursor: pointer;
     user-select: none;
@@ -555,24 +584,24 @@ a.Texto-Interno-Branco:focus-visible{
 
 .Manchetes-Subseções-Padrão-Vermelho{
     font-size: 22px;
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-bottom: 20px;
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+    margin-bottom: var(--space-md);
 }
 
 .Setas-Abertura-Subseções{
     display: flex;
-    stroke: #fff;
-    fill: #fff;
-    background-color: #4a0816;
-    border: 1px solid #fff;
-    width: 80px;
-    height: 26px;
+    stroke: var(--color-white);
+    fill: var(--color-white);
+    background-color: var(--color-official-machado-wine);
+    border: var(--border-width-thin) solid var(--color-white);
+    width: var(--arrow-button-width);
+    height: var(--subsection-arrow-button-height);
     align-items: center;
     justify-content: center;
-    border-radius: 13px;
+    border-radius: var(--radius-subsection-arrow);
     margin-left: auto;
     margin-right: auto;
 }
@@ -580,67 +609,67 @@ a.Texto-Interno-Branco:focus-visible{
 .Setas-Abertura-Subseções::after{
     content: "";
     position: absolute;
-    inset: -1px;
-    border-radius: 20px;
+    inset: calc(-1 * var(--border-width-thin));
+    border-radius: var(--radius-md);
     z-index: 1;
 }
 
 .Subseções-Abertas{
     display: none;
-    background: linear-gradient(165deg, #fff, #dfdfdf);
-    width: 95%;
-    margin-top: 20px;
+    background: linear-gradient(165deg, var(--color-white), #dfdfdf);
+    width: var(--subsection-width);
+    margin-top: var(--space-md);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
-    border-radius: 30px;
-    padding-bottom: 20px;
+    margin-bottom: var(--space-md);
+    border-radius: var(--radius-lg);
+    padding-bottom: var(--space-md);
     user-select: none;
 }
 
 .Containers-Manchetes-Subseções-Padrão-Branco{
-    background: linear-gradient(165deg, #000, #4a0816);
-    border-radius: 30px 30px 0px 0px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    background: var(--gradient-black-to-wine);
+    border-radius: var(--radius-lg) var(--radius-lg) 0px 0px;
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
 }
 
 .Manchetes-Subseções-Padrão-Branco{
     font-size: 22px;
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
 }
 
 .Setas-Fechamento-Subseções{
     display: flex;
-    stroke: #fff;
-    fill: #fff;
-    background-color: #4a0816;
-    width: 80px;
-    height: 26px;
+    stroke: var(--color-white);
+    fill: var(--color-white);
+    background-color: var(--color-official-machado-wine);
+    width: var(--arrow-button-width);
+    height: var(--subsection-arrow-button-height);
     align-items: center;
     justify-content: center;
-    border-radius: 13px;
+    border-radius: var(--radius-subsection-arrow);
     margin-left: auto;
     margin-right: auto;
-    margin-top: 20px;
+    margin-top: var(--space-md);
 }
 
 .Botões-Padrão-Download-PDFs{
     display: block;
     width: 60%;
-    background-color: #4a0816;
-    color: #fff;
+    background-color: var(--color-official-machado-wine);
+    color: var(--color-white);
     font-size: 20px;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    margin-bottom: var(--space-md);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
     text-align: center;
-    border-radius: 20px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     box-shadow: 5px 5px 5px #282828;
     text-decoration: none;
@@ -666,77 +695,77 @@ a.Texto-Interno-Branco:focus-visible{
 
 #Chamada-Interna-Seção-4{
     display: flex;
-    width: calc(var(--considered-screen-width) * 0.85);
+    width: var(--section-call-width);
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-sm);
 }
 
 #Número-Interno-Chamada-Seção-4{
     font-size: 64px;
-    color: #fff;
-    margin-right: 20px;
+    color: var(--color-white);
+    margin-right: var(--space-md);
 }
 
 #Texto-Interno-Chamada-Seção-4{
     font-size: 22px;
-    color: #fff;
-    padding-top: 14px;
+    color: var(--color-white);
+    padding-top: var(--section-heading-text-offset);
 }
 
 #Seta-Fechamento-Seção-4{
     display: flex;
-    fill: #fff;
-    stroke: #fff;
+    fill: var(--color-white);
+    stroke: var(--color-white);
     justify-content: center;
     align-items: center;
-    border-radius: 20px;
-    background-color: #4a0816;
-    width: 80px;
-    height: 30px;
-    box-shadow: 0px 1px 5px rgb(255, 255, 255);
+    border-radius: var(--radius-md);
+    background-color: var(--color-official-machado-wine);
+    width: var(--arrow-button-width);
+    height: var(--section-close-button-height);
+    box-shadow: var(--shadow-section-close-button);
 }
 
 #Background-Informações-Completas{
-    background-color: #4a0816;
-    padding-top: 30px;
-    padding-bottom: 20px;
+    background-color: var(--color-official-machado-wine);
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-md);
 }
 
 #Título-Informações-Completas{
     display: flex;
     font-size: 23px;    
-    color: #fff;
+    color: var(--color-white);
     justify-content: center;
 }
 
 #Subtítulo-Informações-Completas{
     display: flex;
     font-size: 21px;    
-    color: #fff;
+    color: var(--color-white);
     justify-content: center;
 }
 
 #Background-Informações-Resumidas{
-    background: linear-gradient(170deg, #fff 20%, #ddd 80%);;
-    padding-top: 40px;
-    margin-bottom: 10px;
+    background: linear-gradient(170deg, var(--color-white) 20%, var(--color-grey-light) 80%);;
+    padding-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
     justify-content: center;
 }
 
 #Título-Informações-Resumidas{
     display: flex;
     font-size: 23px;    
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     justify-content: center;
 }
 
 #Subtítulo-Informações-Resumidas{
     display: flex;
     font-size: 21px;    
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     justify-content: center;
-    margin-bottom: 40px;
+    margin-bottom: var(--space-xl);
 }
 
 .Containers-Empresas-Informações-Resumidas{
@@ -744,34 +773,34 @@ a.Texto-Interno-Branco:focus-visible{
     width: 90%;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-lg);
 }
 
 .Logos-Empresas-Informações-Resumidas{
     width: 20%;
     height: auto;
     object-fit: contain;
-    margin-right: 20px;
+    margin-right: var(--space-md);
 }
 
 .Descrições-Empresas-Informações-Resumidas{
     width: 100%;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
 }
 
 .Títulos-Estatísticas-Padrão-Vermelho{
     font-size: 26px;
     font-weight: 600;
     text-align: center;
-    color: #4a0816;
-    margin-top: 20px;
+    color: var(--color-official-machado-wine);
+    margin-top: var(--space-md);
 }
 
 .Subtítulos-Estatísticas-Padrão-Vermelho{
     font-size: 17px;
     text-align: center;
-    color: #4a0816;
-    margin-bottom: 20px;
+    color: var(--color-official-machado-wine);
+    margin-bottom: var(--space-md);
 }
 
 #Gráfico-Portes{
@@ -786,8 +815,8 @@ a.Texto-Interno-Branco:focus-visible{
     display: flex;
     width: 95%;
     height: auto;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
     margin-left: auto;
     margin-right: auto;
 }
@@ -798,7 +827,7 @@ a.Texto-Interno-Branco:focus-visible{
     margin-right: auto;
     font-size: 14px;
     text-align: center;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
 }
 
 .Containers-Vídeos-Depoimentos{
@@ -807,8 +836,8 @@ a.Texto-Interno-Branco:focus-visible{
     height: auto;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-lg);
 }
 
 .Vídeos-Depoimentos{
@@ -824,14 +853,14 @@ a.Texto-Interno-Branco:focus-visible{
 /*//////////////////////////////// Botões-Tela-Cheia ////////////////////////////////////*/
 
 .Botões-Tela-Cheia-Depoimentos{
-    background: linear-gradient(165deg, #fff, #ddd);
+    background: var(--gradient-white-to-light-grey);
     width: 160px;
-    padding: 10px;
+    padding: var(--space-sm);
     align-items: center;
     margin-right: auto;
     margin-left: auto;
-    border-radius: 30px;
-    margin-bottom: 20px;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-md);
     display: flex;
     cursor: pointer;
 }
@@ -839,12 +868,12 @@ a.Texto-Interno-Branco:focus-visible{
 .Imagens-Tela-Cheia{
     height: 35px;
     width: auto;
-    margin-right: 10px;
-    margin-left: 10px;
+    margin-right: var(--space-sm);
+    margin-left: var(--space-sm);
 }
 
 .Textos-Tela-Cheia{
-    color: #000;
+    color: var(--color-black);
     font-size: 16px;
     user-select: none;
 }
@@ -852,142 +881,142 @@ a.Texto-Interno-Branco:focus-visible{
 /*//////////////////////////////////// Backgrounds //////////////////////////////////////*/
 
 .Backgrounds-Preto-Vermelho{
-    background: linear-gradient(165deg, #000000 10%, #4a0816 80%);
-    padding-top: 20px;
-    padding-bottom: 40px;
+    background: linear-gradient(165deg, var(--color-black) 10%, var(--color-official-machado-wine) 80%);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-xl);
 }
 
 .Backgrounds-Preto-Vermelho-2{
-    background: linear-gradient(170deg, #000000 20%, #4a0816 80%);
-    padding-top: 20px;
-    padding-bottom: 40px;
+    background: linear-gradient(170deg, var(--color-black) 20%, var(--color-official-machado-wine) 80%);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-xl);
 }
 
 .Backgrounds-Vermelho-Preto{
-    background: linear-gradient(165deg, #4a0816 20%, #000000 80%);
-    padding-top: 20px;
-    padding-bottom: 40px;
+    background: linear-gradient(165deg, var(--color-official-machado-wine) 20%, var(--color-black) 80%);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-xl);
 }
 
 .Backgrounds-Preto{
-    background-color: #000000;
-    padding-top: 20px;
+    background-color: var(--color-black);
+    padding-top: var(--space-md);
 }
 
 .Backgrounds-Vermelho{
-    background-color: #4a0816;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    background-color: var(--color-official-machado-wine);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
 }
 
 .Backgrounds-Branco-Cinza{
-    background: linear-gradient(165deg, #fff 10%, #d4d4d4 90%);
-    padding-top: 20px;
-    padding-bottom: 40px;
+    background: linear-gradient(165deg, var(--color-white) 10%, #d4d4d4 90%);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-xl);
 }
 
 .Backgrounds-Vermelho-Branco{
-    background: linear-gradient(165deg, #4a0816 10%, #fff 90%);
-    padding-bottom: 20px;
+    background: linear-gradient(165deg, var(--color-official-machado-wine) 10%, var(--color-white) 90%);
+    padding-bottom: var(--space-md);
 }
 
 .Backgrounds-Preto-Vermelho-Branco{
-    background: linear-gradient(165deg, #000000 10%, #4a0816 70%, #fff 90%);
-    padding-bottom: 20px;
+    background: linear-gradient(165deg, var(--color-black) 10%, var(--color-official-machado-wine) 70%, var(--color-white) 90%);
+    padding-bottom: var(--space-md);
 }
 
 /*/////////////////////////////////////// Textos ////////////////////////////////////////*/
 
 .Manchetes-Internas-Padrão-Branco{
     font-size: 28px;
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
     width: 90%;
-    margin-top: 80px;
-    margin-bottom: 80px;
+    margin-top: var(--space-3xl);
+    margin-bottom: var(--space-3xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Manchetes-Internas-Padrão-Branco-2{
     font-size: 28px;
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
     width: 90%;
     margin-top: 0px;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-md);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Manchetes-Internas-Padrão-Branco-3{
     font-size: 28px;
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
     width: 90%;
-    margin-top: 80px;
+    margin-top: var(--space-3xl);
     margin-bottom: 0px;
-    padding-bottom: 40px;
+    padding-bottom: var(--space-xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Manchetes-Internas-Padrão-Vermelho{
     font-size: 28px;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     text-align: center;
     width: 90%;
-    margin-top: 80px;
-    margin-bottom: 80px;
+    margin-top: var(--space-3xl);
+    margin-bottom: var(--space-3xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Tópicos-Internos-Padrão-Vermelho{
     font-size: 24px;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     text-align: center;
     width: 90%;
-    margin-top: 60px;
-    margin-bottom: 60px;
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Tópicos-Internos-Padrão-Vermelho-2{
     font-size: 24px;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     text-align: center;
     width: 90%;
-    margin-bottom: 40px;
+    margin-bottom: var(--space-xl);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Títulos-Internos-Padrão-Branco{
     font-size: 21px;    
-    color: #fff;
+    color: var(--color-white);
     text-align: center;
-    padding-top: 40px;
-    padding-bottom: 40px;
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
 }
 
 .Textos-Internos-Padrão-Branco{
     font-size: 18px;
     width: 90%;
-    color: #fff;
+    color: var(--color-white);
     margin-left: auto;
     margin-right: auto;
 }
 
 .Texto-Interno-Branco:visited {
-  color: white;
+  color: var(--color-white);
 }
 
 .Textos-Internos-Padrão-Vermelho{
     font-size: 18px;
     width: 90%;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     margin-left: auto;
     margin-right: auto;
 }
@@ -995,7 +1024,7 @@ a.Texto-Interno-Branco:focus-visible{
 .Textos-Internos-Padrão-Vermelho-Centralizado{
     font-size: 18px;
     width: 90%;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     margin-left: auto;
     margin-right: auto;
     text-align: center;
@@ -1004,7 +1033,7 @@ a.Texto-Interno-Branco:focus-visible{
 .Textos-Internos-Padrão-Vermelho-2{
     font-size: 20px;
     width: 90%;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     margin-left: auto;
     margin-right: auto;
     text-align: center;
@@ -1013,7 +1042,7 @@ a.Texto-Interno-Branco:focus-visible{
 .Bullet-Points-Internos-Padrão-Branco{
     font-size: 18px;
     width: 80%;
-    color: #fff;
+    color: var(--color-white);
     margin-left: auto;
     margin-right: auto;
 }
@@ -1021,7 +1050,7 @@ a.Texto-Interno-Branco:focus-visible{
 .Bullet-Points-Internos-Padrão-Vermelho{
     font-size: 18px;
     width: 80%;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     margin-left: auto;
     margin-right: auto;
 }
@@ -1043,29 +1072,29 @@ a.Texto-Interno-Branco:focus-visible{
 .Subseções-Cadastro{
     width: calc(var(--considered-screen-width) * 0.90   );
     height: auto;
-    background: linear-gradient(180deg, #ddd 0%, #fff 70%, #fff 100%);
-    margin-top: 40px;
-    border-radius: 20px;
+    background: linear-gradient(180deg, var(--color-grey-light) 0%, var(--color-white) 70%, var(--color-white) 100%);
+    margin-top: var(--space-xl);
+    border-radius: var(--radius-md);
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
 }
 
 .Manchetes-Subseções-Cadastro{
     font-size: 22px;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     width: 80%;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-md);
     line-height: 1.2;
 }
 
 .Textos-Subseções-Cadastro{
     font-size: 18px;
-    color: #4a0816;
+    color: var(--color-official-machado-wine);
     width: 90%;
     margin-left: auto;
     margin-right: auto;
@@ -1076,7 +1105,7 @@ a.Texto-Interno-Branco:focus-visible{
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
 #Espaço-Final-Container-Botão-Principal{
-    background: linear-gradient(165deg, #fff, #ddd);
+    background: var(--gradient-white-to-light-grey);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
 }
@@ -1090,19 +1119,19 @@ a.Texto-Interno-Branco:focus-visible{
     display: block;
     height: 150px;
     border-radius: 50px 50px 0px 0px;
-    background: linear-gradient(165deg, #fff, #ddd);
+    background: var(--gradient-white-to-light-grey);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
-    padding-top: 10px;
-    padding-bottom: 20px;
+    padding-top: var(--space-sm);
+    padding-bottom: var(--space-md);
     position: fixed;
     bottom: 0px;
 }
 
 #Explicação-Botão-Principal{
     display: block;
-    color: #4a0816;
-    width: 85%;
+    color: var(--color-official-machado-wine);
+    width: var(--quote-cta-content-width);
     font-size: 17px;
     margin-left: auto;
     margin-right: auto;
@@ -1114,17 +1143,17 @@ a.Texto-Interno-Branco:focus-visible{
     align-items: center;
     justify-content: center;
     height: 60px;
-    width: 85%;
-    padding-left: 20px;
-    padding-right: 20px;
-    color: #fff;
+    width: var(--quote-cta-content-width);
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+    color: var(--color-white);
     margin-left: auto;
     margin-right: auto;
-    margin-top: 10px;
+    margin-top: var(--space-sm);
     font-size: 16px;
     border-radius: 10px;
     border: none;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
-    background-color: #0aa15b;
+    box-shadow: 0px 4px 6px var(--color-black);
+    background-color: var(--color-green);
     text-decoration: none;
 }

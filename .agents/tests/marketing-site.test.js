@@ -293,13 +293,61 @@ test("marketing selectors, local references, script order, and timing remain exa
   const marketingScript = "<script defer src=\"./landing-page/main.js\"></script>";
   assert.ok(html.indexOf(shakaScript) < html.indexOf(marketingScript));
   assert.match(css, /\*\{[\s\S]*?user-select: none;[\s\S]*?\}/);
+  assert.match(css, /--page-max-width: 430px;/);
   assert.match(
     css,
-    /@media \(min-width: 431px\) \{[\s\S]*?--considered-screen-width: 430px;[\s\S]*?--considered-margin-left: calc\(50vw - \(var\(--considered-screen-width\)\/2\)\);/
+    /@media \(min-width: 431px\) \{[\s\S]*?--considered-screen-width: var\(--page-max-width\);[\s\S]*?--considered-margin-left: calc\(50vw - \(var\(--considered-screen-width\)\/2\)\);/
   );
   assert.match(css, /animation: Teste 12s ease-in infinite;/);
   assert.match(css, /animation: Pulsos-Botões-Externos-Abertura-Seções 3s ease-out infinite;/);
   assert.doesNotMatch(source, /\b(?:setTimeout|setInterval|requestAnimationFrame)\s*\(/);
+});
+
+test("marketing CSS foundations name and consume only shared design values", () => {
+  const tokenDeclarations = [
+    "--color-official-machado-wine: #4a0816;",
+    "--color-black: #000000;",
+    "--color-white: #ffffff;",
+    "--color-grey-light: #dddddd;",
+    "--color-green: #0aa15b;",
+    "--gradient-black-to-wine: linear-gradient(165deg, var(--color-black), var(--color-official-machado-wine));",
+    "--gradient-white-to-light-grey: linear-gradient(165deg, var(--color-white), var(--color-grey-light));",
+    "--page-max-width: 430px;",
+    "--section-call-width: calc(var(--considered-screen-width) * 0.85);",
+    "--subsection-width: 95%;",
+    "--arrow-button-width: 80px;",
+    "--section-close-button-height: 30px;",
+    "--subsection-arrow-button-height: 26px;",
+    "--quote-cta-content-width: 85%;",
+    "--section-heading-text-offset: 14px;",
+    "--border-width-thin: 1px;",
+    "--focus-outline-width: 3px;",
+    "--focus-outline-offset: 3px;",
+    "--radius-md: 20px;",
+    "--radius-lg: 30px;",
+    "--radius-subsection-arrow: 13px;",
+    "--shadow-section-close-button: 0px 1px 5px var(--color-white);",
+    "--space-xs: 5px;",
+    "--space-sm: 10px;",
+    "--space-md: 20px;",
+    "--space-lg: 30px;",
+    "--space-xl: 40px;",
+    "--space-2xl: 60px;",
+    "--space-3xl: 80px;"
+  ];
+
+  for (const declaration of tokenDeclarations) {
+    assert.ok(css.includes(declaration), declaration);
+    const token = declaration.slice(0, declaration.indexOf(":"));
+    assert.ok(css.includes(`var(${token})`), token);
+  }
+
+  assert.equal((css.match(/#4a0816/gi) ?? []).length, 1);
+  assert.equal((css.match(/#000000/gi) ?? []).length, 1);
+  assert.equal((css.match(/#ffffff/gi) ?? []).length, 1);
+  assert.equal((css.match(/#0aa15b/gi) ?? []).length, 1);
+  assert.equal((css.match(/#dddddd/gi) ?? []).length, 1);
+  assert.doesNotMatch(css, /#fff(?![0-9a-f])|#000(?![0-9a-f])|#ddd(?![0-9a-f])/i);
 });
 
 test("marketing interactions use native controls with complete relationships and focus styles", () => {
@@ -391,16 +439,26 @@ test("marketing interactions use native controls with complete relationships and
   assert.match(css, /\.Subseções-Fechadas\{[\s\S]*?position: relative;/);
   assert.match(css, /:where\([\s\S]*?button\.Textos-Botões-Externos-Abertura-Seções,[\s\S]*?\)\{/);
   assert.match(css, /\.Textos-Botões-Externos-Abertura-Seções\{[\s\S]*?font-size: 14px;/);
-  assert.match(css, /\.Subseções-Fechadas\{[\s\S]*?border: 1px solid #fff;/);
+  assert.match(
+    css,
+    /\.Subseções-Fechadas\{[\s\S]*?border: var\(--border-width-thin\) solid var\(--color-white\);/
+  );
   assert.match(
     css,
     /\.Textos-Botões-Externos-Abertura-Seções::after\{[\s\S]*?position: absolute;[\s\S]*?inset: 0;/
   );
   assert.match(
     css,
-    /\.Setas-Abertura-Subseções::after\{[\s\S]*?position: absolute;[\s\S]*?inset: -1px;[\s\S]*?border-radius: 20px;/
+    /\.Setas-Abertura-Subseções::after\{[\s\S]*?position: absolute;[\s\S]*?inset: calc\(-1 \* var\(--border-width-thin\)\);[\s\S]*?border-radius: var\(--radius-md\);/
   );
-  assert.match(css, /:focus-visible[\s\S]*?outline: 3px solid/);
+  assert.match(
+    css,
+    /\.Textos-Botões-Externos-Abertura-Seções:focus-visible,[\s\S]*?a\.Texto-Interno-Branco:focus-visible\{\s*outline: var\(--focus-outline-width\) solid var\(--color-white\);\s*outline-offset: var\(--focus-outline-offset\);\s*\}/
+  );
+  assert.match(
+    css,
+    /\.Setas-Fechamento-Subseções:focus-visible,[\s\S]*?#Botão-Principal:focus-visible\{\s*outline: var\(--focus-outline-width\) solid var\(--color-official-machado-wine\);\s*outline-offset: var\(--focus-outline-offset\);\s*\}/
+  );
   assert.match(css, /\.Focos-Abertura:focus\{[\s\S]*?outline: none;/);
   assert.equal((css.match(/outline:\s*none/g) ?? []).length, 1);
 
