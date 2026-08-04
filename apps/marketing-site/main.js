@@ -128,6 +128,11 @@ var SetaFechamentoSeção4 = document.getElementById("Seta-Fechamento-Seção-4"
 var EspaçoFinalContainerBotãoPrincipal = document.getElementById("Espaço-Final-Container-Botão-Principal");
 var ContainerBotãoPrincipal = document.getElementById("Container-Botão-Principal");
 
+function preferredScrollBehavior() {
+    if (typeof window.matchMedia !== 'function') return 'smooth';
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
 
 
 /*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
@@ -409,7 +414,7 @@ BotãoAberturaSeção1.addEventListener("click", function(event) {
     BotãoAberturaSeção4.setAttribute("aria-expanded", "false");
     ContainerExternoSeção1.style.display = 'none';
     ContainerInternoSeção1.style.display = 'block';
-    ContainerInternoSeção1.scrollIntoView({behavior: 'smooth'});
+    ContainerInternoSeção1.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção1.focus({preventScroll: true});
     SetaFechamentoSeção1.style.position = 'fixed';
     SetaFechamentoSeção1.style.bottom = '25px';
@@ -428,7 +433,7 @@ SetaFechamentoSeção1.addEventListener("click", function(event) {
     BotãoAberturaSeção1.setAttribute("aria-expanded", "false");
     ContainerExternoSeção1.style.display = 'block';
     ContainerInternoSeção1.style.display = 'none';
-    ContainerExternoSeção1.scrollIntoView({behavior: 'smooth'});
+    ContainerExternoSeção1.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção1.focus({preventScroll: true});
 })
 
@@ -447,7 +452,7 @@ BotãoAberturaSeção2.addEventListener("click", function(event) {
     ContainerInternoSeção1.style.display = 'none';
     ContainerExternoSeção2.style.display = 'none';
     ContainerInternoSeção2.style.display = 'block';
-    ContainerInternoSeção2.scrollIntoView({behavior: 'smooth'});
+    ContainerInternoSeção2.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção2.focus({preventScroll: true});
     SetaFechamentoSeção2.style.position = 'fixed';
     SetaFechamentoSeção2.style.bottom = '25px';
@@ -462,7 +467,7 @@ SetaFechamentoSeção2.addEventListener("click", function(event) {
     BotãoAberturaSeção2.setAttribute("aria-expanded", "false");
     ContainerExternoSeção2.style.display = 'block';
     ContainerInternoSeção2.style.display = 'none';
-    ContainerExternoSeção2.scrollIntoView({behavior: 'smooth'});
+    ContainerExternoSeção2.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção2.focus({preventScroll: true});
 })
 
@@ -482,7 +487,7 @@ BotãoAberturaSeção3.addEventListener("click", function(event) {
     ContainerInternoSeção2.style.display = 'none';
     ContainerExternoSeção3.style.display = 'none';
     ContainerInternoSeção3.style.display = 'block';
-    ContainerInternoSeção3.scrollIntoView({behavior: 'smooth'});
+    ContainerInternoSeção3.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção3.focus({preventScroll: true});
     SetaFechamentoSeção3.style.position = 'fixed';
     SetaFechamentoSeção3.style.bottom = '25px';
@@ -496,7 +501,7 @@ SetaFechamentoSeção3.addEventListener("click", function(event) {
     
     ContainerExternoSeção3.style.display = 'block';
     ContainerInternoSeção3.style.display = 'none';
-    ContainerExternoSeção3.scrollIntoView({behavior: 'smooth'});
+    ContainerExternoSeção3.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção3.focus({preventScroll: true});
 
     SubseçãoFechada31.style.display = 'block';
@@ -531,7 +536,7 @@ SetaAberturaSubseção31.addEventListener("click", function(event) {
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
     SubseçãoFechada31.style.display = 'none';
     SubseçãoAberta31.style.display = 'block';
-    SubseçãoAberta31.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta31.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta31.focus({preventScroll: true});
     
     SubseçãoFechada32.style.display = 'block';
@@ -553,7 +558,7 @@ SetaFechamentoSubseção31.addEventListener("click", function(event) {
     SetaAberturaSubseção31.setAttribute("aria-expanded", "false");
     SubseçãoFechada31.style.display = 'block';
     SubseçãoAberta31.style.display = 'none';
-    SubseçãoFechada31.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada31.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção31.focus({preventScroll: true});
 })
 
@@ -572,7 +577,7 @@ SetaAberturaSubseção32.addEventListener("click", function(event) {
 
     SubseçãoFechada32.style.display = 'none';
     SubseçãoAberta32.style.display = 'block';
-    SubseçãoAberta32.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta32.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta32.focus({preventScroll: true});
 
     SubseçãoFechada33.style.display = 'block';
@@ -591,7 +596,7 @@ SetaFechamentoSubseção32.addEventListener("click", function(event) {
     SetaAberturaSubseção32.setAttribute("aria-expanded", "false");
     SubseçãoFechada32.style.display = 'block';
     SubseçãoAberta32.style.display = 'none';
-    SubseçãoFechada32.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada32.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção32.focus({preventScroll: true});
 })
 
@@ -613,7 +618,7 @@ SetaAberturaSubseção33.addEventListener("click", function(event) {
 
     SubseçãoFechada33.style.display = 'none';
     SubseçãoAberta33.style.display = 'block';
-    SubseçãoAberta33.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta33.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta33.focus({preventScroll: true});
 
     SubseçãoFechada34.style.display = 'block';
@@ -629,7 +634,7 @@ SetaFechamentoSubseção33.addEventListener("click", function(event) {
     SetaAberturaSubseção33.setAttribute("aria-expanded", "false");
     SubseçãoFechada33.style.display = 'block';
     SubseçãoAberta33.style.display = 'none';
-    SubseçãoFechada33.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada33.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção33.focus({preventScroll: true});
 })
 
@@ -654,7 +659,7 @@ SetaAberturaSubseção34.addEventListener("click", function(event) {
 
     SubseçãoFechada34.style.display = 'none';
     SubseçãoAberta34.style.display = 'block';
-    SubseçãoAberta34.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta34.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta34.focus({preventScroll: true});
 
     SubseçãoFechada35.style.display = 'block';
@@ -667,7 +672,7 @@ SetaFechamentoSubseção34.addEventListener("click", function(event) {
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
     SubseçãoFechada34.style.display = 'block';
     SubseçãoAberta34.style.display = 'none';
-    SubseçãoFechada34.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada34.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção34.focus({preventScroll: true});
 })
 
@@ -695,7 +700,7 @@ SetaAberturaSubseção35.addEventListener("click", function(event) {
 
     SubseçãoFechada35.style.display = 'none';
     SubseçãoAberta35.style.display = 'block';
-    SubseçãoAberta35.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta35.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta35.focus({preventScroll: true});
 
 })
@@ -705,7 +710,7 @@ SetaFechamentoSubseção35.addEventListener("click", function(event) {
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
     SubseçãoFechada35.style.display = 'block';
     SubseçãoAberta35.style.display = 'none';
-    SubseçãoFechada35.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada35.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção35.focus({preventScroll: true});
 })
 
@@ -727,7 +732,7 @@ BotãoAberturaSeção4.addEventListener("click", function(event) {
     ContainerInternoSeção3.style.display = 'none';
     ContainerExternoSeção4.style.display = 'none';
     ContainerInternoSeção4.style.display = 'block';
-    ContainerInternoSeção4.scrollIntoView({behavior: 'smooth'});
+    ContainerInternoSeção4.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção4.focus({preventScroll: true});
     SetaFechamentoSeção4.style.position = 'fixed';
     SetaFechamentoSeção4.style.bottom = '25px';
@@ -740,7 +745,7 @@ SetaFechamentoSeção4.addEventListener("click", function(event) {
     
     ContainerExternoSeção4.style.display = 'block';
     ContainerInternoSeção4.style.display = 'none';
-    ContainerExternoSeção4.scrollIntoView({behavior: 'smooth'});
+    ContainerExternoSeção4.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção4.focus({preventScroll: true});
 
     if (!VídeoDepoimento1.paused) VídeoDepoimento1.pause();
@@ -773,7 +778,7 @@ SetaAberturaSubseção41.addEventListener("click", function(event) {
 
     SubseçãoFechada41.style.display = 'none';
     SubseçãoAberta41.style.display = 'block';
-    SubseçãoAberta41.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta41.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta41.focus({preventScroll: true});
     
     SubseçãoFechada42.style.display = 'block';
@@ -790,7 +795,7 @@ SetaFechamentoSubseção41.addEventListener("click", function(event) {
     
     SubseçãoFechada41.style.display = 'block';
     SubseçãoAberta41.style.display = 'none';
-    SubseçãoFechada41.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada41.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção41.focus({preventScroll: true});
 
 })
@@ -808,7 +813,7 @@ SetaAberturaSubseção42.addEventListener("click", function(event) {
 
     SubseçãoFechada42.style.display = 'none';
     SubseçãoAberta42.style.display = 'block';
-    SubseçãoAberta42.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta42.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta42.focus({preventScroll: true});
 
     SubseçãoFechada43.style.display = 'block';
@@ -824,7 +829,7 @@ SetaFechamentoSubseção42.addEventListener("click", function(event) {
     
     SubseçãoFechada42.style.display = 'block';
     SubseçãoAberta42.style.display = 'none';
-    SubseçãoFechada42.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada42.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção42.focus({preventScroll: true});
 
 })
@@ -845,7 +850,7 @@ SetaAberturaSubseção43.addEventListener("click", function(event) {
 
     SubseçãoFechada43.style.display = 'none';
     SubseçãoAberta43.style.display = 'block';
-    SubseçãoAberta43.scrollIntoView({behavior: 'smooth'});
+    SubseçãoAberta43.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta43.focus({preventScroll: true});
 
 })
@@ -856,7 +861,7 @@ SetaFechamentoSubseção43.addEventListener("click", function(event) {
     
     SubseçãoFechada43.style.display = 'block';
     SubseçãoAberta43.style.display = 'none';
-    SubseçãoFechada43.scrollIntoView({behavior: 'smooth'});
+    SubseçãoFechada43.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção43.focus({preventScroll: true});
 
     if (!VídeoDepoimento1.paused) VídeoDepoimento1.pause();
@@ -884,7 +889,7 @@ BotãoTelaCheiaVídeoDepoimento1.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento1.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento1.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento1.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento1.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -901,7 +906,7 @@ BotãoTelaCheiaVídeoDepoimento1.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento1.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento1.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento1.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento1.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -926,7 +931,7 @@ BotãoTelaCheiaVídeoDepoimento2.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento2.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento2.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento2.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento2.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -943,7 +948,7 @@ BotãoTelaCheiaVídeoDepoimento2.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento2.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento2.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento2.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento2.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -968,7 +973,7 @@ BotãoTelaCheiaVídeoDepoimento3.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento3.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento3.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento3.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento3.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -985,7 +990,7 @@ BotãoTelaCheiaVídeoDepoimento3.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento3.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento3.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento3.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento3.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -1010,7 +1015,7 @@ BotãoTelaCheiaVídeoDepoimento4.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento4.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento4.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento4.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento4.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -1027,7 +1032,7 @@ BotãoTelaCheiaVídeoDepoimento4.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento4.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento4.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento4.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento4.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -1052,7 +1057,7 @@ BotãoTelaCheiaVídeoDepoimento5.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento5.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento5.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento5.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento5.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 
@@ -1069,7 +1074,7 @@ BotãoTelaCheiaVídeoDepoimento5.addEventListener("click", function(event) {
         TextoTelaCheiaVídeoDepoimento5.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento5.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento5.scrollIntoView({behavior: 'smooth'});
+        VídeoDepoimento5.scrollIntoView({behavior: preferredScrollBehavior()});
 
         ControlaPosição_ContainerBotãoPrincipal();
 

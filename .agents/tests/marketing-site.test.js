@@ -34,8 +34,13 @@ const PRIMARY_VIDEO_TOP = 500;
 const PRIMARY_VIDEO_HEIGHT = 300;
 const HLS_URL = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8";
 const POSTER_URL = "./landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
-function createHarness({ userAgent = "Mozilla/5.0" } = {}) {
+function createHarness({
+  reducedMotion = false,
+  supportsMatchMedia = true,
+  userAgent = "Mozilla/5.0"
+} = {}) {
   const elements = new Map();
   const listeners = new Map();
   const observers = [];
@@ -43,9 +48,11 @@ function createHarness({ userAgent = "Mozilla/5.0" } = {}) {
   const scrollCalls = [];
   const focusCalls = [];
   const interactionCalls = [];
+  const mediaQueryCalls = [];
   const playerInstances = [];
   const overlayInstances = [];
   let document;
+  let reducedMotionPreference = reducedMotion;
 
   function geometry(id) {
     if (id === "Container-Externo-Vídeo-Principal") {
@@ -194,6 +201,13 @@ function createHarness({ userAgent = "Mozilla/5.0" } = {}) {
     }
   };
 
+  if (supportsMatchMedia) {
+    window.matchMedia = (query) => {
+      mediaQueryCalls.push(query);
+      return { matches: reducedMotionPreference };
+    };
+  }
+
   const context = vm.createContext({
     console,
     document,
@@ -235,11 +249,18 @@ function createHarness({ userAgent = "Mozilla/5.0" } = {}) {
     element,
     focusCalls,
     interactionCalls,
+    mediaQueryCalls,
     openCalls,
     overlayInstances,
     playerInstances,
     observer: observers[0],
+    get scrollBehavior() {
+      return supportsMatchMedia && reducedMotionPreference ? "auto" : "smooth";
+    },
     scrollCalls,
+    setReducedMotion(value) {
+      reducedMotionPreference = value;
+    },
     scrollTo,
     window
   };
@@ -248,14 +269,14 @@ function createHarness({ userAgent = "Mozilla/5.0" } = {}) {
 function assertLastScroll(harness, id) {
   const call = harness.scrollCalls.at(-1);
   assert.equal(call.id, id);
-  assert.equal(call.options.behavior, "smooth");
+  assert.equal(call.options.behavior, harness.scrollBehavior);
 }
 
 function assertScrollThenFocus(harness, scrollId, focusId) {
   assert.deepEqual(harness.interactionCalls.slice(-2), [
     {
       id: scrollId,
-      options: { behavior: "smooth" },
+      options: { behavior: harness.scrollBehavior },
       type: "scroll"
     },
     {
@@ -292,7 +313,6 @@ test("marketing selectors, local references, script order, and timing remain exa
   const shakaScript = "<script defer src=\"https://cdn.jsdelivr.net/npm/shaka-player@4.3.5/dist/shaka-player.ui.js\"></script>";
   const marketingScript = "<script defer src=\"./landing-page/main.js\"></script>";
   assert.ok(html.indexOf(shakaScript) < html.indexOf(marketingScript));
-  assert.match(css, /\*\{[\s\S]*?user-select: none;[\s\S]*?\}/);
   assert.match(css, /--page-max-width: 430px;/);
   assert.match(
     css,
@@ -348,6 +368,63 @@ test("marketing CSS foundations name and consume only shared design values", () 
   assert.equal((css.match(/#0aa15b/gi) ?? []).length, 1);
   assert.equal((css.match(/#dddddd/gi) ?? []).length, 1);
   assert.doesNotMatch(css, /#fff(?![0-9a-f])|#000(?![0-9a-f])|#ddd(?![0-9a-f])/i);
+});
+
+test("marketing copy selection and reduced motion distinguish content from controls", () => {
+  assert.doesNotMatch(css, /\*\{[^}]*user-select:/);
+  assert.match(
+    css,
+    /button,\s*\.Botões-Padrão-Download-PDFs,\s*#Botão-Instagram-Direct,\s*#Botão-Principal\{\s*user-select: none;\s*\}/
+  );
+  assert.match(css, /\.Containers-Externos-Seções\{[^}]*user-select: none;/);
+  assert.match(css, /\.Subseções-Fechadas\{[^}]*user-select: none;/);
+  assert.doesNotMatch(css, /\.Subseções-Abertas\{[^}]*user-select:/);
+  assert.match(css, /\.Textos-Tela-Cheia\{[^}]*user-select: none;/);
+
+  const reducedMotionBlock = css.match(
+    /@media \(prefers-reduced-motion: reduce\) \{([\s\S]*)\}\s*$/
+  )?.[1];
+  assert.ok(reducedMotionBlock);
+  assert.match(
+    reducedMotionBlock,
+    /#Vídeo-Principal,\s*\.Textos-Botões-Externos-Abertura-Seções\{\s*animation: none;\s*\}/
+  );
+
+  const shakaTransitionSelectors = [
+    ".shaka-controls-button-panel",
+    ".shaka-statistics-container",
+    ".shaka-scrim-container",
+    ".shaka-text-container",
+    ".shaka-play-button",
+    ".shaka-seek-bar-container",
+    ".shaka-overflow-menu",
+    ".shaka-settings-menu"
+  ];
+  for (const selector of shakaTransitionSelectors) {
+    assert.ok(reducedMotionBlock.includes(selector), selector);
+  }
+  assert.match(
+    reducedMotionBlock,
+    /#Container-Interno-Vídeo-Principal :where\([\s\S]*?\)\{\s*transition: none;\s*\}/
+  );
+  assert.match(
+    reducedMotionBlock,
+    /#Container-Interno-Vídeo-Principal :where\(\s*\.shaka-spinner-svg,\s*\.shaka-spinner-path\s*\)\{\s*animation: none;\s*\}/
+  );
+  assert.equal((reducedMotionBlock.match(/animation: none;/g) ?? []).length, 2);
+  assert.equal((reducedMotionBlock.match(/transition: none;/g) ?? []).length, 1);
+  assert.equal((css.match(/\banimation:/g) ?? []).length, 4);
+
+  assert.match(
+    source,
+    /function preferredScrollBehavior\(\) \{\s*if \(typeof window\.matchMedia !== 'function'\) return 'smooth';\s*return window\.matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches \? 'auto' : 'smooth';\s*\}/
+  );
+  assert.equal((source.match(/\.scrollIntoView\(/g) ?? []).length, 34);
+  assert.equal(
+    (source.match(/\.scrollIntoView\(\{behavior: preferredScrollBehavior\(\)\}\)/g) ?? []).length,
+    34
+  );
+  assert.doesNotMatch(source, /\.scrollIntoView\(\{behavior: ['"]smooth['"]\}\)/);
 });
 
 test("marketing interactions use native controls with complete relationships and focus styles", () => {
@@ -474,6 +551,81 @@ test("marketing interactions use native controls with complete relationships and
     html,
     /<a id="Botão-Instagram-Direct"[^>]*> <img src="\.\/landing-page\/img\/INSTAGRAM_DIRECT\.png" alt="" loading="lazy"> <\/a>/
   );
+});
+
+test("marketing scrolling responds to live reduced-motion preferences", () => {
+  const ordinary = createHarness();
+  ordinary.dispatch("Texto-Botão-Externo-Abertura-Seção-1");
+  assertScrollThenFocus(
+    ordinary,
+    "Container-Interno-Seção-1",
+    "Texto-Interno-Chamada-Seção-1"
+  );
+  ordinary.setReducedMotion(true);
+  ordinary.dispatch("Seta-Fechamento-Seção-1");
+  assertScrollThenFocus(
+    ordinary,
+    "Container-Externo-Seção-1",
+    "Texto-Botão-Externo-Abertura-Seção-1"
+  );
+  ordinary.setReducedMotion(false);
+  ordinary.dispatch("Texto-Botão-Externo-Abertura-Seção-1");
+  assertScrollThenFocus(
+    ordinary,
+    "Container-Interno-Seção-1",
+    "Texto-Interno-Chamada-Seção-1"
+  );
+  assert.deepEqual(
+    ordinary.scrollCalls.map(({ options }) => options.behavior),
+    ["smooth", "auto", "smooth"]
+  );
+  assert.deepEqual(
+    ordinary.mediaQueryCalls,
+    Array(ordinary.scrollCalls.length).fill(REDUCED_MOTION_QUERY)
+  );
+
+  const reduced = createHarness({ reducedMotion: true });
+  reduced.dispatch("Texto-Botão-Externo-Abertura-Seção-3");
+  assertScrollThenFocus(
+    reduced,
+    "Container-Interno-Seção-3",
+    "Texto-Interno-Chamada-Seção-3"
+  );
+  reduced.dispatch("Seta-Fechamento-Seção-3");
+  assertScrollThenFocus(
+    reduced,
+    "Container-Externo-Seção-3",
+    "Texto-Botão-Externo-Abertura-Seção-3"
+  );
+  reduced.dispatch("Texto-Botão-Externo-Abertura-Seção-3");
+
+  reduced.dispatch("Seta-Abertura-Subseção-3.1");
+  assertScrollThenFocus(
+    reduced,
+    "Subseção-Aberta-3.1",
+    "Manchete-Subseção-Aberta-3.1"
+  );
+  reduced.dispatch("Seta-Fechamento-Subseção-3.1");
+  assertScrollThenFocus(
+    reduced,
+    "Subseção-Fechada-3.1",
+    "Seta-Abertura-Subseção-3.1"
+  );
+
+  reduced.dispatch("Texto-Botão-Externo-Abertura-Seção-4");
+  reduced.dispatch("Seta-Abertura-Subseção-4.3");
+  reduced.dispatch("Botão-Tela-Cheia-Vídeo-Depoimento-1");
+  assertLastScroll(reduced, "Vídeo-Depoimento-1");
+  reduced.dispatch("Botão-Tela-Cheia-Vídeo-Depoimento-1");
+  assertLastScroll(reduced, "Vídeo-Depoimento-1");
+  assert.ok(reduced.scrollCalls.every(({ options }) => options.behavior === "auto"));
+  assert.ok(reduced.mediaQueryCalls.every((query) => query === REDUCED_MOTION_QUERY));
+  assert.equal(reduced.mediaQueryCalls.length, reduced.scrollCalls.length);
+
+  const unsupported = createHarness({ supportsMatchMedia: false });
+  unsupported.dispatch("Texto-Botão-Externo-Abertura-Seção-2");
+  assertLastScroll(unsupported, "Container-Interno-Seção-2");
+  assert.deepEqual(unsupported.mediaQueryCalls, []);
 });
 
 test("document language, landmarks, and heading hierarchy describe the current page", () => {
