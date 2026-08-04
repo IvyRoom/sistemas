@@ -10,11 +10,11 @@ h1, h2, h3, h4{
 }
 
 :where(
-    button.Textos-Botões-Externos-Abertura-Seções,
-    button.Setas-Abertura-Subseções,
-    button.Setas-Fechamento-Subseções,
-    button.Botões-Tela-Cheia-Depoimentos,
-    button[id^="Seta-Fechamento-Seção-"]
+    button.section-open-button,
+    button.subsection-open-button,
+    button.subsection-close-button,
+    button.testimonial-view-toggle,
+    button.section-close-button
 ){
     appearance: none;
     border: 0;
@@ -22,30 +22,30 @@ h1, h2, h3, h4{
     font: inherit;
 }
 
-.Textos-Botões-Externos-Abertura-Seções:focus-visible,
-.Setas-Abertura-Subseções:focus-visible,
-button[id^="Seta-Fechamento-Seção-"]:focus-visible,
-#Botão-Instagram-Direct:focus-visible,
-a.Texto-Interno-Branco:focus-visible{
+.section-open-button:focus-visible,
+.subsection-open-button:focus-visible,
+button.section-close-button:focus-visible,
+#instagram-direct-link:focus-visible,
+a.content-link-white:focus-visible{
     outline: var(--focus-outline-width) solid var(--color-white);
     outline-offset: var(--focus-outline-offset);
 }
 
 button,
-.Botões-Padrão-Download-PDFs,
-#Botão-Instagram-Direct,
-#Botão-Principal{
+.pdf-download-link,
+#instagram-direct-link,
+#quote-cta-link{
     user-select: none;
 }
 
-.Focos-Abertura:focus{
+.programmatic-focus-target:focus{
     outline: none;
 }
 
-.Setas-Fechamento-Subseções:focus-visible,
-.Botões-Padrão-Download-PDFs:focus-visible,
-.Botões-Tela-Cheia-Depoimentos:focus-visible,
-#Botão-Principal:focus-visible{
+.subsection-close-button:focus-visible,
+.pdf-download-link:focus-visible,
+.testimonial-view-toggle:focus-visible,
+#quote-cta-link:focus-visible{
     outline: var(--focus-outline-width) solid var(--color-official-machado-wine);
     outline-offset: var(--focus-outline-offset);
 }
@@ -84,9 +84,6 @@ button,
     --space-3xl: 80px;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////// Configura a página para Desktops. ////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
 @media (min-width: 431px) {
     
@@ -95,33 +92,15 @@ button,
         --considered-margin-left: calc(50vw - (var(--considered-screen-width)/2));
     }
 
-    .Botão-Tela-Cheia {
-        display: none;
-    }
 
-    #Container-Vídeo-Principal{
-        margin-bottom: var(--space-xl);
-    }
 
-    #Container-Vídeo-Depoimentos{
-        margin-bottom: var(--space-xl);
-    }
 
 }
 
-@media (max-width: 430px) {
 
-    .Botão-Tela-Cheia {
-        display: flex;
-    }
 
-}
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////// Seção-Inicial //////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
-
-#Seção-Inicial{
+#hero{
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -131,7 +110,7 @@ button,
     margin-left: var(--considered-margin-left);
 }
 
-#Logo-Machado{
+#brand-logo{
     display: block;
     width: 28%;
     height: auto;
@@ -140,7 +119,7 @@ button,
     margin-bottom: var(--space-xl);
 }
 
-#Seção-Inicial-Manchete{
+#hero-heading{
     color: var(--color-white);
     text-align: center;
     width: 90%;
@@ -148,13 +127,13 @@ button,
     margin-bottom: var(--space-2xl);
 }
 
-#Seção-Inicial-Submanchete{
+#hero-subheading{
     color: var(--color-white);
     font-size: 16px;
     margin-bottom: var(--space-lg);
 }
 
-.Seção-Inicial-Números{
+.hero-summary-number{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -168,7 +147,7 @@ button,
     margin-bottom: var(--space-md);
 }
 
-.Seção-Inicial-Explicações{
+.hero-summary-text{
     color: var(--color-white);
     text-align: center;
     width: 90%;
@@ -177,13 +156,13 @@ button,
     line-height: 1.3;
 }
 
-#Explicação-Otimize-Seu-Tempo{
+#primary-video-intro{
     margin-top: var(--space-lg);
     color: var(--color-white);
     text-align: center;
 }
 
-#Container-Externo-Vídeo-Principal{
+#primary-video-frame{
     display: flex;
     width: calc(var(--considered-screen-width) * 0.90);
     height: auto;
@@ -197,13 +176,13 @@ button,
     align-items: center;
 }
 
-#Vídeo-Principal{
+#primary-video{
     width: 100%;
     height: 100%;
-    animation: Teste 12s ease-in infinite;
+    animation: primary-video-glow 12s ease-in infinite;
 }
 
-@keyframes Teste {
+@keyframes primary-video-glow {
     
     0% {
       box-shadow: 
@@ -243,17 +222,14 @@ button,
 
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////// Seções 1, 2, 3 e 4: Containers Chamada ///////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-.Seções{
+.program-section{
     background: var(--gradient-black-to-wine);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
 }
 
-.Containers-Externos-Seções{
+.section-summary{
     display:block;
     position: relative;
     padding-top: var(--space-md);
@@ -262,7 +238,7 @@ button,
     user-select: none;
 }
 
-.Chamadas-Externas-Seções{
+.section-summary-header{
     display: flex;
     width: var(--section-call-width);
     margin-left: auto;
@@ -270,19 +246,19 @@ button,
     margin-bottom: var(--space-sm);
 }
 
-.Números-Externos-Chamadas-Seções{
+.section-summary-number{
     font-size: 64px;
     color: var(--color-white);
     margin-right: var(--space-md);
 }
 
-.Textos-Externos-Chamadas-Seções{
+.section-summary-heading{
     font-size: 22px;
     color: var(--color-white);
     padding-top: var(--section-heading-text-offset);
 }
 
-.Textos-Botões-Externos-Abertura-Seções{
+.section-open-button{
     display: block;
     background-color: var(--color-green);
     font-size: 14px;
@@ -295,17 +271,17 @@ button,
     margin-left: auto;
     margin-right: auto;
     margin-bottom: var(--space-xs);
-    animation: Pulsos-Botões-Externos-Abertura-Seções 3s ease-out infinite;
+    animation: section-open-button-pulse 3s ease-out infinite;
 }
 
-.Textos-Botões-Externos-Abertura-Seções::after{
+.section-open-button::after{
     content: "";
     position: absolute;
     inset: 0;
     z-index: 1;
 }
 
-@keyframes Pulsos-Botões-Externos-Abertura-Seções {
+@keyframes section-open-button-pulse {
     
     0% {
       box-shadow: 0 0 0px 0 var(--color-green);
@@ -333,22 +309,19 @@ button,
 
 }
 
-.Setas-Chamadas-Externas-Seções{
+.section-summary-arrow{
     stroke: var(--color-white);
     text-align: center;
     margin-left: auto;
     margin-right: auto;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////// Seção 1: Container Interno //////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Interno-Seção-1{
+#section-1-details{
     display:none;
 }
 
-#Chamada-Interna-Seção-1{
+#section-1-details-header{
     display: flex;
     width: var(--section-call-width);
     margin-left: auto;
@@ -356,19 +329,19 @@ button,
     margin-bottom: var(--space-sm);
 }
 
-#Número-Interno-Chamada-Seção-1{
+#section-1-details-number{
     font-size: 64px;
     color: var(--color-white);
     margin-right: var(--space-md);
 }
 
-#Texto-Interno-Chamada-Seção-1{
+#section-1-details-heading{
     font-size: 22px;
     color: var(--color-white);
     padding-top: var(--section-heading-text-offset);
 }
 
-#Gestão-Coração-Administração{
+#management-administration-heart-diagram{
     width: 80%;
     display: block;
     margin-left: auto;
@@ -376,16 +349,7 @@ button,
     margin-bottom: var(--space-xl);
 }
 
-#Gestão-Ciência-Central{
-    width: 80%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: var(--space-xl);
-    margin-bottom: var(--space-xl);
-}
-
-#Sistema-de-Gestão{
+#management-central-science-diagram{
     width: 80%;
     display: block;
     margin-left: auto;
@@ -394,7 +358,16 @@ button,
     margin-bottom: var(--space-xl);
 }
 
-#Equação-Fundamental{
+#management-system-diagram{
+    width: 80%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+}
+
+#fundamental-equation-image{
     width: 90%;
     display: block;
     margin-left: auto;
@@ -402,24 +375,7 @@ button,
     margin-bottom: var(--space-md);
 }
 
-#Radical-Simplicidade{
-    width: 90%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: var(--space-md);
-    margin-bottom: var(--space-md);
-}
-
-#PDCA{
-    width: 90%;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: var(--space-md);
-}
-
-#SDCA{
+#radical-simplicity-image{
     width: 90%;
     display: block;
     margin-left: auto;
@@ -428,7 +384,24 @@ button,
     margin-bottom: var(--space-md);
 }
 
-#Seta-Fechamento-Seção-1{
+#pdca-cycle-image{
+    width: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: var(--space-md);
+}
+
+#sdca-cycle-image{
+    width: 90%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+#section-1-close-button{
     display: flex;
     fill: var(--color-white);
     stroke: var(--color-white);
@@ -441,16 +414,13 @@ button,
     box-shadow: var(--shadow-section-close-button);
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////// Seção 2: Container Interno //////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
 
-#Container-Interno-Seção-2{
+#section-2-details{
     display:none;
 }
 
-#Chamada-Interna-Seção-2{
+#section-2-details-header{
     display: flex;
     width: var(--section-call-width);
     margin-left: auto;
@@ -458,19 +428,19 @@ button,
     margin-bottom: var(--space-sm);
 }
 
-#Número-Interno-Chamada-Seção-2{
+#section-2-details-number{
     font-size: 64px;
     color: var(--color-white);
     margin-right: var(--space-md);
 }
 
-#Texto-Interno-Chamada-Seção-2{
+#section-2-details-heading{
     font-size: 22px;
     color: var(--color-white);
     padding-top: var(--section-heading-text-offset);
 }
 
-#Manchete-Lastro-de-Verdade{
+.featured-content-heading{
     font-size: 28px;
     color: var(--color-white);
     text-align: center;
@@ -481,7 +451,7 @@ button,
     margin-right: auto;
 }
 
-#Observação-Publicação-HBS{
+#hbs-publication-note{
     color: var(--color-white);
     font-size: 14px;
     width: 90%;
@@ -489,7 +459,7 @@ button,
     margin-right: auto;
 }
 
-#Seta-Fechamento-Seção-2{
+#section-2-close-button{
     display: flex;
     fill: var(--color-white);
     stroke: var(--color-white);
@@ -502,15 +472,12 @@ button,
     box-shadow: var(--shadow-section-close-button);
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////// Seção 3: Container Interno //////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Interno-Seção-3{
+#section-3-details{
     display:none;
 }
 
-#Chamada-Interna-Seção-3{
+#section-3-details-header{
     display: flex;
     width: var(--section-call-width);
     margin-left: auto;
@@ -518,19 +485,19 @@ button,
     margin-bottom: var(--space-sm);
 }
 
-#Número-Interno-Chamada-Seção-3{
+#section-3-details-number{
     font-size: 64px;
     color: var(--color-white);
     margin-right: var(--space-md);
 }
 
-#Texto-Interno-Chamada-Seção-3{
+#section-3-details-heading{
     font-size: 22px;
     color: var(--color-white);
     padding-top: var(--section-heading-text-offset);
 }
 
-#Gráfico{
+#team-management-strength-chart{
     display: block;
     width: 90%;
     margin-top: var(--space-xl);
@@ -539,7 +506,7 @@ button,
     margin-right: auto;
 }
 
-#Régua-de-Cargos{
+#participant-role-range-chart{
     display: block;
     width: 90%;
     margin-top: var(--space-xl);
@@ -548,17 +515,17 @@ button,
     margin-right: auto;
 }
 
-.Containers-Botões-Download-PDFs{
+.pdf-download-links{
     margin-top: var(--space-lg);
     margin-bottom: var(--space-lg);
 }
 
-#Plataforma{
+#learning-platform-image{
     display: block;
     width: 100%;
 }
 
-#Seta-Fechamento-Seção-3{
+#section-3-close-button{
     display: flex;
     fill: var(--color-white);
     stroke: var(--color-white);
@@ -571,9 +538,8 @@ button,
     box-shadow: var(--shadow-section-close-button);
 }
 
-/*////////////////////////// Configurações Padrão Subseções /////////////////////////////*/
 
-.Subseções-Fechadas{
+.subsection-summary{
     position: relative;
     background: var(--gradient-black-to-wine);
     width: var(--subsection-width);
@@ -589,7 +555,7 @@ button,
     user-select: none;
 }
 
-.Manchetes-Subseções-Padrão-Vermelho{
+.subsection-summary-heading{
     font-size: 22px;
     color: var(--color-white);
     text-align: center;
@@ -598,7 +564,7 @@ button,
     margin-bottom: var(--space-md);
 }
 
-.Setas-Abertura-Subseções{
+.subsection-open-button{
     display: flex;
     stroke: var(--color-white);
     fill: var(--color-white);
@@ -613,7 +579,7 @@ button,
     margin-right: auto;
 }
 
-.Setas-Abertura-Subseções::after{
+.subsection-open-button::after{
     content: "";
     position: absolute;
     inset: calc(-1 * var(--border-width-thin));
@@ -621,7 +587,7 @@ button,
     z-index: 1;
 }
 
-.Subseções-Abertas{
+.subsection-details{
     display: none;
     background: linear-gradient(165deg, var(--color-white), #dfdfdf);
     width: var(--subsection-width);
@@ -633,14 +599,14 @@ button,
     padding-bottom: var(--space-md);
 }
 
-.Containers-Manchetes-Subseções-Padrão-Branco{
+.subsection-details-header{
     background: var(--gradient-black-to-wine);
     border-radius: var(--radius-lg) var(--radius-lg) 0px 0px;
     padding-top: var(--space-md);
     padding-bottom: var(--space-md);
 }
 
-.Manchetes-Subseções-Padrão-Branco{
+.subsection-details-heading{
     font-size: 22px;
     color: var(--color-white);
     text-align: center;
@@ -648,7 +614,7 @@ button,
     padding-right: var(--space-sm);
 }
 
-.Setas-Fechamento-Subseções{
+.subsection-close-button{
     display: flex;
     stroke: var(--color-white);
     fill: var(--color-white);
@@ -663,7 +629,7 @@ button,
     margin-top: var(--space-md);
 }
 
-.Botões-Padrão-Download-PDFs{
+.pdf-download-link{
     display: block;
     width: 60%;
     background-color: var(--color-official-machado-wine);
@@ -681,25 +647,22 @@ button,
     text-decoration: none;
 }
 
-#Botão-Instagram-Direct{
+#instagram-direct-link{
     text-decoration: none;
 }
 
-#Botão-Instagram-Direct img{
+#instagram-direct-link img{
     display: block;
     width: 100%;
     height: auto;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////// Seção 4: Container Interno //////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Interno-Seção-4{
+#section-4-details{
     display:none;
 }
 
-#Chamada-Interna-Seção-4{
+#section-4-details-header{
     display: flex;
     width: var(--section-call-width);
     margin-left: auto;
@@ -707,19 +670,19 @@ button,
     margin-bottom: var(--space-sm);
 }
 
-#Número-Interno-Chamada-Seção-4{
+#section-4-details-number{
     font-size: 64px;
     color: var(--color-white);
     margin-right: var(--space-md);
 }
 
-#Texto-Interno-Chamada-Seção-4{
+#section-4-details-heading{
     font-size: 22px;
     color: var(--color-white);
     padding-top: var(--section-heading-text-offset);
 }
 
-#Seta-Fechamento-Seção-4{
+#section-4-close-button{
     display: flex;
     fill: var(--color-white);
     stroke: var(--color-white);
@@ -732,41 +695,41 @@ button,
     box-shadow: var(--shadow-section-close-button);
 }
 
-#Background-Informações-Completas{
+#client-details-full{
     background-color: var(--color-official-machado-wine);
     padding-top: var(--space-lg);
     padding-bottom: var(--space-md);
 }
 
-#Título-Informações-Completas{
+#client-details-full-heading{
     display: flex;
     font-size: 23px;    
     color: var(--color-white);
     justify-content: center;
 }
 
-#Subtítulo-Informações-Completas{
+#client-details-full-count{
     display: flex;
     font-size: 21px;    
     color: var(--color-white);
     justify-content: center;
 }
 
-#Background-Informações-Resumidas{
+#client-details-summary{
     background: linear-gradient(170deg, var(--color-white) 20%, var(--color-grey-light) 80%);;
     padding-top: var(--space-xl);
     margin-bottom: var(--space-sm);
     justify-content: center;
 }
 
-#Título-Informações-Resumidas{
+#client-details-summary-heading{
     display: flex;
     font-size: 23px;    
     color: var(--color-official-machado-wine);
     justify-content: center;
 }
 
-#Subtítulo-Informações-Resumidas{
+#client-details-summary-count{
     display: flex;
     font-size: 21px;    
     color: var(--color-official-machado-wine);
@@ -774,7 +737,7 @@ button,
     margin-bottom: var(--space-xl);
 }
 
-.Containers-Empresas-Informações-Resumidas{
+.client-summary{
     display: flex;
     width: 90%;
     margin-left: auto;
@@ -782,19 +745,19 @@ button,
     margin-bottom: var(--space-lg);
 }
 
-.Logos-Empresas-Informações-Resumidas{
+.client-summary-logo{
     width: 20%;
     height: auto;
     object-fit: contain;
     margin-right: var(--space-md);
 }
 
-.Descrições-Empresas-Informações-Resumidas{
+.client-summary-description{
     width: 100%;
     color: var(--color-official-machado-wine);
 }
 
-.Títulos-Estatísticas-Padrão-Vermelho{
+.client-statistics-heading{
     font-size: 26px;
     font-weight: 600;
     text-align: center;
@@ -802,14 +765,14 @@ button,
     margin-top: var(--space-md);
 }
 
-.Subtítulos-Estatísticas-Padrão-Vermelho{
+.client-statistics-subheading{
     font-size: 17px;
     text-align: center;
     color: var(--color-official-machado-wine);
     margin-bottom: var(--space-md);
 }
 
-#Gráfico-Portes{
+#company-size-chart{
     display: flex;
     width: 95%;
     height: auto;
@@ -817,7 +780,7 @@ button,
     margin-right: auto;
 }
 
-#Gráfico-Setores{
+#industry-chart{
     display: flex;
     width: 95%;
     height: auto;
@@ -827,7 +790,7 @@ button,
     margin-right: auto;
 }
 
-#Data-Atualização-Estatísticas-Padrão-Vermelho{
+#client-statistics-updated-at{
     width: 95%;
     margin-left: auto;
     margin-right: auto;
@@ -836,7 +799,7 @@ button,
     color: var(--color-official-machado-wine);
 }
 
-.Containers-Vídeos-Depoimentos{
+.testimonial-video-container{
     display: block;
     width: 90%;
     height: auto;
@@ -846,19 +809,15 @@ button,
     margin-bottom: var(--space-lg);
 }
 
-.Vídeos-Depoimentos{
+.testimonial-video{
     display: block;
     width: 100%;
     height: auto;    
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// Configurações Padrão ////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-/*//////////////////////////////// Botões-Tela-Cheia ////////////////////////////////////*/
 
-.Botões-Tela-Cheia-Depoimentos{
+.testimonial-view-toggle{
     background: var(--gradient-white-to-light-grey);
     width: 160px;
     padding: var(--space-sm);
@@ -871,69 +830,62 @@ button,
     cursor: pointer;
 }
 
-.Imagens-Tela-Cheia{
+.testimonial-view-toggle-icon{
     height: 35px;
     width: auto;
     margin-right: var(--space-sm);
     margin-left: var(--space-sm);
 }
 
-.Textos-Tela-Cheia{
+.testimonial-view-toggle-label{
     color: var(--color-black);
     font-size: 16px;
     user-select: none;
 }
 
-/*//////////////////////////////////// Backgrounds //////////////////////////////////////*/
 
-.Backgrounds-Preto-Vermelho{
+.surface-black-wine{
     background: linear-gradient(165deg, var(--color-black) 10%, var(--color-official-machado-wine) 80%);
     padding-top: var(--space-md);
     padding-bottom: var(--space-xl);
 }
 
-.Backgrounds-Preto-Vermelho-2{
+.surface-black-wine-alternate{
     background: linear-gradient(170deg, var(--color-black) 20%, var(--color-official-machado-wine) 80%);
     padding-top: var(--space-md);
     padding-bottom: var(--space-xl);
 }
 
-.Backgrounds-Vermelho-Preto{
+.surface-wine-black{
     background: linear-gradient(165deg, var(--color-official-machado-wine) 20%, var(--color-black) 80%);
     padding-top: var(--space-md);
     padding-bottom: var(--space-xl);
 }
 
-.Backgrounds-Preto{
+.surface-black{
     background-color: var(--color-black);
     padding-top: var(--space-md);
 }
 
-.Backgrounds-Vermelho{
+.surface-wine{
     background-color: var(--color-official-machado-wine);
     padding-top: var(--space-md);
     padding-bottom: var(--space-md);
 }
 
-.Backgrounds-Branco-Cinza{
-    background: linear-gradient(165deg, var(--color-white) 10%, #d4d4d4 90%);
-    padding-top: var(--space-md);
-    padding-bottom: var(--space-xl);
-}
 
-.Backgrounds-Vermelho-Branco{
+.surface-wine-white{
     background: linear-gradient(165deg, var(--color-official-machado-wine) 10%, var(--color-white) 90%);
     padding-bottom: var(--space-md);
 }
 
-.Backgrounds-Preto-Vermelho-Branco{
+.surface-black-wine-white{
     background: linear-gradient(165deg, var(--color-black) 10%, var(--color-official-machado-wine) 70%, var(--color-white) 90%);
     padding-bottom: var(--space-md);
 }
 
-/*/////////////////////////////////////// Textos ////////////////////////////////////////*/
 
-.Manchetes-Internas-Padrão-Branco{
+.content-heading-white-spaced{
     font-size: 28px;
     color: var(--color-white);
     text-align: center;
@@ -944,7 +896,7 @@ button,
     margin-right: auto;
 }
 
-.Manchetes-Internas-Padrão-Branco-2{
+.content-heading-white-compact{
     font-size: 28px;
     color: var(--color-white);
     text-align: center;
@@ -955,7 +907,7 @@ button,
     margin-right: auto;
 }
 
-.Manchetes-Internas-Padrão-Branco-3{
+.content-heading-white-bottom-padded{
     font-size: 28px;
     color: var(--color-white);
     text-align: center;
@@ -967,18 +919,8 @@ button,
     margin-right: auto;
 }
 
-.Manchetes-Internas-Padrão-Vermelho{
-    font-size: 28px;
-    color: var(--color-official-machado-wine);
-    text-align: center;
-    width: 90%;
-    margin-top: var(--space-3xl);
-    margin-bottom: var(--space-3xl);
-    margin-left: auto;
-    margin-right: auto;
-}
 
-.Tópicos-Internos-Padrão-Vermelho{
+.content-callout-wine-spaced{
     font-size: 24px;
     color: var(--color-official-machado-wine);
     text-align: center;
@@ -989,7 +931,7 @@ button,
     margin-right: auto;
 }
 
-.Tópicos-Internos-Padrão-Vermelho-2{
+.content-callout-wine-compact{
     font-size: 24px;
     color: var(--color-official-machado-wine);
     text-align: center;
@@ -999,7 +941,7 @@ button,
     margin-right: auto;
 }
 
-.Títulos-Internos-Padrão-Branco{
+.content-heading-white-small{
     font-size: 21px;    
     color: var(--color-white);
     text-align: center;
@@ -1007,7 +949,7 @@ button,
     padding-bottom: var(--space-xl);
 }
 
-.Textos-Internos-Padrão-Branco{
+.content-copy-white{
     font-size: 18px;
     width: 90%;
     color: var(--color-white);
@@ -1015,11 +957,11 @@ button,
     margin-right: auto;
 }
 
-.Texto-Interno-Branco:visited {
+.content-link-white:visited {
   color: var(--color-white);
 }
 
-.Textos-Internos-Padrão-Vermelho{
+.content-copy-wine{
     font-size: 18px;
     width: 90%;
     color: var(--color-official-machado-wine);
@@ -1027,7 +969,7 @@ button,
     margin-right: auto;
 }
 
-.Textos-Internos-Padrão-Vermelho-Centralizado{
+.content-copy-wine-centered{
     font-size: 18px;
     width: 90%;
     color: var(--color-official-machado-wine);
@@ -1036,16 +978,8 @@ button,
     text-align: center;
 }
 
-.Textos-Internos-Padrão-Vermelho-2{
-    font-size: 20px;
-    width: 90%;
-    color: var(--color-official-machado-wine);
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-}
 
-.Bullet-Points-Internos-Padrão-Branco{
+.content-bullet-white{
     font-size: 18px;
     width: 80%;
     color: var(--color-white);
@@ -1053,7 +987,7 @@ button,
     margin-right: auto;
 }
 
-.Bullet-Points-Internos-Padrão-Vermelho{
+.content-bullet-wine{
     font-size: 18px;
     width: 80%;
     color: var(--color-official-machado-wine);
@@ -1061,21 +995,19 @@ button,
     margin-right: auto;
 }
 
-/*/////////////////////////////////////// Imagens ////////////////////////////////////////*/
 
-.Imagens-Internas-Padrão{
+.content-image-page-width{
     display: block;
     width: calc(var(--considered-screen-width));
 }
 
-.Imagens-Internas-Padrão-2{
+.content-image-container-width{
     display: block;
     width: 100%;
 }
 
-/*//////////////////////////////// Subseções-Cadastro //////////////////////////////////*/
 
-.Subseções-Cadastro{
+.section-quote-prompt{
     width: calc(var(--considered-screen-width) * 0.90   );
     height: auto;
     background: linear-gradient(180deg, var(--color-grey-light) 0%, var(--color-white) 70%, var(--color-white) 100%);
@@ -1088,7 +1020,7 @@ button,
     padding-bottom: var(--space-lg);
 }
 
-.Manchetes-Subseções-Cadastro{
+.section-quote-prompt-heading{
     font-size: 22px;
     color: var(--color-official-machado-wine);
     width: 80%;
@@ -1098,7 +1030,7 @@ button,
     line-height: 1.2;
 }
 
-.Textos-Subseções-Cadastro{
+.section-quote-prompt-text{
     font-size: 18px;
     color: var(--color-official-machado-wine);
     width: 90%;
@@ -1106,11 +1038,8 @@ button,
     margin-right: auto;
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-////////////////////// Espaço-Final-Container-Botão-Principal /////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Espaço-Final-Container-Botão-Principal{
+#quote-cta-spacer{
     background: var(--gradient-white-to-light-grey);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
@@ -1118,11 +1047,8 @@ button,
 }
 
 
-/*/////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// Container-Botão-Principal ///////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Container-Botão-Principal{
+#quote-cta{
     display: block;
     height: 150px;
     border-radius: 50px 50px 0px 0px;
@@ -1135,7 +1061,7 @@ button,
     bottom: 0px;
 }
 
-#Explicação-Botão-Principal{
+#quote-cta-context{
     display: block;
     color: var(--color-official-machado-wine);
     width: var(--quote-cta-content-width);
@@ -1145,7 +1071,7 @@ button,
     text-align: center;
 }
 
-#Botão-Principal{
+#quote-cta-link{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1165,42 +1091,42 @@ button,
     text-decoration: none;
 }
 
-.Containers-Externos-Seções.is-hidden,
-.Subseções-Fechadas.is-hidden,
-.Botões-Tela-Cheia-Depoimentos.is-hidden{
+.section-summary.is-hidden,
+.subsection-summary.is-hidden,
+.testimonial-view-toggle.is-hidden{
     display: none;
 }
 
 :is(
-    #Container-Interno-Seção-1,
-    #Container-Interno-Seção-2,
-    #Container-Interno-Seção-3,
-    #Container-Interno-Seção-4
+    #section-1-details,
+    #section-2-details,
+    #section-3-details,
+    #section-4-details
 ).is-open,
-.Subseções-Abertas.is-open{
+.subsection-details.is-open{
     display: block;
 }
 
-#Container-Botão-Principal.is-hidden{
+#quote-cta.is-hidden{
     display: none;
 }
 
-#Container-Botão-Principal.is-fixed{
+#quote-cta.is-fixed{
     position: fixed;
     top: auto;
     bottom: 0px;
 }
 
-#Container-Botão-Principal.is-anchored{
+#quote-cta.is-anchored{
     position: absolute;
     top: var(--quote-cta-top);
 }
 
 :is(
-    #Seta-Fechamento-Seção-1,
-    #Seta-Fechamento-Seção-2,
-    #Seta-Fechamento-Seção-3,
-    #Seta-Fechamento-Seção-4
+    #section-1-close-button,
+    #section-2-close-button,
+    #section-3-close-button,
+    #section-4-close-button
 ).is-fixed-above-quote{
     display: flex;
     position: fixed;
@@ -1210,10 +1136,10 @@ button,
 }
 
 :is(
-    #Seta-Fechamento-Seção-1,
-    #Seta-Fechamento-Seção-2,
-    #Seta-Fechamento-Seção-3,
-    #Seta-Fechamento-Seção-4
+    #section-1-close-button,
+    #section-2-close-button,
+    #section-3-close-button,
+    #section-4-close-button
 ).is-contained{
     display: flex;
     position: relative;
@@ -1223,33 +1149,33 @@ button,
 }
 
 :is(
-    #Seta-Fechamento-Seção-1,
-    #Seta-Fechamento-Seção-2,
-    #Seta-Fechamento-Seção-3,
-    #Seta-Fechamento-Seção-4
+    #section-1-close-button,
+    #section-2-close-button,
+    #section-3-close-button,
+    #section-4-close-button
 ).is-fixed-near-bottom{
     position: fixed;
     bottom: 25px;
 }
 
 :is(
-    #Seta-Fechamento-Seção-1,
-    #Seta-Fechamento-Seção-2,
-    #Seta-Fechamento-Seção-3,
-    #Seta-Fechamento-Seção-4
+    #section-1-close-button,
+    #section-2-close-button,
+    #section-3-close-button,
+    #section-4-close-button
 ).is-hidden{
     display: none;
 }
 
-.Subseções-Cadastro.has-fixed-close-button{
+.section-quote-prompt.has-fixed-close-button{
     margin-bottom: var(--space-md);
 }
 
-.Subseções-Cadastro.has-contained-close-button{
+.section-quote-prompt.has-contained-close-button{
     margin-bottom: 15px;
 }
 
-#Botão-Instagram-Direct.is-fixed{
+#instagram-direct-link.is-fixed{
     display: block;
     position: fixed;
     width: 60px;
@@ -1258,7 +1184,7 @@ button,
     margin-left: calc((var(--considered-screen-width) * 0.95) - 60px);
 }
 
-#Botão-Instagram-Direct.is-contained{
+#instagram-direct-link.is-contained{
     display: flex;
     position: relative;
     width: 60px;
@@ -1267,48 +1193,48 @@ button,
     margin-left: calc((var(--considered-screen-width) * 0.95) - 60px);
 }
 
-#Botão-Instagram-Direct.has-fixed-position{
+#instagram-direct-link.has-fixed-position{
     position: fixed;
 }
 
-#Botão-Instagram-Direct.is-hidden{
+#instagram-direct-link.is-hidden{
     display: none;
 }
 
-.Vídeos-Depoimentos.has-hidden-rotation-control{
+.testimonial-video.has-hidden-rotation-control{
     margin-bottom: var(--space-lg);
 }
 
-.Containers-Vídeos-Depoimentos.is-rotated{
+.testimonial-video-container.is-rotated{
     width: calc(var(--considered-screen-width) * 0.80);
     height: calc(var(--considered-screen-width) * 1.42196);
 }
 
-.Containers-Vídeos-Depoimentos.is-rotated > .Vídeos-Depoimentos{
+.testimonial-video-container.is-rotated > .testimonial-video{
     width: calc(var(--considered-screen-width) * 1.42196);
     height: calc(var(--considered-screen-width) * 0.80);
     transform-origin: top left;
     transform: rotate(90deg) translateY(-100%);
 }
 
-.Containers-Vídeos-Depoimentos.is-restored{
+.testimonial-video-container.is-restored{
     width: calc(var(--considered-screen-width) * 0.90);
     height: calc(var(--considered-screen-width) * 0.50634);
 }
 
-.Containers-Vídeos-Depoimentos.is-restored > .Vídeos-Depoimentos{
+.testimonial-video-container.is-restored > .testimonial-video{
     width: calc(var(--considered-screen-width) * 0.90);
     height: calc(var(--considered-screen-width) * 0.50634);
 }
 
 @media (prefers-reduced-motion: reduce) {
 
-    #Vídeo-Principal,
-    .Textos-Botões-Externos-Abertura-Seções{
+    #primary-video,
+    .section-open-button{
         animation: none;
     }
 
-    #Container-Interno-Vídeo-Principal :where(
+    #primary-video-player :where(
         .shaka-controls-button-panel,
         .shaka-statistics-container,
         .shaka-scrim-container,
@@ -1321,7 +1247,7 @@ button,
         transition: none;
     }
 
-    #Container-Interno-Vídeo-Principal :where(
+    #primary-video-player :where(
         .shaka-spinner-svg,
         .shaka-spinner-path
     ){

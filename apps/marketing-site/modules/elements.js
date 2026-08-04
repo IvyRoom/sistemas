@@ -1,129 +1,119 @@
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*//////////////////////////// Declara as variáveis extraídas do HTML. /////////////////////////////////*/
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
-/*//////////////////////////// Seção Inicial /////////////////////////////////*/
 
-export var ContainerExternoVídeoPrincipal = document.getElementById("Container-Externo-Vídeo-Principal");
-export var ContainerInternoVídeoPrincipal = document.getElementById("Container-Interno-Vídeo-Principal");
-export var VídeoPrincipal = document.getElementById("Vídeo-Principal");
+export var primaryVideoFrame = document.getElementById("primary-video-frame");
+export var primaryVideoPlayer = document.getElementById("primary-video-player");
+export var primaryVideo = document.getElementById("primary-video");
 
-/*/////////////////////////////// Seção 1 ////////////////////////////////////*/
 
-export var Seção1 = document.getElementById("Seção-1");
-export var ContainerExternoSeção1 = document.getElementById("Container-Externo-Seção-1");
-export var BotãoAberturaSeção1 = document.getElementById("Texto-Botão-Externo-Abertura-Seção-1");
-export var ContainerInternoSeção1 = document.getElementById("Container-Interno-Seção-1");
-export var TextoInternoChamadaSeção1 = document.getElementById("Texto-Interno-Chamada-Seção-1");
-export var SubseçãoCadastro1 = document.getElementById("Subseção-Cadastro-1");
-export var SetaFechamentoSeção1 = document.getElementById("Seta-Fechamento-Seção-1");
+export var section1 = document.getElementById("section-1");
+export var section1Summary = document.getElementById("section-1-summary");
+export var section1OpenButton = document.getElementById("section-1-open-button");
+export var section1Details = document.getElementById("section-1-details");
+export var section1DetailsHeading = document.getElementById("section-1-details-heading");
+export var section1QuotePrompt = document.getElementById("section-1-quote-prompt");
+export var section1CloseButton = document.getElementById("section-1-close-button");
 
-/*/////////////////////////////// Seção 2 ////////////////////////////////////*/
 
-export var Seção2 = document.getElementById("Seção-2");
-export var ContainerExternoSeção2 = document.getElementById("Container-Externo-Seção-2");
-export var BotãoAberturaSeção2 = document.getElementById("Texto-Botão-Externo-Abertura-Seção-2");
-export var ContainerInternoSeção2 = document.getElementById("Container-Interno-Seção-2");
-export var TextoInternoChamadaSeção2 = document.getElementById("Texto-Interno-Chamada-Seção-2");
-export var SubseçãoCadastro2 = document.getElementById("Subseção-Cadastro-2");
-export var SetaFechamentoSeção2 = document.getElementById("Seta-Fechamento-Seção-2");
+export var section2 = document.getElementById("section-2");
+export var section2Summary = document.getElementById("section-2-summary");
+export var section2OpenButton = document.getElementById("section-2-open-button");
+export var section2Details = document.getElementById("section-2-details");
+export var section2DetailsHeading = document.getElementById("section-2-details-heading");
+export var section2QuotePrompt = document.getElementById("section-2-quote-prompt");
+export var section2CloseButton = document.getElementById("section-2-close-button");
 
-/*/////////////////////////////// Seção 3 ////////////////////////////////////*/
 
-export var Seção3 = document.getElementById("Seção-3");
-export var ContainerExternoSeção3 = document.getElementById("Container-Externo-Seção-3");
-export var BotãoAberturaSeção3 = document.getElementById("Texto-Botão-Externo-Abertura-Seção-3");
-export var ContainerInternoSeção3 = document.getElementById("Container-Interno-Seção-3");
-export var TextoInternoChamadaSeção3 = document.getElementById("Texto-Interno-Chamada-Seção-3");
-export var SubseçãoFechada31 = document. getElementById("Subseção-Fechada-3.1");
-export var SetaAberturaSubseção31 = document.getElementById("Seta-Abertura-Subseção-3.1");
-export var SubseçãoAberta31 = document. getElementById("Subseção-Aberta-3.1");
-export var MancheteSubseçãoAberta31 = document.getElementById("Manchete-Subseção-Aberta-3.1");
-export var SetaFechamentoSubseção31 = document.getElementById("Seta-Fechamento-Subseção-3.1");
-export var SubseçãoFechada32 = document. getElementById("Subseção-Fechada-3.2");
-export var SetaAberturaSubseção32 = document.getElementById("Seta-Abertura-Subseção-3.2");
-export var SubseçãoAberta32 = document. getElementById("Subseção-Aberta-3.2");
-export var MancheteSubseçãoAberta32 = document.getElementById("Manchete-Subseção-Aberta-3.2");
-export var SetaFechamentoSubseção32 = document.getElementById("Seta-Fechamento-Subseção-3.2");
-export var SubseçãoFechada33 = document. getElementById("Subseção-Fechada-3.3");
-export var SetaAberturaSubseção33 = document.getElementById("Seta-Abertura-Subseção-3.3");
-export var SubseçãoAberta33 = document. getElementById("Subseção-Aberta-3.3");
-export var MancheteSubseçãoAberta33 = document.getElementById("Manchete-Subseção-Aberta-3.3");
-export var SetaFechamentoSubseção33 = document.getElementById("Seta-Fechamento-Subseção-3.3");
-export var SubseçãoFechada34 = document. getElementById("Subseção-Fechada-3.4");
-export var SetaAberturaSubseção34 = document.getElementById("Seta-Abertura-Subseção-3.4");
-export var SubseçãoAberta34 = document. getElementById("Subseção-Aberta-3.4");
-export var MancheteSubseçãoAberta34 = document.getElementById("Manchete-Subseção-Aberta-3.4");
-export var SetaFechamentoSubseção34 = document.getElementById("Seta-Fechamento-Subseção-3.4");
-export var SubseçãoFechada35 = document. getElementById("Subseção-Fechada-3.5");
-export var SetaAberturaSubseção35 = document.getElementById("Seta-Abertura-Subseção-3.5");
-export var SubseçãoAberta35 = document. getElementById("Subseção-Aberta-3.5");
-export var MancheteSubseçãoAberta35 = document.getElementById("Manchete-Subseção-Aberta-3.5");
-export var SetaFechamentoSubseção35 = document.getElementById("Seta-Fechamento-Subseção-3.5");
-export var SubseçãoCadastro3 = document.getElementById("Subseção-Cadastro-3");
-export var SetaFechamentoSeção3 = document.getElementById("Seta-Fechamento-Seção-3");
-export var BotãoInstagramDirect = document.getElementById("Botão-Instagram-Direct");
+export var section3 = document.getElementById("section-3");
+export var section3Summary = document.getElementById("section-3-summary");
+export var section3OpenButton = document.getElementById("section-3-open-button");
+export var section3Details = document.getElementById("section-3-details");
+export var section3DetailsHeading = document.getElementById("section-3-details-heading");
+export var section3Subsection1Summary = document. getElementById("section-3-subsection-1-summary");
+export var section3Subsection1OpenButton = document.getElementById("section-3-subsection-1-open-button");
+export var section3Subsection1Details = document. getElementById("section-3-subsection-1-details");
+export var section3Subsection1DetailsHeading = document.getElementById("section-3-subsection-1-details-heading");
+export var section3Subsection1CloseButton = document.getElementById("section-3-subsection-1-close-button");
+export var section3Subsection2Summary = document. getElementById("section-3-subsection-2-summary");
+export var section3Subsection2OpenButton = document.getElementById("section-3-subsection-2-open-button");
+export var section3Subsection2Details = document. getElementById("section-3-subsection-2-details");
+export var section3Subsection2DetailsHeading = document.getElementById("section-3-subsection-2-details-heading");
+export var section3Subsection2CloseButton = document.getElementById("section-3-subsection-2-close-button");
+export var section3Subsection3Summary = document. getElementById("section-3-subsection-3-summary");
+export var section3Subsection3OpenButton = document.getElementById("section-3-subsection-3-open-button");
+export var section3Subsection3Details = document. getElementById("section-3-subsection-3-details");
+export var section3Subsection3DetailsHeading = document.getElementById("section-3-subsection-3-details-heading");
+export var section3Subsection3CloseButton = document.getElementById("section-3-subsection-3-close-button");
+export var section3Subsection4Summary = document. getElementById("section-3-subsection-4-summary");
+export var section3Subsection4OpenButton = document.getElementById("section-3-subsection-4-open-button");
+export var section3Subsection4Details = document. getElementById("section-3-subsection-4-details");
+export var section3Subsection4DetailsHeading = document.getElementById("section-3-subsection-4-details-heading");
+export var section3Subsection4CloseButton = document.getElementById("section-3-subsection-4-close-button");
+export var section3Subsection5Summary = document. getElementById("section-3-subsection-5-summary");
+export var section3Subsection5OpenButton = document.getElementById("section-3-subsection-5-open-button");
+export var section3Subsection5Details = document. getElementById("section-3-subsection-5-details");
+export var section3Subsection5DetailsHeading = document.getElementById("section-3-subsection-5-details-heading");
+export var section3Subsection5CloseButton = document.getElementById("section-3-subsection-5-close-button");
+export var section3QuotePrompt = document.getElementById("section-3-quote-prompt");
+export var section3CloseButton = document.getElementById("section-3-close-button");
+export var instagramDirectLink = document.getElementById("instagram-direct-link");
 
-/*/////////////////////////////// Seção 4 ////////////////////////////////////*/
 
-export var Seção4 = document.getElementById("Seção-4");
-export var ContainerExternoSeção4 = document.getElementById("Container-Externo-Seção-4");
-export var BotãoAberturaSeção4 = document.getElementById("Texto-Botão-Externo-Abertura-Seção-4");
-export var ContainerInternoSeção4 = document.getElementById("Container-Interno-Seção-4");
-export var TextoInternoChamadaSeção4 = document.getElementById("Texto-Interno-Chamada-Seção-4");
-export var BackgroundSeção4 = document.getElementById("Background-Seção-4");
+export var section4 = document.getElementById("section-4");
+export var section4Summary = document.getElementById("section-4-summary");
+export var section4OpenButton = document.getElementById("section-4-open-button");
+export var section4Details = document.getElementById("section-4-details");
+export var section4DetailsHeading = document.getElementById("section-4-details-heading");
 
-export var SubseçãoFechada41 = document.getElementById("Subseção-Fechada-4.1");
-export var SetaAberturaSubseção41 = document.getElementById("Seta-Abertura-Subseção-4.1");
-export var SubseçãoAberta41 = document.getElementById("Subseção-Aberta-4.1");
-export var MancheteSubseçãoAberta41 = document.getElementById("Manchete-Subseção-Aberta-4.1");
-export var SetaFechamentoSubseção41 = document.getElementById("Seta-Fechamento-Subseção-4.1");
+export var section4Subsection1Summary = document.getElementById("section-4-subsection-1-summary");
+export var section4Subsection1OpenButton = document.getElementById("section-4-subsection-1-open-button");
+export var section4Subsection1Details = document.getElementById("section-4-subsection-1-details");
+export var section4Subsection1DetailsHeading = document.getElementById("section-4-subsection-1-details-heading");
+export var section4Subsection1CloseButton = document.getElementById("section-4-subsection-1-close-button");
 
-export var SubseçãoFechada42 = document.getElementById("Subseção-Fechada-4.2");
-export var SetaAberturaSubseção42 = document.getElementById("Seta-Abertura-Subseção-4.2");
-export var SubseçãoAberta42 = document.getElementById("Subseção-Aberta-4.2");
-export var MancheteSubseçãoAberta42 = document.getElementById("Manchete-Subseção-Aberta-4.2");
+export var section4Subsection2Summary = document.getElementById("section-4-subsection-2-summary");
+export var section4Subsection2OpenButton = document.getElementById("section-4-subsection-2-open-button");
+export var section4Subsection2Details = document.getElementById("section-4-subsection-2-details");
+export var section4Subsection2DetailsHeading = document.getElementById("section-4-subsection-2-details-heading");
 
-export var DataAtualizaçãoEstatísticasPadrãoVermelho = document.getElementById("Data-Atualização-Estatísticas-Padrão-Vermelho");
+export var clientStatisticsUpdatedAt = document.getElementById("client-statistics-updated-at");
 
-export var SetaFechamentoSubseção42 = document.getElementById("Seta-Fechamento-Subseção-4.2");
+export var section4Subsection2CloseButton = document.getElementById("section-4-subsection-2-close-button");
 
-export var SubseçãoFechada43 = document. getElementById("Subseção-Fechada-4.3");
-export var SetaAberturaSubseção43 = document.getElementById("Seta-Abertura-Subseção-4.3");
-export var SubseçãoAberta43 = document. getElementById("Subseção-Aberta-4.3");
-export var MancheteSubseçãoAberta43 = document.getElementById("Manchete-Subseção-Aberta-4.3");
+export var section4Subsection3Summary = document. getElementById("section-4-subsection-3-summary");
+export var section4Subsection3OpenButton = document.getElementById("section-4-subsection-3-open-button");
+export var section4Subsection3Details = document. getElementById("section-4-subsection-3-details");
+export var section4Subsection3DetailsHeading = document.getElementById("section-4-subsection-3-details-heading");
 
-export var ContainerVídeoDepoimento1 = document.getElementById("Container-Vídeo-Depoimento-1");
-export var VídeoDepoimento1 = document.getElementById("Vídeo-Depoimento-1");
-export var BotãoTelaCheiaVídeoDepoimento1 = document.getElementById("Botão-Tela-Cheia-Vídeo-Depoimento-1");
-export var TextoTelaCheiaVídeoDepoimento1 = document.getElementById("Texto-Tela-Cheia-Vídeo-Depoimento-1");
+export var testimonial1VideoContainer = document.getElementById("testimonial-1-video-container");
+export var testimonial1Video = document.getElementById("testimonial-1-video");
+export var testimonial1ViewToggle = document.getElementById("testimonial-1-view-toggle");
+export var testimonial1ViewToggleLabel = document.getElementById("testimonial-1-view-toggle-label");
 
-export var ContainerVídeoDepoimento2 = document.getElementById("Container-Vídeo-Depoimento-2");
-export var VídeoDepoimento2 = document.getElementById("Vídeo-Depoimento-2");
-export var BotãoTelaCheiaVídeoDepoimento2 = document.getElementById("Botão-Tela-Cheia-Vídeo-Depoimento-2");
-export var TextoTelaCheiaVídeoDepoimento2 = document.getElementById("Texto-Tela-Cheia-Vídeo-Depoimento-2");
+export var testimonial2VideoContainer = document.getElementById("testimonial-2-video-container");
+export var testimonial2Video = document.getElementById("testimonial-2-video");
+export var testimonial2ViewToggle = document.getElementById("testimonial-2-view-toggle");
+export var testimonial2ViewToggleLabel = document.getElementById("testimonial-2-view-toggle-label");
 
-export var ContainerVídeoDepoimento3 = document.getElementById("Container-Vídeo-Depoimento-3");
-export var VídeoDepoimento3 = document.getElementById("Vídeo-Depoimento-3");
-export var BotãoTelaCheiaVídeoDepoimento3 = document.getElementById("Botão-Tela-Cheia-Vídeo-Depoimento-3");
-export var TextoTelaCheiaVídeoDepoimento3 = document.getElementById("Texto-Tela-Cheia-Vídeo-Depoimento-3");
+export var testimonial3VideoContainer = document.getElementById("testimonial-3-video-container");
+export var testimonial3Video = document.getElementById("testimonial-3-video");
+export var testimonial3ViewToggle = document.getElementById("testimonial-3-view-toggle");
+export var testimonial3ViewToggleLabel = document.getElementById("testimonial-3-view-toggle-label");
 
-export var ContainerVídeoDepoimento4 = document.getElementById("Container-Vídeo-Depoimento-4");
-export var VídeoDepoimento4 = document.getElementById("Vídeo-Depoimento-4");
-export var BotãoTelaCheiaVídeoDepoimento4 = document.getElementById("Botão-Tela-Cheia-Vídeo-Depoimento-4");
-export var TextoTelaCheiaVídeoDepoimento4 = document.getElementById("Texto-Tela-Cheia-Vídeo-Depoimento-4");
+export var testimonial4VideoContainer = document.getElementById("testimonial-4-video-container");
+export var testimonial4Video = document.getElementById("testimonial-4-video");
+export var testimonial4ViewToggle = document.getElementById("testimonial-4-view-toggle");
+export var testimonial4ViewToggleLabel = document.getElementById("testimonial-4-view-toggle-label");
 
-export var ContainerVídeoDepoimento5 = document.getElementById("Container-Vídeo-Depoimento-5");
-export var VídeoDepoimento5 = document.getElementById("Vídeo-Depoimento-5");
-export var BotãoTelaCheiaVídeoDepoimento5 = document.getElementById("Botão-Tela-Cheia-Vídeo-Depoimento-5");
-export var TextoTelaCheiaVídeoDepoimento5 = document.getElementById("Texto-Tela-Cheia-Vídeo-Depoimento-5");
+export var testimonial5VideoContainer = document.getElementById("testimonial-5-video-container");
+export var testimonial5Video = document.getElementById("testimonial-5-video");
+export var testimonial5ViewToggle = document.getElementById("testimonial-5-view-toggle");
+export var testimonial5ViewToggleLabel = document.getElementById("testimonial-5-view-toggle-label");
 
-export var SetaFechamentoSubseção43 = document.getElementById("Seta-Fechamento-Subseção-4.3");
+export var section4Subsection3CloseButton = document.getElementById("section-4-subsection-3-close-button");
 
-export var SubseçãoCadastro4 = document.getElementById("Subseção-Cadastro-4");
-export var SetaFechamentoSeção4 = document.getElementById("Seta-Fechamento-Seção-4");
+export var section4QuotePrompt = document.getElementById("section-4-quote-prompt");
+export var section4CloseButton = document.getElementById("section-4-close-button");
 
-/*////////////////////////// Botão Principal ///////////////////////////////*/
 
-export var EspaçoFinalContainerBotãoPrincipal = document.getElementById("Espaço-Final-Container-Botão-Principal");
-export var ContainerBotãoPrincipal = document.getElementById("Container-Botão-Principal");
+export var quoteCtaSpacer = document.getElementById("quote-cta-spacer");
+export var quoteCta = document.getElementById("quote-cta");

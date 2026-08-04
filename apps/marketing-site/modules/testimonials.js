@@ -1,183 +1,178 @@
 import {
-    BotãoTelaCheiaVídeoDepoimento1,
-    BotãoTelaCheiaVídeoDepoimento2,
-    BotãoTelaCheiaVídeoDepoimento3,
-    BotãoTelaCheiaVídeoDepoimento4,
-    BotãoTelaCheiaVídeoDepoimento5,
-    ContainerVídeoDepoimento1,
-    ContainerVídeoDepoimento2,
-    ContainerVídeoDepoimento3,
-    ContainerVídeoDepoimento4,
-    ContainerVídeoDepoimento5,
-    TextoTelaCheiaVídeoDepoimento1,
-    TextoTelaCheiaVídeoDepoimento2,
-    TextoTelaCheiaVídeoDepoimento3,
-    TextoTelaCheiaVídeoDepoimento4,
-    TextoTelaCheiaVídeoDepoimento5,
-    VídeoDepoimento1,
-    VídeoDepoimento2,
-    VídeoDepoimento3,
-    VídeoDepoimento4,
-    VídeoDepoimento5
+    testimonial1ViewToggle,
+    testimonial2ViewToggle,
+    testimonial3ViewToggle,
+    testimonial4ViewToggle,
+    testimonial5ViewToggle,
+    testimonial1VideoContainer,
+    testimonial2VideoContainer,
+    testimonial3VideoContainer,
+    testimonial4VideoContainer,
+    testimonial5VideoContainer,
+    testimonial1ViewToggleLabel,
+    testimonial2ViewToggleLabel,
+    testimonial3ViewToggleLabel,
+    testimonial4ViewToggleLabel,
+    testimonial5ViewToggleLabel,
+    testimonial1Video,
+    testimonial2Video,
+    testimonial3Video,
+    testimonial4Video,
+    testimonial5Video
 } from './elements.js';
 import { preferredScrollBehavior } from './scroll-behavior.js';
-import { ControlaPosição_ContainerBotãoPrincipal } from './scroll-state.js';
+import { updateQuoteCtaPosition } from './scroll-state.js';
 
-/*///////////////////////// Botão-Tela-Cheia-Vídeo-Depoimento-1 //////////////////////////*/
 
-BotãoTelaCheiaVídeoDepoimento1.addEventListener("click", function(event) {
+testimonial1ViewToggle.addEventListener("click", function(event) {
 
-    if (!ContainerVídeoDepoimento1.classList.contains('is-rotated')) {
+    if (!testimonial1VideoContainer.classList.contains('is-rotated')) {
 
-        ContainerVídeoDepoimento1.classList.remove('is-restored');
-        ContainerVídeoDepoimento1.classList.add('is-rotated');
+        testimonial1VideoContainer.classList.remove('is-restored');
+        testimonial1VideoContainer.classList.add('is-rotated');
 
-        TextoTelaCheiaVídeoDepoimento1.innerHTML = 'Tela Padrão';
-        BotãoTelaCheiaVídeoDepoimento1.setAttribute("aria-pressed", "true");
+        testimonial1ViewToggleLabel.innerHTML = 'Tela Padrão';
+        testimonial1ViewToggle.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento1.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial1Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     } else {
 
-        ContainerVídeoDepoimento1.classList.remove('is-rotated');
-        ContainerVídeoDepoimento1.classList.add('is-restored');
+        testimonial1VideoContainer.classList.remove('is-rotated');
+        testimonial1VideoContainer.classList.add('is-restored');
 
-        TextoTelaCheiaVídeoDepoimento1.innerHTML = 'Tela Cheia';
-        BotãoTelaCheiaVídeoDepoimento1.setAttribute("aria-pressed", "false");
+        testimonial1ViewToggleLabel.innerHTML = 'Tela Cheia';
+        testimonial1ViewToggle.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento1.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial1Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     }
 
 })
 
-/*///////////////////////// Botão-Tela-Cheia-Vídeo-Depoimento-2 //////////////////////////*/
 
-BotãoTelaCheiaVídeoDepoimento2.addEventListener("click", function(event) {
+testimonial2ViewToggle.addEventListener("click", function(event) {
 
-    if (!ContainerVídeoDepoimento2.classList.contains('is-rotated')) {
+    if (!testimonial2VideoContainer.classList.contains('is-rotated')) {
 
-        ContainerVídeoDepoimento2.classList.remove('is-restored');
-        ContainerVídeoDepoimento2.classList.add('is-rotated');
+        testimonial2VideoContainer.classList.remove('is-restored');
+        testimonial2VideoContainer.classList.add('is-rotated');
 
-        TextoTelaCheiaVídeoDepoimento2.innerHTML = 'Tela Padrão';
-        BotãoTelaCheiaVídeoDepoimento2.setAttribute("aria-pressed", "true");
+        testimonial2ViewToggleLabel.innerHTML = 'Tela Padrão';
+        testimonial2ViewToggle.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento2.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial2Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     } else {
 
-        ContainerVídeoDepoimento2.classList.remove('is-rotated');
-        ContainerVídeoDepoimento2.classList.add('is-restored');
+        testimonial2VideoContainer.classList.remove('is-rotated');
+        testimonial2VideoContainer.classList.add('is-restored');
 
-        TextoTelaCheiaVídeoDepoimento2.innerHTML = 'Tela Cheia';
-        BotãoTelaCheiaVídeoDepoimento2.setAttribute("aria-pressed", "false");
+        testimonial2ViewToggleLabel.innerHTML = 'Tela Cheia';
+        testimonial2ViewToggle.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento2.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial2Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     }
 
 })
 
-/*///////////////////////// Botão-Tela-Cheia-Vídeo-Depoimento-3 //////////////////////////*/
 
-BotãoTelaCheiaVídeoDepoimento3.addEventListener("click", function(event) {
+testimonial3ViewToggle.addEventListener("click", function(event) {
 
-    if (!ContainerVídeoDepoimento3.classList.contains('is-rotated')) {
+    if (!testimonial3VideoContainer.classList.contains('is-rotated')) {
 
-        ContainerVídeoDepoimento3.classList.remove('is-restored');
-        ContainerVídeoDepoimento3.classList.add('is-rotated');
+        testimonial3VideoContainer.classList.remove('is-restored');
+        testimonial3VideoContainer.classList.add('is-rotated');
 
-        TextoTelaCheiaVídeoDepoimento3.innerHTML = 'Tela Padrão';
-        BotãoTelaCheiaVídeoDepoimento3.setAttribute("aria-pressed", "true");
+        testimonial3ViewToggleLabel.innerHTML = 'Tela Padrão';
+        testimonial3ViewToggle.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento3.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial3Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     } else {
 
-        ContainerVídeoDepoimento3.classList.remove('is-rotated');
-        ContainerVídeoDepoimento3.classList.add('is-restored');
+        testimonial3VideoContainer.classList.remove('is-rotated');
+        testimonial3VideoContainer.classList.add('is-restored');
 
-        TextoTelaCheiaVídeoDepoimento3.innerHTML = 'Tela Cheia';
-        BotãoTelaCheiaVídeoDepoimento3.setAttribute("aria-pressed", "false");
+        testimonial3ViewToggleLabel.innerHTML = 'Tela Cheia';
+        testimonial3ViewToggle.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento3.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial3Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     }
 
 })
 
-/*///////////////////////// Botão-Tela-Cheia-Vídeo-Depoimento-4 //////////////////////////*/
 
-BotãoTelaCheiaVídeoDepoimento4.addEventListener("click", function(event) {
+testimonial4ViewToggle.addEventListener("click", function(event) {
 
-    if (!ContainerVídeoDepoimento4.classList.contains('is-rotated')) {
+    if (!testimonial4VideoContainer.classList.contains('is-rotated')) {
 
-        ContainerVídeoDepoimento4.classList.remove('is-restored');
-        ContainerVídeoDepoimento4.classList.add('is-rotated');
+        testimonial4VideoContainer.classList.remove('is-restored');
+        testimonial4VideoContainer.classList.add('is-rotated');
 
-        TextoTelaCheiaVídeoDepoimento4.innerHTML = 'Tela Padrão';
-        BotãoTelaCheiaVídeoDepoimento4.setAttribute("aria-pressed", "true");
+        testimonial4ViewToggleLabel.innerHTML = 'Tela Padrão';
+        testimonial4ViewToggle.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento4.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial4Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     } else {
 
-        ContainerVídeoDepoimento4.classList.remove('is-rotated');
-        ContainerVídeoDepoimento4.classList.add('is-restored');
+        testimonial4VideoContainer.classList.remove('is-rotated');
+        testimonial4VideoContainer.classList.add('is-restored');
 
-        TextoTelaCheiaVídeoDepoimento4.innerHTML = 'Tela Cheia';
-        BotãoTelaCheiaVídeoDepoimento4.setAttribute("aria-pressed", "false");
+        testimonial4ViewToggleLabel.innerHTML = 'Tela Cheia';
+        testimonial4ViewToggle.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento4.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial4Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     }
 
 })
 
-/*///////////////////////// Botão-Tela-Cheia-Vídeo-Depoimento-5 //////////////////////////*/
 
-BotãoTelaCheiaVídeoDepoimento5.addEventListener("click", function(event) {
+testimonial5ViewToggle.addEventListener("click", function(event) {
 
-    if (!ContainerVídeoDepoimento5.classList.contains('is-rotated')) {
+    if (!testimonial5VideoContainer.classList.contains('is-rotated')) {
 
-        ContainerVídeoDepoimento5.classList.remove('is-restored');
-        ContainerVídeoDepoimento5.classList.add('is-rotated');
+        testimonial5VideoContainer.classList.remove('is-restored');
+        testimonial5VideoContainer.classList.add('is-rotated');
 
-        TextoTelaCheiaVídeoDepoimento5.innerHTML = 'Tela Padrão';
-        BotãoTelaCheiaVídeoDepoimento5.setAttribute("aria-pressed", "true");
+        testimonial5ViewToggleLabel.innerHTML = 'Tela Padrão';
+        testimonial5ViewToggle.setAttribute("aria-pressed", "true");
 
-        VídeoDepoimento5.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial5Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     } else {
 
-        ContainerVídeoDepoimento5.classList.remove('is-rotated');
-        ContainerVídeoDepoimento5.classList.add('is-restored');
+        testimonial5VideoContainer.classList.remove('is-rotated');
+        testimonial5VideoContainer.classList.add('is-restored');
 
-        TextoTelaCheiaVídeoDepoimento5.innerHTML = 'Tela Cheia';
-        BotãoTelaCheiaVídeoDepoimento5.setAttribute("aria-pressed", "false");
+        testimonial5ViewToggleLabel.innerHTML = 'Tela Cheia';
+        testimonial5ViewToggle.setAttribute("aria-pressed", "false");
 
-        VídeoDepoimento5.scrollIntoView({behavior: preferredScrollBehavior()});
+        testimonial5Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        ControlaPosição_ContainerBotãoPrincipal();
+        updateQuoteCtaPosition();
 
     }
 

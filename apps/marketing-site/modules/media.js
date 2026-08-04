@@ -1,47 +1,42 @@
 import {
-    BotãoTelaCheiaVídeoDepoimento1,
-    BotãoTelaCheiaVídeoDepoimento2,
-    BotãoTelaCheiaVídeoDepoimento3,
-    BotãoTelaCheiaVídeoDepoimento4,
-    BotãoTelaCheiaVídeoDepoimento5,
-    ContainerExternoVídeoPrincipal,
-    ContainerInternoVídeoPrincipal,
-    VídeoDepoimento1,
-    VídeoDepoimento2,
-    VídeoDepoimento3,
-    VídeoDepoimento4,
-    VídeoDepoimento5,
-    VídeoPrincipal
+    testimonial1ViewToggle,
+    testimonial2ViewToggle,
+    testimonial3ViewToggle,
+    testimonial4ViewToggle,
+    testimonial5ViewToggle,
+    primaryVideoFrame,
+    primaryVideoPlayer,
+    testimonial1Video,
+    testimonial2Video,
+    testimonial3Video,
+    testimonial4Video,
+    testimonial5Video,
+    primaryVideo
 } from './elements.js';
 
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
-/*/// Retira os botões de girar os vídeos se o usuário não estiver usando o Instagram In-App Browser. //*/
-/*//////////////////////////////////////////////////////////////////////////////////////////////////////*/
 
 export var userAgent = navigator.userAgent;
 
+// Rotation controls are only needed in Instagram's in-app browser.
 if (userAgent.indexOf('Instagram') === -1) {
 
-    BotãoTelaCheiaVídeoDepoimento1.classList.add('is-hidden');
-    VídeoDepoimento1.classList.add('has-hidden-rotation-control');
+    testimonial1ViewToggle.classList.add('is-hidden');
+    testimonial1Video.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento2.classList.add('is-hidden');
-    VídeoDepoimento2.classList.add('has-hidden-rotation-control');
+    testimonial2ViewToggle.classList.add('is-hidden');
+    testimonial2Video.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento3.classList.add('is-hidden');
-    VídeoDepoimento3.classList.add('has-hidden-rotation-control');
+    testimonial3ViewToggle.classList.add('is-hidden');
+    testimonial3Video.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento4.classList.add('is-hidden');
-    VídeoDepoimento4.classList.add('has-hidden-rotation-control');
+    testimonial4ViewToggle.classList.add('is-hidden');
+    testimonial4Video.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento5.classList.add('is-hidden');
-    VídeoDepoimento5.classList.add('has-hidden-rotation-control');
+    testimonial5ViewToggle.classList.add('is-hidden');
+    testimonial5Video.classList.add('has-hidden-rotation-control');
 
 }
 
-/*/////////////////////////////////////////////////////////////////////////////////////////////*/
-/*//// Carrega o Vídeo-Principal somente ao visualizar o Container-Externo-Vídeo-Principal ////*/
-/*/////////////////////////////////////////////////////////////////////////////////////////////*/
 
 function handleIntersection(entries, observer) {
 
@@ -49,19 +44,19 @@ function handleIntersection(entries, observer) {
 
         if (entry.isIntersecting) {
 
-            ContainerInternoVídeoPrincipal.setAttribute("data-shaka-player-container", "");
-            VídeoPrincipal.setAttribute("data-shaka-player", "");
-            VídeoPrincipal.setAttribute("poster", "./landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg");
-            VídeoPrincipal.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8");
+            primaryVideoPlayer.setAttribute("data-shaka-player-container", "");
+            primaryVideo.setAttribute("data-shaka-player", "");
+            primaryVideo.setAttribute("poster", "./landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg");
+            primaryVideo.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8");
 
-            const player = new shaka.Player(VídeoPrincipal);
-            const ui = new shaka.ui.Overlay(player, ContainerInternoVídeoPrincipal, VídeoPrincipal);
+            const player = new shaka.Player(primaryVideo);
+            const ui = new shaka.ui.Overlay(player, primaryVideoPlayer, primaryVideo);
 
             ui.configure({
                 overflowMenuButtons: ['quality', 'playback_rate']
             });
 
-            player.load(VídeoPrincipal.getAttribute('src'));
+            player.load(primaryVideo.getAttribute('src'));
 
             observer.unobserve(entry.target);
         }
@@ -70,4 +65,4 @@ function handleIntersection(entries, observer) {
 }
 
 const observer = new IntersectionObserver(handleIntersection);
-observer.observe(ContainerExternoVídeoPrincipal);
+observer.observe(primaryVideoFrame);

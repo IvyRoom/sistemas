@@ -905,11 +905,11 @@ test("marketing internal assets are document-relative", async () => {
   }
   assert.match(
     source,
-    /VídeoPrincipal\.setAttribute\("poster", "\.\/landing-page\/img\/CAPA_VÍDEO_PRINCIPAL\.jpg"\);/
+    /primaryVideo\.setAttribute\("poster", "\.\/landing-page\/img\/CAPA_VÍDEO_PRINCIPAL\.jpg"\);/
   );
   assert.doesNotMatch(
     source,
-    /VídeoPrincipal\.setAttribute\("poster", "\/landing-page\//
+    /primaryVideo\.setAttribute\("poster", "\/landing-page\//
   );
 
   assert.equal(
@@ -942,7 +942,7 @@ test("marketing quote CTA targets the canonical quote route", async () => {
 
   assert.match(
     html,
-    /<a id="Botão-Principal" href="\/solicitacao-orcamento\/" aria-describedby="Explicação-Botão-Principal">SOLICITAR ORÇAMENTO<\/a>/
+    /<a id="quote-cta-link" href="\/solicitacao-orcamento\/" aria-describedby="quote-cta-context">SOLICITAR ORÇAMENTO<\/a>/
   );
   assert.doesNotMatch(entrySource, /window\.location\.href\s*=/);
   assert.doesNotMatch(source, /window\.location\.href\s*=/);
@@ -954,7 +954,7 @@ test("marketing PDF actions target the public download routes", async () => {
     "utf8"
   );
   const downloadLinks = Array.from(
-    html.matchAll(/<a class="Botões-Padrão-Download-PDFs"[^>]+>/g),
+    html.matchAll(/<a class="pdf-download-link"[^>]+>/g),
     ([tag]) => ({
       path: tag.match(/\bhref="([^"]+)"/)?.[1],
       rel: tag.match(/\brel="([^"]+)"/)?.[1],
