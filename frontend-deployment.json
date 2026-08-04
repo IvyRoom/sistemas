@@ -18,6 +18,10 @@
           "output": "landing-page/main.js"
         },
         {
+          "source": "apps/marketing-site/modules",
+          "output": "landing-page/modules"
+        },
+        {
           "source": "apps/marketing-site/img",
           "output": "landing-page/img"
         },

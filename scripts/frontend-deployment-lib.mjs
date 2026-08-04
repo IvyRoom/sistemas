@@ -617,7 +617,52 @@ export function extractCssReferences(css) {
   return references;
 }
 
-function localReferenceCandidates(value, baseUrl) {
+const javaScriptModuleRequestParser = [
+  'const { readFileSync } = require("node:fs");',
+  'const { SourceTextModule } = require("node:vm");',
+  'const sourceModule = new SourceTextModule(readFileSync(0, "utf8"));',
+  'process.stdout.write(JSON.stringify(sourceModule.dependencySpecifiers));'
+].join("\n");
+
+export function extractJavaScriptImportReferences(javaScript) {
+  let serializedDependencySpecifiers;
+  try {
+    serializedDependencySpecifiers = execFileSync(
+      process.execPath,
+      [
+        "--no-warnings",
+        "--experimental-vm-modules",
+        "-e",
+        javaScriptModuleRequestParser
+      ],
+      {
+        encoding: "utf8",
+        input: javaScript,
+        stdio: ["pipe", "pipe", "pipe"],
+        windowsHide: true
+      }
+    );
+  } catch (cause) {
+    throw new Error("Unable to parse JavaScript module dependencies.", { cause });
+  }
+
+  let dependencySpecifiers;
+  try {
+    dependencySpecifiers = JSON.parse(serializedDependencySpecifiers);
+  } catch (cause) {
+    throw new Error("Unable to read parsed JavaScript module dependencies.", { cause });
+  }
+
+  invariant(
+    Array.isArray(dependencySpecifiers)
+      && dependencySpecifiers.every((specifier) => typeof specifier === "string"),
+    "Parsed JavaScript module dependencies are invalid."
+  );
+
+  return dependencySpecifiers.filter((specifier) => /^\.{1,2}\//.test(specifier));
+}
+
+function localReferenceCandidates(value, baseUrl, { allowIndexFallback = true } = {}) {
   const trimmedValue = value.trim();
   if (trimmedValue.startsWith("#") || trimmedValue.startsWith("//")) {
     return [];
@@ -646,6 +691,9 @@ function localReferenceCandidates(value, baseUrl) {
   );
 
   const relativePath = decodedPath.replace(/^\/+/, "");
+  if (!allowIndexFallback) {
+    return relativePath === "" ? [] : [relativePath];
+  }
   if (relativePath === "") {
     return ["index.html"];
   }
@@ -704,16 +752,25 @@ function compareResolvedSourcePreviewReference(
   outputBaseUrl,
   sourceBaseUrl,
   sourceByOutput,
-  sourceByPreviewRoute
+  sourceByPreviewRoute,
+  { allowIndexFallback = true } = {}
 ) {
-  const outputCandidates = localReferenceCandidates(value, outputBaseUrl);
+  const outputCandidates = localReferenceCandidates(
+    value,
+    outputBaseUrl,
+    { allowIndexFallback }
+  );
   if (outputCandidates.length === 0) {
     return null;
   }
 
   const output = outputCandidates.find((candidate) => sourceByOutput.has(candidate)) ?? null;
   const expectedSource = output === null ? null : sourceByOutput.get(output);
-  const sourceCandidates = localReferenceCandidates(value, sourceBaseUrl);
+  const sourceCandidates = localReferenceCandidates(
+    value,
+    sourceBaseUrl,
+    { allowIndexFallback }
+  );
 
   return {
     expectedSource,
@@ -777,6 +834,7 @@ export async function assertSourcePreviewReferences(manifest) {
   );
   let htmlReferences = 0;
   let cssReferences = 0;
+  let javascriptReferences = 0;
 
   for (const file of validation.files.filter(
     (mappedFile) => mappedFile.source.toLowerCase().endsWith(".html")
@@ -845,17 +903,45 @@ export async function assertSourcePreviewReferences(manifest) {
     }
   }
 
-  return { htmlReferences, cssReferences };
+  for (const file of validation.files.filter(
+    (mappedFile) => mappedFile.source.toLowerCase().endsWith(".js")
+  )) {
+    const javaScript = await readFile(toLocalPath(file.source), "utf8");
+    const outputScriptUrl = new URL(`/${file.output}`, localOrigin);
+    const sourceScriptUrl = new URL(`/${file.source}`, localOrigin);
+    const sourceByPreviewRoute = sourcePreviewRouteSources(validation.files);
+
+    for (const reference of extractJavaScriptImportReferences(javaScript)) {
+      const result = compareResolvedSourcePreviewReference(
+        reference,
+        outputScriptUrl,
+        sourceScriptUrl,
+        sourceByOutput,
+        sourceByPreviewRoute,
+        { allowIndexFallback: false }
+      );
+      if (assertSourcePreviewReference(
+        result,
+        `JavaScript import in ${file.source}`,
+        reference
+      )) {
+        javascriptReferences += 1;
+      }
+    }
+  }
+
+  return { htmlReferences, cssReferences, javascriptReferences };
 }
 
-export async function assertLocalReferences() {
-  const artifactFiles = await listTreeFiles(distRoot);
+export async function assertLocalReferences(artifactRoot = distRoot) {
+  const artifactFiles = await listTreeFiles(artifactRoot);
   const artifactFileSet = new Set(artifactFiles);
   let htmlReferences = 0;
   let cssReferences = 0;
+  let javascriptReferences = 0;
 
   for (const file of artifactFiles.filter((filePath) => filePath.toLowerCase().endsWith(".html"))) {
-    const html = await readFile(resolve(distRoot, ...file.split("/")), "utf8");
+    const html = await readFile(resolve(artifactRoot, ...file.split("/")), "utf8");
     const references = extractHtmlReferences(html);
     const documentUrl = new URL(`/${file}`, localOrigin);
     const baseReference = references.find(
@@ -884,7 +970,7 @@ export async function assertLocalReferences() {
   }
 
   for (const file of artifactFiles.filter((filePath) => filePath.toLowerCase().endsWith(".css"))) {
-    const css = await readFile(resolve(distRoot, ...file.split("/")), "utf8");
+    const css = await readFile(resolve(artifactRoot, ...file.split("/")), "utf8");
     const stylesheetUrl = new URL(`/${file}`, localOrigin);
 
     for (const reference of extractCssReferences(css)) {
@@ -901,7 +987,26 @@ export async function assertLocalReferences() {
     }
   }
 
-  return { htmlReferences, cssReferences };
+  for (const file of artifactFiles.filter((filePath) => filePath.toLowerCase().endsWith(".js"))) {
+    const javaScript = await readFile(resolve(artifactRoot, ...file.split("/")), "utf8");
+    const scriptUrl = new URL(`/${file}`, localOrigin);
+
+    for (const reference of extractJavaScriptImportReferences(javaScript)) {
+      const candidates = localReferenceCandidates(
+        reference,
+        scriptUrl,
+        { allowIndexFallback: false }
+      );
+
+      javascriptReferences += 1;
+      invariant(
+        candidates.some((candidate) => artifactFileSet.has(candidate)),
+        `Broken local JavaScript import in dist/${file}: ${reference}`
+      );
+    }
+  }
+
+  return { htmlReferences, cssReferences, javascriptReferences };
 }
 
 function contentType(file) {
