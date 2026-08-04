@@ -85,9 +85,82 @@ function createHarness({
       attributes.set(name, value);
     }
 
+    const classNames = new Set(
+      (attributes.get("class") ?? "").split(/\s+/).filter(Boolean)
+    );
+
+    function syncClassAttribute() {
+      if (classNames.size === 0) {
+        attributes.delete("class");
+        return;
+      }
+      attributes.set("class", Array.from(classNames).join(" "));
+    }
+
+    const classList = {
+      add(...tokens) {
+        for (const token of tokens) classNames.add(token);
+        syncClassAttribute();
+      },
+      contains(token) {
+        return classNames.has(token);
+      },
+      item(index) {
+        return Array.from(classNames)[index] ?? null;
+      },
+      remove(...tokens) {
+        for (const token of tokens) classNames.delete(token);
+        syncClassAttribute();
+      },
+      replace(oldToken, newToken) {
+        if (!classNames.has(oldToken)) return false;
+        const tokens = Array.from(classNames);
+        const index = tokens.indexOf(oldToken);
+        tokens[index] = newToken;
+        classNames.clear();
+        for (const token of tokens) classNames.add(token);
+        syncClassAttribute();
+        return true;
+      },
+      toggle(token, force) {
+        const shouldAdd = force === undefined ? !classNames.has(token) : Boolean(force);
+        if (shouldAdd) classNames.add(token);
+        else classNames.delete(token);
+        syncClassAttribute();
+        return shouldAdd;
+      },
+      values() {
+        return classNames.values();
+      },
+      get length() {
+        return classNames.size;
+      },
+      get value() {
+        return Array.from(classNames).join(" ");
+      },
+      [Symbol.iterator]() {
+        return classNames[Symbol.iterator]();
+      }
+    };
+
+    const style = {
+      getPropertyValue(name) {
+        return Object.hasOwn(this, name) ? this[name] : "";
+      },
+      removeProperty(name) {
+        const previousValue = this.getPropertyValue(name);
+        delete this[name];
+        return previousValue;
+      },
+      setProperty(name, value) {
+        this[name] = String(value);
+      }
+    };
+
     return {
       id,
       attributes,
+      classList,
       tagName,
       innerHTML: /^Texto-Tela-Cheia-Vídeo-Depoimento-[1-5]$/.test(id)
         ? "Tela Cheia"
@@ -96,7 +169,7 @@ function createHarness({
       offsetTop: elementGeometry.offsetTop,
       paused: true,
       pauseCalls: 0,
-      style: {},
+      style,
       addEventListener(type, listener) {
         listeners.set(`${id}:${type}`, listener);
       },
@@ -125,7 +198,13 @@ function createHarness({
         interactionCalls.push({ ...call, type: "scroll" });
       },
       setAttribute(name, value) {
-        attributes.set(name, String(value));
+        const stringValue = String(value);
+        attributes.set(name, stringValue);
+        if (name === "class") {
+          classNames.clear();
+          for (const token of stringValue.split(/\s+/).filter(Boolean)) classNames.add(token);
+          syncClassAttribute();
+        }
       }
     };
   }
@@ -287,12 +366,56 @@ function assertScrollThenFocus(harness, scrollId, focusId) {
   ]);
 }
 
+function assertClassState(element, { absent = [], present = [] }) {
+  for (const className of present) {
+    assert.equal(element.classList.contains(className), true, `#${element.id} has .${className}`);
+  }
+  for (const className of absent) {
+    assert.equal(element.classList.contains(className), false, `#${element.id} lacks .${className}`);
+  }
+}
+
+function assertCustomProperty(element, name, value) {
+  assert.equal(element.style.getPropertyValue(name), value, `#${element.id} ${name}`);
+}
+
 function testimonialVideo(harness, number) {
   return harness.element(`Vídeo-Depoimento-${number}`);
 }
 
 function openingTag(id) {
   return htmlElementsById.get(id)?.openingTag ?? "";
+}
+
+function cssRulesContaining(selectorFragments) {
+  return Array.from(
+    css.matchAll(/([^{}]+)\{([^{}]*)\}/g),
+    ([, selector, declarations]) => ({ declarations, selector })
+  ).filter(({ selector }) => selectorFragments.every((fragment) => selector.includes(fragment)));
+}
+
+function assertCssRule(selectorFragments, declarationPatterns) {
+  const rules = cssRulesContaining(selectorFragments);
+
+  assert.ok(rules.length > 0, `Missing CSS rule containing ${selectorFragments.join(", ")}`);
+  assert.ok(
+    rules.some(({ declarations }) => declarationPatterns.every((pattern) => pattern.test(declarations))),
+    `Incomplete CSS state for ${selectorFragments.join(", ")}`
+  );
+}
+
+function assertCssRuleOmits(selectorFragments, declarationPattern) {
+  const rules = cssRulesContaining(selectorFragments);
+  assert.ok(rules.length > 0, `Missing CSS rule containing ${selectorFragments.join(", ")}`);
+  for (const { declarations } of rules) {
+    assert.doesNotMatch(declarations, declarationPattern);
+  }
+}
+
+function assertCssStateForTargets(targets, stateClass, declarationPatterns) {
+  for (const target of targets) {
+    assertCssRule([target, `.${stateClass}`], declarationPatterns);
+  }
 }
 
 test("marketing selectors, local references, script order, and timing remain exact", () => {
@@ -425,6 +548,157 @@ test("marketing copy selection and reduced motion distinguish content from contr
     34
   );
   assert.doesNotMatch(source, /\.scrollIntoView\(\{behavior: ['"]smooth['"]\}\)/);
+});
+
+test("marketing presentation state is expressed through accurate CSS classes", () => {
+  const stateClasses = [
+    "has-contained-close-button",
+    "has-fixed-position",
+    "has-fixed-close-button",
+    "has-hidden-rotation-control",
+    "is-anchored",
+    "is-contained",
+    "is-fixed",
+    "is-fixed-above-quote",
+    "is-fixed-near-bottom",
+    "is-hidden",
+    "is-open",
+    "is-restored",
+    "is-rotated"
+  ];
+
+  for (const className of stateClasses) {
+    assert.match(source, new RegExp(`["']${className}["']`), className);
+    assert.match(css, new RegExp(`\\.${className}(?![a-z-])`), className);
+    assert.match(className, /^(?:has|is)-[a-z]+(?:-[a-z]+)*$/);
+  }
+
+  assert.doesNotMatch(
+    source,
+    /\.style\.(?:display|position|top|bottom|marginBottom|marginLeft|width|height|transform|transformOrigin)\s*=/
+  );
+  assert.doesNotMatch(
+    source,
+    /if\s*\(\s*TextoTelaCheiaVídeoDepoimento[1-5]\.innerHTML\s*!==\s*['"]Tela Padrão['"]\s*\)/
+  );
+  assert.match(source, /classList\.contains\(['"]is-rotated['"]\)/);
+
+  const customPropertyWrites = Array.from(
+    source.matchAll(/\.style\.setProperty\(\s*['"]([^'"]+)['"]/g),
+    ([, property]) => property
+  );
+  const allowedCustomProperties = new Set([
+    "--quote-cta-height",
+    "--quote-cta-top",
+    "--section-close-bottom"
+  ]);
+  assert.deepEqual(new Set(customPropertyWrites), allowedCustomProperties);
+  for (const property of customPropertyWrites) {
+    assert.ok(allowedCustomProperties.has(property), property);
+  }
+
+  assertCssRule([".Containers-Externos-Seções.is-hidden"], [/display:\s*none;/]);
+  assertCssRule([".Subseções-Fechadas.is-hidden"], [/display:\s*none;/]);
+  assertCssRule([".Botões-Tela-Cheia-Depoimentos.is-hidden"], [/display:\s*none;/]);
+  assertCssStateForTargets(
+    Array.from({ length: 4 }, (_, index) => `#Container-Interno-Seção-${index + 1}`),
+    "is-open",
+    [/display:\s*block;/]
+  );
+  assertCssRule([".Subseções-Abertas.is-open"], [/display:\s*block;/]);
+
+  assertCssRule(["#Espaço-Final-Container-Botão-Principal"], [
+    /height:\s*var\(--quote-cta-height, auto\);/
+  ]);
+  assertCssRule(["#Container-Botão-Principal.is-hidden"], [/display:\s*none;/]);
+  assertCssRule(["#Container-Botão-Principal.is-fixed"], [
+    /position:\s*fixed;/,
+    /top:\s*auto;/,
+    /bottom:\s*0px;/
+  ]);
+  assertCssRule(["#Container-Botão-Principal.is-anchored"], [
+    /position:\s*absolute;/,
+    /top:\s*var\(--quote-cta-top\);/
+  ]);
+  assertCssRuleOmits(["#Container-Botão-Principal.is-anchored"], /\bbottom\s*:/);
+  assert.match(css, /#Container-Botão-Principal\{[^}]*bottom:\s*0px;/);
+
+  const sectionCloseSelectors = Array.from(
+    { length: 4 },
+    (_, index) => `#Seta-Fechamento-Seção-${index + 1}`
+  );
+  assertCssStateForTargets(sectionCloseSelectors, "is-hidden", [/display:\s*none;/]);
+  assertCssStateForTargets(sectionCloseSelectors, "is-fixed-near-bottom", [
+    /position:\s*fixed;/,
+    /bottom:\s*25px;/
+  ]);
+  for (const selector of sectionCloseSelectors) {
+    assertCssRuleOmits([selector, ".is-fixed-near-bottom"], /\bdisplay\s*:/);
+  }
+  assertCssStateForTargets(sectionCloseSelectors, "is-fixed-above-quote", [
+    /display:\s*flex;/,
+    /position:\s*fixed;/,
+    /bottom:\s*var\(--section-close-bottom\);/,
+    /margin-bottom:\s*0px;/,
+    /margin-left:\s*calc\(\(var\(--considered-screen-width\) \* 0\.50\) - 40px\);/
+  ]);
+  assertCssStateForTargets(sectionCloseSelectors, "is-contained", [
+    /display:\s*flex;/,
+    /position:\s*relative;/,
+    /bottom:\s*0px;/,
+    /margin-bottom:\s*-25px;/,
+    /margin-left:\s*calc\(\(var\(--considered-screen-width\) \* 0\.50\) - 40px\);/
+  ]);
+  assertCssRule([".Subseções-Cadastro.has-fixed-close-button"], [
+    /margin-bottom:\s*var\(--space-md\);/
+  ]);
+  assertCssRule([".Subseções-Cadastro.has-contained-close-button"], [
+    /margin-bottom:\s*15px;/
+  ]);
+
+  assertCssRule(["#Botão-Instagram-Direct.is-hidden"], [/display:\s*none;/]);
+  assertCssRule(["#Botão-Instagram-Direct.is-fixed"], [
+    /display:\s*block;/,
+    /position:\s*fixed;/,
+    /width:\s*60px;/,
+    /bottom:\s*160px;/,
+    /margin-bottom:\s*0px;/,
+    /margin-left:\s*calc\(\(var\(--considered-screen-width\) \* 0\.95\) - 60px\);/
+  ]);
+  assertCssRule(["#Botão-Instagram-Direct.is-contained"], [
+    /display:\s*flex;/,
+    /position:\s*relative;/,
+    /width:\s*60px;/,
+    /bottom:\s*var\(--space-lg\);/,
+    /margin-bottom:\s*calc\(-1 \* var\(--space-2xl\)\);/,
+    /margin-left:\s*calc\(\(var\(--considered-screen-width\) \* 0\.95\) - 60px\);/
+  ]);
+  assertCssRule(["#Botão-Instagram-Direct.has-fixed-position"], [
+    /position:\s*fixed;/
+  ]);
+  assertCssRuleOmits(["#Botão-Instagram-Direct.has-fixed-position"], /\bdisplay\s*:/);
+
+  assertCssRule([".Vídeos-Depoimentos.has-hidden-rotation-control"], [
+    /margin-bottom:\s*var\(--space-lg\);/
+  ]);
+  assertCssRule([".Containers-Vídeos-Depoimentos.is-rotated"], [
+    /width:\s*calc\(var\(--considered-screen-width\) \* 0\.80\);/,
+    /height:\s*calc\(var\(--considered-screen-width\) \* 1\.42196\);/
+  ]);
+  assertCssRule([".Containers-Vídeos-Depoimentos.is-rotated > .Vídeos-Depoimentos"], [
+    /width:\s*calc\(var\(--considered-screen-width\) \* 1\.42196\);/,
+    /height:\s*calc\(var\(--considered-screen-width\) \* 0\.80\);/,
+    /transform-origin:\s*top left;/,
+    /transform:\s*rotate\(90deg\) translateY\(-100%\);/
+  ]);
+  assertCssRule([".Containers-Vídeos-Depoimentos.is-restored"], [
+    /width:\s*calc\(var\(--considered-screen-width\) \* 0\.90\);/,
+    /height:\s*calc\(var\(--considered-screen-width\) \* 0\.50634\);/
+  ]);
+  assertCssRule([".Containers-Vídeos-Depoimentos.is-restored > .Vídeos-Depoimentos"], [
+    /width:\s*calc\(var\(--considered-screen-width\) \* 0\.90\);/,
+    /height:\s*calc\(var\(--considered-screen-width\) \* 0\.50634\);/
+  ]);
 });
 
 test("marketing interactions use native controls with complete relationships and focus styles", () => {
@@ -802,16 +1076,14 @@ test("top-level sections keep one section open and preserve open and close scrol
     harness.dispatch(openerId);
 
     for (let number = 1; number <= 4; number += 1) {
-      assert.equal(
-        harness.element(`Container-Externo-Seção-${number}`).style.display,
-        number === selected ? "none" : "block",
-        `section ${selected}, external ${number}`
-      );
-      assert.equal(
-        harness.element(`Container-Interno-Seção-${number}`).style.display,
-        number === selected ? "block" : "none",
-        `section ${selected}, internal ${number}`
-      );
+      assertClassState(harness.element(`Container-Externo-Seção-${number}`), {
+        absent: number === selected ? [] : ["is-hidden"],
+        present: number === selected ? ["is-hidden"] : []
+      });
+      assertClassState(harness.element(`Container-Interno-Seção-${number}`), {
+        absent: number === selected ? [] : ["is-open"],
+        present: number === selected ? ["is-open"] : []
+      });
       assert.equal(
         harness.element(`Texto-Botão-Externo-Abertura-Seção-${number}`).getAttribute("aria-expanded"),
         number === selected ? "true" : "false",
@@ -825,8 +1097,10 @@ test("top-level sections keep one section open and preserve open and close scrol
       `Container-Interno-Seção-${selected}`,
       `Texto-Interno-Chamada-Seção-${selected}`
     );
-    assert.equal(harness.element(`Seta-Fechamento-Seção-${selected}`).style.position, "fixed");
-    assert.equal(harness.element(`Seta-Fechamento-Seção-${selected}`).style.bottom, "25px");
+    assertClassState(harness.element(`Seta-Fechamento-Seção-${selected}`), {
+      absent: ["is-hidden", "is-fixed-above-quote", "is-contained"],
+      present: ["is-fixed-near-bottom"]
+    });
 
     if (selected === 3) {
       harness.dispatch("Seta-Abertura-Subseção-3.2");
@@ -835,20 +1109,31 @@ test("top-level sections keep one section open and preserve open and close scrol
     if (selected === 4) {
       harness.dispatch("Seta-Abertura-Subseção-4.2");
       assert.equal(harness.element("Seta-Abertura-Subseção-4.2").getAttribute("aria-expanded"), "true");
-      assert.equal(harness.element("Botão-Instagram-Direct").style.position, "fixed");
+      assertClassState(harness.element("Botão-Instagram-Direct"), {
+        absent: ["is-contained", "is-fixed", "is-hidden"],
+        present: ["has-fixed-position"]
+      });
     }
 
     harness.dispatch(`Seta-Fechamento-Seção-${selected}`);
-    assert.equal(harness.element(`Container-Externo-Seção-${selected}`).style.display, "block");
-    assert.equal(harness.element(`Container-Interno-Seção-${selected}`).style.display, "none");
+    assertClassState(harness.element(`Container-Externo-Seção-${selected}`), {
+      absent: ["is-hidden"]
+    });
+    assertClassState(harness.element(`Container-Interno-Seção-${selected}`), {
+      absent: ["is-open"]
+    });
     assertLastScroll(harness, `Container-Externo-Seção-${selected}`);
     assert.equal(harness.element(openerId).getAttribute("aria-expanded"), "false");
     assertScrollThenFocus(harness, `Container-Externo-Seção-${selected}`, openerId);
 
     if (selected === 3) {
       for (let number = 1; number <= 5; number += 1) {
-        assert.equal(harness.element(`Subseção-Fechada-3.${number}`).style.display, "block");
-        assert.equal(harness.element(`Subseção-Aberta-3.${number}`).style.display, "none");
+        assertClassState(harness.element(`Subseção-Fechada-3.${number}`), {
+          absent: ["is-hidden"]
+        });
+        assertClassState(harness.element(`Subseção-Aberta-3.${number}`), {
+          absent: ["is-open"]
+        });
         assert.equal(
           harness.element(`Seta-Abertura-Subseção-3.${number}`).getAttribute("aria-expanded"),
           "false"
@@ -857,8 +1142,12 @@ test("top-level sections keep one section open and preserve open and close scrol
     }
     if (selected === 4) {
       for (let number = 1; number <= 3; number += 1) {
-        assert.equal(harness.element(`Subseção-Fechada-4.${number}`).style.display, "block");
-        assert.equal(harness.element(`Subseção-Aberta-4.${number}`).style.display, "none");
+        assertClassState(harness.element(`Subseção-Fechada-4.${number}`), {
+          absent: ["is-hidden"]
+        });
+        assertClassState(harness.element(`Subseção-Aberta-4.${number}`), {
+          absent: ["is-open"]
+        });
         assert.equal(
           harness.element(`Seta-Abertura-Subseção-4.${number}`).getAttribute("aria-expanded"),
           "false"
@@ -878,6 +1167,16 @@ test("top-level sections keep one section open and preserve open and close scrol
     sequential.element("Texto-Botão-Externo-Abertura-Seção-2").getAttribute("aria-expanded"),
     "true"
   );
+  for (let number = 1; number <= 4; number += 1) {
+    assertClassState(sequential.element(`Container-Externo-Seção-${number}`), {
+      absent: number === 2 ? [] : ["is-hidden"],
+      present: number === 2 ? ["is-hidden"] : []
+    });
+    assertClassState(sequential.element(`Container-Interno-Seção-${number}`), {
+      absent: number === 2 ? [] : ["is-open"],
+      present: number === 2 ? ["is-open"] : []
+    });
+  }
 });
 
 test("section 3 and 4 subsections keep one panel open and return to the closed header", () => {
@@ -889,16 +1188,14 @@ test("section 3 and 4 subsections keep one panel open and return to the closed h
       harness.dispatch(openerId);
 
       for (let number = 1; number <= count; number += 1) {
-        assert.equal(
-          harness.element(`Subseção-Fechada-${section}.${number}`).style.display,
-          number === selected ? "none" : "block",
-          `subsection ${section}.${selected}, closed ${number}`
-        );
-        assert.equal(
-          harness.element(`Subseção-Aberta-${section}.${number}`).style.display,
-          number === selected ? "block" : "none",
-          `subsection ${section}.${selected}, open ${number}`
-        );
+        assertClassState(harness.element(`Subseção-Fechada-${section}.${number}`), {
+          absent: number === selected ? [] : ["is-hidden"],
+          present: number === selected ? ["is-hidden"] : []
+        });
+        assertClassState(harness.element(`Subseção-Aberta-${section}.${number}`), {
+          absent: number === selected ? [] : ["is-open"],
+          present: number === selected ? ["is-open"] : []
+        });
         assert.equal(
           harness.element(`Seta-Abertura-Subseção-${section}.${number}`).getAttribute("aria-expanded"),
           number === selected ? "true" : "false",
@@ -920,8 +1217,12 @@ test("section 3 and 4 subsections keep one panel open and return to the closed h
       }
 
       harness.dispatch(`Seta-Fechamento-Subseção-${section}.${selected}`);
-      assert.equal(harness.element(`Subseção-Fechada-${section}.${selected}`).style.display, "block");
-      assert.equal(harness.element(`Subseção-Aberta-${section}.${selected}`).style.display, "none");
+      assertClassState(harness.element(`Subseção-Fechada-${section}.${selected}`), {
+        absent: ["is-hidden"]
+      });
+      assertClassState(harness.element(`Subseção-Aberta-${section}.${selected}`), {
+        absent: ["is-open"]
+      });
       assert.equal(harness.element(openerId).getAttribute("aria-expanded"), "false");
       assertLastScroll(harness, `Subseção-Fechada-${section}.${selected}`);
       assertScrollThenFocus(harness, `Subseção-Fechada-${section}.${selected}`, openerId);
@@ -940,6 +1241,17 @@ test("section 3 and 4 subsections keep one panel open and return to the closed h
       sequential.element(`Seta-Abertura-Subseção-${section}.2`).getAttribute("aria-expanded"),
       "true"
     );
+    const count = section === 3 ? 5 : 3;
+    for (let number = 1; number <= count; number += 1) {
+      assertClassState(sequential.element(`Subseção-Fechada-${section}.${number}`), {
+        absent: number === 2 ? [] : ["is-hidden"],
+        present: number === 2 ? ["is-hidden"] : []
+      });
+      assertClassState(sequential.element(`Subseção-Aberta-${section}.${number}`), {
+        absent: number === 2 ? [] : ["is-open"],
+        present: number === 2 ? ["is-open"] : []
+      });
+    }
   }
 });
 
@@ -959,15 +1271,23 @@ test("implicit section switches preserve nested state while explicit closes rese
       "false"
     );
     assert.equal(harness.element(subsectionOpener).getAttribute("aria-expanded"), "true");
-    assert.equal(harness.element(`Subseção-Fechada-${subsection}`).style.display, "none");
-    assert.equal(harness.element(`Subseção-Aberta-${subsection}`).style.display, "block");
+    assertClassState(harness.element(`Subseção-Fechada-${subsection}`), {
+      present: ["is-hidden"]
+    });
+    assertClassState(harness.element(`Subseção-Aberta-${subsection}`), {
+      present: ["is-open"]
+    });
 
     harness.dispatch(`Texto-Botão-Externo-Abertura-Seção-${section}`);
     assert.equal(harness.element(subsectionOpener).getAttribute("aria-expanded"), "true");
     harness.dispatch(`Seta-Fechamento-Seção-${section}`);
     assert.equal(harness.element(subsectionOpener).getAttribute("aria-expanded"), "false");
-    assert.equal(harness.element(`Subseção-Fechada-${subsection}`).style.display, "block");
-    assert.equal(harness.element(`Subseção-Aberta-${subsection}`).style.display, "none");
+    assertClassState(harness.element(`Subseção-Fechada-${subsection}`), {
+      absent: ["is-hidden"]
+    });
+    assertClassState(harness.element(`Subseção-Aberta-${subsection}`), {
+      absent: ["is-open"]
+    });
   }
 });
 
@@ -976,27 +1296,64 @@ test("quote CTA preserves visibility thresholds, positioning, and destination", 
   const cta = harness.element("Container-Botão-Principal");
   const spacer = harness.element("Espaço-Final-Container-Botão-Principal");
 
-  assert.equal(cta.style.display, "none");
+  assertClassState(cta, {
+    absent: ["is-anchored"],
+    present: ["is-fixed", "is-hidden"]
+  });
   harness.scrollTo(SECTION_TOPS[0] - VIEWPORT_HEIGHT - 1);
-  assert.equal(cta.style.display, "none");
+  assertClassState(cta, {
+    absent: ["is-anchored"],
+    present: ["is-fixed", "is-hidden"]
+  });
 
   harness.scrollTo(SECTION_TOPS[0] - VIEWPORT_HEIGHT);
-  assert.equal(cta.style.display, "block");
-  assert.equal(spacer.style.height, `${CTA_HEIGHT}px`);
-  assert.equal(cta.style.position, "absolute");
-  assert.equal(cta.style.top, `${SECTION_TOPS[0]}px`);
-  assert.equal(cta.style.bottom, "");
+  assertClassState(cta, {
+    absent: ["is-hidden", "is-fixed"],
+    present: ["is-anchored"]
+  });
+  assertCustomProperty(spacer, "--quote-cta-height", `${CTA_HEIGHT}px`);
+  assertCustomProperty(cta, "--quote-cta-top", `${SECTION_TOPS[0]}px`);
 
-  harness.scrollTo(SECTION_TOPS[0] + CTA_HEIGHT - VIEWPORT_HEIGHT - 1);
-  assert.equal(cta.style.position, "absolute");
-  harness.scrollTo(SECTION_TOPS[0] + CTA_HEIGHT - VIEWPORT_HEIGHT);
-  assert.equal(cta.style.position, "fixed");
-  assert.equal(cta.style.top, "");
-  assert.equal(cta.style.bottom, "0px");
+  const fixedThreshold = SECTION_TOPS[0] + CTA_HEIGHT - VIEWPORT_HEIGHT;
+  harness.scrollTo(fixedThreshold - 1);
+  assertClassState(cta, {
+    absent: ["is-hidden", "is-fixed"],
+    present: ["is-anchored"]
+  });
+  harness.scrollTo(fixedThreshold);
+  assertClassState(cta, {
+    absent: ["is-anchored", "is-hidden"],
+    present: ["is-fixed"]
+  });
+
+  harness.scrollTo(fixedThreshold - 1);
+  assertClassState(cta, {
+    absent: ["is-hidden", "is-fixed"],
+    present: ["is-anchored"]
+  });
+  harness.scrollTo(fixedThreshold);
+  assertClassState(cta, {
+    absent: ["is-anchored", "is-hidden"],
+    present: ["is-fixed"]
+  });
 
   harness.scrollTo(0);
-  assert.equal(cta.style.display, "block");
-  assert.equal(cta.style.position, "fixed");
+  assertClassState(cta, {
+    absent: ["is-anchored", "is-hidden"],
+    present: ["is-fixed"]
+  });
+
+  const updatedCtaHeight = CTA_HEIGHT + 25;
+  const updatedSectionTop = SECTION_TOPS[0] + 100;
+  cta.offsetHeight = updatedCtaHeight;
+  harness.element("Seção-1").offsetTop = updatedSectionTop;
+  harness.scrollTo(updatedSectionTop - VIEWPORT_HEIGHT);
+  assertClassState(cta, {
+    absent: ["is-hidden", "is-fixed"],
+    present: ["is-anchored"]
+  });
+  assertCustomProperty(spacer, "--quote-cta-height", `${updatedCtaHeight}px`);
+  assertCustomProperty(cta, "--quote-cta-top", `${updatedSectionTop}px`);
 
   const quoteLink = openingTag("Botão-Principal");
   assert.match(quoteLink, /^<a\b/);
@@ -1007,7 +1364,6 @@ test("quote CTA preserves visibility thresholds, positioning, and destination", 
 
 test("section close arrows keep their hidden, fixed, and relative boundaries", () => {
   const nextTops = [...SECTION_TOPS.slice(1), FINAL_SPACER_TOP];
-  const fixedMargin = "calc((var(--considered-screen-width) * 0.50) - 40px)";
 
   for (let number = 1; number <= 4; number += 1) {
     const harness = createHarness();
@@ -1015,27 +1371,111 @@ test("section close arrows keep their hidden, fixed, and relative boundaries", (
     const signup = harness.element(`Subseção-Cadastro-${number}`);
     const start = SECTION_TOPS[number - 1];
     const tail = nextTops[number - 1] - VIEWPORT_HEIGHT + CTA_HEIGHT;
+    const otherSection = number === 4 ? 1 : number + 1;
+
+    harness.dispatch(`Texto-Botão-Externo-Abertura-Seção-${number}`);
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-above-quote", "is-hidden"],
+      present: ["is-fixed-near-bottom"]
+    });
+    harness.scrollTo(start + 1);
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-fixed-above-quote"]
+    });
+    assertCustomProperty(arrow, "--section-close-bottom", `${CTA_HEIGHT + 15}px`);
 
     harness.scrollTo(start);
-    assert.equal(arrow.style.display, "none");
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-near-bottom"],
+      present: ["is-fixed-above-quote", "is-hidden"]
+    });
+    assertClassState(signup, {
+      absent: ["has-contained-close-button"],
+      present: ["has-fixed-close-button"]
+    });
+
+    harness.dispatch(`Texto-Botão-Externo-Abertura-Seção-${otherSection}`);
+    harness.dispatch(`Texto-Botão-Externo-Abertura-Seção-${number}`);
+    assertClassState(arrow, {
+      absent: ["is-contained"],
+      present: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"]
+    });
+    assertClassState(signup, {
+      absent: ["has-contained-close-button"],
+      present: ["has-fixed-close-button"]
+    });
 
     harness.scrollTo(start + 1);
-    assert.equal(signup.style.marginBottom, "20px");
-    assert.equal(arrow.style.display, "flex");
-    assert.equal(arrow.style.position, "fixed");
-    assert.equal(arrow.style.bottom, `${CTA_HEIGHT + 15}px`);
-    assert.equal(arrow.style.marginBottom, "0px");
-    assert.equal(arrow.style.marginLeft, fixedMargin);
+    assertClassState(signup, {
+      absent: ["has-contained-close-button"],
+      present: ["has-fixed-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-fixed-above-quote"]
+    });
+    assertCustomProperty(arrow, "--section-close-bottom", `${CTA_HEIGHT + 15}px`);
+
+    harness.scrollTo(tail + 1);
+    assertClassState(signup, {
+      absent: ["has-fixed-close-button"],
+      present: ["has-contained-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-contained"]
+    });
+
+    harness.scrollTo(start);
+    assertClassState(signup, {
+      absent: ["has-fixed-close-button"],
+      present: ["has-contained-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: ["is-fixed-above-quote", "is-fixed-near-bottom"],
+      present: ["is-contained", "is-hidden"]
+    });
+
+    harness.dispatch(`Texto-Botão-Externo-Abertura-Seção-${otherSection}`);
+    harness.dispatch(`Texto-Botão-Externo-Abertura-Seção-${number}`);
+    assertClassState(signup, {
+      absent: ["has-fixed-close-button"],
+      present: ["has-contained-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: ["is-fixed-above-quote"],
+      present: ["is-contained", "is-fixed-near-bottom", "is-hidden"]
+    });
 
     harness.scrollTo(tail);
-    assert.equal(arrow.style.position, "fixed");
-    harness.scrollTo(tail + 1);
-    assert.equal(signup.style.marginBottom, "15px");
-    assert.equal(arrow.style.display, "flex");
-    assert.equal(arrow.style.position, "relative");
-    assert.equal(arrow.style.bottom, "0px");
-    assert.equal(arrow.style.marginBottom, "-25px");
-    assert.equal(arrow.style.marginLeft, fixedMargin);
+    assertClassState(signup, {
+      absent: ["has-contained-close-button"],
+      present: ["has-fixed-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-fixed-above-quote"]
+    });
+
+    harness.scrollTo(start);
+    assertClassState(signup, {
+      absent: ["has-contained-close-button"],
+      present: ["has-fixed-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-near-bottom"],
+      present: ["is-fixed-above-quote", "is-hidden"]
+    });
+
+    const updatedCtaHeight = CTA_HEIGHT + 25;
+    harness.element("Container-Botão-Principal").offsetHeight = updatedCtaHeight;
+    harness.scrollTo(start + 1);
+    assertClassState(arrow, {
+      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-fixed-above-quote"]
+    });
+    assertCustomProperty(arrow, "--section-close-bottom", `${updatedCtaHeight + 15}px`);
   }
 });
 
@@ -1101,25 +1541,71 @@ test("testimonial videos pause on explicit closes and remain playing on implicit
 test("Instagram user-agent handling preserves controls and Direct positioning", () => {
   const ordinary = createHarness();
   for (let number = 1; number <= 5; number += 1) {
-    assert.equal(ordinary.element(`Botão-Tela-Cheia-Vídeo-Depoimento-${number}`).style.display, "none");
-    assert.equal(testimonialVideo(ordinary, number).style.marginBottom, "30px");
+    assertClassState(ordinary.element(`Botão-Tela-Cheia-Vídeo-Depoimento-${number}`), {
+      present: ["is-hidden"]
+    });
+    assertClassState(testimonialVideo(ordinary, number), {
+      present: ["has-hidden-rotation-control"]
+    });
   }
 
   ordinary.scrollTo(SECTION_TOPS[2] + 1);
   const direct = ordinary.element("Botão-Instagram-Direct");
-  assert.equal(direct.style.display, "block");
-  assert.equal(direct.style.position, "fixed");
-  assert.equal(direct.style.width, "60px");
-  assert.equal(direct.style.bottom, "160px");
-  assert.equal(direct.style.marginBottom, "0px");
-  assert.equal(direct.style.marginLeft, "calc((var(--considered-screen-width) * 0.95) - 60px)");
+  assertClassState(direct, {
+    absent: ["has-fixed-position", "is-contained", "is-hidden"],
+    present: ["is-fixed"]
+  });
 
   const section3Tail = SECTION_TOPS[3] - VIEWPORT_HEIGHT + CTA_HEIGHT;
   ordinary.scrollTo(section3Tail + 1);
-  assert.equal(direct.style.display, "flex");
-  assert.equal(direct.style.position, "relative");
-  assert.equal(direct.style.bottom, "30px");
-  assert.equal(direct.style.marginBottom, "-60px");
+  assertClassState(direct, {
+    absent: ["has-fixed-position", "is-fixed", "is-hidden"],
+    present: ["is-contained"]
+  });
+
+  ordinary.scrollTo(section3Tail);
+  assertClassState(direct, {
+    absent: ["has-fixed-position", "is-contained", "is-hidden"],
+    present: ["is-fixed"]
+  });
+
+  ordinary.scrollTo(SECTION_TOPS[2]);
+  assertClassState(direct, {
+    absent: ["has-fixed-position", "is-contained"],
+    present: ["is-fixed", "is-hidden"]
+  });
+
+  const compositional = createHarness();
+  const compositionalDirect = compositional.element("Botão-Instagram-Direct");
+  compositional.scrollTo(SECTION_TOPS[2]);
+  compositional.dispatch("Texto-Botão-Externo-Abertura-Seção-4");
+  assertClassState(compositionalDirect, {
+    absent: ["is-contained", "is-fixed"],
+    present: ["has-fixed-position", "is-hidden"]
+  });
+
+  compositional.scrollTo(SECTION_TOPS[2] + 1);
+  assertClassState(compositionalDirect, {
+    absent: ["has-fixed-position", "is-contained", "is-hidden"],
+    present: ["is-fixed"]
+  });
+
+  compositional.scrollTo(section3Tail + 1);
+  assertClassState(compositionalDirect, {
+    absent: ["has-fixed-position", "is-fixed", "is-hidden"],
+    present: ["is-contained"]
+  });
+  compositional.dispatch("Texto-Botão-Externo-Abertura-Seção-4");
+  assertClassState(compositionalDirect, {
+    absent: ["is-fixed", "is-hidden"],
+    present: ["has-fixed-position", "is-contained"]
+  });
+
+  compositional.scrollTo(section3Tail);
+  assertClassState(compositionalDirect, {
+    absent: ["has-fixed-position", "is-contained", "is-hidden"],
+    present: ["is-fixed"]
+  });
 
   const directLink = openingTag("Botão-Instagram-Direct");
   assert.match(directLink, /^<a\b/);
@@ -1130,12 +1616,19 @@ test("Instagram user-agent handling preserves controls and Direct positioning", 
 
   const instagram = createHarness({ userAgent: "Mozilla/5.0 Instagram 300" });
   for (let number = 1; number <= 5; number += 1) {
-    assert.equal(instagram.element(`Botão-Tela-Cheia-Vídeo-Depoimento-${number}`).style.display, undefined);
-    assert.equal(testimonialVideo(instagram, number).style.marginBottom, undefined);
+    assertClassState(instagram.element(`Botão-Tela-Cheia-Vídeo-Depoimento-${number}`), {
+      absent: ["is-hidden"]
+    });
+    assertClassState(testimonialVideo(instagram, number), {
+      absent: ["has-hidden-rotation-control"]
+    });
   }
   instagram.scrollTo(SECTION_TOPS[2]);
   instagram.scrollTo(SECTION_TOPS[2] + 1);
-  assert.equal(instagram.element("Botão-Instagram-Direct").style.display, "none");
+  assertClassState(instagram.element("Botão-Instagram-Direct"), {
+    absent: ["has-fixed-position", "is-contained", "is-fixed"],
+    present: ["is-hidden"]
+  });
 });
 
 test("download controls preserve all three public PDF destinations", () => {
@@ -1168,12 +1661,10 @@ test("all five testimonials toggle the exact rotated and standard presentation",
     assert.equal(button.getAttribute("aria-label"), accessibleName);
     button.focus();
     harness.dispatch(buttonId);
-    assert.equal(container.style.width, "calc(var(--considered-screen-width) * 0.80)");
-    assert.equal(container.style.height, "calc(var(--considered-screen-width) * 1.42196)");
-    assert.equal(video.style.width, "calc(var(--considered-screen-width) * 1.42196)");
-    assert.equal(video.style.height, "calc(var(--considered-screen-width) * 0.80)");
-    assert.equal(video.style.transformOrigin, "top left");
-    assert.equal(video.style.transform, "rotate(90deg) translateY(-100%)");
+    assertClassState(container, {
+      absent: ["is-restored"],
+      present: ["is-rotated"]
+    });
     assert.equal(label.innerHTML, "Tela Padrão");
     assert.equal(button.getAttribute("aria-pressed"), "true");
     assert.equal(button.getAttribute("aria-label"), accessibleName);
@@ -1184,23 +1675,33 @@ test("all five testimonials toggle the exact rotated and standard presentation",
     harness.dispatch("Seta-Fechamento-Seção-4");
     assert.equal(video.pauseCalls, 1);
     assert.equal(label.innerHTML, "Tela Padrão");
-    assert.equal(video.style.transform, "rotate(90deg) translateY(-100%)");
+    assertClassState(container, {
+      absent: ["is-restored"],
+      present: ["is-rotated"]
+    });
     assert.equal(button.getAttribute("aria-pressed"), "true");
 
     harness.dispatch("Texto-Botão-Externo-Abertura-Seção-4");
     harness.dispatch("Seta-Abertura-Subseção-4.3");
     button.focus();
     harness.dispatch(buttonId);
-    assert.equal(container.style.width, "calc(var(--considered-screen-width) * 0.90)");
-    assert.equal(container.style.height, "calc(var(--considered-screen-width) * 0.50634)");
-    assert.equal(video.style.width, "calc(var(--considered-screen-width) * 0.90)");
-    assert.equal(video.style.height, "calc(var(--considered-screen-width) * 0.50634)");
-    assert.equal(video.style.transformOrigin, "");
-    assert.equal(video.style.transform, "");
+    assertClassState(container, {
+      absent: ["is-rotated"],
+      present: ["is-restored"]
+    });
     assert.equal(label.innerHTML, "Tela Cheia");
     assert.equal(button.getAttribute("aria-pressed"), "false");
     assert.equal(button.getAttribute("aria-label"), accessibleName);
     assert.equal(harness.document.activeElement, button);
     assertLastScroll(harness, `Vídeo-Depoimento-${number}`);
+  }
+
+  const independent = createHarness({ userAgent: "Mozilla/5.0 Instagram 300" });
+  independent.dispatch("Botão-Tela-Cheia-Vídeo-Depoimento-3");
+  for (let number = 1; number <= 5; number += 1) {
+    assertClassState(independent.element(`Container-Vídeo-Depoimento-${number}`), {
+      absent: number === 3 ? ["is-restored"] : ["is-restored", "is-rotated"],
+      present: number === 3 ? ["is-rotated"] : []
+    });
   }
 });

@@ -1114,6 +1114,7 @@ button,
     background: var(--gradient-white-to-light-grey);
     width: var(--considered-screen-width);
     margin-left: var(--considered-margin-left);
+    height: var(--quote-cta-height, auto);
 }
 
 
@@ -1162,6 +1163,142 @@ button,
     box-shadow: 0px 4px 6px var(--color-black);
     background-color: var(--color-green);
     text-decoration: none;
+}
+
+.Containers-Externos-Seções.is-hidden,
+.Subseções-Fechadas.is-hidden,
+.Botões-Tela-Cheia-Depoimentos.is-hidden{
+    display: none;
+}
+
+:is(
+    #Container-Interno-Seção-1,
+    #Container-Interno-Seção-2,
+    #Container-Interno-Seção-3,
+    #Container-Interno-Seção-4
+).is-open,
+.Subseções-Abertas.is-open{
+    display: block;
+}
+
+#Container-Botão-Principal.is-hidden{
+    display: none;
+}
+
+#Container-Botão-Principal.is-fixed{
+    position: fixed;
+    top: auto;
+    bottom: 0px;
+}
+
+#Container-Botão-Principal.is-anchored{
+    position: absolute;
+    top: var(--quote-cta-top);
+}
+
+:is(
+    #Seta-Fechamento-Seção-1,
+    #Seta-Fechamento-Seção-2,
+    #Seta-Fechamento-Seção-3,
+    #Seta-Fechamento-Seção-4
+).is-fixed-above-quote{
+    display: flex;
+    position: fixed;
+    bottom: var(--section-close-bottom);
+    margin-bottom: 0px;
+    margin-left: calc((var(--considered-screen-width) * 0.50) - 40px);
+}
+
+:is(
+    #Seta-Fechamento-Seção-1,
+    #Seta-Fechamento-Seção-2,
+    #Seta-Fechamento-Seção-3,
+    #Seta-Fechamento-Seção-4
+).is-contained{
+    display: flex;
+    position: relative;
+    bottom: 0px;
+    margin-bottom: -25px;
+    margin-left: calc((var(--considered-screen-width) * 0.50) - 40px);
+}
+
+:is(
+    #Seta-Fechamento-Seção-1,
+    #Seta-Fechamento-Seção-2,
+    #Seta-Fechamento-Seção-3,
+    #Seta-Fechamento-Seção-4
+).is-fixed-near-bottom{
+    position: fixed;
+    bottom: 25px;
+}
+
+:is(
+    #Seta-Fechamento-Seção-1,
+    #Seta-Fechamento-Seção-2,
+    #Seta-Fechamento-Seção-3,
+    #Seta-Fechamento-Seção-4
+).is-hidden{
+    display: none;
+}
+
+.Subseções-Cadastro.has-fixed-close-button{
+    margin-bottom: var(--space-md);
+}
+
+.Subseções-Cadastro.has-contained-close-button{
+    margin-bottom: 15px;
+}
+
+#Botão-Instagram-Direct.is-fixed{
+    display: block;
+    position: fixed;
+    width: 60px;
+    bottom: 160px;
+    margin-bottom: 0px;
+    margin-left: calc((var(--considered-screen-width) * 0.95) - 60px);
+}
+
+#Botão-Instagram-Direct.is-contained{
+    display: flex;
+    position: relative;
+    width: 60px;
+    bottom: var(--space-lg);
+    margin-bottom: calc(-1 * var(--space-2xl));
+    margin-left: calc((var(--considered-screen-width) * 0.95) - 60px);
+}
+
+#Botão-Instagram-Direct.has-fixed-position{
+    position: fixed;
+}
+
+#Botão-Instagram-Direct.is-hidden{
+    display: none;
+}
+
+.Vídeos-Depoimentos.has-hidden-rotation-control{
+    margin-bottom: var(--space-lg);
+}
+
+.Containers-Vídeos-Depoimentos.is-rotated{
+    width: calc(var(--considered-screen-width) * 0.80);
+    height: calc(var(--considered-screen-width) * 1.42196);
+}
+
+.Containers-Vídeos-Depoimentos.is-rotated > .Vídeos-Depoimentos{
+    width: calc(var(--considered-screen-width) * 1.42196);
+    height: calc(var(--considered-screen-width) * 0.80);
+    transform-origin: top left;
+    transform: rotate(90deg) translateY(-100%);
+}
+
+.Containers-Vídeos-Depoimentos.is-restored{
+    width: calc(var(--considered-screen-width) * 0.90);
+    height: calc(var(--considered-screen-width) * 0.50634);
+}
+
+.Containers-Vídeos-Depoimentos.is-restored > .Vídeos-Depoimentos{
+    width: calc(var(--considered-screen-width) * 0.90);
+    height: calc(var(--considered-screen-width) * 0.50634);
 }
 
 @media (prefers-reduced-motion: reduce) {
