@@ -1789,6 +1789,12 @@ test("quote CTA preserves visibility thresholds, positioning, and destination", 
   assert.doesNotMatch(quoteLink, /\btarget=/);
 });
 
+test("quote CTA stays above the closed summary click surfaces", () => {
+  assert.match(css, /\.section-open-button::after\{[^}]*z-index:\s*1;/);
+  assert.match(css, /\.subsection-open-button::after\{[^}]*z-index:\s*1;/);
+  assert.match(css, /#quote-cta\{[^}]*z-index:\s*2;/);
+});
+
 test("section close arrows keep their hidden, fixed, and relative boundaries", () => {
   const nextTops = [...SECTION_TOPS.slice(1), FINAL_SPACER_TOP];
 

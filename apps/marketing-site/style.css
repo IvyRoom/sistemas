@@ -1059,6 +1059,7 @@ button,
     padding-bottom: var(--space-md);
     position: fixed;
     bottom: 0px;
+    z-index: 2;
 }
 
 #quote-cta-context{
