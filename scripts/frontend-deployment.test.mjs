@@ -1,20 +1,53 @@
 import assert from "node:assert/strict";
 import { request as httpRequest } from "node:http";
-import { readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import {
+  assertLocalReferences,
   assertReadmeContract,
   assertSourcePreviewReferences,
   compareSourcePreviewReference,
   extractCssReferences,
   extractHtmlReferences,
+  extractJavaScriptImportReferences,
   publicDownloads,
   publicEntries,
   readDeploymentManifest,
   startSourcePreviewServer,
   validateDeploymentManifest
 } from "./frontend-deployment-lib.mjs";
+
+const marketingModuleFilenames = [
+  "elements.js",
+  "scroll-behavior.js",
+  "media.js",
+  "scroll-state.js",
+  "sections.js",
+  "testimonials.js"
+];
+
+async function readMarketingJavaScript() {
+  const [entrySource, ...moduleSources] = await Promise.all([
+    readFile(new URL("../apps/marketing-site/main.js", import.meta.url), "utf8"),
+    ...marketingModuleFilenames.map((filename) =>
+      readFile(
+        new URL(`../apps/marketing-site/modules/${filename}`, import.meta.url),
+        "utf8"
+      )
+    )
+  ]);
+
+  return {
+    entrySource,
+    moduleSources: new Map(
+      marketingModuleFilenames.map((filename, index) => [filename, moduleSources[index]])
+    ),
+    source: moduleSources.join("\n")
+  };
+}
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -99,7 +132,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 225);
+  assert.equal(validation.files.length, 231);
   assert.deepEqual(
     validation.mappings.filter(
       (mapping) => mapping.applicationId === "marketing-site"
@@ -122,6 +155,12 @@ test("real deployment manifest defines the reviewed route contract", async () =>
         source: "apps/marketing-site/main.js",
         output: "landing-page/main.js",
         sourceType: "file"
+      },
+      {
+        applicationId: "marketing-site",
+        source: "apps/marketing-site/modules",
+        output: "landing-page/modules",
+        sourceType: "directory"
       },
       {
         applicationId: "marketing-site",
@@ -253,6 +292,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
+  assert.equal(sourcePreviewReferences.javascriptReferences, 16);
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)
@@ -325,6 +365,15 @@ test("source preview serves only manifest-mapped routes and files", async () => 
         ],
         source: "../apps/marketing-site/main.js"
       },
+      ...marketingModuleFilenames.map((filename) => ({
+        contentType: "text/javascript; charset=utf-8",
+        paths: [
+          `/landing-page/modules/${filename}`,
+          `/apps/marketing-site/modules/${filename}`,
+          `/apps/marketing-site/landing-page/modules/${filename}`
+        ],
+        source: `../apps/marketing-site/modules/${filename}`
+      })),
       {
         contentType: "image/png",
         paths: [
@@ -428,6 +477,8 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       "/principal/pdf/CRONOGRAMA.pdf",
       "/apps/marketing-site/principal/style.css",
       "/apps/marketing-site/landing-page/not-mapped.txt",
+      "/landing-page/modules/not-mapped.js",
+      "/apps/marketing-site/modules/not-mapped.js",
       "/apps/quote-request/not-mapped.txt"
     ]) {
       const response = await requestPreview(server.baseUrl, path);
@@ -488,7 +539,7 @@ test("manifest validation rejects duplicate public routes", async () => {
   );
 });
 
-test("HTML and CSS reference extractors preserve encoded local references", () => {
+test("HTML, CSS, and JavaScript reference extractors preserve local references", () => {
   assert.deepEqual(
     extractHtmlReferences(
       '<link href="/solicita%C3%A7%C3%A3o/style.css"><img src="../img/LOGO.png"><base href="/ignored/">'
@@ -516,6 +567,108 @@ test("HTML and CSS reference extractors preserve encoded local references", () =
       'background: url("../img/LOGO.png"); mask: url(data:image/svg+xml;base64,abc);'
     ),
     ["../img/LOGO.png", "data:image/svg+xml;base64,abc"]
+  );
+  assert.deepEqual(
+    extractJavaScriptImportReferences(`
+      import'./modules/elements.js';
+      import/* dependency */{
+        preferredScrollBehavior
+      }from"../shared/scroll-behavior.js?version=1#current";
+      export{ element }from'./named.js';
+      export*from"./all.js";
+      export*as namespace from"../namespace.js";
+      const localElement = null;
+      export { localElement };
+      export { bareElement } from "bare-package";
+      import packageName from "package-name";
+      import("./dynamic-module.js");
+      import.meta.url;
+      const text = "import './string-module.js'";
+      const pattern = /import\\s+['\"]/;
+    `),
+    [
+      "./modules/elements.js",
+      "../shared/scroll-behavior.js?version=1#current",
+      "./named.js",
+      "./all.js",
+      "../namespace.js"
+    ]
+  );
+});
+
+test("JavaScript dependency extraction ignores non-declaration property names", () => {
+  assert.deepEqual(
+    extractJavaScriptImportReferences(`
+      const value = { import: './property.js', export: './property.js' };
+      const importer = value.import;
+      const exporter = value.export;
+    `),
+    []
+  );
+});
+
+test("JavaScript dependency extraction fails closed on native parser errors", () => {
+  assert.throws(
+    () => extractJavaScriptImportReferences("import { element } './broken.js';"),
+    /Unable to parse JavaScript module dependencies/
+  );
+  assert.throws(
+    () => extractJavaScriptImportReferences("export * './broken.js';"),
+    /Unable to parse JavaScript module dependencies/
+  );
+  assert.throws(
+    () => extractJavaScriptImportReferences("export { element } from;"),
+    /Unable to parse JavaScript module dependencies/
+  );
+});
+
+test("source preview validation rejects broken mapped JavaScript imports", async () => {
+  const manifest = clone(await readDeploymentManifest());
+  const marketingApplication = manifest.applications.find(
+    (application) => application.id === "marketing-site"
+  );
+  const moduleMapping = marketingApplication.mappings.find(
+    (mapping) => mapping.source === "apps/marketing-site/modules"
+  );
+  moduleMapping.output = "landing-page/components";
+
+  await assert.rejects(
+    assertSourcePreviewReferences(manifest),
+    /Broken mapped asset JavaScript import in apps\/marketing-site\/main\.js: \.\/modules\/elements\.js/
+  );
+});
+
+test("generated JavaScript imports require exact files without index fallback", async (context) => {
+  const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-reference-test-"));
+  context.after(() => rm(artifactRoot, { force: true, recursive: true }));
+  const moduleRoot = join(artifactRoot, "landing-page", "modules");
+  await mkdir(moduleRoot, { recursive: true });
+  await Promise.all([
+    writeFile(
+      join(artifactRoot, "landing-page", "main.js"),
+      "import './modules/elements.js';\n"
+    ),
+    writeFile(join(moduleRoot, "elements.js"), "export const element = {};\n"),
+    writeFile(
+      join(moduleRoot, "sections.js"),
+      "import { element } from './elements.js';\n"
+    )
+  ]);
+
+  assert.deepEqual(
+    await assertLocalReferences(artifactRoot),
+    { htmlReferences: 0, cssReferences: 0, javascriptReferences: 2 }
+  );
+
+  await writeFile(
+    join(artifactRoot, "landing-page", "main.js"),
+    "import './modules/missing.js';\n"
+  );
+  await mkdir(join(moduleRoot, "missing.js"));
+  await writeFile(join(moduleRoot, "missing.js", "index.html"), "not a module\n");
+  await assert.rejects(
+    assertLocalReferences(artifactRoot),
+    /Broken local JavaScript import in dist\/landing-page\/main\.js: \.\/modules\/missing\.js/
   );
 });
 
@@ -559,6 +712,16 @@ test("source preview and deployment references resolve to the same mapped asset"
       applicationId: "marketing-site",
       source: "apps/marketing-site/style.css",
       output: "landing-page/style.css"
+    },
+    {
+      applicationId: "marketing-site",
+      source: "apps/marketing-site/main.js",
+      output: "landing-page/main.js"
+    },
+    {
+      applicationId: "marketing-site",
+      source: "apps/marketing-site/modules/elements.js",
+      output: "landing-page/modules/elements.js"
     }
   ];
   assert.deepEqual(
@@ -586,6 +749,23 @@ test("source preview and deployment references resolve to the same mapped asset"
       flattenedMarketingFiles
     ).matches,
     false
+  );
+  assert.deepEqual(
+    compareSourcePreviewReference(
+      "./modules/elements.js",
+      "landing-page/main.js",
+      "apps/marketing-site/main.js",
+      flattenedMarketingFiles
+    ),
+    {
+      expectedSource: "apps/marketing-site/modules/elements.js",
+      matches: true,
+      output: "landing-page/modules/elements.js",
+      sourceCandidates: [
+        "apps/marketing-site/modules/elements.js",
+        "apps/marketing-site/modules/elements.js/index.html"
+      ]
+    }
   );
 
   assert.equal(
@@ -700,13 +880,11 @@ for (const page of [
 }
 
 test("marketing internal assets are document-relative", async () => {
-  const [html, source] = await Promise.all([
+  const [html, marketingJavaScript] = await Promise.all([
     readFile(new URL("../apps/marketing-site/index.html", import.meta.url), "utf8"),
-    readFile(
-      new URL("../apps/marketing-site/main.js", import.meta.url),
-      "utf8"
-    )
+    readMarketingJavaScript()
   ]);
+  const source = marketingJavaScript.moduleSources.get("media.js");
   const marketingAssetReferences = extractHtmlReferences(html).filter(
     ({ tag, value }) => tag !== "a" && (
       value.startsWith("/landing-page/")
@@ -756,15 +934,17 @@ test("marketing internal assets are document-relative", async () => {
 });
 
 test("marketing quote CTA targets the canonical quote route", async () => {
-  const [html, source] = await Promise.all([
+  const [html, marketingJavaScript] = await Promise.all([
     readFile(new URL("../apps/marketing-site/index.html", import.meta.url), "utf8"),
-    readFile(new URL("../apps/marketing-site/main.js", import.meta.url), "utf8")
+    readMarketingJavaScript()
   ]);
+  const { entrySource, source } = marketingJavaScript;
 
   assert.match(
     html,
     /<a id="Botão-Principal" href="\/solicitacao-orcamento\/" aria-describedby="Explicação-Botão-Principal">SOLICITAR ORÇAMENTO<\/a>/
   );
+  assert.doesNotMatch(entrySource, /window\.location\.href\s*=/);
   assert.doesNotMatch(source, /window\.location\.href\s*=/);
 });
 

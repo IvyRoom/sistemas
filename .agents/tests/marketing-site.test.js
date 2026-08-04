@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -10,9 +11,30 @@ const vm = require("node:vm");
 const repositoryRoot = path.join(__dirname, "..", "..");
 const marketingRoot = path.join(repositoryRoot, "apps", "marketing-site");
 const sourcePath = path.join(marketingRoot, "main.js");
+const modulesRoot = path.join(marketingRoot, "modules");
 const htmlPath = path.join(marketingRoot, "index.html");
 const cssPath = path.join(marketingRoot, "style.css");
-const source = fs.readFileSync(sourcePath, "utf8");
+const moduleFilenames = [
+  "elements.js",
+  "scroll-behavior.js",
+  "media.js",
+  "scroll-state.js",
+  "sections.js",
+  "testimonials.js"
+];
+const expectedEntryImports = moduleFilenames.map(
+  (filename) => `./modules/${filename}`
+);
+const entrySource = fs.readFileSync(sourcePath, "utf8");
+const moduleRecords = moduleFilenames.map((filename) => {
+  const filePath = path.join(modulesRoot, filename);
+  return {
+    filename,
+    filePath,
+    source: fs.readFileSync(filePath, "utf8")
+  };
+});
+const source = moduleRecords.map(({ source: moduleSource }) => moduleSource).join("\n");
 const html = fs.readFileSync(htmlPath, "utf8");
 const css = fs.readFileSync(cssPath, "utf8");
 const htmlElementsById = new Map(
@@ -35,6 +57,162 @@ const PRIMARY_VIDEO_HEIGHT = 300;
 const HLS_URL = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8";
 const POSTER_URL = "./landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+const identifierPatternSource = "[$_\\p{L}][$_\\p{L}\\p{N}\\u200C\\u200D]*";
+
+function namedImportPattern() {
+  return /^import\s+\{([\s\S]*?)\}\s+from\s+["']\.\/([^"']+)["'];[ \t]*\r?$/gm;
+}
+
+function parseAliasedBindings(bindingSource, label) {
+  const bindingPattern = new RegExp(
+    `^(${identifierPatternSource})(?:\\s+as\\s+(${identifierPatternSource}))?$`,
+    "u"
+  );
+
+  return bindingSource.split(",").map((binding) => {
+    const trimmedBinding = binding.trim();
+    const match = trimmedBinding.match(bindingPattern);
+    assert.ok(match, `${label} has a supported named binding: ${trimmedBinding}`);
+    return {
+      localName: match[2] ?? match[1],
+      sourceName: match[1]
+    };
+  });
+}
+
+function exportedBindings(record) {
+  const bindings = new Map();
+  const declarationPattern = new RegExp(
+    `^export\\s+(?:(?:async\\s+)?function|class|var|let|const)\\s+(${identifierPatternSource})`,
+    "gmu"
+  );
+  for (const match of record.source.matchAll(declarationPattern)) {
+    bindings.set(match[1], match[1]);
+  }
+
+  for (const match of record.source.matchAll(/^export\s*\{([\s\S]*?)\}\s*;[ \t]*\r?$/gm)) {
+    for (const binding of parseAliasedBindings(match[1], `${record.filename} export`)) {
+      bindings.set(binding.localName, binding.sourceName);
+    }
+  }
+
+  return bindings;
+}
+
+function analyzeModuleGraph(records) {
+  const filenames = records.map(({ filename }) => filename);
+  const exportsByFilename = new Map(
+    records.map((record) => [record.filename, exportedBindings(record)])
+  );
+  const importsByFilename = new Map();
+
+  for (const [moduleIndex, record] of records.entries()) {
+    const imports = Array.from(
+      record.source.matchAll(namedImportPattern()),
+      ([, bindingSource, importedFilename]) => ({
+        bindings: parseAliasedBindings(
+          bindingSource,
+          `${record.filename} import from ${importedFilename}`
+        ),
+        importedFilename
+      })
+    );
+
+    for (const importedModule of imports) {
+      const importedIndex = filenames.indexOf(importedModule.importedFilename);
+      assert.notEqual(
+        importedIndex,
+        -1,
+        `${record.filename} imports known module ${importedModule.importedFilename}`
+      );
+      assert.ok(
+        importedIndex < moduleIndex,
+        `${record.filename} imports ${importedModule.importedFilename} topologically`
+      );
+      const targetExports = exportsByFilename.get(importedModule.importedFilename);
+      for (const binding of importedModule.bindings) {
+        assert.ok(
+          targetExports.has(binding.sourceName),
+          `${record.filename} imports exported binding ${binding.sourceName} from ${importedModule.importedFilename}`
+        );
+      }
+    }
+
+    importsByFilename.set(record.filename, imports);
+  }
+
+  return { exportsByFilename, importsByFilename };
+}
+
+const moduleGraph = analyzeModuleGraph(moduleRecords);
+
+function executableModuleSource({ filename, source: moduleSource }) {
+  const strippedImports = moduleSource.replace(namedImportPattern(), "");
+  assert.doesNotMatch(strippedImports, /^\s*import\b/m, `${filename} has only known static imports`);
+  const strippedExports = strippedImports.replace(/\bexport\s+/g, "");
+  assert.doesNotMatch(strippedExports, /\bexport\b/, `${filename} has only export keywords`);
+  return strippedExports;
+}
+
+const flattenedExecutableSource = [
+  '"use strict";',
+  ...moduleRecords.map(executableModuleSource)
+].join("\n");
+
+function isolatedModuleSource(record, graph) {
+  const importDeclarations = graph.importsByFilename.get(record.filename)
+    .flatMap(({ bindings, importedFilename }) => bindings.map(
+      ({ localName, sourceName }) =>
+        `const ${localName} = __moduleNamespaces[${JSON.stringify(importedFilename)}][${JSON.stringify(sourceName)}];`
+    ));
+  const returnedBindings = Array.from(
+    graph.exportsByFilename.get(record.filename),
+    ([exportedName, localName]) => `${JSON.stringify(exportedName)}: ${localName}`
+  );
+
+  return [
+    `__moduleNamespaces[${JSON.stringify(record.filename)}] = (() => {`,
+    ...importDeclarations,
+    executableModuleSource(record),
+    `return { ${returnedBindings.join(", ")} };`,
+    "})();"
+  ].join("\n");
+}
+
+function createIsolatedExecutableSource(records, graph = analyzeModuleGraph(records)) {
+  return [
+    '"use strict";',
+    "const __moduleNamespaces = Object.create(null);",
+    ...records.map((record) => isolatedModuleSource(record, graph))
+  ].join("\n");
+}
+
+const isolatedExecutableSource = createIsolatedExecutableSource(
+  moduleRecords,
+  moduleGraph
+);
+const isolatedModuleRun = process.env.MARKETING_TEST_ISOLATED_MODULES === "1";
+const executableSource = isolatedModuleRun
+  ? isolatedExecutableSource
+  : flattenedExecutableSource;
+
+function assertRealModuleSyntax(filename, moduleSource) {
+  const result = spawnSync(
+    process.execPath,
+    ["--check", "--input-type=module"],
+    {
+      encoding: "utf8",
+      input: moduleSource,
+      windowsHide: true
+    }
+  );
+  assert.equal(
+    result.status,
+    0,
+    `${filename} parses as a real ES module\n${result.stderr}`
+  );
+}
 
 function createHarness({
   reducedMotion = false,
@@ -296,7 +474,9 @@ function createHarness({
     window
   });
 
-  vm.runInContext(source, context, { filename: sourcePath });
+  vm.runInContext(executableSource, context, {
+    filename: path.join(marketingRoot, "marketing-site.test-bundle.js")
+  });
   assert.equal(observers.length, 1);
 
   function dispatch(id, type = "click") {
@@ -418,6 +598,94 @@ function assertCssStateForTargets(targets, stateClass, declarationPatterns) {
   }
 }
 
+test("marketing entry imports the complete module graph in topological order", () => {
+  const sideEffectImportPattern = /^[ \t]*import[ \t]+["']([^"']+)["'];[ \t]*\r?$/gm;
+  const entryImports = Array.from(
+    entrySource.matchAll(sideEffectImportPattern),
+    ([, specifier]) => specifier
+  );
+
+  assert.deepEqual(entryImports, expectedEntryImports);
+  assert.equal(entrySource.replace(sideEffectImportPattern, "").trim(), "");
+  assert.deepEqual(
+    fs.readdirSync(modulesRoot, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
+      .map((entry) => entry.name)
+      .sort(),
+    [...moduleFilenames].sort()
+  );
+
+  assertRealModuleSyntax("main.js", entrySource);
+  for (const record of moduleRecords) {
+    assertRealModuleSyntax(record.filename, record.source);
+  }
+
+  assert.match(flattenedExecutableSource, /^"use strict";/);
+  assert.doesNotMatch(flattenedExecutableSource, /^\s*(?:import|export)\b/m);
+  assert.match(isolatedExecutableSource, /^"use strict";/);
+  assert.doesNotMatch(isolatedExecutableSource, /^\s*(?:import|export)\b/m);
+
+  assert.doesNotThrow(() => analyzeModuleGraph([
+    { filename: "source.js", source: "export const original = 1;" },
+    {
+      filename: "consumer.js",
+      source: "import { original as local } from './source.js';\nvoid local;"
+    }
+  ]));
+  assert.throws(
+    () => analyzeModuleGraph([
+      { filename: "source.js", source: "export const original = 1;" },
+      {
+        filename: "consumer.js",
+        source: "import { missing as local } from './source.js';\nvoid local;"
+      }
+    ]),
+    /consumer\.js imports exported binding missing from source\.js/
+  );
+
+  const missingImportRecords = [
+    { filename: "source.js", source: "export const required = 1;" },
+    { filename: "consumer.js", source: "void required;" }
+  ];
+  assert.doesNotThrow(() => vm.runInNewContext([
+    '"use strict";',
+    ...missingImportRecords.map(executableModuleSource)
+  ].join("\n")));
+  assert.throws(
+    () => vm.runInNewContext(createIsolatedExecutableSource(missingImportRecords)),
+    /required is not defined/
+  );
+});
+
+test(
+  "isolated module scopes preserve the complete behavioral suite",
+  { skip: isolatedModuleRun },
+  () => {
+    const childEnvironment = {
+      ...process.env,
+      MARKETING_TEST_ISOLATED_MODULES: "1"
+    };
+    delete childEnvironment.NODE_TEST_CONTEXT;
+    const result = spawnSync(
+      process.execPath,
+      ["--test", __filename],
+      {
+        encoding: "utf8",
+        env: childEnvironment,
+        maxBuffer: 4 * 1024 * 1024,
+        windowsHide: true
+      }
+    );
+
+    assert.ifError(result.error);
+    assert.equal(
+      result.status,
+      0,
+      `isolated ES-module scope run failed\n${result.stdout}\n${result.stderr}`
+    );
+  }
+);
+
 test("marketing selectors, local references, script order, and timing remain exact", () => {
   const referencedIds = Array.from(
     source.matchAll(/getElementById\("([^"]+)"\)/g),
@@ -431,10 +699,10 @@ test("marketing selectors, local references, script order, and timing remain exa
 
   assert.match(html, /<link rel="icon" href="\.\/landing-page\/img\/FAVICON\.ico">/);
   assert.match(html, /<link async rel="stylesheet" href="\.\/landing-page\/style\.css">/);
-  assert.match(html, /<script defer src="\.\/landing-page\/main\.js"><\/script>/);
+  assert.match(html, /<script type="module" src="\.\/landing-page\/main\.js"><\/script>/);
 
   const shakaScript = "<script defer src=\"https://cdn.jsdelivr.net/npm/shaka-player@4.3.5/dist/shaka-player.ui.js\"></script>";
-  const marketingScript = "<script defer src=\"./landing-page/main.js\"></script>";
+  const marketingScript = "<script type=\"module\" src=\"./landing-page/main.js\"></script>";
   assert.ok(html.indexOf(shakaScript) < html.indexOf(marketingScript));
   assert.match(css, /--page-max-width: 430px;/);
   assert.match(
