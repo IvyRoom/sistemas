@@ -1,49 +1,45 @@
 import {
-    BotãoInstagramDirect,
-    ContainerBotãoPrincipal,
-    ContainerExternoVídeoPrincipal,
-    EspaçoFinalContainerBotãoPrincipal,
-    Seção1,
-    Seção2,
-    Seção3,
-    Seção4,
-    SetaFechamentoSeção1,
-    SetaFechamentoSeção2,
-    SetaFechamentoSeção3,
-    SetaFechamentoSeção4,
-    SubseçãoCadastro1,
-    SubseçãoCadastro2,
-    SubseçãoCadastro3,
-    SubseçãoCadastro4,
-    VídeoPrincipal
+    instagramDirectLink,
+    quoteCta,
+    primaryVideoFrame,
+    quoteCtaSpacer,
+    section1,
+    section2,
+    section3,
+    section4,
+    section1CloseButton,
+    section2CloseButton,
+    section3CloseButton,
+    section4CloseButton,
+    section1QuotePrompt,
+    section2QuotePrompt,
+    section3QuotePrompt,
+    section4QuotePrompt,
+    primaryVideo
 } from './elements.js';
 import { userAgent } from './media.js';
 
-/*/////////////////////////////////////////////////////////////////////////////////////*/
-/*///////////////////// Controla as posições do Itens Dinâmicos ///////////////////////*/
-/*/////////////////////////////////////////////////////////////////////////////////////*/
 
-/*////////////////////// Controla a posição do Container-Botão-Principal ///////////////////////*/
 
-ContainerBotãoPrincipal.classList.add('is-hidden', 'is-fixed');
+quoteCta.classList.add('is-hidden', 'is-fixed');
 
-export function ControlaPosição_ContainerBotãoPrincipal(){
+export function updateQuoteCtaPosition(){
 
-    if (window.scrollY + window.innerHeight >= Seção1.offsetTop) {
+    if (window.scrollY + window.innerHeight >= section1.offsetTop) {
 
-        ContainerBotãoPrincipal.classList.remove('is-hidden');
-        EspaçoFinalContainerBotãoPrincipal.style.setProperty('--quote-cta-height', ContainerBotãoPrincipal.offsetHeight + 'px');
+        quoteCta.classList.remove('is-hidden');
+        quoteCtaSpacer.style.setProperty('--quote-cta-height', quoteCta.offsetHeight + 'px');
 
-        if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoPrincipal.offsetHeight){
+        if (window.scrollY + window.innerHeight < section1.offsetTop + quoteCta.offsetHeight){
 
-            ContainerBotãoPrincipal.classList.remove('is-fixed');
-            ContainerBotãoPrincipal.classList.add('is-anchored');
-            ContainerBotãoPrincipal.style.setProperty('--quote-cta-top', Seção1.offsetTop + 'px');
+            quoteCta.classList.remove('is-fixed');
+            quoteCta.classList.add('is-anchored');
+            quoteCta.style.setProperty('--quote-cta-top', section1.offsetTop + 'px');
 
         } else {
 
-            ContainerBotãoPrincipal.classList.remove('is-anchored');
-            ContainerBotãoPrincipal.classList.add('is-fixed');
+            quoteCta.classList.remove('is-anchored');
+            quoteCta.classList.add('is-fixed');
 
         }
 
@@ -53,154 +49,144 @@ export function ControlaPosição_ContainerBotãoPrincipal(){
 
 window.onscroll = function() {
 
-    ControlaPosição_ContainerBotãoPrincipal();
+    updateQuoteCtaPosition();
 
-    /*/////////////////////////////////////////////////////////////////////////////////////*/
-    /*/////////////////////////////// Pausa o Vídeo Principal /////////////////////////////*/
-    /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-    var Posição_ContainerVídeoPrincipal = ContainerExternoVídeoPrincipal.offsetTop;
-    var Altura_ContainerVídeoPrincipal = ContainerExternoVídeoPrincipal.offsetHeight;
+    var primaryVideoFrameTop = primaryVideoFrame.offsetTop;
+    var primaryVideoFrameHeight = primaryVideoFrame.offsetHeight;
 
-    if (VídeoPrincipal !== null) {
+    if (primaryVideo !== null) {
 
-        if (window.scrollY + window.innerHeight <= Posição_ContainerVídeoPrincipal) {
+        if (window.scrollY + window.innerHeight <= primaryVideoFrameTop) {
 
-            if (!VídeoPrincipal.paused) VídeoPrincipal.pause();
+            if (!primaryVideo.paused) primaryVideo.pause();
 
         }
 
 
-        if (window.scrollY >= Posição_ContainerVídeoPrincipal + Altura_ContainerVídeoPrincipal) {
+        if (window.scrollY >= primaryVideoFrameTop + primaryVideoFrameHeight) {
 
-            if (!VídeoPrincipal.paused) VídeoPrincipal.pause();
+            if (!primaryVideo.paused) primaryVideo.pause();
 
         }
 
     }
 
-    /*/////////////////////////////////////////////////////////////////////////////////////*/
-    /*////////////// Controla a posição das Setas de Fechamento das Seções ////////////////*/
-    /*/////////////////////////////////////////////////////////////////////////////////////*/
 
-    var Posição_Seção1 = Seção1.offsetTop;
-    var Posição_Seção2 = Seção2.offsetTop;
-    var Posição_Seção3 = Seção3.offsetTop;
-    var Posição_Seção4 = Seção4.offsetTop;
-    var Posição_EspaçoFinalContainerBotãoPrincipal = EspaçoFinalContainerBotãoPrincipal.offsetTop;
+    var section1Top = section1.offsetTop;
+    var section2Top = section2.offsetTop;
+    var section3Top = section3.offsetTop;
+    var section4Top = section4.offsetTop;
+    var quoteCtaSpacerTop = quoteCtaSpacer.offsetTop;
 
-    /* Seção 1 */
 
-    if (window.scrollY <= Posição_Seção1) {
+    if (window.scrollY <= section1Top) {
 
-        SetaFechamentoSeção1.classList.add('is-hidden');
+        section1CloseButton.classList.add('is-hidden');
 
-    } else if (window.scrollY > Posição_Seção1 && window.scrollY <= (Posição_Seção2 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > section1Top && window.scrollY <= (section2Top - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro1.classList.remove('has-contained-close-button');
-        SubseçãoCadastro1.classList.add('has-fixed-close-button');
+        section1QuotePrompt.classList.remove('has-contained-close-button');
+        section1QuotePrompt.classList.add('has-fixed-close-button');
 
-        SetaFechamentoSeção1.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        SetaFechamentoSeção1.classList.add('is-fixed-above-quote');
-        SetaFechamentoSeção1.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
+        section1CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        section1CloseButton.classList.add('is-fixed-above-quote');
+        section1CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
 
-    } else if (window.scrollY > (Posição_Seção2 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > (section2Top - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro1.classList.remove('has-fixed-close-button');
-        SubseçãoCadastro1.classList.add('has-contained-close-button');
+        section1QuotePrompt.classList.remove('has-fixed-close-button');
+        section1QuotePrompt.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção1.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        SetaFechamentoSeção1.classList.add('is-contained');
+        section1CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        section1CloseButton.classList.add('is-contained');
 
     }
 
-    /* Seção 2 */
 
-    if (window.scrollY <= Posição_Seção2) {
+    if (window.scrollY <= section2Top) {
 
-        SetaFechamentoSeção2.classList.add('is-hidden');
+        section2CloseButton.classList.add('is-hidden');
 
-    } else if (window.scrollY > Posição_Seção2 && window.scrollY <= (Posição_Seção3 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > section2Top && window.scrollY <= (section3Top - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro2.classList.remove('has-contained-close-button');
-        SubseçãoCadastro2.classList.add('has-fixed-close-button');
+        section2QuotePrompt.classList.remove('has-contained-close-button');
+        section2QuotePrompt.classList.add('has-fixed-close-button');
 
-        SetaFechamentoSeção2.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        SetaFechamentoSeção2.classList.add('is-fixed-above-quote');
-        SetaFechamentoSeção2.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
+        section2CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        section2CloseButton.classList.add('is-fixed-above-quote');
+        section2CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
 
-    } else if (window.scrollY > (Posição_Seção3 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > (section3Top - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro2.classList.remove('has-fixed-close-button');
-        SubseçãoCadastro2.classList.add('has-contained-close-button');
+        section2QuotePrompt.classList.remove('has-fixed-close-button');
+        section2QuotePrompt.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção2.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        SetaFechamentoSeção2.classList.add('is-contained');
+        section2CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        section2CloseButton.classList.add('is-contained');
 
     }
 
-    /* Seção 3 */
 
-    if (window.scrollY <= Posição_Seção3) {
+    if (window.scrollY <= section3Top) {
 
-        SetaFechamentoSeção3.classList.add('is-hidden');
-        BotãoInstagramDirect.classList.add('is-hidden');
+        section3CloseButton.classList.add('is-hidden');
+        instagramDirectLink.classList.add('is-hidden');
 
-    } else if (window.scrollY > Posição_Seção3 && window.scrollY <= (Posição_Seção4 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > section3Top && window.scrollY <= (section4Top - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro3.classList.remove('has-contained-close-button');
-        SubseçãoCadastro3.classList.add('has-fixed-close-button');
+        section3QuotePrompt.classList.remove('has-contained-close-button');
+        section3QuotePrompt.classList.add('has-fixed-close-button');
 
-        SetaFechamentoSeção3.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        SetaFechamentoSeção3.classList.add('is-fixed-above-quote');
-        SetaFechamentoSeção3.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
+        section3CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        section3CloseButton.classList.add('is-fixed-above-quote');
+        section3CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
 
         if (userAgent.indexOf('Instagram') === -1) {
 
-            BotãoInstagramDirect.classList.remove('is-hidden', 'is-contained', 'has-fixed-position');
-            BotãoInstagramDirect.classList.add('is-fixed');
+            instagramDirectLink.classList.remove('is-hidden', 'is-contained', 'has-fixed-position');
+            instagramDirectLink.classList.add('is-fixed');
 
         }
 
-    } else if (window.scrollY > (Posição_Seção4 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > (section4Top - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro3.classList.remove('has-fixed-close-button');
-        SubseçãoCadastro3.classList.add('has-contained-close-button');
+        section3QuotePrompt.classList.remove('has-fixed-close-button');
+        section3QuotePrompt.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção3.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        SetaFechamentoSeção3.classList.add('is-contained');
+        section3CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        section3CloseButton.classList.add('is-contained');
 
         if (userAgent.indexOf('Instagram') === -1) {
 
-            BotãoInstagramDirect.classList.remove('is-hidden', 'is-fixed', 'has-fixed-position');
-            BotãoInstagramDirect.classList.add('is-contained');
+            instagramDirectLink.classList.remove('is-hidden', 'is-fixed', 'has-fixed-position');
+            instagramDirectLink.classList.add('is-contained');
 
         }
 
     }
 
-    /* Seção 4 */
 
-    if (window.scrollY <= Posição_Seção4) {
+    if (window.scrollY <= section4Top) {
 
-        SetaFechamentoSeção4.classList.add('is-hidden');
+        section4CloseButton.classList.add('is-hidden');
 
-    } else if (window.scrollY > Posição_Seção4 && window.scrollY <= (Posição_EspaçoFinalContainerBotãoPrincipal - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > section4Top && window.scrollY <= (quoteCtaSpacerTop - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro4.classList.remove('has-contained-close-button');
-        SubseçãoCadastro4.classList.add('has-fixed-close-button');
+        section4QuotePrompt.classList.remove('has-contained-close-button');
+        section4QuotePrompt.classList.add('has-fixed-close-button');
 
-        SetaFechamentoSeção4.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        SetaFechamentoSeção4.classList.add('is-fixed-above-quote');
-        SetaFechamentoSeção4.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
+        section4CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        section4CloseButton.classList.add('is-fixed-above-quote');
+        section4CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
 
-    } else if (window.scrollY > (Posição_EspaçoFinalContainerBotãoPrincipal - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
+    } else if (window.scrollY > (quoteCtaSpacerTop - window.innerHeight + quoteCta.offsetHeight)) {
 
-        SubseçãoCadastro4.classList.remove('has-fixed-close-button');
-        SubseçãoCadastro4.classList.add('has-contained-close-button');
+        section4QuotePrompt.classList.remove('has-fixed-close-button');
+        section4QuotePrompt.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção4.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        SetaFechamentoSeção4.classList.add('is-contained');
+        section4CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        section4CloseButton.classList.add('is-contained');
 
     }
 
