@@ -143,20 +143,20 @@ var userAgent = navigator.userAgent;
 
 if (userAgent.indexOf('Instagram') === -1) {
 
-    BotãoTelaCheiaVídeoDepoimento1.style.display = 'none';
-    VídeoDepoimento1.style.marginBottom = '30px';
+    BotãoTelaCheiaVídeoDepoimento1.classList.add('is-hidden');
+    VídeoDepoimento1.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento2.style.display = 'none';
-    VídeoDepoimento2.style.marginBottom = '30px';
+    BotãoTelaCheiaVídeoDepoimento2.classList.add('is-hidden');
+    VídeoDepoimento2.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento3.style.display = 'none';
-    VídeoDepoimento3.style.marginBottom = '30px';
+    BotãoTelaCheiaVídeoDepoimento3.classList.add('is-hidden');
+    VídeoDepoimento3.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento4.style.display = 'none';
-    VídeoDepoimento4.style.marginBottom = '30px';
+    BotãoTelaCheiaVídeoDepoimento4.classList.add('is-hidden');
+    VídeoDepoimento4.classList.add('has-hidden-rotation-control');
 
-    BotãoTelaCheiaVídeoDepoimento5.style.display = 'none';
-    VídeoDepoimento5.style.marginBottom = '30px';
+    BotãoTelaCheiaVídeoDepoimento5.classList.add('is-hidden');
+    VídeoDepoimento5.classList.add('has-hidden-rotation-control');
 
 }
 
@@ -200,26 +200,25 @@ observer.observe(ContainerExternoVídeoPrincipal);
 
 /*////////////////////// Controla a posição do Container-Botão-Principal ///////////////////////*/
 
-ContainerBotãoPrincipal.style.display = 'none';
+ContainerBotãoPrincipal.classList.add('is-hidden', 'is-fixed');
 
 function ControlaPosição_ContainerBotãoPrincipal(){
     
     if (window.scrollY + window.innerHeight >= Seção1.offsetTop) {
     
-        ContainerBotãoPrincipal.style.display = 'block';
-        EspaçoFinalContainerBotãoPrincipal.style.height = ContainerBotãoPrincipal.offsetHeight + 'px';
+        ContainerBotãoPrincipal.classList.remove('is-hidden');
+        EspaçoFinalContainerBotãoPrincipal.style.setProperty('--quote-cta-height', ContainerBotãoPrincipal.offsetHeight + 'px');
     
         if (window.scrollY + window.innerHeight < Seção1.offsetTop + ContainerBotãoPrincipal.offsetHeight){
     
-            ContainerBotãoPrincipal.style.position = 'absolute';
-            ContainerBotãoPrincipal.style.top = Seção1.offsetTop + 'px';
-            ContainerBotãoPrincipal.style.bottom = '';
+            ContainerBotãoPrincipal.classList.remove('is-fixed');
+            ContainerBotãoPrincipal.classList.add('is-anchored');
+            ContainerBotãoPrincipal.style.setProperty('--quote-cta-top', Seção1.offsetTop + 'px');
     
         } else {
     
-            ContainerBotãoPrincipal.style.position = 'fixed';
-            ContainerBotãoPrincipal.style.top = '';
-            ContainerBotãoPrincipal.style.bottom = '0px';
+            ContainerBotãoPrincipal.classList.remove('is-anchored');
+            ContainerBotãoPrincipal.classList.add('is-fixed');
     
         }
     
@@ -269,27 +268,24 @@ window.onscroll = function() {
 
     if (window.scrollY <= Posição_Seção1) {
     
-        SetaFechamentoSeção1.style.display = 'none';
+        SetaFechamentoSeção1.classList.add('is-hidden');
     
     } else if (window.scrollY > Posição_Seção1 && window.scrollY <= (Posição_Seção2 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro1.style.marginBottom = '20px';
+        SubseçãoCadastro1.classList.remove('has-contained-close-button');
+        SubseçãoCadastro1.classList.add('has-fixed-close-button');
         
-        SetaFechamentoSeção1.style.display = 'flex';
-        SetaFechamentoSeção1.style.position = 'fixed';
-        SetaFechamentoSeção1.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
-        SetaFechamentoSeção1.style.marginBottom = '0px';
-        SetaFechamentoSeção1.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção1.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        SetaFechamentoSeção1.classList.add('is-fixed-above-quote');
+        SetaFechamentoSeção1.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
 
     } else if (window.scrollY > (Posição_Seção2 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro1.style.marginBottom = '15px';
+        SubseçãoCadastro1.classList.remove('has-fixed-close-button');
+        SubseçãoCadastro1.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção1.style.display = 'flex';
-        SetaFechamentoSeção1.style.position = 'relative';
-        SetaFechamentoSeção1.style.bottom = '0px';
-        SetaFechamentoSeção1.style.marginBottom = '-25px';
-        SetaFechamentoSeção1.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção1.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        SetaFechamentoSeção1.classList.add('is-contained');
 
     }
 
@@ -297,27 +293,24 @@ window.onscroll = function() {
 
     if (window.scrollY <= Posição_Seção2) {
 
-        SetaFechamentoSeção2.style.display = 'none';
+        SetaFechamentoSeção2.classList.add('is-hidden');
     
     } else if (window.scrollY > Posição_Seção2 && window.scrollY <= (Posição_Seção3 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro2.style.marginBottom = '20px';
+        SubseçãoCadastro2.classList.remove('has-contained-close-button');
+        SubseçãoCadastro2.classList.add('has-fixed-close-button');
         
-        SetaFechamentoSeção2.style.display = 'flex';
-        SetaFechamentoSeção2.style.position = 'fixed';
-        SetaFechamentoSeção2.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
-        SetaFechamentoSeção2.style.marginBottom = '0px';
-        SetaFechamentoSeção2.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção2.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        SetaFechamentoSeção2.classList.add('is-fixed-above-quote');
+        SetaFechamentoSeção2.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
 
     } else if (window.scrollY > (Posição_Seção3 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro2.style.marginBottom = '15px';
+        SubseçãoCadastro2.classList.remove('has-fixed-close-button');
+        SubseçãoCadastro2.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção2.style.display = 'flex';
-        SetaFechamentoSeção2.style.position = 'relative';
-        SetaFechamentoSeção2.style.bottom = '0px';
-        SetaFechamentoSeção2.style.marginBottom = '-25px';
-        SetaFechamentoSeção2.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção2.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        SetaFechamentoSeção2.classList.add('is-contained');
 
     }
 
@@ -325,48 +318,37 @@ window.onscroll = function() {
 
     if (window.scrollY <= Posição_Seção3) {
 
-        SetaFechamentoSeção3.style.display = 'none';
-        BotãoInstagramDirect.style.display = 'none';
+        SetaFechamentoSeção3.classList.add('is-hidden');
+        BotãoInstagramDirect.classList.add('is-hidden');
     
     } else if (window.scrollY > Posição_Seção3 && window.scrollY <= (Posição_Seção4 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro3.style.marginBottom = '20px';
+        SubseçãoCadastro3.classList.remove('has-contained-close-button');
+        SubseçãoCadastro3.classList.add('has-fixed-close-button');
         
-        SetaFechamentoSeção3.style.display = 'flex';
-        SetaFechamentoSeção3.style.position = 'fixed';
-        SetaFechamentoSeção3.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
-        SetaFechamentoSeção3.style.marginBottom = '0px';
-        SetaFechamentoSeção3.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção3.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        SetaFechamentoSeção3.classList.add('is-fixed-above-quote');
+        SetaFechamentoSeção3.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
 
         if (userAgent.indexOf('Instagram') === -1) {
 
-            BotãoInstagramDirect.style.display = 'block';
-            BotãoInstagramDirect.style.position = 'fixed';
-            BotãoInstagramDirect.style.width = '60px';
-            BotãoInstagramDirect.style.bottom = '160px';
-            BotãoInstagramDirect.style.marginBottom = '0px';
-            BotãoInstagramDirect.style.marginLeft = 'calc((var(--considered-screen-width) * 0.95) - 60px)';
+            BotãoInstagramDirect.classList.remove('is-hidden', 'is-contained', 'has-fixed-position');
+            BotãoInstagramDirect.classList.add('is-fixed');
 
         }
 
     } else if (window.scrollY > (Posição_Seção4 - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro3.style.marginBottom = '15px';
+        SubseçãoCadastro3.classList.remove('has-fixed-close-button');
+        SubseçãoCadastro3.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção3.style.display = 'flex';
-        SetaFechamentoSeção3.style.position = 'relative';
-        SetaFechamentoSeção3.style.bottom = '0px';
-        SetaFechamentoSeção3.style.marginBottom = '-25px';
-        SetaFechamentoSeção3.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção3.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        SetaFechamentoSeção3.classList.add('is-contained');
 
         if (userAgent.indexOf('Instagram') === -1) {
 
-            BotãoInstagramDirect.style.display = 'flex';
-            BotãoInstagramDirect.style.position = 'relative';
-            BotãoInstagramDirect.style.width = '60px';
-            BotãoInstagramDirect.style.bottom = '30px';
-            BotãoInstagramDirect.style.marginBottom = '-60px';
-            BotãoInstagramDirect.style.marginLeft = 'calc((var(--considered-screen-width) * 0.95) - 60px)';
+            BotãoInstagramDirect.classList.remove('is-hidden', 'is-fixed', 'has-fixed-position');
+            BotãoInstagramDirect.classList.add('is-contained');
 
         }
 
@@ -376,27 +358,24 @@ window.onscroll = function() {
 
     if (window.scrollY <= Posição_Seção4) {
     
-        SetaFechamentoSeção4.style.display = 'none';
+        SetaFechamentoSeção4.classList.add('is-hidden');
 
     } else if (window.scrollY > Posição_Seção4 && window.scrollY <= (Posição_EspaçoFinalContainerBotãoPrincipal - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro4.style.marginBottom = '20px';
+        SubseçãoCadastro4.classList.remove('has-contained-close-button');
+        SubseçãoCadastro4.classList.add('has-fixed-close-button');
     
-        SetaFechamentoSeção4.style.display = 'flex';
-        SetaFechamentoSeção4.style.position = 'fixed';
-        SetaFechamentoSeção4.style.bottom = ContainerBotãoPrincipal.offsetHeight + 15 + 'px';
-        SetaFechamentoSeção4.style.marginBottom = '0px';
-        SetaFechamentoSeção4.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção4.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
+        SetaFechamentoSeção4.classList.add('is-fixed-above-quote');
+        SetaFechamentoSeção4.style.setProperty('--section-close-bottom', ContainerBotãoPrincipal.offsetHeight + 15 + 'px');
 
     } else if (window.scrollY > (Posição_EspaçoFinalContainerBotãoPrincipal - window.innerHeight + ContainerBotãoPrincipal.offsetHeight)) {
 
-        SubseçãoCadastro4.style.marginBottom = '15px';
+        SubseçãoCadastro4.classList.remove('has-fixed-close-button');
+        SubseçãoCadastro4.classList.add('has-contained-close-button');
 
-        SetaFechamentoSeção4.style.display = 'flex';
-        SetaFechamentoSeção4.style.position = 'relative';
-        SetaFechamentoSeção4.style.bottom = '0px';
-        SetaFechamentoSeção4.style.marginBottom = '-25px';
-        SetaFechamentoSeção4.style.marginLeft = 'calc((var(--considered-screen-width) * 0.50) - 40px)';
+        SetaFechamentoSeção4.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
+        SetaFechamentoSeção4.classList.add('is-contained');
 
     }
 
@@ -412,18 +391,17 @@ BotãoAberturaSeção1.addEventListener("click", function(event) {
     BotãoAberturaSeção2.setAttribute("aria-expanded", "false");
     BotãoAberturaSeção3.setAttribute("aria-expanded", "false");
     BotãoAberturaSeção4.setAttribute("aria-expanded", "false");
-    ContainerExternoSeção1.style.display = 'none';
-    ContainerInternoSeção1.style.display = 'block';
+    ContainerExternoSeção1.classList.add('is-hidden');
+    ContainerInternoSeção1.classList.add('is-open');
     ContainerInternoSeção1.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção1.focus({preventScroll: true});
-    SetaFechamentoSeção1.style.position = 'fixed';
-    SetaFechamentoSeção1.style.bottom = '25px';
-    ContainerExternoSeção2.style.display = 'block';
-    ContainerInternoSeção2.style.display = 'none';
-    ContainerExternoSeção3.style.display = 'block';
-    ContainerInternoSeção3.style.display = 'none';
-    ContainerExternoSeção4.style.display = 'block';
-    ContainerInternoSeção4.style.display = 'none';
+    SetaFechamentoSeção1.classList.add('is-fixed-near-bottom');
+    ContainerExternoSeção2.classList.remove('is-hidden');
+    ContainerInternoSeção2.classList.remove('is-open');
+    ContainerExternoSeção3.classList.remove('is-hidden');
+    ContainerInternoSeção3.classList.remove('is-open');
+    ContainerExternoSeção4.classList.remove('is-hidden');
+    ContainerInternoSeção4.classList.remove('is-open');
 })
 
 
@@ -431,8 +409,8 @@ BotãoAberturaSeção1.addEventListener("click", function(event) {
 /*Fecha a Seção 1*/
 SetaFechamentoSeção1.addEventListener("click", function(event) {
     BotãoAberturaSeção1.setAttribute("aria-expanded", "false");
-    ContainerExternoSeção1.style.display = 'block';
-    ContainerInternoSeção1.style.display = 'none';
+    ContainerExternoSeção1.classList.remove('is-hidden');
+    ContainerInternoSeção1.classList.remove('is-open');
     ContainerExternoSeção1.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção1.focus({preventScroll: true});
 })
@@ -448,25 +426,24 @@ BotãoAberturaSeção2.addEventListener("click", function(event) {
     BotãoAberturaSeção2.setAttribute("aria-expanded", "true");
     BotãoAberturaSeção3.setAttribute("aria-expanded", "false");
     BotãoAberturaSeção4.setAttribute("aria-expanded", "false");
-    ContainerExternoSeção1.style.display = 'block';
-    ContainerInternoSeção1.style.display = 'none';
-    ContainerExternoSeção2.style.display = 'none';
-    ContainerInternoSeção2.style.display = 'block';
+    ContainerExternoSeção1.classList.remove('is-hidden');
+    ContainerInternoSeção1.classList.remove('is-open');
+    ContainerExternoSeção2.classList.add('is-hidden');
+    ContainerInternoSeção2.classList.add('is-open');
     ContainerInternoSeção2.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção2.focus({preventScroll: true});
-    SetaFechamentoSeção2.style.position = 'fixed';
-    SetaFechamentoSeção2.style.bottom = '25px';
-    ContainerExternoSeção3.style.display = 'block';
-    ContainerInternoSeção3.style.display = 'none';
-    ContainerExternoSeção4.style.display = 'block';
-    ContainerInternoSeção4.style.display = 'none';
+    SetaFechamentoSeção2.classList.add('is-fixed-near-bottom');
+    ContainerExternoSeção3.classList.remove('is-hidden');
+    ContainerInternoSeção3.classList.remove('is-open');
+    ContainerExternoSeção4.classList.remove('is-hidden');
+    ContainerInternoSeção4.classList.remove('is-open');
 })
 
 /*Fecha a Seção 2*/
 SetaFechamentoSeção2.addEventListener("click", function(event) {
     BotãoAberturaSeção2.setAttribute("aria-expanded", "false");
-    ContainerExternoSeção2.style.display = 'block';
-    ContainerInternoSeção2.style.display = 'none';
+    ContainerExternoSeção2.classList.remove('is-hidden');
+    ContainerInternoSeção2.classList.remove('is-open');
     ContainerExternoSeção2.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção2.focus({preventScroll: true});
 })
@@ -481,47 +458,46 @@ BotãoAberturaSeção3.addEventListener("click", function(event) {
     BotãoAberturaSeção2.setAttribute("aria-expanded", "false");
     BotãoAberturaSeção3.setAttribute("aria-expanded", "true");
     BotãoAberturaSeção4.setAttribute("aria-expanded", "false");
-    ContainerExternoSeção1.style.display = 'block';
-    ContainerInternoSeção1.style.display = 'none';
-    ContainerExternoSeção2.style.display = 'block';
-    ContainerInternoSeção2.style.display = 'none';
-    ContainerExternoSeção3.style.display = 'none';
-    ContainerInternoSeção3.style.display = 'block';
+    ContainerExternoSeção1.classList.remove('is-hidden');
+    ContainerInternoSeção1.classList.remove('is-open');
+    ContainerExternoSeção2.classList.remove('is-hidden');
+    ContainerInternoSeção2.classList.remove('is-open');
+    ContainerExternoSeção3.classList.add('is-hidden');
+    ContainerInternoSeção3.classList.add('is-open');
     ContainerInternoSeção3.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção3.focus({preventScroll: true});
-    SetaFechamentoSeção3.style.position = 'fixed';
-    SetaFechamentoSeção3.style.bottom = '25px';
-    ContainerExternoSeção4.style.display = 'block';
-    ContainerInternoSeção4.style.display = 'none';
+    SetaFechamentoSeção3.classList.add('is-fixed-near-bottom');
+    ContainerExternoSeção4.classList.remove('is-hidden');
+    ContainerInternoSeção4.classList.remove('is-open');
 })
 
 /*Fecha a Seção 3*/
 SetaFechamentoSeção3.addEventListener("click", function(event) {
     BotãoAberturaSeção3.setAttribute("aria-expanded", "false");
     
-    ContainerExternoSeção3.style.display = 'block';
-    ContainerInternoSeção3.style.display = 'none';
+    ContainerExternoSeção3.classList.remove('is-hidden');
+    ContainerInternoSeção3.classList.remove('is-open');
     ContainerExternoSeção3.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção3.focus({preventScroll: true});
 
-    SubseçãoFechada31.style.display = 'block';
-    SubseçãoAberta31.style.display = 'none';
+    SubseçãoFechada31.classList.remove('is-hidden');
+    SubseçãoAberta31.classList.remove('is-open');
     SetaAberturaSubseção31.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada32.style.display = 'block';
-    SubseçãoAberta32.style.display = 'none';
+    SubseçãoFechada32.classList.remove('is-hidden');
+    SubseçãoAberta32.classList.remove('is-open');
     SetaAberturaSubseção32.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada33.style.display = 'block';
-    SubseçãoAberta33.style.display = 'none';
+    SubseçãoFechada33.classList.remove('is-hidden');
+    SubseçãoAberta33.classList.remove('is-open');
     SetaAberturaSubseção33.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada34.style.display = 'block';
-    SubseçãoAberta34.style.display = 'none';
+    SubseçãoFechada34.classList.remove('is-hidden');
+    SubseçãoAberta34.classList.remove('is-open');
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada35.style.display = 'block';
-    SubseçãoAberta35.style.display = 'none';
+    SubseçãoFechada35.classList.remove('is-hidden');
+    SubseçãoAberta35.classList.remove('is-open');
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
 })
 
@@ -534,30 +510,30 @@ SetaAberturaSubseção31.addEventListener("click", function(event) {
     SetaAberturaSubseção33.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
-    SubseçãoFechada31.style.display = 'none';
-    SubseçãoAberta31.style.display = 'block';
+    SubseçãoFechada31.classList.add('is-hidden');
+    SubseçãoAberta31.classList.add('is-open');
     SubseçãoAberta31.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta31.focus({preventScroll: true});
     
-    SubseçãoFechada32.style.display = 'block';
-    SubseçãoAberta32.style.display = 'none';
+    SubseçãoFechada32.classList.remove('is-hidden');
+    SubseçãoAberta32.classList.remove('is-open');
 
-    SubseçãoFechada33.style.display = 'block';
-    SubseçãoAberta33.style.display = 'none';
+    SubseçãoFechada33.classList.remove('is-hidden');
+    SubseçãoAberta33.classList.remove('is-open');
 
-    SubseçãoFechada34.style.display = 'block';
-    SubseçãoAberta34.style.display = 'none';
+    SubseçãoFechada34.classList.remove('is-hidden');
+    SubseçãoAberta34.classList.remove('is-open');
 
-    SubseçãoFechada35.style.display = 'block';
-    SubseçãoAberta35.style.display = 'none';
+    SubseçãoFechada35.classList.remove('is-hidden');
+    SubseçãoAberta35.classList.remove('is-open');
 
 })
 
 /*Fecha a Subseção 3.1*/
 SetaFechamentoSubseção31.addEventListener("click", function(event) {
     SetaAberturaSubseção31.setAttribute("aria-expanded", "false");
-    SubseçãoFechada31.style.display = 'block';
-    SubseçãoAberta31.style.display = 'none';
+    SubseçãoFechada31.classList.remove('is-hidden');
+    SubseçãoAberta31.classList.remove('is-open');
     SubseçãoFechada31.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção31.focus({preventScroll: true});
 })
@@ -572,30 +548,30 @@ SetaAberturaSubseção32.addEventListener("click", function(event) {
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
     
-    SubseçãoFechada31.style.display = 'block';
-    SubseçãoAberta31.style.display = 'none';
+    SubseçãoFechada31.classList.remove('is-hidden');
+    SubseçãoAberta31.classList.remove('is-open');
 
-    SubseçãoFechada32.style.display = 'none';
-    SubseçãoAberta32.style.display = 'block';
+    SubseçãoFechada32.classList.add('is-hidden');
+    SubseçãoAberta32.classList.add('is-open');
     SubseçãoAberta32.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta32.focus({preventScroll: true});
 
-    SubseçãoFechada33.style.display = 'block';
-    SubseçãoAberta33.style.display = 'none';
+    SubseçãoFechada33.classList.remove('is-hidden');
+    SubseçãoAberta33.classList.remove('is-open');
     
-    SubseçãoFechada34.style.display = 'block';
-    SubseçãoAberta34.style.display = 'none';
+    SubseçãoFechada34.classList.remove('is-hidden');
+    SubseçãoAberta34.classList.remove('is-open');
 
-    SubseçãoFechada35.style.display = 'block';
-    SubseçãoAberta35.style.display = 'none';
+    SubseçãoFechada35.classList.remove('is-hidden');
+    SubseçãoAberta35.classList.remove('is-open');
 
 })
 
 /*Fecha a Subseção 3.2*/
 SetaFechamentoSubseção32.addEventListener("click", function(event) {
     SetaAberturaSubseção32.setAttribute("aria-expanded", "false");
-    SubseçãoFechada32.style.display = 'block';
-    SubseçãoAberta32.style.display = 'none';
+    SubseçãoFechada32.classList.remove('is-hidden');
+    SubseçãoAberta32.classList.remove('is-open');
     SubseçãoFechada32.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção32.focus({preventScroll: true});
 })
@@ -610,30 +586,30 @@ SetaAberturaSubseção33.addEventListener("click", function(event) {
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
     
-    SubseçãoFechada31.style.display = 'block';
-    SubseçãoAberta31.style.display = 'none';
+    SubseçãoFechada31.classList.remove('is-hidden');
+    SubseçãoAberta31.classList.remove('is-open');
 
-    SubseçãoFechada32.style.display = 'block';
-    SubseçãoAberta32.style.display = 'none';
+    SubseçãoFechada32.classList.remove('is-hidden');
+    SubseçãoAberta32.classList.remove('is-open');
 
-    SubseçãoFechada33.style.display = 'none';
-    SubseçãoAberta33.style.display = 'block';
+    SubseçãoFechada33.classList.add('is-hidden');
+    SubseçãoAberta33.classList.add('is-open');
     SubseçãoAberta33.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta33.focus({preventScroll: true});
 
-    SubseçãoFechada34.style.display = 'block';
-    SubseçãoAberta34.style.display = 'none';
+    SubseçãoFechada34.classList.remove('is-hidden');
+    SubseçãoAberta34.classList.remove('is-open');
 
-    SubseçãoFechada35.style.display = 'block';
-    SubseçãoAberta35.style.display = 'none';
+    SubseçãoFechada35.classList.remove('is-hidden');
+    SubseçãoAberta35.classList.remove('is-open');
 
 })
 
 /*Fecha a Subseção 3.3*/
 SetaFechamentoSubseção33.addEventListener("click", function(event) {
     SetaAberturaSubseção33.setAttribute("aria-expanded", "false");
-    SubseçãoFechada33.style.display = 'block';
-    SubseçãoAberta33.style.display = 'none';
+    SubseçãoFechada33.classList.remove('is-hidden');
+    SubseçãoAberta33.classList.remove('is-open');
     SubseçãoFechada33.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção33.focus({preventScroll: true});
 })
@@ -648,30 +624,30 @@ SetaAberturaSubseção34.addEventListener("click", function(event) {
     SetaAberturaSubseção34.setAttribute("aria-expanded", "true");
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
     
-    SubseçãoFechada31.style.display = 'block';
-    SubseçãoAberta31.style.display = 'none';
+    SubseçãoFechada31.classList.remove('is-hidden');
+    SubseçãoAberta31.classList.remove('is-open');
 
-    SubseçãoFechada32.style.display = 'block';
-    SubseçãoAberta32.style.display = 'none';
+    SubseçãoFechada32.classList.remove('is-hidden');
+    SubseçãoAberta32.classList.remove('is-open');
 
-    SubseçãoFechada33.style.display = 'block';
-    SubseçãoAberta33.style.display = 'none';
+    SubseçãoFechada33.classList.remove('is-hidden');
+    SubseçãoAberta33.classList.remove('is-open');
 
-    SubseçãoFechada34.style.display = 'none';
-    SubseçãoAberta34.style.display = 'block';
+    SubseçãoFechada34.classList.add('is-hidden');
+    SubseçãoAberta34.classList.add('is-open');
     SubseçãoAberta34.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta34.focus({preventScroll: true});
 
-    SubseçãoFechada35.style.display = 'block';
-    SubseçãoAberta35.style.display = 'none';
+    SubseçãoFechada35.classList.remove('is-hidden');
+    SubseçãoAberta35.classList.remove('is-open');
 
 })
 
 /*Fecha a Subseção 3.4*/
 SetaFechamentoSubseção34.addEventListener("click", function(event) {
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
-    SubseçãoFechada34.style.display = 'block';
-    SubseçãoAberta34.style.display = 'none';
+    SubseçãoFechada34.classList.remove('is-hidden');
+    SubseçãoAberta34.classList.remove('is-open');
     SubseçãoFechada34.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção34.focus({preventScroll: true});
 })
@@ -686,20 +662,20 @@ SetaAberturaSubseção35.addEventListener("click", function(event) {
     SetaAberturaSubseção34.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção35.setAttribute("aria-expanded", "true");
     
-    SubseçãoFechada31.style.display = 'block';
-    SubseçãoAberta31.style.display = 'none';
+    SubseçãoFechada31.classList.remove('is-hidden');
+    SubseçãoAberta31.classList.remove('is-open');
 
-    SubseçãoFechada32.style.display = 'block';
-    SubseçãoAberta32.style.display = 'none';
+    SubseçãoFechada32.classList.remove('is-hidden');
+    SubseçãoAberta32.classList.remove('is-open');
 
-    SubseçãoFechada33.style.display = 'block';
-    SubseçãoAberta33.style.display = 'none';
+    SubseçãoFechada33.classList.remove('is-hidden');
+    SubseçãoAberta33.classList.remove('is-open');
 
-    SubseçãoFechada34.style.display = 'block';
-    SubseçãoAberta34.style.display = 'none';
+    SubseçãoFechada34.classList.remove('is-hidden');
+    SubseçãoAberta34.classList.remove('is-open');
 
-    SubseçãoFechada35.style.display = 'none';
-    SubseçãoAberta35.style.display = 'block';
+    SubseçãoFechada35.classList.add('is-hidden');
+    SubseçãoAberta35.classList.add('is-open');
     SubseçãoAberta35.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta35.focus({preventScroll: true});
 
@@ -708,8 +684,8 @@ SetaAberturaSubseção35.addEventListener("click", function(event) {
 /*Fecha a Subseção 3.5*/
 SetaFechamentoSubseção35.addEventListener("click", function(event) {
     SetaAberturaSubseção35.setAttribute("aria-expanded", "false");
-    SubseçãoFechada35.style.display = 'block';
-    SubseçãoAberta35.style.display = 'none';
+    SubseçãoFechada35.classList.remove('is-hidden');
+    SubseçãoAberta35.classList.remove('is-open');
     SubseçãoFechada35.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção35.focus({preventScroll: true});
 })
@@ -724,27 +700,26 @@ BotãoAberturaSeção4.addEventListener("click", function(event) {
     BotãoAberturaSeção2.setAttribute("aria-expanded", "false");
     BotãoAberturaSeção3.setAttribute("aria-expanded", "false");
     BotãoAberturaSeção4.setAttribute("aria-expanded", "true");
-    ContainerExternoSeção1.style.display = 'block';
-    ContainerInternoSeção1.style.display = 'none';
-    ContainerExternoSeção2.style.display = 'block';
-    ContainerInternoSeção2.style.display = 'none';
-    ContainerExternoSeção3.style.display = 'block';
-    ContainerInternoSeção3.style.display = 'none';
-    ContainerExternoSeção4.style.display = 'none';
-    ContainerInternoSeção4.style.display = 'block';
+    ContainerExternoSeção1.classList.remove('is-hidden');
+    ContainerInternoSeção1.classList.remove('is-open');
+    ContainerExternoSeção2.classList.remove('is-hidden');
+    ContainerInternoSeção2.classList.remove('is-open');
+    ContainerExternoSeção3.classList.remove('is-hidden');
+    ContainerInternoSeção3.classList.remove('is-open');
+    ContainerExternoSeção4.classList.add('is-hidden');
+    ContainerInternoSeção4.classList.add('is-open');
     ContainerInternoSeção4.scrollIntoView({behavior: preferredScrollBehavior()});
     TextoInternoChamadaSeção4.focus({preventScroll: true});
-    SetaFechamentoSeção4.style.position = 'fixed';
-    SetaFechamentoSeção4.style.bottom = '25px';
-    BotãoInstagramDirect.style.position = 'fixed';
+    SetaFechamentoSeção4.classList.add('is-fixed-near-bottom');
+    BotãoInstagramDirect.classList.add('has-fixed-position');
 })
 
 /*Fecha a Seção 4*/
 SetaFechamentoSeção4.addEventListener("click", function(event) {
     BotãoAberturaSeção4.setAttribute("aria-expanded", "false");
     
-    ContainerExternoSeção4.style.display = 'block';
-    ContainerInternoSeção4.style.display = 'none';
+    ContainerExternoSeção4.classList.remove('is-hidden');
+    ContainerInternoSeção4.classList.remove('is-open');
     ContainerExternoSeção4.scrollIntoView({behavior: preferredScrollBehavior()});
     BotãoAberturaSeção4.focus({preventScroll: true});
 
@@ -754,16 +729,16 @@ SetaFechamentoSeção4.addEventListener("click", function(event) {
     if (!VídeoDepoimento4.paused) VídeoDepoimento4.pause();
     if (!VídeoDepoimento5.paused) VídeoDepoimento5.pause();
 
-    SubseçãoFechada41.style.display = 'block';
-    SubseçãoAberta41.style.display = 'none';
+    SubseçãoFechada41.classList.remove('is-hidden');
+    SubseçãoAberta41.classList.remove('is-open');
     SetaAberturaSubseção41.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada42.style.display = 'block';
-    SubseçãoAberta42.style.display = 'none';
+    SubseçãoFechada42.classList.remove('is-hidden');
+    SubseçãoAberta42.classList.remove('is-open');
     SetaAberturaSubseção42.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada43.style.display = 'block';
-    SubseçãoAberta43.style.display = 'none';
+    SubseçãoFechada43.classList.remove('is-hidden');
+    SubseçãoAberta43.classList.remove('is-open');
     SetaAberturaSubseção43.setAttribute("aria-expanded", "false");
 
 })
@@ -776,16 +751,16 @@ SetaAberturaSubseção41.addEventListener("click", function(event) {
     SetaAberturaSubseção42.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção43.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada41.style.display = 'none';
-    SubseçãoAberta41.style.display = 'block';
+    SubseçãoFechada41.classList.add('is-hidden');
+    SubseçãoAberta41.classList.add('is-open');
     SubseçãoAberta41.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta41.focus({preventScroll: true});
     
-    SubseçãoFechada42.style.display = 'block';
-    SubseçãoAberta42.style.display = 'none';
+    SubseçãoFechada42.classList.remove('is-hidden');
+    SubseçãoAberta42.classList.remove('is-open');
 
-    SubseçãoFechada43.style.display = 'block';
-    SubseçãoAberta43.style.display = 'none';
+    SubseçãoFechada43.classList.remove('is-hidden');
+    SubseçãoAberta43.classList.remove('is-open');
 
 })
 
@@ -793,8 +768,8 @@ SetaAberturaSubseção41.addEventListener("click", function(event) {
 SetaFechamentoSubseção41.addEventListener("click", function(event) {
     SetaAberturaSubseção41.setAttribute("aria-expanded", "false");
     
-    SubseçãoFechada41.style.display = 'block';
-    SubseçãoAberta41.style.display = 'none';
+    SubseçãoFechada41.classList.remove('is-hidden');
+    SubseçãoAberta41.classList.remove('is-open');
     SubseçãoFechada41.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção41.focus({preventScroll: true});
 
@@ -808,16 +783,16 @@ SetaAberturaSubseção42.addEventListener("click", function(event) {
     SetaAberturaSubseção42.setAttribute("aria-expanded", "true");
     SetaAberturaSubseção43.setAttribute("aria-expanded", "false");
 
-    SubseçãoFechada41.style.display = 'block';
-    SubseçãoAberta41.style.display = 'none';
+    SubseçãoFechada41.classList.remove('is-hidden');
+    SubseçãoAberta41.classList.remove('is-open');
 
-    SubseçãoFechada42.style.display = 'none';
-    SubseçãoAberta42.style.display = 'block';
+    SubseçãoFechada42.classList.add('is-hidden');
+    SubseçãoAberta42.classList.add('is-open');
     SubseçãoAberta42.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta42.focus({preventScroll: true});
 
-    SubseçãoFechada43.style.display = 'block';
-    SubseçãoAberta43.style.display = 'none';
+    SubseçãoFechada43.classList.remove('is-hidden');
+    SubseçãoAberta43.classList.remove('is-open');
 
     DataAtualizaçãoEstatísticasPadrãoVermelho.innerHTML = "Data e hora de atualização: " + new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
@@ -827,8 +802,8 @@ SetaAberturaSubseção42.addEventListener("click", function(event) {
 SetaFechamentoSubseção42.addEventListener("click", function(event) {
     SetaAberturaSubseção42.setAttribute("aria-expanded", "false");
     
-    SubseçãoFechada42.style.display = 'block';
-    SubseçãoAberta42.style.display = 'none';
+    SubseçãoFechada42.classList.remove('is-hidden');
+    SubseçãoAberta42.classList.remove('is-open');
     SubseçãoFechada42.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção42.focus({preventScroll: true});
 
@@ -842,14 +817,14 @@ SetaAberturaSubseção43.addEventListener("click", function(event) {
     SetaAberturaSubseção42.setAttribute("aria-expanded", "false");
     SetaAberturaSubseção43.setAttribute("aria-expanded", "true");
 
-    SubseçãoFechada41.style.display = 'block';
-    SubseçãoAberta41.style.display = 'none';
+    SubseçãoFechada41.classList.remove('is-hidden');
+    SubseçãoAberta41.classList.remove('is-open');
 
-    SubseçãoFechada42.style.display = 'block';
-    SubseçãoAberta42.style.display = 'none';
+    SubseçãoFechada42.classList.remove('is-hidden');
+    SubseçãoAberta42.classList.remove('is-open');
 
-    SubseçãoFechada43.style.display = 'none';
-    SubseçãoAberta43.style.display = 'block';
+    SubseçãoFechada43.classList.add('is-hidden');
+    SubseçãoAberta43.classList.add('is-open');
     SubseçãoAberta43.scrollIntoView({behavior: preferredScrollBehavior()});
     MancheteSubseçãoAberta43.focus({preventScroll: true});
 
@@ -859,8 +834,8 @@ SetaAberturaSubseção43.addEventListener("click", function(event) {
 SetaFechamentoSubseção43.addEventListener("click", function(event) {
     SetaAberturaSubseção43.setAttribute("aria-expanded", "false");
     
-    SubseçãoFechada43.style.display = 'block';
-    SubseçãoAberta43.style.display = 'none';
+    SubseçãoFechada43.classList.remove('is-hidden');
+    SubseçãoAberta43.classList.remove('is-open');
     SubseçãoFechada43.scrollIntoView({behavior: preferredScrollBehavior()});
     SetaAberturaSubseção43.focus({preventScroll: true});
 
@@ -876,15 +851,10 @@ SetaFechamentoSubseção43.addEventListener("click", function(event) {
 
 BotãoTelaCheiaVídeoDepoimento1.addEventListener("click", function(event) {
 
-    if (TextoTelaCheiaVídeoDepoimento1.innerHTML !== 'Tela Padrão') {
+    if (!ContainerVídeoDepoimento1.classList.contains('is-rotated')) {
  
-        ContainerVídeoDepoimento1.style.width = 'calc(var(--considered-screen-width) * 0.80)';
-        ContainerVídeoDepoimento1.style.height = 'calc(var(--considered-screen-width) * 1.42196)';
-
-        VídeoDepoimento1.style.width = 'calc(var(--considered-screen-width) * 1.42196)';
-        VídeoDepoimento1.style.height = 'calc(var(--considered-screen-width) * 0.80)';
-        VídeoDepoimento1.style.transformOrigin = 'top left';
-        VídeoDepoimento1.style.transform = 'rotate(90deg) translateY(-100%)';
+        ContainerVídeoDepoimento1.classList.remove('is-restored');
+        ContainerVídeoDepoimento1.classList.add('is-rotated');
 
         TextoTelaCheiaVídeoDepoimento1.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento1.setAttribute("aria-pressed", "true");
@@ -895,13 +865,8 @@ BotãoTelaCheiaVídeoDepoimento1.addEventListener("click", function(event) {
 
     } else {
         
-        ContainerVídeoDepoimento1.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        ContainerVídeoDepoimento1.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-
-        VídeoDepoimento1.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        VídeoDepoimento1.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-        VídeoDepoimento1.style.transformOrigin = '';
-        VídeoDepoimento1.style.transform = '';
+        ContainerVídeoDepoimento1.classList.remove('is-rotated');
+        ContainerVídeoDepoimento1.classList.add('is-restored');
 
         TextoTelaCheiaVídeoDepoimento1.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento1.setAttribute("aria-pressed", "false");
@@ -918,15 +883,10 @@ BotãoTelaCheiaVídeoDepoimento1.addEventListener("click", function(event) {
 
 BotãoTelaCheiaVídeoDepoimento2.addEventListener("click", function(event) {
     
-    if (TextoTelaCheiaVídeoDepoimento2.innerHTML !== 'Tela Padrão') {
+    if (!ContainerVídeoDepoimento2.classList.contains('is-rotated')) {
  
-        ContainerVídeoDepoimento2.style.width = 'calc(var(--considered-screen-width) * 0.80)';
-        ContainerVídeoDepoimento2.style.height = 'calc(var(--considered-screen-width) * 1.42196)';
-
-        VídeoDepoimento2.style.width = 'calc(var(--considered-screen-width) * 1.42196)';
-        VídeoDepoimento2.style.height = 'calc(var(--considered-screen-width) * 0.80)';
-        VídeoDepoimento2.style.transformOrigin = 'top left';
-        VídeoDepoimento2.style.transform = 'rotate(90deg) translateY(-100%)';
+        ContainerVídeoDepoimento2.classList.remove('is-restored');
+        ContainerVídeoDepoimento2.classList.add('is-rotated');
 
         TextoTelaCheiaVídeoDepoimento2.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento2.setAttribute("aria-pressed", "true");
@@ -937,13 +897,8 @@ BotãoTelaCheiaVídeoDepoimento2.addEventListener("click", function(event) {
 
     } else {
         
-        ContainerVídeoDepoimento2.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        ContainerVídeoDepoimento2.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-
-        VídeoDepoimento2.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        VídeoDepoimento2.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-        VídeoDepoimento2.style.transformOrigin = '';
-        VídeoDepoimento2.style.transform = '';
+        ContainerVídeoDepoimento2.classList.remove('is-rotated');
+        ContainerVídeoDepoimento2.classList.add('is-restored');
 
         TextoTelaCheiaVídeoDepoimento2.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento2.setAttribute("aria-pressed", "false");
@@ -960,15 +915,10 @@ BotãoTelaCheiaVídeoDepoimento2.addEventListener("click", function(event) {
 
 BotãoTelaCheiaVídeoDepoimento3.addEventListener("click", function(event) {
     
-    if (TextoTelaCheiaVídeoDepoimento3.innerHTML !== 'Tela Padrão') {
+    if (!ContainerVídeoDepoimento3.classList.contains('is-rotated')) {
  
-        ContainerVídeoDepoimento3.style.width = 'calc(var(--considered-screen-width) * 0.80)';
-        ContainerVídeoDepoimento3.style.height = 'calc(var(--considered-screen-width) * 1.42196)';
-
-        VídeoDepoimento3.style.width = 'calc(var(--considered-screen-width) * 1.42196)';
-        VídeoDepoimento3.style.height = 'calc(var(--considered-screen-width) * 0.80)';
-        VídeoDepoimento3.style.transformOrigin = 'top left';
-        VídeoDepoimento3.style.transform = 'rotate(90deg) translateY(-100%)';
+        ContainerVídeoDepoimento3.classList.remove('is-restored');
+        ContainerVídeoDepoimento3.classList.add('is-rotated');
 
         TextoTelaCheiaVídeoDepoimento3.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento3.setAttribute("aria-pressed", "true");
@@ -979,13 +929,8 @@ BotãoTelaCheiaVídeoDepoimento3.addEventListener("click", function(event) {
 
     } else {
         
-        ContainerVídeoDepoimento3.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        ContainerVídeoDepoimento3.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-
-        VídeoDepoimento3.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        VídeoDepoimento3.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-        VídeoDepoimento3.style.transformOrigin = '';
-        VídeoDepoimento3.style.transform = '';
+        ContainerVídeoDepoimento3.classList.remove('is-rotated');
+        ContainerVídeoDepoimento3.classList.add('is-restored');
 
         TextoTelaCheiaVídeoDepoimento3.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento3.setAttribute("aria-pressed", "false");
@@ -1002,15 +947,10 @@ BotãoTelaCheiaVídeoDepoimento3.addEventListener("click", function(event) {
 
 BotãoTelaCheiaVídeoDepoimento4.addEventListener("click", function(event) {
     
-    if (TextoTelaCheiaVídeoDepoimento4.innerHTML !== 'Tela Padrão') {
+    if (!ContainerVídeoDepoimento4.classList.contains('is-rotated')) {
  
-        ContainerVídeoDepoimento4.style.width = 'calc(var(--considered-screen-width) * 0.80)';
-        ContainerVídeoDepoimento4.style.height = 'calc(var(--considered-screen-width) * 1.42196)';
-
-        VídeoDepoimento4.style.width = 'calc(var(--considered-screen-width) * 1.42196)';
-        VídeoDepoimento4.style.height = 'calc(var(--considered-screen-width) * 0.80)';
-        VídeoDepoimento4.style.transformOrigin = 'top left';
-        VídeoDepoimento4.style.transform = 'rotate(90deg) translateY(-100%)';
+        ContainerVídeoDepoimento4.classList.remove('is-restored');
+        ContainerVídeoDepoimento4.classList.add('is-rotated');
 
         TextoTelaCheiaVídeoDepoimento4.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento4.setAttribute("aria-pressed", "true");
@@ -1021,13 +961,8 @@ BotãoTelaCheiaVídeoDepoimento4.addEventListener("click", function(event) {
 
     } else {
         
-        ContainerVídeoDepoimento4.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        ContainerVídeoDepoimento4.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-
-        VídeoDepoimento4.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        VídeoDepoimento4.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-        VídeoDepoimento4.style.transformOrigin = '';
-        VídeoDepoimento4.style.transform = '';
+        ContainerVídeoDepoimento4.classList.remove('is-rotated');
+        ContainerVídeoDepoimento4.classList.add('is-restored');
 
         TextoTelaCheiaVídeoDepoimento4.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento4.setAttribute("aria-pressed", "false");
@@ -1044,15 +979,10 @@ BotãoTelaCheiaVídeoDepoimento4.addEventListener("click", function(event) {
 
 BotãoTelaCheiaVídeoDepoimento5.addEventListener("click", function(event) {
     
-    if (TextoTelaCheiaVídeoDepoimento5.innerHTML !== 'Tela Padrão') {
+    if (!ContainerVídeoDepoimento5.classList.contains('is-rotated')) {
  
-        ContainerVídeoDepoimento5.style.width = 'calc(var(--considered-screen-width) * 0.80)';
-        ContainerVídeoDepoimento5.style.height = 'calc(var(--considered-screen-width) * 1.42196)';
-
-        VídeoDepoimento5.style.width = 'calc(var(--considered-screen-width) * 1.42196)';
-        VídeoDepoimento5.style.height = 'calc(var(--considered-screen-width) * 0.80)';
-        VídeoDepoimento5.style.transformOrigin = 'top left';
-        VídeoDepoimento5.style.transform = 'rotate(90deg) translateY(-100%)';
+        ContainerVídeoDepoimento5.classList.remove('is-restored');
+        ContainerVídeoDepoimento5.classList.add('is-rotated');
 
         TextoTelaCheiaVídeoDepoimento5.innerHTML = 'Tela Padrão';
         BotãoTelaCheiaVídeoDepoimento5.setAttribute("aria-pressed", "true");
@@ -1063,13 +993,8 @@ BotãoTelaCheiaVídeoDepoimento5.addEventListener("click", function(event) {
 
     } else {
         
-        ContainerVídeoDepoimento5.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        ContainerVídeoDepoimento5.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-
-        VídeoDepoimento5.style.width = 'calc(var(--considered-screen-width) * 0.90)';
-        VídeoDepoimento5.style.height = 'calc(var(--considered-screen-width) * 0.50634)';
-        VídeoDepoimento5.style.transformOrigin = '';
-        VídeoDepoimento5.style.transform = '';
+        ContainerVídeoDepoimento5.classList.remove('is-rotated');
+        ContainerVídeoDepoimento5.classList.add('is-restored');
 
         TextoTelaCheiaVídeoDepoimento5.innerHTML = 'Tela Cheia';
         BotãoTelaCheiaVídeoDepoimento5.setAttribute("aria-pressed", "false");
