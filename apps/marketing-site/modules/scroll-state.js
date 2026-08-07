@@ -17,7 +17,10 @@ import {
     section4QuotePrompt,
     primaryVideo
 } from './elements.js';
-import { userAgent } from './media.js';
+import {
+    pausePlayingTestimonialsOutsideViewport,
+    userAgent
+} from './media.js';
 
 
 const closeButtonPositionClasses = [
@@ -146,6 +149,7 @@ export function updateScrollState() {
     const quoteCtaSpacerTop = quoteCtaSpacer.offsetTop;
 
     pausePrimaryVideoOutsideViewport();
+    pausePlayingTestimonialsOutsideViewport();
     updateSectionCloseState(
         section1CloseButton,
         section1QuotePrompt,

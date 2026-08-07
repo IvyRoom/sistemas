@@ -1992,9 +1992,10 @@ test("quote CTA preserves visibility thresholds, positioning, and destination", 
   assert.doesNotMatch(quoteLink, /\btarget=/);
 });
 
-test("quote CTA stays above the closed summary click surfaces", () => {
+test("floating actions stay above the closed summary click surfaces", () => {
   assert.match(css, /\.section-open-button::after\{[^}]*z-index:\s*1;/);
   assert.match(css, /\.subsection-open-button::after\{[^}]*z-index:\s*1;/);
+  assert.match(css, /#instagram-direct-link\{[^}]*z-index:\s*2;/);
   assert.match(css, /#quote-cta\{[^}]*z-index:\s*2;/);
 });
 
@@ -2136,6 +2137,65 @@ test("primary video pauses only at the exact outside viewport boundaries", () =>
   resized.element("primary-video").paused = false;
   resized.resizeTo(PRIMARY_VIDEO_TOP);
   assert.equal(resized.element("primary-video").pauseCalls, 1);
+});
+
+test("testimonial videos pause only at the exact outside viewport boundaries", () => {
+  const before = createHarness();
+  const beforeVideo = testimonialVideo(before, 1);
+  before.window.innerHeight = 200;
+  beforeVideo.offsetTop = 1000;
+  beforeVideo.offsetHeight = 200;
+  beforeVideo.paused = false;
+  before.scrollTo(800);
+  assert.equal(beforeVideo.pauseCalls, 1);
+
+  const topOverlap = createHarness();
+  const topOverlapVideo = testimonialVideo(topOverlap, 1);
+  topOverlap.window.innerHeight = 200;
+  topOverlapVideo.offsetTop = 1000;
+  topOverlapVideo.offsetHeight = 200;
+  topOverlapVideo.paused = false;
+  topOverlap.scrollTo(801);
+  assert.equal(topOverlapVideo.pauseCalls, 0);
+
+  const bottomOverlap = createHarness();
+  const bottomOverlapVideo = testimonialVideo(bottomOverlap, 1);
+  bottomOverlap.window.innerHeight = 200;
+  bottomOverlapVideo.offsetTop = 1000;
+  bottomOverlapVideo.offsetHeight = 200;
+  bottomOverlapVideo.paused = false;
+  bottomOverlap.scrollTo(1199);
+  assert.equal(bottomOverlapVideo.pauseCalls, 0);
+
+  const after = createHarness();
+  const afterVideo = testimonialVideo(after, 1);
+  after.window.innerHeight = 200;
+  afterVideo.offsetTop = 1000;
+  afterVideo.offsetHeight = 200;
+  afterVideo.paused = false;
+  after.scrollTo(1200);
+  assert.equal(afterVideo.pauseCalls, 1);
+
+  const allVideos = createHarness();
+  allVideos.window.innerHeight = 200;
+  for (let number = 1; number <= 5; number += 1) {
+    const video = testimonialVideo(allVideos, number);
+    video.offsetTop = 1000 + (number * 250);
+    video.offsetHeight = 200;
+    video.paused = false;
+  }
+  allVideos.scrollTo(800);
+  for (let number = 1; number <= 5; number += 1) {
+    assert.equal(testimonialVideo(allVideos, number).pauseCalls, 1);
+  }
+
+  const alreadyPaused = createHarness();
+  const alreadyPausedVideo = testimonialVideo(alreadyPaused, 1);
+  alreadyPaused.window.innerHeight = 200;
+  alreadyPausedVideo.offsetTop = 1000;
+  alreadyPausedVideo.offsetHeight = 200;
+  alreadyPaused.scrollTo(800);
+  assert.equal(alreadyPausedVideo.pauseCalls, 0);
 });
 
 test("testimonial videos pause whenever their content is hidden", () => {

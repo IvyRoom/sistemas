@@ -58,6 +58,21 @@ export function pausePlayingTestimonials() {
 }
 
 
+export function pausePlayingTestimonialsOutsideViewport() {
+    testimonialVideos.forEach(video => {
+        if (video.paused) return;
+
+        const videoBounds = video.getBoundingClientRect();
+        if (
+            videoBounds.bottom <= 0 ||
+            videoBounds.top >= window.innerHeight
+        ) {
+            video.pause();
+        }
+    });
+}
+
+
 async function enableNativePrimaryVideo(player = null, ui = null) {
     if (ui !== null && typeof ui.destroy === 'function') {
         try {
