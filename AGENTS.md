@@ -1,338 +1,161 @@
 # AGENTS.md — sistemas
 
-Multi-project frontend. Deploys to an Azure Static Web App via CI/CD on `main`.
+Static multi-application frontend deployed through Azure Static Web Apps.
 
 <!-- ========================================================= -->
-<!-- SHARED WORKING AGREEMENT — MIRRORED WITH backend/AGENTS.md -->
+<!-- SHARED WORKING AGREEMENT — KEEP BYTE-IDENTICAL             -->
 <!-- ========================================================= -->
-## Working agreement — KEEP IN SYNC across repos
-> This section is mirrored **verbatim** in `sistemas/AGENTS.md` and
-> `backend/AGENTS.md`. If it changes in one, make the identical change in the
-> other in the same edit. The agent can access both repos, edit both together,
-> and commit each repo separately.
+## Working agreement — keep byte-identical across repositories
 
-### Who you're working with
-Lucas Machado is an experienced founder, business/process operator, and
-management specialist who is deliberately building formal software-engineering
-practice. He graduated first in his mechanical-engineering class, studied at
-Cornell, worked in management consulting and automotive process coordination,
-and founded Machado | Método Gerencial para Empresas. He taught himself coding,
-GitHub, and Azure while building the company and holds the full product and
-business context.
+Keep this entire block byte-for-byte identical in both root `AGENTS.md` files.
+Change it in both repositories in the same task, but commit and publish each
+repository separately.
 
-Lucas is fluent in English and prefers technical collaboration, source names,
-identifiers, and the rare necessary code comment in English; user-facing copy
-remains Brazilian Portuguese. Work with him as an expert product owner and a
-fast software-engineering learner:
+### Scope and safety
+- Ask before large or structural changes; small, obvious fixes may proceed. Keep
+  one concern per change, and do not invent fields, endpoints, dependencies,
+  copy, or unrelated refactors. When new user-facing copy is required, match its
+  surrounding language and tone and flag it for review.
+- Match local naming, language, structure, and conventions. Keep reused names
+  accurate for every use. Explain conflicts and propose the convention-following
+  alternative instead of silently departing from local practice.
+- Prefer clear code to commentary. Comment only a non-obvious reason, security
+  invariant, external quirk, or contract that naming cannot express, and match
+  the file's existing style.
+- Never commit secrets. Use ignored configuration or environment variables, and
+  stop if a requested change would expose a credential.
+- Before running code, identify its effects. Do not write production data, send
+  email or other messages, or exercise a side-effecting external integration
+  without explicit approval. A repository-specific read-only exception never
+  authorizes writes.
+- Verify syntax, tests, logic, and any safe local behavior that adds useful
+  signal. Stop local servers you start. Keep approvals narrow, agent-specific,
+  and limited to the agreed operation; approval never expands scope or permits
+  prohibited Git operations or external side effects.
 
-- Lead with the outcome, then explain the smallest useful mental model.
-- Define unfamiliar software terms before relying on them. Never confuse an
-  unfamiliar term with limited reasoning ability.
-- Recommend genuine best practice and explain the trade-offs; don't silently
-  preserve an existing convention merely because it already exists.
-- Break structural work into small, independently reviewable tasks and confirm
-  the shared reasoning at meaningful boundaries.
-- Be assertive and concise without skipping fundamentals. Surface mistakes and
-  risks directly; brevity is never an excuse to cut correctness.
-
-### Comments — default to none
-Working code that leans on clear names; no explanatory or navigational comments.
-We trade ideas; you implement, verify, publish the branch, and open the PR; I
-review, test when useful, and merge. The old staged "explain / trim" passes are
-gone. Commits still flow continuously throughout (don't batch them).
-Narrow exception: a single line is fine when it captures what a name can't — a
-non-obvious *why*, a security-critical invariant, a browser/API quirk, or a
-documented contract (e.g. an HTML↔JS interface). When editing a file that's
-already commented (e.g. backend `app.js`), match its existing style.
-
-### Session hygiene
-A long session grows slower, costlier, and less sharp — details get buried in a
-big context. At a task/repo boundary, or when the thread is clearly long, flag
-that a fresh session would help and write a short handoff (state, decisions,
-open threads, next steps) so the new one starts oriented.
-
-### Golden rules
-- **Ask before large or structural changes.** Propose, wait for my OK. Small,
-  obvious fixes: just do them.
-- **One concern per change.** No unrelated refactors in passing.
-- **Never invent scope.** No fields or endpoints I didn't ask for. When a
-  change genuinely requires new user-facing copy (labels, messages), write it
-  to fit the surrounding tone and language, and list it in your handoff so I
-  can review the wording.
-- **Match the surrounding code** of whichever repo/folder you're in — its
-  naming, language, and structure win over your defaults. Flag mismatches
-  instead of silently "fixing" them.
-- **Keep names true to every use.** When reusing a token, helper, or abstraction
-  for a new role, verify its name still describes all uses. Prefer one neutral,
-  accurate name over a role-specific name used out of context or duplicate
-  aliases for the same value.
-- **If a request conflicts with a convention, say so** and propose the
-  convention-following alternative.
-- **Never commit secrets.** Keys, tokens, connection strings, passwords stay out
-  of tracked files (use ignored config / env vars). If a change would add one,
-  stop and flag it.
-- **Verify before handoff.** Check what's mechanical — syntax, tests, logic —
-  yourself. When it adds real signal, also exercise the change yourself in a
-  local preview (serve the frontend, drive it in a browser). Before running
-  anything, map what it touches: never exercise paths that reach production —
-  Graph API, live spreadsheets, real e-mail — or anything else with side
-  effects beyond this machine, without my explicit OK. Standing exception:
-  **read-only** Graph reads of our workbooks are pre-approved — always verify
-  a sheet's real schema (columns, table GUID, AUXILIAR-style lists) by reading
-  it before writing endpoint code against it; writes and e-mails stay gated.
-  When the task wraps, stop any local preview/stub servers you started so
-  their ports (e.g. 3000) are free for my own runs. For interaction features,
-  verify the human experience, not only DOM state: where the viewport lands
-  after a click, what gains focus, and whether content people need to copy can
-  actually be copied (through selection or a copy control, including success
-  feedback and a usable failure fallback) — at desktop and mobile widths. I
-  still own final behavioural and visual testing.
-- **Keep permission approvals agent-specific.** When a command prompts and I
-  approve it, prefer a reusable, narrowly scoped rule in the active agent's
-  own permission system when supported. Never allowlist what the deny floor
-  forbids (merge / rebase / amend / force-push / hard reset) or anything with
-  side effects beyond this machine. A normal push of an agreed, verified
-  feature branch is allowed as part of the publishing workflow below.
-
-### Git — you publish, I merge
-- **You own feature-branch implementation and publication.** Make commits
-  (`git add` + `git commit`) at natural boundaries throughout the work — don't
-  wait for me. Stage deliberately (named paths, never a blanket `git add -A`)
-  so secrets and untracked junk can't slip in. No need to surface intermediate
-  commits — I review at the Pull Request / merge level.
-- **Commit my uncommitted manual edits too.** When I've hand-edited files and
-  left them uncommitted, commit them as their own commit, with a summary and
-  description you infer from the diff — don't fold them into your own work.
-- **Before publishing, self-review the complete diff and run the relevant
-  checks.** Once the agreed scope is complete and the worktree is clean, push
-  the current feature branch normally (never force-push) and open a Pull
-  Request targeting `main`. Summarize what changed and why, verification,
-  risks or deployment impact, and any related PR in the other repo.
-- **Open a ready-for-review PR when the work is complete and verified.** Use a
-  draft only for intentionally incomplete work, early architectural feedback,
-  or known failing checks. Never merge or enable auto-merge; I own the final
-  merge decision.
-- **Before asking me to merge, provide one concise briefing.** Cover why the
-  change exists, what changed, how the pieces work together, validation
-  performed, deployment effect and risk, and exactly what you are asking me to
-  decide. Deliver the updated roadmap and following-task handoff only after
-  merge, unless I request them earlier.
-- **Before merge, correct the same PR instead of reverting.** If I request
-  changes, add correction commits to the same feature branch, push them, let
-  checks rerun, and ask me to review the updated diff. Do not rewrite published
-  history. If we abandon the approach, close the PR without merging. Reverting
-  is for changes already merged to `main`, normally through a new revert PR.
-- **After I merge, verify before cleanup.** Confirm the PR is merged and the
-  resulting `main` CI/deployment completed successfully; perform only safe,
-  proportionate smoke checks with no production writes or messages. If
-  verification fails, keep the branch and task context intact and diagnose it.
-- **Post-merge cleanup is mandatory and blocks the next task.** When I report
-  that a PR was merged, immediately complete the verification and cleanup
-  sequence below before starting new feature work. This rule is standing
-  authorization to delete that PR's local and remote feature branches after
-  every prerequisite succeeds; no separate confirmation is required. If a
-  tool or permission blocks any step, report cleanup as incomplete and keep it
-  open until resolved. Finish by verifying that only `main` and genuinely
-  active branches remain.
-- **Clean up only after successful verification.** Require a clean worktree;
-  fetch/prune `origin`; switch to `main`; pull with `--ff-only`; verify local
-  `main` matches `origin/main`; then delete the local branch with
-  `git branch -d`. GitHub deleting the remote branch automatically at merge is
-  an accepted exception; otherwise delete it manually only after successful
-  verification and confirmation that its PR is merged or closed. If `main` is
-  dirty or diverged, stop instead of overwriting anything. Never use
-  `git branch -D`, amend, rebase, force-push, or `reset --hard`.
-- **Stay on the feature branch; never commit to `main`.** One feature = one
-  branch per repo, same feature name across repos. Branch names
-  `type/short-desc`, lowercase, hyphens. Starting a new feature while on `main`
-  with no branch yet: create and name it yourself — no need to ask — then tell me.
-- Conventional Commits: `feat | fix | refactor | style | docs | chore`;
-  imperative summary ≤ ~50 chars; body explains *why* when non-obvious. End
-  every commit with a `Co-Authored-By:` trailer naming the agent/model that
-  wrote it, using the matching provider identity — a footer line after a blank
-  line, never on the summary.
-- Branches are workspaces; merging to `main` deploys. A ready PR means your
-  implementation is complete, not that it is approved; only I decide whether
-  to merge.
+### Git and publication
+- The agent owns feature-branch implementation, verification, commits, normal
+  push, and a ready-for-review PR; the repository owner alone merges. Never
+  commit on `main`, merge, or enable auto-merge.
+- Use one lowercase, hyphenated `type/short-desc` branch per feature and
+  repository, with the same feature name for cross-repository work. If work
+  starts on `main`, create the branch and report it.
+- Commit at natural boundaries. Stage named paths, never `git add -A`. Preserve
+  pre-existing user edits; when they are in scope for publication, commit them
+  separately rather than folding them into agent work.
+- Use Conventional Commits (`feat | fix | refactor | style | docs | chore`), an
+  imperative summary of about 50 characters or less, and a body when the reason
+  is not obvious. End each commit with a matching-provider `Co-Authored-By:`
+  trailer after a blank line.
+- Before publishing, self-review the complete diff, run relevant checks, and
+  require a clean worktree. Push normally, never force-push, open a PR targeting
+  `main`, cross-link any companion PR, and report purpose, verification, risk,
+  and deployment effect. Use a draft only for intentionally incomplete or
+  failing work.
+- Before requesting merge, give one concise briefing covering why, what, how,
+  verification, deployment risk, and the decision needed. Correct feedback on
+  the same branch and PR with new commits; do not rewrite published history. If
+  abandoned, close without merging; reserve revert PRs for changes already
+  merged.
+- Treat a merge to `main` as production-affecting unless the repository's
+  authoritative deployment rules prove the scoped change is filtered out. A
+  ready PR is complete work, not merge approval.
+- After a reported merge, confirm the PR and resulting `main` CI/deployment
+  succeeded before cleanup or new work. Use only safe, proportionate smoke
+  checks with no production writes or messages. On failure, preserve the branch
+  and context and diagnose.
+- Successful post-merge cleanup is mandatory and pre-authorized for the merged
+  feature branch: require a clean worktree; fetch/prune `origin`; switch to
+  `main`; pull with `--ff-only`; verify local `main` equals `origin/main`;
+  delete the local branch with `git branch -d`; if it still exists, delete the
+  remote branch only after confirming its PR merged or closed; then verify only
+  `main` and active branches remain. Stop on a dirty or diverged `main` or any
+  failed prerequisite.
+- Never use `git branch -D`, amend, rebase, force-push, or `reset --hard`.
 
 <!-- ========================================================= -->
-<!-- REPO SPECIFICS — sistemas only                            -->
+<!-- REPOSITORY-SPECIFIC GUIDANCE — sistemas                    -->
 <!-- ========================================================= -->
-## Source, deployment, and preview paths
-- Application-internal assets use document-relative URLs. Root-relative URLs
-  are for stable public navigation and explicit cross-application contracts.
-- Preview repository sources with `node scripts/serve-frontend.mjs` and exercise
-  root-relative navigation through the canonical public paths it derives from
-  `frontend-deployment.json`. The server also preserves direct mapped source
-  paths when a source-location check is needed; do not use a generic
-  repository-root server for cross-application navigation.
-- Source locations, deployment locations, and public URLs are independent.
-  When any one changes, validate the application from its repository source
-  path and validate the generated `dist/` tree with `dist/` as the web root.
-  Report those results separately in the pre-merge briefing.
+## Sources of truth
 
-## Legacy folders — don't touch
-Every frontend source directory in this repo **except `apps/client-intake`, `apps/certificate-validation`,
-`apps/conecta/referral-form`, and `apps/quote-request`** is legacy: built in an older style,
-**running in production and business-critical**. Don't
-edit or restyle them unless I explicitly ask; if I do, match their existing
-style — never impose the conventions below. `apps/client-intake`'s only tie to a legacy
-folder is a redirect into `plataforma_v2`.
+- `README.md` is authoritative for the canonical origin, current and retired
+  route history, public entry points, and downloads.
+- `frontend-deployment.json` is authoritative for application identities and
+  source-to-`dist/` mappings.
+- Automated tests are authoritative for behavior. Keep prose concise; do not
+  duplicate route history or detailed behavior already enforced there.
 
-## quote request — new-style, mobile-first (fully editable)
-Public quote form in `apps/quote-request/`, built with the new-style semantic,
-English-identifier conventions while preserving its established
-wine/grey/green identity. Specifics:
-- Public route: `/solicitacao-orcamento/`. Normalize its slashless spelling
-  before external assets load while preserving query and fragment.
-- The former `/solicitação`, `/solicitação/`, `/solicitação/index.html`,
-  `/confirmação`, `/confirmação/`, and `/confirmação/index.html` routes are
-  retired without redirects.
-- This acquisition flow is intentionally phone-first. Cap the page at `430px`
-  and center that phone-width column on larger screens; do not add a device
-  gate or a separate laptop layout.
-- Backend contract: POST the existing eight `Solicitante_*` fields to
-  `/landingpage/solicitacaoorcamento`. Localhost previews use the local backend
-  at port `3000`; they must never post to production.
-- Input masks run on `input` so paste and autofill work. Text normalization runs
-  on blur and again on submit; names and roles follow the client-intake
-  title-case pattern while preserving intentional mixed casing and compound
-  role acronyms, and company names preserve deliberate brand casing. Phone
-  accepts valid Brazilian 10- or 11-digit numbers. CNPJ accepts both existing
-  numeric values and the 12-alphanumeric + 2-numeric-check-digit format
-  introduced in 2026. E-mail, phone, and CNPJ validation waits until blur or
-  submit. E-mail confirmation blocks mismatched submissions.
-- While submitting, keep the 60px action in place, disable it, replace its
-  visual chrome with the wine-colored text “Processando informações...”, and
-  show the wait cursor over every descendant. Time out stalled requests and
-  restore the form on failure.
-- After a successful response, stay on the quote page, replace the form with
-  “Solicitação enviada com sucesso!” and “Basta aguardar. Logo entraremos em
-  contato.”, keep the logo in its existing position, vertically center only
-  that focused message in the viewport, scroll the page to the top, and offer
-  no new-request action.
-- On failure, keep the form available, restore its submission controls, and
-  show the frontend-owned `Erro_000` fallback.
-- Tests: run `node .agents/tests/quote-request.test.js` after touching
-  `main.js`; extend it when adding pure logic. The deployment suite separately
-  covers the real submission integration.
+## Maintained applications
 
-## Error codes (Erro_XXX)
-The canonical registry lives in `backend/AGENTS.md` (moved out of the old
-dictionary at the top of `plataforma_v2/login/main.js`). Frontends own the
-user-facing messages for the codes they consume (`SUBMIT_ERROR_MESSAGES` in
-`apps/client-intake/main.js` and `apps/conecta/referral-form/main.js`; inline strings
-in legacy folders).
-`Erro_000` (network fallback) and `Erro_006` (FaceLivenessDetector failure)
-are emitted by the frontends themselves, never by the backend.
+| Source | Public route | Backend or cross-application contract |
+| --- | --- | --- |
+| `apps/marketing-site/` | `/` | Quote CTA: `/solicitacao-orcamento/` |
+| `apps/quote-request/` | `/solicitacao-orcamento/` | `POST /landingpage/solicitacaoorcamento` |
+| `apps/client-intake/` | `/formulario-informacoes-iniciais/` | `POST /clientes/processa-formulario` |
+| `apps/certificate-validation/` | `/validacao-certificados/` | `GET /validacaocertificados/:Solicitante_CertificadoID` |
+| `apps/conecta/referral-form/` | `/conecta/cadastro-recomendacoes/` | `POST /conecta/processa-recomendacao` |
 
-## validação — new-style, full rebuild (fully editable)
-Public page where an external visitor checks whether a client's certificate is
-legit by its **Certificado ID#**. **Everything here is open to change** — the
-current files are old-style leftovers we're free to replace wholesale. Build it
-to the **same conventions as `apps/client-intake`** below (design tokens, English
-identifiers / Portuguese visible text, HTML↔CSS↔JS kept in sync). Pairs with a
-thin backend lookup endpoint that returns only a public-safe verdict
-(valid + holder name + score), never private data (email, CPF, address).
-Public route: `/validacao-certificados/`. Normalize its slashless spelling
-before external assets load while preserving query and fragment. The former
-`/validacao`, `/validacao/`, and `/validacao/index.html` routes are intentionally
-retired without redirects.
+All five applications are maintained. Preserve established visible copy and
+visual identity unless the task changes them. `plataforma_v2/` is the frozen,
+business-critical legacy area; edit it only when explicitly requested and then
+match its existing style.
 
-## conecta — new-style (fully editable)
-Public page of the Machado Conecta referral program: employees of client
-companies open a personal link and submit recommendations. Built to the same
-conventions as `apps/client-intake` below. Specifics:
-- Public referral-form route: `/conecta/cadastro-recomendacoes/`; `/conecta/`
-  remains unassigned until a real program hub exists. Normalize the slashless
-  referral path before external assets load and preserve its query.
-- The personal link carries URL params `ncr` (recommender full name) and `eb`
-  (benefited company); `main.js` fills the read-only fields from them — no
-  fetch on load. Missing params hide the form and show the invalid-link notice.
-- Accordion: exactly one section open at a time; the open section shows only
-  its content (its header row is hidden). First visit opens SOBRE O PROGRAMA;
-  later visits open COMO NOS RECOMENDAR (`localStorage` flag
-  `conecta-returning-visitor`).
-- **Responsive, no device gate** — unlike `apps/client-intake`, participants open
-  their links on phones. Keep it working at mobile widths.
-- Useful-link text is intentionally non-selectable. Each link has a copy-icon
-  control that writes the exact URL, confirms success, and falls back to a
-  manual-copy prompt when the Clipboard API is unavailable.
-- Backend contract: POST `/conecta/processa-recomendacao`;
-  `SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes.
-- The WhatsApp field is masked to `+XX XX XXXXX-XXXX` (`maskWhatsapp` /
-  `isCompleteWhatsapp` in `main.js`); the backend enforces the same pattern.
-  A +55 hard-pin was tried and reverted — users instinctively typed 55 first
-  and had to backspace; asking for the full number is clearer.
-- Tests: run `node .agents/tests/conecta.test.js` after touching `main.js`;
-  extend it when adding pure logic.
+## Frontend rules
 
-## client intake — new-style, conventions reference
-A single-page form in `apps/client-intake/` where a client
-company submits its initial information to Machado. **Visible text is Brazilian
-Portuguese; code identifiers are English.** Preserve the wine/grey/green visual
-identity — don't restyle unprompted. Keep HTML, CSS, and JS in sync: a rename in
-one file must be reflected in the others (classes, ids, the `__INDEX__`
-contract); flag any mismatch you notice.
-Public route: `/formulario-informacoes-iniciais/`. Normalize its slashless
-spelling before external assets load while preserving query and fragment. The
-former `/formulario`, `/formulario/`, and `/formulario/index.html` routes are
-intentionally retired without redirects.
+- Visible copy is Brazilian Portuguese; new identifiers are English and ASCII.
+  Keep HTML, CSS, and JavaScript identifiers and contracts synchronized.
+- Use semantic HTML, native controls, correct labels and ARIA relationships,
+  unique IDs, deliberate focus behavior, visible `:focus-visible` treatment,
+  and `prefers-reduced-motion` support.
+- Use document-relative URLs for application assets. Use root-relative URLs for
+  public navigation and explicit cross-application contracts.
+- Preserve existing routes, API payloads, copy, and styling unless scoped.
+  Do not add a dependency, framework, build tool, or device gate without
+  approval.
+- Frontends own the Portuguese messages for backend errors they consume. The
+  canonical registry is in `../backend/AGENTS.md`; `Erro_000` and
+  `Erro_006` are frontend-originated.
+- Certificate validation may expose only the public-safe verdict, holder name,
+  score, and certificate ID—never email, CPF, address, or other private data.
 
-Files: `index.html` (structure) · `style.css` (all styling) · `main.js`
-(behaviour: validation, participant cloning, same-address copy, device gate).
+### Marketing-site contract
 
-Tests live in the repository support folder: `.agents/tests/formulario.test.js` is a
-Node harness over `main.js`'s pure helpers (masks, CPF/CNPJ validators,
-normalizers). Run `node .agents/tests/formulario.test.js` after touching `main.js`;
-extend it when adding pure logic. It loads the real `main.js` with a stubbed
-DOM, so tested logic is never duplicated.
+- Keep the presentation full-width through `430px` and as a centered
+  `430px` column above that boundary; do not add a wider layout or device gate.
+- Keep `apps/marketing-site/main.js` as the behavior-free native-module entry
+  and implementation under `apps/marketing-site/modules/`.
+- Keep interactions on native buttons and links, with synchronized ARIA state,
+  explicit focus destinations and restoration, visible control focus, and
+  borderless programmatic heading focus. Editorial text remains selectable.
+- Resolve the live reduced-motion preference for scrolling and authored motion;
+  retain the established default behavior when reduced motion is not requested.
+- The quote CTA targets `/solicitacao-orcamento/`. Preserve the exact tested
+  article, Instagram, Shaka/player, poster, HLS, testimonial, pause/toggle, and
+  media load-order and initialization contracts.
+- Preserve the three PDF download destinations defined by `README.md` and
+  `frontend-deployment.json`. Verify source and generated previews at
+  `390px`, `430px`, `431px`, and `1440px` across representative initial,
+  expanded, focus, sticky-control, CTA, testimonial, and media states.
 
-Backend contract: submissions POST JSON to `/clientes/processa-formulario`;
-`SUBMIT_ERROR_MESSAGES` in `main.js` mirrors the backend `Erro_XXX` codes
-(registry in `backend/AGENTS.md`).
+## Preview and verification
 
-### Naming
-- Identifiers (class/id/variable): English, lowercase, hyphen-separated, ASCII
-  (`company-cnpj`, `text-input`); `camelCase` for JS variables/functions. No
-  accents or capitals in code.
-- Visible text stays Portuguese, accents intact.
-- IDs unique per page; repeated/dynamic elements use classes, never duplicate ids.
+- Preview tracked sources with `node scripts/serve-frontend.mjs`; it resolves
+  public routes from `frontend-deployment.json`. Do not use a generic
+  repository-root server for cross-application checks.
+- Validate the generated artifact separately with `dist/` as the web root.
+  Report source and generated results separately.
+- Browser checks must cover viewport landing, focus, selection or copy behavior,
+  reduced motion, and console output at relevant desktop and mobile widths.
+  Never submit production data or let a local preview post to the production
+  backend; maintained forms use the local backend on port `3000`.
+- Stop every preview or stub server when verification finishes.
 
-### HTML
-- Semantic elements: `<main>`, `<fieldset>` + `<legend>` per section,
-  `<label for>` paired with every `<input id name>`, `<button type="...">`
-  (never a `<div>` as a control), one `<h1>`, headings in order.
-- Void elements (`<img>`, `<input>`) have no closing tag; `<img>` always has `alt`.
-- Inputs: correct `type`, `inputmode` for numeric fields, `autocomplete` where a
-  standard token exists, `maxlength` where fixed-length. Optional fields (e.g.
-  Complemento) have no `required`.
-- 2-space indent, no trailing whitespace. `<p>` and `<input>` each on one line.
-- No blank line between same-type siblings; one blank line between distinct
-  sub-groups (e.g. two `.field-row`s) and at section boundaries.
-- Comments are navigational signposts only (`<!-- SECTION: ... -->`). Exception:
-  document any HTML↔JS interface as a `JS CONTRACT:` comment.
+Run the complete local suite:
 
-### CSS
-- **Use the `:root` design tokens** (`--color-*`, `--space-*`, `--radius-*`).
-  Never hard-code a hex or a raw pixel a token already covers.
-- Style by class, not id. Per-field width via
-  `.field:has(> #the-id) { --field-width: Nch; }` — a `ch` flex-basis; fields
-  stretch to fill their row (`flex: 1 1 var(--field-width)`).
-- Section banners (`.section-title`, `.section-description`) span edge-to-edge
-  via `width: calc(100% + 2*var(--space-md))` + negative horizontal margins.
-- Keep accessibility defaults: `:focus-visible` outlines, `prefers-reduced-motion`.
-- 2-space indent, no trailing whitespace.
-
-### JS (main.js)
-- Vanilla JS, no framework. Clear, small, well-named functions over clever
-  one-liners.
-- **`__INDEX__` contract:** `#participant-template` uses the literal token
-  `__INDEX__` in every id/name/`for`/`data-participant-index`. JS clones it per
-  participant, replacing **every** `__INDEX__` with the participant number
-  (1, 2, 3, …) before inserting into `.participants-list`. Keep ids unique.
-- **Device gate:** if `window.innerWidth <= 1024`, redirect to the
-  device-warning page; check on load and on resize.
-
-### Scope
-- Don't add dependencies, build tools, or frameworks without asking.
+```powershell
+node --test .agents/tests/*.test.js
+node --test scripts/frontend-deployment.test.mjs
+node scripts/build-frontend.mjs
+node scripts/check-frontend.mjs
+git diff --check
+```
