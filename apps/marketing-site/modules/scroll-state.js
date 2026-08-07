@@ -20,174 +20,170 @@ import {
 import { userAgent } from './media.js';
 
 
+const closeButtonPositionClasses = [
+    'is-contained',
+    'is-fixed-above-quote',
+    'is-fixed-near-bottom',
+    'is-hidden'
+];
+const quotePromptPositionClasses = [
+    'has-contained-close-button',
+    'has-fixed-close-button'
+];
+const instagramDirectPositionClasses = [
+    'has-fixed-position',
+    'is-contained',
+    'is-fixed',
+    'is-hidden'
+];
+
 
 quoteCta.classList.add('is-hidden', 'is-fixed');
 
-export function updateQuoteCtaPosition(){
 
-    if (window.scrollY + window.innerHeight >= section1.offsetTop) {
+export function updateQuoteCtaPosition() {
+    const section1Top = section1.offsetTop;
+    const viewportBottom = window.scrollY + window.innerHeight;
 
-        quoteCta.classList.remove('is-hidden');
-        quoteCtaSpacer.style.setProperty('--quote-cta-height', quoteCta.offsetHeight + 'px');
-
-        if (window.scrollY + window.innerHeight < section1.offsetTop + quoteCta.offsetHeight){
-
-            quoteCta.classList.remove('is-fixed');
-            quoteCta.classList.add('is-anchored');
-            quoteCta.style.setProperty('--quote-cta-top', section1.offsetTop + 'px');
-
-        } else {
-
-            quoteCta.classList.remove('is-anchored');
-            quoteCta.classList.add('is-fixed');
-
-        }
-
+    if (viewportBottom < section1Top) {
+        quoteCta.classList.remove('is-anchored');
+        quoteCta.classList.add('is-hidden', 'is-fixed');
+        return quoteCta.offsetHeight;
     }
 
+    quoteCta.classList.remove('is-hidden');
+    const quoteCtaHeight = quoteCta.offsetHeight;
+    quoteCtaSpacer.style.setProperty('--quote-cta-height', quoteCtaHeight + 'px');
+
+    if (viewportBottom < section1Top + quoteCtaHeight) {
+        quoteCta.classList.remove('is-fixed');
+        quoteCta.classList.add('is-anchored');
+        quoteCta.style.setProperty('--quote-cta-top', section1Top + 'px');
+    } else {
+        quoteCta.classList.remove('is-anchored');
+        quoteCta.classList.add('is-fixed');
+    }
+
+    return quoteCtaHeight;
 }
 
-window.onscroll = function() {
 
-    updateQuoteCtaPosition();
+function setSectionCloseState(closeButton, quotePrompt, state, quoteCtaHeight) {
+    closeButton.classList.remove(...closeButtonPositionClasses);
+    quotePrompt.classList.remove(...quotePromptPositionClasses);
 
-
-    var primaryVideoFrameTop = primaryVideoFrame.offsetTop;
-    var primaryVideoFrameHeight = primaryVideoFrame.offsetHeight;
-
-    if (primaryVideo !== null) {
-
-        if (window.scrollY + window.innerHeight <= primaryVideoFrameTop) {
-
-            if (!primaryVideo.paused) primaryVideo.pause();
-
-        }
-
-
-        if (window.scrollY >= primaryVideoFrameTop + primaryVideoFrameHeight) {
-
-            if (!primaryVideo.paused) primaryVideo.pause();
-
-        }
-
+    if (state === 'hidden') {
+        closeButton.classList.add('is-hidden');
+        return;
     }
 
-
-    var section1Top = section1.offsetTop;
-    var section2Top = section2.offsetTop;
-    var section3Top = section3.offsetTop;
-    var section4Top = section4.offsetTop;
-    var quoteCtaSpacerTop = quoteCtaSpacer.offsetTop;
-
-
-    if (window.scrollY <= section1Top) {
-
-        section1CloseButton.classList.add('is-hidden');
-
-    } else if (window.scrollY > section1Top && window.scrollY <= (section2Top - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section1QuotePrompt.classList.remove('has-contained-close-button');
-        section1QuotePrompt.classList.add('has-fixed-close-button');
-
-        section1CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        section1CloseButton.classList.add('is-fixed-above-quote');
-        section1CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
-
-    } else if (window.scrollY > (section2Top - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section1QuotePrompt.classList.remove('has-fixed-close-button');
-        section1QuotePrompt.classList.add('has-contained-close-button');
-
-        section1CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        section1CloseButton.classList.add('is-contained');
-
+    if (state === 'fixed') {
+        quotePrompt.classList.add('has-fixed-close-button');
+        closeButton.classList.add('is-fixed-above-quote');
+        closeButton.style.setProperty('--section-close-bottom', quoteCtaHeight + 15 + 'px');
+        return;
     }
 
+    quotePrompt.classList.add('has-contained-close-button');
+    closeButton.classList.add('is-contained');
+}
 
-    if (window.scrollY <= section2Top) {
 
-        section2CloseButton.classList.add('is-hidden');
-
-    } else if (window.scrollY > section2Top && window.scrollY <= (section3Top - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section2QuotePrompt.classList.remove('has-contained-close-button');
-        section2QuotePrompt.classList.add('has-fixed-close-button');
-
-        section2CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        section2CloseButton.classList.add('is-fixed-above-quote');
-        section2CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
-
-    } else if (window.scrollY > (section3Top - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section2QuotePrompt.classList.remove('has-fixed-close-button');
-        section2QuotePrompt.classList.add('has-contained-close-button');
-
-        section2CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        section2CloseButton.classList.add('is-contained');
-
+function updateSectionCloseState(
+    closeButton,
+    quotePrompt,
+    sectionTop,
+    nextSectionTop,
+    quoteCtaHeight,
+    scrollTop
+) {
+    if (scrollTop < sectionTop) {
+        setSectionCloseState(closeButton, quotePrompt, 'hidden', quoteCtaHeight);
+    } else if (scrollTop <= nextSectionTop - window.innerHeight + quoteCtaHeight) {
+        setSectionCloseState(closeButton, quotePrompt, 'fixed', quoteCtaHeight);
+    } else {
+        setSectionCloseState(closeButton, quotePrompt, 'contained', quoteCtaHeight);
     }
+}
 
 
-    if (window.scrollY <= section3Top) {
+function updateInstagramDirectState(section3Top, section4Top, quoteCtaHeight, scrollTop) {
+    instagramDirectLink.classList.remove(...instagramDirectPositionClasses);
 
-        section3CloseButton.classList.add('is-hidden');
+    if (
+        userAgent.indexOf('Instagram') !== -1 ||
+        scrollTop < section3Top
+    ) {
         instagramDirectLink.classList.add('is-hidden');
-
-    } else if (window.scrollY > section3Top && window.scrollY <= (section4Top - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section3QuotePrompt.classList.remove('has-contained-close-button');
-        section3QuotePrompt.classList.add('has-fixed-close-button');
-
-        section3CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        section3CloseButton.classList.add('is-fixed-above-quote');
-        section3CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
-
-        if (userAgent.indexOf('Instagram') === -1) {
-
-            instagramDirectLink.classList.remove('is-hidden', 'is-contained', 'has-fixed-position');
-            instagramDirectLink.classList.add('is-fixed');
-
-        }
-
-    } else if (window.scrollY > (section4Top - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section3QuotePrompt.classList.remove('has-fixed-close-button');
-        section3QuotePrompt.classList.add('has-contained-close-button');
-
-        section3CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        section3CloseButton.classList.add('is-contained');
-
-        if (userAgent.indexOf('Instagram') === -1) {
-
-            instagramDirectLink.classList.remove('is-hidden', 'is-fixed', 'has-fixed-position');
-            instagramDirectLink.classList.add('is-contained');
-
-        }
-
+    } else if (scrollTop <= section4Top - window.innerHeight + quoteCtaHeight) {
+        instagramDirectLink.classList.add('is-fixed');
+    } else {
+        instagramDirectLink.classList.add('is-contained');
     }
-
-
-    if (window.scrollY <= section4Top) {
-
-        section4CloseButton.classList.add('is-hidden');
-
-    } else if (window.scrollY > section4Top && window.scrollY <= (quoteCtaSpacerTop - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section4QuotePrompt.classList.remove('has-contained-close-button');
-        section4QuotePrompt.classList.add('has-fixed-close-button');
-
-        section4CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-contained');
-        section4CloseButton.classList.add('is-fixed-above-quote');
-        section4CloseButton.style.setProperty('--section-close-bottom', quoteCta.offsetHeight + 15 + 'px');
-
-    } else if (window.scrollY > (quoteCtaSpacerTop - window.innerHeight + quoteCta.offsetHeight)) {
-
-        section4QuotePrompt.classList.remove('has-fixed-close-button');
-        section4QuotePrompt.classList.add('has-contained-close-button');
-
-        section4CloseButton.classList.remove('is-hidden', 'is-fixed-near-bottom', 'is-fixed-above-quote');
-        section4CloseButton.classList.add('is-contained');
-
-    }
-
 }
+
+
+function pausePrimaryVideoOutsideViewport() {
+    if (primaryVideo === null || primaryVideo.paused) return;
+
+    const primaryVideoFrameBounds = primaryVideoFrame.getBoundingClientRect();
+    if (
+        primaryVideoFrameBounds.bottom <= 0 ||
+        primaryVideoFrameBounds.top >= window.innerHeight
+    ) {
+        primaryVideo.pause();
+    }
+}
+
+
+export function updateScrollState() {
+    const quoteCtaHeight = updateQuoteCtaPosition();
+    const scrollTop = Math.ceil(window.scrollY);
+    const section1Top = section1.offsetTop;
+    const section2Top = section2.offsetTop;
+    const section3Top = section3.offsetTop;
+    const section4Top = section4.offsetTop;
+    const quoteCtaSpacerTop = quoteCtaSpacer.offsetTop;
+
+    pausePrimaryVideoOutsideViewport();
+    updateSectionCloseState(
+        section1CloseButton,
+        section1QuotePrompt,
+        section1Top,
+        section2Top,
+        quoteCtaHeight,
+        scrollTop
+    );
+    updateSectionCloseState(
+        section2CloseButton,
+        section2QuotePrompt,
+        section2Top,
+        section3Top,
+        quoteCtaHeight,
+        scrollTop
+    );
+    updateSectionCloseState(
+        section3CloseButton,
+        section3QuotePrompt,
+        section3Top,
+        section4Top,
+        quoteCtaHeight,
+        scrollTop
+    );
+    updateSectionCloseState(
+        section4CloseButton,
+        section4QuotePrompt,
+        section4Top,
+        quoteCtaSpacerTop,
+        quoteCtaHeight,
+        scrollTop
+    );
+    updateInstagramDirectState(section3Top, section4Top, quoteCtaHeight, scrollTop);
+}
+
+
+window.addEventListener('scroll', updateScrollState, { passive: true });
+window.addEventListener('resize', updateScrollState);
+window.addEventListener('load', updateScrollState);
+window.addEventListener('pageshow', updateScrollState);
+updateScrollState();

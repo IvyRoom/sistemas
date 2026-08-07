@@ -21,7 +21,7 @@ import {
     testimonial5Video
 } from './elements.js';
 import { preferredScrollBehavior } from './scroll-behavior.js';
-import { updateQuoteCtaPosition } from './scroll-state.js';
+import { updateScrollState } from './scroll-state.js';
 
 
 testimonial1ViewToggle.addEventListener("click", function(event) {
@@ -36,7 +36,7 @@ testimonial1ViewToggle.addEventListener("click", function(event) {
 
         testimonial1Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     } else {
 
@@ -48,7 +48,7 @@ testimonial1ViewToggle.addEventListener("click", function(event) {
 
         testimonial1Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     }
 
@@ -67,7 +67,7 @@ testimonial2ViewToggle.addEventListener("click", function(event) {
 
         testimonial2Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     } else {
 
@@ -79,7 +79,7 @@ testimonial2ViewToggle.addEventListener("click", function(event) {
 
         testimonial2Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     }
 
@@ -98,7 +98,7 @@ testimonial3ViewToggle.addEventListener("click", function(event) {
 
         testimonial3Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     } else {
 
@@ -110,7 +110,7 @@ testimonial3ViewToggle.addEventListener("click", function(event) {
 
         testimonial3Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     }
 
@@ -129,7 +129,7 @@ testimonial4ViewToggle.addEventListener("click", function(event) {
 
         testimonial4Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     } else {
 
@@ -141,7 +141,7 @@ testimonial4ViewToggle.addEventListener("click", function(event) {
 
         testimonial4Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     }
 
@@ -160,7 +160,7 @@ testimonial5ViewToggle.addEventListener("click", function(event) {
 
         testimonial5Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     } else {
 
@@ -172,7 +172,7 @@ testimonial5ViewToggle.addEventListener("click", function(event) {
 
         testimonial5Video.scrollIntoView({behavior: preferredScrollBehavior()});
 
-        updateQuoteCtaPosition();
+        updateScrollState();
 
     }
 

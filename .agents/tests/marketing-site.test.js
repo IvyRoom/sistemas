@@ -231,12 +231,20 @@ function assertRealModuleSyntax(filename, moduleSource) {
 }
 
 function createHarness({
+  initialScrollY = 0,
+  playerLoadError = null,
+  playerLoadPromise = null,
   reducedMotion = false,
+  shakaAvailable = true,
+  shakaSupported = true,
+  supportsIntersectionObserver = true,
   supportsMatchMedia = true,
-  userAgent = "Mozilla/5.0"
+  userAgent = "Mozilla/5.0",
+  viewportHeight = VIEWPORT_HEIGHT
 } = {}) {
   const elements = new Map();
   const listeners = new Map();
+  const windowListeners = new Map();
   const observers = [];
   const openCalls = [];
   const scrollCalls = [];
@@ -245,7 +253,9 @@ function createHarness({
   const mediaQueryCalls = [];
   const playerInstances = [];
   const overlayInstances = [];
+  const consoleErrors = [];
   let document;
+  let polyfillInstallCalls = 0;
   let reducedMotionPreference = reducedMotion;
 
   function geometry(id) {
@@ -361,6 +371,7 @@ function createHarness({
         : "",
       offsetHeight: elementGeometry.offsetHeight,
       offsetTop: elementGeometry.offsetTop,
+      loadCalls: 0,
       paused: true,
       pauseCalls: 0,
       style,
@@ -370,6 +381,14 @@ function createHarness({
       getAttribute(name) {
         return attributes.get(name) ?? null;
       },
+      getBoundingClientRect() {
+        const top = this.offsetTop - window.scrollY;
+        return {
+          bottom: top + this.offsetHeight,
+          height: this.offsetHeight,
+          top
+        };
+      },
       focus(options) {
         const call = {
           id,
@@ -378,6 +397,9 @@ function createHarness({
         focusCalls.push(call);
         interactionCalls.push({ ...call, type: "focus" });
         document.activeElement = this;
+      },
+      load() {
+        this.loadCalls += 1;
       },
       pause() {
         this.pauseCalls += 1;
@@ -390,6 +412,9 @@ function createHarness({
         };
         scrollCalls.push(call);
         interactionCalls.push({ ...call, type: "scroll" });
+      },
+      removeAttribute(name) {
+        attributes.delete(name);
       },
       setAttribute(name, value) {
         const stringValue = String(value);
@@ -439,7 +464,12 @@ function createHarness({
   }
 
   class Player {
+    static isBrowserSupported() {
+      return shakaSupported;
+    }
+
     constructor(video) {
+      this.destroyCalls = 0;
       this.video = video;
       this.loadCalls = [];
       playerInstances.push(this);
@@ -447,6 +477,14 @@ function createHarness({
 
     load(url) {
       this.loadCalls.push(url);
+      if (playerLoadError !== null) return Promise.reject(playerLoadError);
+      if (playerLoadPromise !== null) return playerLoadPromise;
+      return Promise.resolve();
+    }
+
+    destroy() {
+      this.destroyCalls += 1;
+      return Promise.resolve();
     }
   }
 
@@ -456,19 +494,29 @@ function createHarness({
       this.container = container;
       this.video = video;
       this.configureCalls = [];
+      this.destroyCalls = 0;
       overlayInstances.push(this);
     }
 
     configure(configuration) {
       this.configureCalls.push(configuration);
     }
+
+    destroy() {
+      this.destroyCalls += 1;
+      return this.player.destroy();
+    }
   }
 
   const window = {
-    innerHeight: VIEWPORT_HEIGHT,
+    innerHeight: viewportHeight,
     location: { href: "https://machadogestao.com/" },
-    onscroll: null,
-    scrollY: 0,
+    scrollY: initialScrollY,
+    addEventListener(type, listener, options) {
+      const registrations = windowListeners.get(type) ?? [];
+      registrations.push({ listener, options });
+      windowListeners.set(type, registrations);
+    },
     open(url, target, features) {
       openCalls.push({ features, target, url });
     }
@@ -481,19 +529,36 @@ function createHarness({
     };
   }
 
-  const context = vm.createContext({
-    console,
+  const contextGlobals = {
+    console: Object.assign(Object.create(console), {
+      error(...argumentsList) {
+        consoleErrors.push(argumentsList);
+      }
+    }),
     document,
-    IntersectionObserver: FakeIntersectionObserver,
     navigator: { userAgent },
-    shaka: { Player, ui: { Overlay } },
     window
-  });
+  };
+  if (supportsIntersectionObserver) {
+    contextGlobals.IntersectionObserver = FakeIntersectionObserver;
+  }
+  if (shakaAvailable) {
+    contextGlobals.shaka = {
+      Player,
+      polyfill: {
+        installAll() {
+          polyfillInstallCalls += 1;
+        }
+      },
+      ui: { Overlay }
+    };
+  }
+  const context = vm.createContext(contextGlobals);
 
   vm.runInContext(executableSource, context, {
     filename: path.join(marketingRoot, "marketing-site.test-bundle.js")
   });
-  assert.equal(observers.length, 1);
+  assert.equal(observers.length, supportsIntersectionObserver ? 1 : 0);
 
   function dispatch(id, type = "click") {
     const listener = listeners.get(`${id}:${type}`);
@@ -511,15 +576,27 @@ function createHarness({
     return { defaultPrevented };
   }
 
+  function dispatchWindowEvent(type) {
+    const registrations = windowListeners.get(type) ?? [];
+    assert.ok(registrations.length > 0, `Missing window ${type} listener`);
+    for (const { listener } of registrations) listener.call(window, { type });
+  }
+
   function scrollTo(scrollY) {
     window.scrollY = scrollY;
-    assert.equal(typeof window.onscroll, "function");
-    window.onscroll();
+    dispatchWindowEvent("scroll");
+  }
+
+  function resizeTo(innerHeight) {
+    window.innerHeight = innerHeight;
+    dispatchWindowEvent("resize");
   }
 
   return {
+    consoleErrors,
     context,
     dispatch,
+    dispatchWindowEvent,
     document,
     element,
     focusCalls,
@@ -528,7 +605,11 @@ function createHarness({
     openCalls,
     overlayInstances,
     playerInstances,
-    observer: observers[0],
+    observer: observers[0] ?? null,
+    get polyfillInstallCalls() {
+      return polyfillInstallCalls;
+    },
+    resizeTo,
     get scrollBehavior() {
       return supportsMatchMedia && reducedMotionPreference ? "auto" : "smooth";
     },
@@ -536,8 +617,12 @@ function createHarness({
     setReducedMotion(value) {
       reducedMotionPreference = value;
     },
+    setPlayerLoadError(error) {
+      playerLoadError = error;
+    },
     scrollTo,
-    window
+    window,
+    windowListeners
   };
 }
 
@@ -1460,8 +1545,12 @@ test("marketing favicon is byte-identical to the login favicon", () => {
   );
 });
 
-test("primary video initializes once with the exact poster, HLS source, and Shaka controls", () => {
-  const harness = createHarness();
+test("primary video initializes once with the exact poster, HLS source, and Shaka controls", async () => {
+  let resolvePlayerLoad;
+  const playerLoadPromise = new Promise((resolve) => {
+    resolvePlayerLoad = resolve;
+  });
+  const harness = createHarness({ playerLoadPromise });
   const outer = harness.element("primary-video-frame");
   const inner = harness.element("primary-video-player");
   const video = harness.element("primary-video");
@@ -1472,12 +1561,22 @@ test("primary video initializes once with the exact poster, HLS source, and Shak
   assert.equal(video.getAttribute("poster"), null);
 
   harness.observer.trigger(outer, true);
+  harness.observer.trigger(outer, true);
+  assert.equal(harness.playerInstances.length, 1);
+  assert.equal(harness.overlayInstances.length, 1);
+  assert.deepEqual(harness.playerInstances[0].loadCalls, [HLS_URL]);
+
+  resolvePlayerLoad();
+  await new Promise((resolve) => setImmediate(resolve));
 
   assert.equal(inner.getAttribute("data-shaka-player-container"), "");
   assert.equal(video.getAttribute("data-shaka-player"), "");
   assert.equal(video.getAttribute("poster"), POSTER_URL);
   assert.equal(video.getAttribute("src"), HLS_URL);
+  assert.equal(video.getAttribute("controls"), null);
+  assert.deepEqual(harness.consoleErrors, []);
   assert.equal(harness.playerInstances.length, 1);
+  assert.equal(harness.polyfillInstallCalls, 1);
   assert.equal(harness.playerInstances[0].video, video);
   assert.deepEqual(harness.playerInstances[0].loadCalls, [HLS_URL]);
   assert.equal(harness.overlayInstances.length, 1);
@@ -1493,6 +1592,56 @@ test("primary video initializes once with the exact poster, HLS source, and Shak
   harness.observer.trigger(outer, true);
   assert.equal(harness.playerInstances.length, 1);
   assert.equal(harness.overlayInstances.length, 1);
+});
+
+test("primary video contains missing-runtime and rejected-load failures", async () => {
+  const noObserver = createHarness({ supportsIntersectionObserver: false });
+  assert.equal(noObserver.observer, null);
+  assert.equal(noObserver.playerInstances.length, 1);
+  assert.equal(noObserver.polyfillInstallCalls, 1);
+  assert.equal(noObserver.element("primary-video").getAttribute("controls"), null);
+
+  const noShaka = createHarness({ shakaAvailable: false });
+  noShaka.observer.trigger(noShaka.element("primary-video-frame"), true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(noShaka.playerInstances.length, 0);
+  assert.equal(noShaka.element("primary-video").getAttribute("poster"), POSTER_URL);
+  assert.equal(noShaka.element("primary-video").getAttribute("src"), HLS_URL);
+  assert.equal(noShaka.element("primary-video").getAttribute("controls"), "");
+  assert.equal(noShaka.element("primary-video").getAttribute("data-shaka-player"), null);
+  assert.doesNotThrow(() => noShaka.dispatch("section-1-open-button"));
+
+  const unsupported = createHarness({ shakaSupported: false });
+  unsupported.observer.trigger(unsupported.element("primary-video-frame"), true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(unsupported.polyfillInstallCalls, 1);
+  assert.equal(unsupported.playerInstances.length, 0);
+  assert.equal(unsupported.element("primary-video").getAttribute("controls"), "");
+
+  const loadError = new Error("manifest unavailable");
+  const rejected = createHarness({ playerLoadError: loadError });
+  rejected.observer.trigger(rejected.element("primary-video-frame"), true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(rejected.playerInstances.length, 1);
+  assert.equal(rejected.element("primary-video").getAttribute("controls"), "");
+  assert.equal(rejected.element("primary-video").loadCalls, 1);
+  assert.equal(rejected.playerInstances[0].destroyCalls, 1);
+  assert.equal(rejected.overlayInstances[0].destroyCalls, 1);
+  assert.equal(rejected.consoleErrors.length, 1);
+  assert.deepEqual(rejected.consoleErrors[0], [loadError]);
+  assert.deepEqual(rejected.observer.unobserveCalls, []);
+
+  rejected.setPlayerLoadError(null);
+  rejected.observer.trigger(rejected.element("primary-video-frame"), false);
+  rejected.observer.trigger(rejected.element("primary-video-frame"), true);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(rejected.playerInstances.length, 2);
+  assert.equal(rejected.overlayInstances.length, 2);
+  assert.equal(rejected.playerInstances[1].destroyCalls, 0);
+  assert.equal(rejected.overlayInstances[1].destroyCalls, 0);
+  assert.equal(rejected.element("primary-video").getAttribute("controls"), null);
+  assert.equal(rejected.element("primary-video").getAttribute("data-shaka-player"), "");
+  assert.deepEqual(rejected.observer.unobserveCalls, [rejected.element("primary-video-frame")]);
 });
 
 test("top-level sections keep one section open and preserve open and close scroll targets", () => {
@@ -1718,6 +1867,60 @@ test("implicit section switches preserve nested state while explicit closes rese
   }
 });
 
+test("scroll state initializes and refreshes from viewport and page lifecycle events", () => {
+  const restored = createHarness({ initialScrollY: SECTION_TOPS[2] + 1 });
+  for (const eventType of ["scroll", "resize", "load", "pageshow"]) {
+    assert.equal(restored.windowListeners.get(eventType)?.length, 1, eventType);
+  }
+  assert.equal(restored.windowListeners.get("scroll")[0].options.passive, true);
+  assertClassState(restored.element("quote-cta"), {
+    absent: ["is-anchored", "is-hidden"],
+    present: ["is-fixed"]
+  });
+  assertClassState(restored.element("section-3-close-button"), {
+    absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+    present: ["is-fixed-above-quote"]
+  });
+  assertClassState(restored.element("instagram-direct-link"), {
+    absent: ["has-fixed-position", "is-contained", "is-hidden"],
+    present: ["is-fixed"]
+  });
+
+  const fractionalLanding = createHarness({
+    initialScrollY: SECTION_TOPS[0] - 0.25
+  });
+  assertClassState(fractionalLanding.element("section-1-close-button"), {
+    absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+    present: ["is-fixed-above-quote"]
+  });
+
+  const resized = createHarness({ initialScrollY: 2400 });
+  const section1CloseButton = resized.element("section-1-close-button");
+  assertClassState(section1CloseButton, {
+    absent: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"],
+    present: ["is-contained"]
+  });
+  resized.resizeTo(600);
+  assertClassState(section1CloseButton, {
+    absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+    present: ["is-fixed-above-quote"]
+  });
+  resized.element("section-2").offsetTop = 2800;
+  resized.dispatchWindowEvent("pageshow");
+  assertClassState(section1CloseButton, {
+    absent: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"],
+    present: ["is-contained"]
+  });
+
+  const loaded = createHarness();
+  loaded.element("section-1").offsetTop = 700;
+  loaded.dispatchWindowEvent("load");
+  assertClassState(loaded.element("quote-cta"), {
+    absent: ["is-fixed", "is-hidden"],
+    present: ["is-anchored"]
+  });
+});
+
 test("quote CTA preserves visibility thresholds, positioning, and destination", () => {
   const harness = createHarness();
   const cta = harness.element("quote-cta");
@@ -1766,8 +1969,8 @@ test("quote CTA preserves visibility thresholds, positioning, and destination", 
 
   harness.scrollTo(0);
   assertClassState(cta, {
-    absent: ["is-anchored", "is-hidden"],
-    present: ["is-fixed"]
+    absent: ["is-anchored"],
+    present: ["is-fixed", "is-hidden"]
   });
 
   const updatedCtaHeight = CTA_HEIGHT + 25;
@@ -1797,6 +2000,16 @@ test("quote CTA stays above the closed summary click surfaces", () => {
 
 test("section close arrows keep their hidden, fixed, and relative boundaries", () => {
   const nextTops = [...SECTION_TOPS.slice(1), FINAL_SPACER_TOP];
+  const arrowStates = [
+    "is-contained",
+    "is-fixed-above-quote",
+    "is-fixed-near-bottom",
+    "is-hidden"
+  ];
+  const promptStates = [
+    "has-contained-close-button",
+    "has-fixed-close-button"
+  ];
 
   for (let number = 1; number <= 4; number += 1) {
     const harness = createHarness();
@@ -1806,22 +2019,34 @@ test("section close arrows keep their hidden, fixed, and relative boundaries", (
     const tail = nextTops[number - 1] - VIEWPORT_HEIGHT + CTA_HEIGHT;
     const otherSection = number === 4 ? 1 : number + 1;
 
+    assertClassState(arrow, {
+      absent: arrowStates.filter((state) => state !== "is-hidden"),
+      present: ["is-hidden"]
+    });
+    assertClassState(signup, { absent: promptStates });
+
     harness.dispatch(`section-${number}-open-button`);
     assertClassState(arrow, {
-      absent: ["is-contained", "is-fixed-above-quote", "is-hidden"],
+      absent: arrowStates.filter((state) => state !== "is-fixed-near-bottom"),
       present: ["is-fixed-near-bottom"]
     });
+    assertClassState(signup, { absent: promptStates });
+
     harness.scrollTo(start + 1);
     assertClassState(arrow, {
-      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      absent: arrowStates.filter((state) => state !== "is-fixed-above-quote"),
       present: ["is-fixed-above-quote"]
+    });
+    assertClassState(signup, {
+      absent: ["has-contained-close-button"],
+      present: ["has-fixed-close-button"]
     });
     assertCustomProperty(arrow, "--section-close-bottom", `${CTA_HEIGHT + 15}px`);
 
     harness.scrollTo(start);
     assertClassState(arrow, {
-      absent: ["is-contained", "is-fixed-near-bottom"],
-      present: ["is-fixed-above-quote", "is-hidden"]
+      absent: arrowStates.filter((state) => state !== "is-fixed-above-quote"),
+      present: ["is-fixed-above-quote"]
     });
     assertClassState(signup, {
       absent: ["has-contained-close-button"],
@@ -1831,55 +2056,10 @@ test("section close arrows keep their hidden, fixed, and relative boundaries", (
     harness.dispatch(`section-${otherSection}-open-button`);
     harness.dispatch(`section-${number}-open-button`);
     assertClassState(arrow, {
-      absent: ["is-contained"],
-      present: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"]
+      absent: arrowStates.filter((state) => state !== "is-fixed-near-bottom"),
+      present: ["is-fixed-near-bottom"]
     });
-    assertClassState(signup, {
-      absent: ["has-contained-close-button"],
-      present: ["has-fixed-close-button"]
-    });
-
-    harness.scrollTo(start + 1);
-    assertClassState(signup, {
-      absent: ["has-contained-close-button"],
-      present: ["has-fixed-close-button"]
-    });
-    assertClassState(arrow, {
-      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
-      present: ["is-fixed-above-quote"]
-    });
-    assertCustomProperty(arrow, "--section-close-bottom", `${CTA_HEIGHT + 15}px`);
-
-    harness.scrollTo(tail + 1);
-    assertClassState(signup, {
-      absent: ["has-fixed-close-button"],
-      present: ["has-contained-close-button"]
-    });
-    assertClassState(arrow, {
-      absent: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"],
-      present: ["is-contained"]
-    });
-
-    harness.scrollTo(start);
-    assertClassState(signup, {
-      absent: ["has-fixed-close-button"],
-      present: ["has-contained-close-button"]
-    });
-    assertClassState(arrow, {
-      absent: ["is-fixed-above-quote", "is-fixed-near-bottom"],
-      present: ["is-contained", "is-hidden"]
-    });
-
-    harness.dispatch(`section-${otherSection}-open-button`);
-    harness.dispatch(`section-${number}-open-button`);
-    assertClassState(signup, {
-      absent: ["has-fixed-close-button"],
-      present: ["has-contained-close-button"]
-    });
-    assertClassState(arrow, {
-      absent: ["is-fixed-above-quote"],
-      present: ["is-contained", "is-fixed-near-bottom", "is-hidden"]
-    });
+    assertClassState(signup, { absent: promptStates });
 
     harness.scrollTo(tail);
     assertClassState(signup, {
@@ -1887,18 +2067,28 @@ test("section close arrows keep their hidden, fixed, and relative boundaries", (
       present: ["has-fixed-close-button"]
     });
     assertClassState(arrow, {
-      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      absent: arrowStates.filter((state) => state !== "is-fixed-above-quote"),
       present: ["is-fixed-above-quote"]
     });
 
+    harness.scrollTo(tail + 1);
+    assertClassState(signup, {
+      absent: ["has-fixed-close-button"],
+      present: ["has-contained-close-button"]
+    });
+    assertClassState(arrow, {
+      absent: arrowStates.filter((state) => state !== "is-contained"),
+      present: ["is-contained"]
+    });
+
     harness.scrollTo(start);
+    assertClassState(arrow, {
+      absent: arrowStates.filter((state) => state !== "is-fixed-above-quote"),
+      present: ["is-fixed-above-quote"]
+    });
     assertClassState(signup, {
       absent: ["has-contained-close-button"],
       present: ["has-fixed-close-button"]
-    });
-    assertClassState(arrow, {
-      absent: ["is-contained", "is-fixed-near-bottom"],
-      present: ["is-fixed-above-quote", "is-hidden"]
     });
 
     const updatedCtaHeight = CTA_HEIGHT + 25;
@@ -1941,33 +2131,95 @@ test("primary video pauses only at the exact outside viewport boundaries", () =>
   alreadyPaused.window.innerHeight = 200;
   alreadyPaused.scrollTo(PRIMARY_VIDEO_TOP + PRIMARY_VIDEO_HEIGHT);
   assert.equal(alreadyPaused.element("primary-video").pauseCalls, 0);
+
+  const resized = createHarness();
+  resized.element("primary-video").paused = false;
+  resized.resizeTo(PRIMARY_VIDEO_TOP);
+  assert.equal(resized.element("primary-video").pauseCalls, 1);
 });
 
-test("testimonial videos pause on explicit closes and remain playing on implicit hides", () => {
-  for (const closeId of ["section-4-close-button", "section-4-subsection-3-close-button"]) {
+test("testimonial videos pause whenever their content is hidden", () => {
+  const testimonialHideActions = [
+    { actionId: "section-1-open-button", hiddenDetailsId: "section-4-details" },
+    { actionId: "section-2-open-button", hiddenDetailsId: "section-4-details" },
+    { actionId: "section-3-open-button", hiddenDetailsId: "section-4-details" },
+    { actionId: "section-4-close-button", hiddenDetailsId: "section-4-details" },
+    {
+      actionId: "section-4-subsection-1-open-button",
+      hiddenDetailsId: "section-4-subsection-3-details"
+    },
+    {
+      actionId: "section-4-subsection-2-open-button",
+      hiddenDetailsId: "section-4-subsection-3-details"
+    },
+    {
+      actionId: "section-4-subsection-3-close-button",
+      hiddenDetailsId: "section-4-subsection-3-details"
+    }
+  ];
+
+  for (const { actionId, hiddenDetailsId } of testimonialHideActions) {
     const harness = createHarness();
+    harness.dispatch("section-4-open-button");
+    harness.dispatch("section-4-subsection-3-open-button");
+    assert.equal(harness.element("section-4-details").classList.contains("is-open"), true);
+    assert.equal(
+      harness.element("section-4-subsection-3-details").classList.contains("is-open"),
+      true
+    );
+
     for (let number = 1; number <= 5; number += 1) {
       testimonialVideo(harness, number).paused = number % 2 === 0;
     }
 
-    harness.dispatch(closeId);
+    harness.dispatch(actionId);
+    assert.equal(
+      harness.element(hiddenDetailsId).classList.contains("is-open"),
+      false,
+      actionId
+    );
     for (let number = 1; number <= 5; number += 1) {
       assert.equal(testimonialVideo(harness, number).pauseCalls, number % 2 === 0 ? 0 : 1);
     }
   }
+});
 
-  const sectionHide = createHarness();
-  for (let number = 1; number <= 5; number += 1) testimonialVideo(sectionHide, number).paused = false;
-  sectionHide.dispatch("section-1-open-button");
-  for (let number = 1; number <= 5; number += 1) {
-    assert.equal(testimonialVideo(sectionHide, number).pauseCalls, 0);
-  }
+test("testimonial rotation refreshes sticky boundaries without a scroll event", () => {
+  const originalTail = FINAL_SPACER_TOP - VIEWPORT_HEIGHT + CTA_HEIGHT;
 
-  const subsectionHide = createHarness();
-  for (let number = 1; number <= 5; number += 1) testimonialVideo(subsectionHide, number).paused = false;
-  subsectionHide.dispatch("section-4-subsection-1-open-button");
   for (let number = 1; number <= 5; number += 1) {
-    assert.equal(testimonialVideo(subsectionHide, number).pauseCalls, 0);
+    const harness = createHarness({ userAgent: "Instagram" });
+    const section4CloseButton = harness.element("section-4-close-button");
+    const quoteCtaSpacer = harness.element("quote-cta-spacer");
+    const toggle = harness.element(`testimonial-${number}-view-toggle`);
+
+    harness.dispatch("section-4-open-button");
+    harness.dispatch("section-4-subsection-3-open-button");
+    assert.equal(harness.element("section-4-details").classList.contains("is-open"), true);
+    assert.equal(
+      harness.element("section-4-subsection-3-details").classList.contains("is-open"),
+      true
+    );
+    assert.equal(toggle.classList.contains("is-hidden"), false);
+    harness.scrollTo(originalTail + 1);
+    assertClassState(section4CloseButton, {
+      absent: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-contained"]
+    });
+
+    quoteCtaSpacer.offsetTop += 500;
+    harness.dispatch(`testimonial-${number}-view-toggle`);
+    assertClassState(section4CloseButton, {
+      absent: ["is-contained", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-fixed-above-quote"]
+    });
+
+    quoteCtaSpacer.offsetTop -= 500;
+    harness.dispatch(`testimonial-${number}-view-toggle`);
+    assertClassState(section4CloseButton, {
+      absent: ["is-fixed-above-quote", "is-fixed-near-bottom", "is-hidden"],
+      present: ["is-contained"]
+    });
   }
 });
 
@@ -2004,8 +2256,8 @@ test("Instagram user-agent handling preserves controls and Direct positioning", 
 
   ordinary.scrollTo(SECTION_TOPS[2]);
   assertClassState(direct, {
-    absent: ["has-fixed-position", "is-contained"],
-    present: ["is-fixed", "is-hidden"]
+    absent: ["has-fixed-position", "is-contained", "is-hidden"],
+    present: ["is-fixed"]
   });
 
   const compositional = createHarness();
@@ -2013,8 +2265,8 @@ test("Instagram user-agent handling preserves controls and Direct positioning", 
   compositional.scrollTo(SECTION_TOPS[2]);
   compositional.dispatch("section-4-open-button");
   assertClassState(compositionalDirect, {
-    absent: ["is-contained", "is-fixed"],
-    present: ["has-fixed-position", "is-hidden"]
+    absent: ["is-contained", "is-fixed", "is-hidden"],
+    present: ["has-fixed-position"]
   });
 
   compositional.scrollTo(SECTION_TOPS[2] + 1);
@@ -2030,8 +2282,8 @@ test("Instagram user-agent handling preserves controls and Direct positioning", 
   });
   compositional.dispatch("section-4-open-button");
   assertClassState(compositionalDirect, {
-    absent: ["is-fixed", "is-hidden"],
-    present: ["has-fixed-position", "is-contained"]
+    absent: ["is-contained", "is-fixed", "is-hidden"],
+    present: ["has-fixed-position"]
   });
 
   compositional.scrollTo(section3Tail);
