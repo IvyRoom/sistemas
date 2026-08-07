@@ -292,7 +292,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
-  assert.equal(sourcePreviewReferences.javascriptReferences, 16);
+  assert.equal(sourcePreviewReferences.javascriptReferences, 17);
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)
@@ -892,7 +892,7 @@ test("marketing internal assets are document-relative", async () => {
     )
   );
   const posterReference = source.match(
-    /setAttribute\("poster", "([^"]+)"\)/
+    /const primaryVideoPoster = '([^']+)'/
   )?.[1];
 
   assert.equal(marketingAssetReferences.length, 48);
@@ -905,11 +905,11 @@ test("marketing internal assets are document-relative", async () => {
   }
   assert.match(
     source,
-    /primaryVideo\.setAttribute\("poster", "\.\/landing-page\/img\/CAPA_VÍDEO_PRINCIPAL\.jpg"\);/
+    /primaryVideo\.setAttribute\('poster', primaryVideoPoster\);/
   );
   assert.doesNotMatch(
     source,
-    /primaryVideo\.setAttribute\("poster", "\/landing-page\//
+    /const primaryVideoPoster = '\/landing-page\//
   );
 
   assert.equal(

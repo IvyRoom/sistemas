@@ -17,6 +17,19 @@ import {
 
 export var userAgent = navigator.userAgent;
 
+
+const testimonialVideos = [
+    testimonial1Video,
+    testimonial2Video,
+    testimonial3Video,
+    testimonial4Video,
+    testimonial5Video
+];
+const primaryVideoPoster = './landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg';
+const primaryVideoSource = "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8";
+let primaryVideoInitialization = null;
+
+
 // Rotation controls are only needed in Instagram's in-app browser.
 if (userAgent.indexOf('Instagram') === -1) {
 
@@ -38,31 +51,130 @@ if (userAgent.indexOf('Instagram') === -1) {
 }
 
 
-function handleIntersection(entries, observer) {
+export function pausePlayingTestimonials() {
+    testimonialVideos.forEach(video => {
+        if (!video.paused) video.pause();
+    });
+}
 
-    entries.forEach(entry => {
 
-        if (entry.isIntersecting) {
+export function pausePlayingTestimonialsOutsideViewport() {
+    testimonialVideos.forEach(video => {
+        if (video.paused) return;
 
-            primaryVideoPlayer.setAttribute("data-shaka-player-container", "");
-            primaryVideo.setAttribute("data-shaka-player", "");
-            primaryVideo.setAttribute("poster", "./landing-page/img/CAPA_VÍDEO_PRINCIPAL.jpg");
-            primaryVideo.setAttribute("src", "https://videospreparatoriosv2.blob.core.windows.net/videosv3/LandingPagePJ/video-principal/master.m3u8");
+        const videoBounds = video.getBoundingClientRect();
+        if (
+            videoBounds.bottom <= 0 ||
+            videoBounds.top >= window.innerHeight
+        ) {
+            video.pause();
+        }
+    });
+}
 
-            const player = new shaka.Player(primaryVideo);
-            const ui = new shaka.ui.Overlay(player, primaryVideoPlayer, primaryVideo);
+
+async function enableNativePrimaryVideo(player = null, ui = null) {
+    if (ui !== null && typeof ui.destroy === 'function') {
+        try {
+            await ui.destroy();
+        } catch (error) {
+            console.error(error);
+        }
+    } else if (player !== null && typeof player.destroy === 'function') {
+        try {
+            await player.destroy();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    primaryVideoPlayer.removeAttribute('data-shaka-player-container');
+    primaryVideo.removeAttribute('data-shaka-player');
+    primaryVideo.setAttribute('poster', primaryVideoPoster);
+    primaryVideo.setAttribute('src', primaryVideoSource);
+    primaryVideo.setAttribute('controls', '');
+    if (typeof primaryVideo.load === 'function') primaryVideo.load();
+}
+
+
+export function initializePrimaryVideo() {
+    if (primaryVideoInitialization !== null) return primaryVideoInitialization;
+
+    primaryVideo.removeAttribute('controls');
+    primaryVideoPlayer.setAttribute('data-shaka-player-container', '');
+    primaryVideo.setAttribute('data-shaka-player', '');
+    primaryVideo.setAttribute('poster', primaryVideoPoster);
+    primaryVideo.setAttribute('src', primaryVideoSource);
+
+    const initialization = (async function() {
+        const shakaApi = globalThis.shaka;
+
+        if (
+            shakaApi === null ||
+            typeof shakaApi !== 'object' ||
+            typeof shakaApi.Player !== 'function' ||
+            typeof shakaApi.ui?.Overlay !== 'function'
+        ) {
+            await enableNativePrimaryVideo();
+            return true;
+        }
+
+        let player = null;
+        let ui = null;
+
+        try {
+            if (typeof shakaApi.polyfill?.installAll === 'function') {
+                shakaApi.polyfill.installAll();
+            }
+
+            if (
+                typeof shakaApi.Player.isBrowserSupported === 'function' &&
+                !shakaApi.Player.isBrowserSupported()
+            ) {
+                await enableNativePrimaryVideo();
+                return true;
+            }
+
+            player = new shakaApi.Player(primaryVideo);
+            ui = new shakaApi.ui.Overlay(player, primaryVideoPlayer, primaryVideo);
 
             ui.configure({
                 overflowMenuButtons: ['quality', 'playback_rate']
             });
 
-            player.load(primaryVideo.getAttribute('src'));
-
-            observer.unobserve(entry.target);
+            await player.load(primaryVideo.getAttribute('src'));
+            return true;
+        } catch (error) {
+            console.error(error);
+            await enableNativePrimaryVideo(player, ui);
+            return false;
         }
+    })();
 
+    primaryVideoInitialization = initialization;
+    void initialization.then(initialized => {
+        if (!initialized && primaryVideoInitialization === initialization) {
+            primaryVideoInitialization = null;
+        }
     });
+
+    return primaryVideoInitialization;
 }
 
-const observer = new IntersectionObserver(handleIntersection);
-observer.observe(primaryVideoFrame);
+
+async function handleIntersection(entries, observer) {
+    for (const entry of entries) {
+        if (!entry.isIntersecting || primaryVideoInitialization !== null) continue;
+
+        const initialized = await initializePrimaryVideo();
+        if (initialized) observer.unobserve(entry.target);
+    }
+}
+
+
+if (typeof IntersectionObserver === 'function') {
+    const observer = new IntersectionObserver(handleIntersection);
+    observer.observe(primaryVideoFrame);
+} else {
+    void initializePrimaryVideo();
+}

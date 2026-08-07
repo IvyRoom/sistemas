@@ -649,6 +649,7 @@ button,
 
 #instagram-direct-link{
     text-decoration: none;
+    z-index: 2;
 }
 
 #instagram-direct-link img{

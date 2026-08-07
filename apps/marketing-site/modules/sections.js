@@ -33,6 +33,10 @@ import {
     section2CloseButton,
     section3CloseButton,
     section4CloseButton,
+    section1QuotePrompt,
+    section2QuotePrompt,
+    section3QuotePrompt,
+    section4QuotePrompt,
     section3Subsection1CloseButton,
     section3Subsection2CloseButton,
     section3Subsection3CloseButton,
@@ -60,17 +64,28 @@ import {
     section1DetailsHeading,
     section2DetailsHeading,
     section3DetailsHeading,
-    section4DetailsHeading,
-    testimonial1Video,
-    testimonial2Video,
-    testimonial3Video,
-    testimonial4Video,
-    testimonial5Video
+    section4DetailsHeading
 } from './elements.js';
 import { preferredScrollBehavior } from './scroll-behavior.js';
+import { pausePlayingTestimonials, userAgent } from './media.js';
+
+
+function positionSectionCloseButtonNearBottom(closeButton, quotePrompt) {
+    closeButton.classList.remove(
+        'is-contained',
+        'is-fixed-above-quote',
+        'is-hidden'
+    );
+    closeButton.classList.add('is-fixed-near-bottom');
+    quotePrompt.classList.remove(
+        'has-contained-close-button',
+        'has-fixed-close-button'
+    );
+}
 
 
 section1OpenButton.addEventListener("click", function(event) {
+    pausePlayingTestimonials();
     section1OpenButton.setAttribute("aria-expanded", "true");
     section2OpenButton.setAttribute("aria-expanded", "false");
     section3OpenButton.setAttribute("aria-expanded", "false");
@@ -79,7 +94,7 @@ section1OpenButton.addEventListener("click", function(event) {
     section1Details.classList.add('is-open');
     section1Details.scrollIntoView({behavior: preferredScrollBehavior()});
     section1DetailsHeading.focus({preventScroll: true});
-    section1CloseButton.classList.add('is-fixed-near-bottom');
+    positionSectionCloseButtonNearBottom(section1CloseButton, section1QuotePrompt);
     section2Summary.classList.remove('is-hidden');
     section2Details.classList.remove('is-open');
     section3Summary.classList.remove('is-hidden');
@@ -101,6 +116,7 @@ section1CloseButton.addEventListener("click", function(event) {
 
 
 section2OpenButton.addEventListener("click", function(event) {
+    pausePlayingTestimonials();
     section1OpenButton.setAttribute("aria-expanded", "false");
     section2OpenButton.setAttribute("aria-expanded", "true");
     section3OpenButton.setAttribute("aria-expanded", "false");
@@ -111,7 +127,7 @@ section2OpenButton.addEventListener("click", function(event) {
     section2Details.classList.add('is-open');
     section2Details.scrollIntoView({behavior: preferredScrollBehavior()});
     section2DetailsHeading.focus({preventScroll: true});
-    section2CloseButton.classList.add('is-fixed-near-bottom');
+    positionSectionCloseButtonNearBottom(section2CloseButton, section2QuotePrompt);
     section3Summary.classList.remove('is-hidden');
     section3Details.classList.remove('is-open');
     section4Summary.classList.remove('is-hidden');
@@ -128,6 +144,7 @@ section2CloseButton.addEventListener("click", function(event) {
 
 
 section3OpenButton.addEventListener("click", function(event) {
+    pausePlayingTestimonials();
     section1OpenButton.setAttribute("aria-expanded", "false");
     section2OpenButton.setAttribute("aria-expanded", "false");
     section3OpenButton.setAttribute("aria-expanded", "true");
@@ -140,7 +157,7 @@ section3OpenButton.addEventListener("click", function(event) {
     section3Details.classList.add('is-open');
     section3Details.scrollIntoView({behavior: preferredScrollBehavior()});
     section3DetailsHeading.focus({preventScroll: true});
-    section3CloseButton.classList.add('is-fixed-near-bottom');
+    positionSectionCloseButtonNearBottom(section3CloseButton, section3QuotePrompt);
     section4Summary.classList.remove('is-hidden');
     section4Details.classList.remove('is-open');
 })
@@ -364,8 +381,11 @@ section4OpenButton.addEventListener("click", function(event) {
     section4Details.classList.add('is-open');
     section4Details.scrollIntoView({behavior: preferredScrollBehavior()});
     section4DetailsHeading.focus({preventScroll: true});
-    section4CloseButton.classList.add('is-fixed-near-bottom');
-    instagramDirectLink.classList.add('has-fixed-position');
+    positionSectionCloseButtonNearBottom(section4CloseButton, section4QuotePrompt);
+    if (userAgent.indexOf('Instagram') === -1) {
+        instagramDirectLink.classList.remove('is-contained', 'is-fixed', 'is-hidden');
+        instagramDirectLink.classList.add('has-fixed-position');
+    }
 })
 
 section4CloseButton.addEventListener("click", function(event) {
@@ -376,11 +396,7 @@ section4CloseButton.addEventListener("click", function(event) {
     section4Summary.scrollIntoView({behavior: preferredScrollBehavior()});
     section4OpenButton.focus({preventScroll: true});
 
-    if (!testimonial1Video.paused) testimonial1Video.pause();
-    if (!testimonial2Video.paused) testimonial2Video.pause();
-    if (!testimonial3Video.paused) testimonial3Video.pause();
-    if (!testimonial4Video.paused) testimonial4Video.pause();
-    if (!testimonial5Video.paused) testimonial5Video.pause();
+    pausePlayingTestimonials();
 
     section4Subsection1Summary.classList.remove('is-hidden');
     section4Subsection1Details.classList.remove('is-open');
@@ -398,6 +414,7 @@ section4CloseButton.addEventListener("click", function(event) {
 
 
 section4Subsection1OpenButton.addEventListener("click", function(event) {
+    pausePlayingTestimonials();
     section4Subsection1OpenButton.setAttribute("aria-expanded", "true");
     section4Subsection2OpenButton.setAttribute("aria-expanded", "false");
     section4Subsection3OpenButton.setAttribute("aria-expanded", "false");
@@ -427,6 +444,7 @@ section4Subsection1CloseButton.addEventListener("click", function(event) {
 
 
 section4Subsection2OpenButton.addEventListener("click", function(event) {
+    pausePlayingTestimonials();
     section4Subsection1OpenButton.setAttribute("aria-expanded", "false");
     section4Subsection2OpenButton.setAttribute("aria-expanded", "true");
     section4Subsection3OpenButton.setAttribute("aria-expanded", "false");
@@ -483,10 +501,6 @@ section4Subsection3CloseButton.addEventListener("click", function(event) {
     section4Subsection3Summary.scrollIntoView({behavior: preferredScrollBehavior()});
     section4Subsection3OpenButton.focus({preventScroll: true});
 
-    if (!testimonial1Video.paused) testimonial1Video.pause();
-    if (!testimonial2Video.paused) testimonial2Video.pause();
-    if (!testimonial3Video.paused) testimonial3Video.pause();
-    if (!testimonial4Video.paused) testimonial4Video.pause();
-    if (!testimonial5Video.paused) testimonial5Video.pause();
+    pausePlayingTestimonials();
 
 })
