@@ -1414,6 +1414,261 @@ test("marketing scrolling responds to live reduced-motion preferences", () => {
   assert.deepEqual(unsupported.mediaQueryCalls, []);
 });
 
+test("marketing metadata uses the canonical production identity", () => {
+  const title = "Machado | Método Gerencial para Empresas";
+  const description = "Conheça o Método Gerencial, a trajetória de Lucas Machado, como funciona a solução da Machado e relatos de empresas clientes.";
+  const canonicalUrl = "https://machadogestao.com/";
+  const socialImageUrl = "https://machadogestao.com/landing-page/img/CAPA_V%C3%8DDEO_PRINCIPAL.jpg";
+  const socialImageAlt = "Lucas Machado apresenta o Método Gerencial.";
+  const head = html.match(/<head>([\s\S]*?)<\/head>/)?.[1];
+
+  assert.ok(head, "document has a head");
+
+  function elements(tagName) {
+    return Array.from(
+      head.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "gi")),
+      ([tag]) => ({
+        attributes: new Map(
+          Array.from(
+            tag.matchAll(/\s([a-z][a-z0-9:-]*)="([^"]*)"/gi),
+            ([, name, value]) => [name.toLowerCase(), value]
+          )
+        ),
+        tag
+      })
+    );
+  }
+
+  const metas = elements("meta");
+  const links = elements("link");
+
+  function metaContent(attributeName, attributeValue) {
+    const matches = metas.filter(
+      ({ attributes }) => attributes.get(attributeName) === attributeValue
+    );
+    assert.equal(matches.length, 1, `one ${attributeName}=${attributeValue} meta tag`);
+    assert.ok(matches[0].attributes.has("content"), matches[0].tag);
+    return matches[0].attributes.get("content");
+  }
+
+  assert.deepEqual(
+    Array.from(head.matchAll(/<title>([^<]*)<\/title>/g), ([, value]) => value),
+    [title]
+  );
+  assert.equal(metaContent("name", "description"), description);
+
+  const canonicalLinks = links.filter(
+    ({ attributes }) => attributes.get("rel") === "canonical"
+  );
+  assert.equal(canonicalLinks.length, 1);
+  assert.equal(canonicalLinks[0].attributes.get("href"), canonicalUrl);
+
+  const openGraphMetadata = new Map([
+    ["og:locale", "pt_BR"],
+    ["og:type", "website"],
+    ["og:site_name", "Machado"],
+    ["og:title", title],
+    ["og:description", description],
+    ["og:url", canonicalUrl],
+    ["og:image", socialImageUrl],
+    ["og:image:type", "image/jpeg"],
+    ["og:image:width", "1280"],
+    ["og:image:height", "720"],
+    ["og:image:alt", socialImageAlt]
+  ]);
+  for (const [property, content] of openGraphMetadata) {
+    assert.equal(metaContent("property", property), content);
+  }
+
+  const twitterMetadata = new Map([
+    ["twitter:card", "summary_large_image"],
+    ["twitter:title", title],
+    ["twitter:description", description],
+    ["twitter:image", socialImageUrl],
+    ["twitter:image:alt", socialImageAlt]
+  ]);
+  for (const [name, content] of twitterMetadata) {
+    assert.equal(metaContent("name", name), content);
+  }
+
+  for (const seoUrl of [
+    canonicalLinks[0].attributes.get("href"),
+    metaContent("property", "og:url"),
+    metaContent("property", "og:image"),
+    metaContent("name", "twitter:image")
+  ]) {
+    assert.equal(new URL(seoUrl).origin, "https://machadogestao.com");
+  }
+  assert.doesNotMatch(head, /\bcontent="\.\.\."|https:\/\/[^"']*azure/i);
+  assert.doesNotMatch(head, /twitter:(?:site|creator)/i);
+});
+
+test("all marketing images have deliberate text alternatives", () => {
+  const informativeAlternatives = new Map([
+    ["./landing-page/img/LOGO_MACHADO.png", "Machado"],
+    ["./landing-page/img/GESTÃO_CORAÇÃO_ADMINISTRAÇÃO.png", "Diagrama da Gestão como o coração da Administração."],
+    ["./landing-page/img/GESTÃO_CIÊNCIA_CENTRAL.png", "Diagrama da Gestão no centro das áreas de negócios e das ciências aplicadas."],
+    ["./landing-page/img/SISTEMA_DE_GESTÃO.png", "Diagrama do Sistema de Gestão, que integra Equação Fundamental, Princípios Basilares, PDCA, SDCA e níveis de gerenciamento."],
+    ["./landing-page/img/EQUAÇÃO_FUNDAMENTAL.jpg", "Equação Fundamental: resultado é igual ao potencial humano dividido pelo número de direções."],
+    ["./landing-page/img/PDCA.jpg", "Ciclo PDCA para melhorar resultados: análise funcional, análise do fenômeno, análise do processo, plano de ação e controle de resultados."],
+    ["./landing-page/img/SDCA.jpg", "Ciclo SDCA para estabilizar processos: padronização, treinamento, execução, auditoria e atuação."],
+    ["./landing-page/img/GRÁFICO.png", "Gráfico: os resultados obtidos crescem de forma acelerada à medida que aumenta o percentual da equipe que domina o Método Gerencial."],
+    ["./landing-page/img/RÉGUA_DE_CARGOS.png", "Participação na formação: diretores, gerentes, coordenadores e supervisores são essenciais; especialistas e analistas plenos e seniores são recomendados; analistas juniores e estagiários são opcionais."],
+    ["./landing-page/img/GRÁFICO_PORTES.png", "Distribuição por porte e número de funcionários: micro (1 a 10), 6,3%; pequeno (11 a 50), 25%; médio (51 a 250), 37,5%; grande (251 a 500), 18,8%; muito grande (mais de 500), 12,5%."],
+    ["./landing-page/img/GRÁFICO_SETORES.png", "Distribuição por setor: mercado financeiro e serviços, 25%; indústria e manufatura, 18,8%; bens de consumo e varejo, 12,5%; construção civil, 12,5%; saneamento e energia, 12,5%; ONG, governo e educação, 6,3%; saúde e medicina, 6,3%; agronegócio, 6,3%."]
+  ]);
+  const decorativeSources = new Set([
+    "./landing-page/img/GESTOR_VENDADO.jpg",
+    "./landing-page/img/RADICAL_SIMPLICIDADE.jpg",
+    "./landing-page/img/RENÉ_DESCARTES.jpg",
+    "./landing-page/img/RAY_DALIO.jpg",
+    "./landing-page/img/VICENTE_FALCONI.jpg",
+    "./landing-page/img/LUCAS_MACHADO.jpg",
+    "./landing-page/img/CORNELL.jpg",
+    "./landing-page/img/TRAINEES_FALCONI.jpg",
+    "./landing-page/img/HBS_ONLINE.jpg",
+    "./landing-page/img/ALVO.jpg",
+    "./landing-page/img/LAPTOP.jpg",
+    "./landing-page/img/BALANÇA.jpg",
+    "./landing-page/img/CORRENTE.jpg",
+    "./landing-page/img/PLATAFORMA.jpg",
+    "./landing-page/img/CAIXA.jpg",
+    "./landing-page/img/WHATSAPP.jpg",
+    "./landing-page/img/ENCONTROS_PRESENCIAIS.jpg",
+    "./landing-page/img/ATENDIMENTOS.jpg",
+    "./landing-page/img/INSTAGRAM_DIRECT.png",
+    "./landing-page/img/AEGEA.jpg",
+    "./landing-page/img/AGP.jpg",
+    "./landing-page/img/SION.jpg",
+    "./landing-page/img/LOGO_JFK.jpg",
+    "./landing-page/img/DECAPEX.png",
+    "./landing-page/img/LOGO_G5.jpg",
+    "./landing-page/img/LOGO_ABN.png",
+    "./landing-page/img/LOGO_STOLLER.png",
+    "./landing-page/img/LOGO_SEMEAR.jpg",
+    "./landing-page/img/LOGO_HYPE.jpg",
+    "./landing-page/img/CELULAR_ROTACIONANDO.png"
+  ]);
+  const images = Array.from(html.matchAll(/<img\b[^>]*>/g), ([tag]) => ({
+    altMatches: Array.from(tag.matchAll(/\balt="([^"]*)"/g), ([, alt]) => alt),
+    src: tag.match(/\bsrc="([^"]+)"/)?.[1],
+    tag
+  }));
+
+  assert.equal(images.length, 45);
+  assert.equal(informativeAlternatives.size, 11);
+  assert.equal(decorativeSources.size, 30);
+  assert.deepEqual(
+    new Set(images.map(({ src }) => src)),
+    new Set([...informativeAlternatives.keys(), ...decorativeSources])
+  );
+
+  for (const { altMatches, src, tag } of images) {
+    assert.equal(altMatches.length, 1, tag);
+    assert.equal(
+      altMatches[0],
+      informativeAlternatives.get(src) ?? "",
+      src
+    );
+  }
+  assert.equal(images.filter(({ altMatches }) => altMatches[0] === "").length, 34);
+  assert.equal(images.filter(({ altMatches }) => altMatches[0] !== "").length, 11);
+});
+
+test("marketing inline formatting tags are balanced and properly nested", () => {
+  const stack = [];
+  const formattingPattern = /<\/?(?:b|u|strong|em|i|s|mark|small|sub|sup)\b[^>]*>/gi;
+
+  for (const match of html.matchAll(formattingPattern)) {
+    const tagName = match[0].match(/^<\/?([a-z]+)/i)[1].toLowerCase();
+    if (!match[0].startsWith("</")) {
+      stack.push({ index: match.index, tagName });
+      continue;
+    }
+
+    assert.ok(stack.length > 0, `orphan </${tagName}> at ${match.index}`);
+    const opening = stack.pop();
+    assert.equal(
+      opening.tagName,
+      tagName,
+      `<${opening.tagName}> at ${opening.index} closes with </${tagName}> at ${match.index}`
+    );
+  }
+
+  assert.deepEqual(stack, []);
+});
+
+test("selected marketing editorial corrections remain exact", () => {
+  const visibleCopy = html
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const correctedCounts = new Map([
+    ["E POR QUE A GESTÃO", 1],
+    ["posições-chave", 1],
+    ["Este é um raciocínio", 1],
+    ["numa instituição", 1],
+    ["junto às demais escolas", 1],
+    ["devido à recente publicação", 1],
+    ["independentemente do porte ou setor de atuação", 2],
+    ["etapas de trabalho que compõem", 1],
+    ["nomeado para a Dean's Honor List", 1],
+    ["às empresas clientes), o Lucas", 1],
+    ["Por que existe a formação:", 2],
+    ["À medida que você e sua equipe", 1],
+    ["Por exemplo, numa equipe", 1],
+    ["e têm como intuito", 1],
+    ["contratada à parte", 1],
+    ["à medida que você e sua equipe sentirem", 1],
+    ["com as nossas empresas clientes", 1],
+    ["América Latina", 2],
+    ["é uma holding", 1],
+    ["PDCA e SDCA permitiu", 1],
+    ["estados do Nordeste", 1],
+    ["que representam bem as avaliações", 1],
+    ["Por que contratou a Solução", 1],
+    ["Gerente Industrial", 1],
+    ["pós-graduado", 1]
+  ]);
+  const rejectedCopy = [
+    "E PORQUE A GESTÃO",
+    "posições chave",
+    "Este é uma raciocínio",
+    "numa institução",
+    "junto as demais escolas",
+    "devido a recente publicação",
+    "independente do porte ou setor de atuação",
+    "etapas de trabalho que compõe a",
+    "nomeado à Dean's Honor List",
+    "às empresas clientes) o Lucas",
+    "Porque existe a formação:",
+    "A medida em que você e sua equipe",
+    "Por exemplo. Numa equipe",
+    "e tem como intuito",
+    "contratada a parte",
+    "a medida em que você e sua equipe sentirem",
+    "com a nossas empresas clientes",
+    "américa latina",
+    "é um holding",
+    "PDCA e SDCA, permitiu",
+    "estados do nordeste",
+    "que são representam bem",
+    "Porque contratou a Solução",
+    "Gerente Indutrial",
+    "pós graduado"
+  ];
+  const occurrences = (value, snippet) => value.split(snippet).length - 1;
+
+  for (const [snippet, expectedCount] of correctedCounts) {
+    assert.equal(occurrences(visibleCopy, snippet), expectedCount, snippet);
+  }
+  for (const snippet of rejectedCopy) {
+    assert.equal(occurrences(visibleCopy, snippet), 0, snippet);
+  }
+});
+
 test("document language, landmarks, and heading hierarchy describe the current page", () => {
   assert.match(html, /^<!DOCTYPE html>\r?\n<html lang="pt-BR">/);
   assert.equal((html.match(/<header\b/g) ?? []).length, 1);
@@ -1508,9 +1763,12 @@ test("every new-tab navigation prevents opener access without changing its desti
 test("external article, media, Instagram, and Shaka URLs remain exact", () => {
   const testimonialSuffix = "?sp=r&st=2024-11-01T11:00:00Z&se=2050-01-01T03:00:00Z&spr=https&sv=2022-11-02&sr=c&sig=o%2FEOtQQlRp4%2F0Iu4Pbn4EghosVs6DoYgIkr4kUfclIc%3D";
   const htmlUrls = Array.from(
-    html.matchAll(/\b(?:href|src)="(https:\/\/[^\"]+)"/g),
-    ([, url]) => url
-  );
+    html.matchAll(/<(?:a|video|script|link)\b[^>]*>/g),
+    ([tag]) => tag
+  )
+    .filter((tag) => !/^<link\b/.test(tag) || /\brel="stylesheet"/.test(tag))
+    .map((tag) => tag.match(/\b(?:href|src)="(https:\/\/[^\"]+)"/)?.[1])
+    .filter(Boolean);
 
   assert.deepEqual(htmlUrls, [
     "https://online.hbs.edu/blog/post/from-core-to-connext-2019",
