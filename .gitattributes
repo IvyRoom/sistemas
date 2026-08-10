@@ -1,0 +1,34 @@
+* text=auto eol=lf
+
+# Text sources and repository metadata
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.mjs text eol=lf
+*.svg text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary images and documents
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.pdf binary
+*.png binary
+*.webp binary
+*.xls binary
+*.xlsm binary
+*.xlsx binary
+*.vsd binary
+*.vsdx binary
+*.vssx binary
+
+# Binary web assets
+*.wasm binary
+*.woff binary
+*.woff2 binary
