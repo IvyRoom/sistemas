@@ -29,6 +29,14 @@ const marketingModuleFilenames = [
   "testimonials.js"
 ];
 
+const maintainedNonPlatformApplicationIds = [
+  "marketing-site",
+  "quote-request",
+  "client-intake",
+  "certificate-validation",
+  "conecta-referral-form"
+];
+
 async function readMarketingJavaScript() {
   const [entrySource, ...moduleSources] = await Promise.all([
     readFile(new URL("../apps/marketing-site/main.js", import.meta.url), "utf8"),
@@ -108,6 +116,74 @@ function runLocationNormalizer(inlineScript, { pathname, search = "", hash = "" 
 
   return replacement;
 }
+
+test("deployment inventory exhaustively separates maintained frontends from the learning platform", async () => {
+  const manifest = await readDeploymentManifest();
+
+  await validateDeploymentManifest(manifest);
+
+  const nonPlatformApplications = manifest.applications.filter(
+    ({ id }) => id !== "learning-platform"
+  );
+  assert.deepEqual(
+    nonPlatformApplications.map(({ id }) => id).sort(),
+    [...maintainedNonPlatformApplicationIds].sort()
+  );
+
+  for (const application of nonPlatformApplications) {
+    for (const mapping of application.mappings) {
+      assert.match(
+        mapping.source,
+        /^apps\/.+/,
+        `${application.id} must be sourced only from apps/**`
+      );
+    }
+  }
+
+  const learningPlatformApplications = manifest.applications.filter(
+    ({ id }) => id === "learning-platform"
+  );
+  assert.equal(learningPlatformApplications.length, 1);
+
+  const [learningPlatform] = learningPlatformApplications;
+  for (const mapping of learningPlatform.mappings) {
+    assert.ok(
+      mapping.source === "plataforma_v2" ||
+        mapping.source.startsWith("plataforma_v2/"),
+      "learning-platform must be sourced only from plataforma_v2/**"
+    );
+  }
+  assert.deepEqual(learningPlatform.publicEntries, [
+    {
+      path: "/plataforma_v2/aviso-dispositivo/",
+      file: "plataforma_v2/aviso-dispositivo/index.html"
+    },
+    {
+      path: "/plataforma_v2/aviso-navegador/",
+      file: "plataforma_v2/aviso-navegador/index.html"
+    },
+    {
+      path: "/plataforma_v2/avisos-iniciais/",
+      file: "plataforma_v2/avisos-iniciais/index.html"
+    },
+    {
+      path: "/plataforma_v2/cadastro/",
+      file: "plataforma_v2/cadastro/index.html"
+    },
+    {
+      path: "/plataforma_v2/estudo/",
+      file: "plataforma_v2/estudo/index.html"
+    },
+    {
+      path: "/plataforma_v2/login/",
+      file: "plataforma_v2/login/index.html"
+    },
+    {
+      path: "/plataforma_v2/statusreport/",
+      file: "plataforma_v2/statusreport/index.html"
+    }
+  ]);
+});
 
 test("real deployment manifest defines the reviewed route contract", async () => {
   const manifest = await readDeploymentManifest();
