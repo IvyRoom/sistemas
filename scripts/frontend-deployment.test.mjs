@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { request as httpRequest } from "node:http";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { extname, join } from "node:path";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import {
@@ -16,6 +17,7 @@ import {
   publicDownloads,
   publicEntries,
   readDeploymentManifest,
+  repositoryRoot,
   startSourcePreviewServer,
   validateDeploymentManifest
 } from "./frontend-deployment-lib.mjs";
@@ -36,6 +38,14 @@ const maintainedNonPlatformApplicationIds = [
   "certificate-validation",
   "conecta-referral-form"
 ];
+
+const mappedTextExtensions = new Set([
+  ".css",
+  ".html",
+  ".js",
+  ".json",
+  ".svg"
+]);
 
 async function readMarketingJavaScript() {
   const [entrySource, ...moduleSources] = await Promise.all([
@@ -59,6 +69,29 @@ async function readMarketingJavaScript() {
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function readGitAttributes(paths) {
+  const output = execFileSync(
+    "git",
+    ["check-attr", "-z", "text", "eol", "--stdin"],
+    {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      input: `${paths.join("\0")}\0`,
+      windowsHide: true
+    }
+  );
+  const fields = output.split("\0").filter(Boolean);
+  const attributesByPath = new Map(paths.map((path) => [path, {}]));
+
+  assert.equal(fields.length, paths.length * 6);
+  for (let index = 0; index < fields.length; index += 3) {
+    const [path, attribute, value] = fields.slice(index, index + 3);
+    attributesByPath.get(path)[attribute] = value;
+  }
+
+  return attributesByPath;
 }
 
 function requestPreview(baseUrl, path, method = "GET") {
@@ -183,6 +216,40 @@ test("deployment inventory exhaustively separates maintained frontends from the 
       file: "plataforma_v2/statusreport/index.html"
     }
   ]);
+});
+
+test("mapped text uses LF and binary assets opt out of text normalization", async () => {
+  const manifest = await readDeploymentManifest();
+  const validation = await validateDeploymentManifest(manifest);
+  const sources = validation.files.map(({ source }) => source);
+  const attributesByPath = readGitAttributes(sources);
+
+  for (const source of sources) {
+    const attributes = attributesByPath.get(source);
+
+    if (!mappedTextExtensions.has(extname(source).toLowerCase())) {
+      assert.equal(
+        attributes.text,
+        "unset",
+        `${source} must be explicitly classified as binary`
+      );
+      continue;
+    }
+
+    assert.notEqual(
+      attributes.text,
+      "unset",
+      `${source} must be classified as text`
+    );
+    assert.equal(attributes.eol, "lf", `${source} must be checked out with LF`);
+
+    const contents = await readFile(join(repositoryRoot, ...source.split("/")));
+    assert.equal(
+      contents.includes(13),
+      false,
+      `${source} must not contain CRLF or mixed line endings`
+    );
+  }
 });
 
 test("real deployment manifest defines the reviewed route contract", async () => {

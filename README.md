@@ -128,6 +128,11 @@ repository-local `dist/` directory, copy mapped tracked files, and validate the
 route contract, references, file set, bytes, repeatability, and expected `404`
 responses.
 
+The repository-wide [line-ending contract](.gitattributes) keeps tracked text
+at LF and explicitly classifies binary assets. Because artifact generation
+copies mapped bytes unchanged, fresh Windows and Ubuntu checkouts produce the
+same `dist/` file set, byte count, and whole-tree SHA-256 digest.
+
 - To preview source, run `node scripts/serve-frontend.mjs` from the repository
   root and open `http://127.0.0.1:4173/` or another documented public route.
   The server validates `frontend-deployment.json`, maps public routes and their
