@@ -58,6 +58,12 @@ namespace and the `plataforma_v2/` source directory do not contain root
 single-page-application fallback: those namespaces and unknown paths return
 `404` when no entry point exists.
 
+The authoritative current-state compatibility specification for the legacy
+learning platform is
+[`docs/learning-platform-contracts.md`](docs/learning-platform-contracts.md).
+It records route, state, API, runtime-asset, and artifact behavior separately
+from known risks and approved future changes.
+
 Machado Conecta personal links add both required query parameters to the
 referral-form route:
 `/conecta/cadastro-recomendacoes/?ncr=<URL-encoded recommender name>&eb=<URL-encoded benefited company>`.
