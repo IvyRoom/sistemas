@@ -82,6 +82,10 @@ repository separately.
   route history, public entry points, and downloads.
 - `frontend-deployment.json` is authoritative for application identities and
   source-to-`dist/` mappings.
+- `docs/learning-platform-contracts.md` is the authoritative current-state
+  compatibility specification and behavior-baseline matrix for
+  `plataforma_v2/`. Preserve its stable contract descriptions across source
+  moves; update snapshot-specific anchors as evidence moves.
 - Automated tests are authoritative for behavior. Keep prose concise; do not
   duplicate route history or detailed behavior already enforced there.
 
