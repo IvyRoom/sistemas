@@ -8,7 +8,7 @@ const path = require("node:path");
 const test = require("node:test");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
-const platformRoot = path.join(repositoryRoot, "plataforma_v2");
+const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
 const studyRoot = path.join(platformRoot, "estudo");
 const faceRoot = path.join(platformRoot, "azure-ai-vision-face-ui");
 const manifest = JSON.parse(
@@ -165,6 +165,12 @@ function platformRecords() {
   return mappedFiles([platformApplication]);
 }
 
+function sourceForOutput(records, output) {
+  const record = records.find((candidate) => candidate.output === output);
+  assert.ok(record, `Mapped output must resolve to a tracked source: ${output}`);
+  return record.source;
+}
+
 function htmlDataNodes() {
   return Array.from(
     studyHtml.matchAll(/<div\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
@@ -242,7 +248,7 @@ function sourceDerivedSensitiveLiterals() {
 test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entries", () => {
   assert.ok(platformApplication, "The learning-platform manifest entry must exist");
   assert.deepEqual(platformApplication.mappings, [
-    { source: "plataforma_v2", output: "plataforma_v2" }
+    { source: "apps/learning-platform", output: "plataforma_v2" }
   ]);
   assert.deepEqual(platformApplication.publicEntries, [
     {
@@ -275,9 +281,13 @@ test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entr
     }
   ]);
 
+  const records = platformRecords();
   for (const entry of platformApplication.publicEntries) {
     assert.ok(entry.path.endsWith("/"), "Canonical entries must retain trailing slashes");
-    assert.ok(fs.statSync(localPath(entry.file)).isFile(), "Every canonical entry must emit its index");
+    assert.ok(
+      fs.statSync(localPath(sourceForOutput(records, entry.file))).isFile(),
+      "Every canonical entry must emit its index"
+    );
   }
 });
 
@@ -341,9 +351,9 @@ test("[FACE-01] Face SDK 1.5.0 assets and base-relative resolution remain frozen
     javascript,
     wasm
   ]);
-  const faceFiles = gitTrackedFiles("plataforma_v2/azure-ai-vision-face-ui");
+  const faceFiles = gitTrackedFiles("apps/learning-platform/azure-ai-vision-face-ui");
   const relativeFaceFiles = faceFiles.map((file) =>
-    file.slice("plataforma_v2/azure-ai-vision-face-ui/".length)
+    file.slice("apps/learning-platform/azure-ai-vision-face-ui/".length)
   );
   const dictionaries = relativeFaceFiles.filter(
     (file) => file.startsWith("facelivenessdetector-assets/i18n/") && file.endsWith("/en.json") ||
@@ -472,14 +482,20 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 });
 
 test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and reachability", () => {
-  const downloadFiles = gitTrackedFiles("plataforma_v2/estudo/files");
+  const downloadRecords = platformRecords().filter(({ output }) =>
+    output.startsWith("plataforma_v2/estudo/files/")
+  );
+  const downloadFiles = downloadRecords.map(({ output }) => output);
   const assignments = downloadReferences();
   const reachableFiles = new Set(assignments);
   const emittedFiles = new Set(downloadFiles);
 
   assert.equal(downloadFiles.length, 33, "The study subtree must retain 33 downloads");
   assert.equal(
-    downloadFiles.reduce((total, file) => total + fs.statSync(localPath(file)).size, 0),
+    downloadRecords.reduce(
+      (total, record) => total + fs.statSync(localPath(record.source)).size,
+      0
+    ),
     9163893,
     "Download bytes must remain exact"
   );
@@ -534,8 +550,11 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
     "/plataforma_v2/estudo/img/ASSINATURA.png",
     "/plataforma_v2/estudo/img/ATLAS.png"
   ]);
+  const platformFiles = platformRecords();
   assert.ok(
-    certificatePaths.every((publicPath) => fs.statSync(localPath(publicPath.slice(1))).isFile()),
+    certificatePaths.every((publicPath) =>
+      fs.statSync(localPath(sourceForOutput(platformFiles, publicPath.slice(1)))).isFile()
+    ),
     "Every browser-generated certificate input must resolve with exact case"
   );
 });

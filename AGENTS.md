@@ -84,8 +84,8 @@ repository separately.
   source-to-`dist/` mappings.
 - `docs/learning-platform-contracts.md` is the authoritative current-state
   compatibility specification and behavior-baseline matrix for
-  `plataforma_v2/`. Preserve its stable contract descriptions across source
-  moves; update snapshot-specific anchors as evidence moves.
+  `apps/learning-platform/`. Preserve its stable contract descriptions across
+  source moves; update snapshot-specific anchors as evidence moves.
 - Automated tests are authoritative for behavior. Keep prose concise; do not
   duplicate route history or detailed behavior already enforced there.
 
@@ -97,10 +97,10 @@ repository separately.
 | `apps/quote-request/` | `/solicitacao-orcamento/` | `POST /landingpage/solicitacaoorcamento` |
 | `apps/client-intake/` | `/formulario-informacoes-iniciais/` | `POST /clientes/processa-formulario` |
 | `apps/certificate-validation/` | `/validacao-certificados/` | `GET /validacaocertificados/:Solicitante_CertificadoID` |
-| `apps/conecta/referral-form/` | `/conecta/cadastro-recomendacoes/` | `POST /conecta/processa-recomendacao` |
+| `apps/referrals-management/referral-form/` | `/conecta/cadastro-recomendacoes/` | `POST /conecta/processa-recomendacao` |
 
 All five applications are maintained. Preserve established visible copy and
-visual identity unless the task changes them. `plataforma_v2/` is the frozen,
+visual identity unless the task changes them. `apps/learning-platform/` is the frozen,
 business-critical legacy area; edit it only when explicitly requested and then
 match its existing style.
 

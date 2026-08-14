@@ -40,20 +40,20 @@ points. The deployment contract requires every listed route to return HTTP
 | Main marketing site (`landing-page/` contains its deployed assets) | [apps/marketing-site/index.html](apps/marketing-site/index.html) | [`/`](https://machadogestao.com/) |
 | Quote request | [apps/quote-request/index.html](apps/quote-request/index.html) | [`/solicitacao-orcamento/`](https://machadogestao.com/solicitacao-orcamento/) |
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
-| Machado Conecta referral form | [apps/conecta/referral-form/index.html](apps/conecta/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
+| Machado Conecta referral form | [apps/referrals-management/referral-form/index.html](apps/referrals-management/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
-| Platform device warning | [plataforma_v2/aviso-dispositivo/index.html](plataforma_v2/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
-| Platform browser warning | [plataforma_v2/aviso-navegador/index.html](plataforma_v2/aviso-navegador/index.html) | [`/plataforma_v2/aviso-navegador/`](https://machadogestao.com/plataforma_v2/aviso-navegador/) |
-| Platform initial notices | [plataforma_v2/avisos-iniciais/index.html](plataforma_v2/avisos-iniciais/index.html) | [`/plataforma_v2/avisos-iniciais/`](https://machadogestao.com/plataforma_v2/avisos-iniciais/) |
-| Platform registration | [plataforma_v2/cadastro/index.html](plataforma_v2/cadastro/index.html) | [`/plataforma_v2/cadastro/`](https://machadogestao.com/plataforma_v2/cadastro/) |
-| Platform study page | [plataforma_v2/estudo/index.html](plataforma_v2/estudo/index.html) | [`/plataforma_v2/estudo/`](https://machadogestao.com/plataforma_v2/estudo/) |
-| Platform login | [plataforma_v2/login/index.html](plataforma_v2/login/index.html) | [`/plataforma_v2/login/`](https://machadogestao.com/plataforma_v2/login/) |
-| Platform status report | [plataforma_v2/statusreport/index.html](plataforma_v2/statusreport/index.html) | [`/plataforma_v2/statusreport/`](https://machadogestao.com/plataforma_v2/statusreport/) |
+| Platform device warning | [apps/learning-platform/aviso-dispositivo/index.html](apps/learning-platform/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
+| Platform browser warning | [apps/learning-platform/aviso-navegador/index.html](apps/learning-platform/aviso-navegador/index.html) | [`/plataforma_v2/aviso-navegador/`](https://machadogestao.com/plataforma_v2/aviso-navegador/) |
+| Platform initial notices | [apps/learning-platform/avisos-iniciais/index.html](apps/learning-platform/avisos-iniciais/index.html) | [`/plataforma_v2/avisos-iniciais/`](https://machadogestao.com/plataforma_v2/avisos-iniciais/) |
+| Platform registration | [apps/learning-platform/cadastro/index.html](apps/learning-platform/cadastro/index.html) | [`/plataforma_v2/cadastro/`](https://machadogestao.com/plataforma_v2/cadastro/) |
+| Platform study page | [apps/learning-platform/estudo/index.html](apps/learning-platform/estudo/index.html) | [`/plataforma_v2/estudo/`](https://machadogestao.com/plataforma_v2/estudo/) |
+| Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma_v2/login/`](https://machadogestao.com/plataforma_v2/login/) |
+| Platform status report | [apps/learning-platform/statusreport/index.html](apps/learning-platform/statusreport/index.html) | [`/plataforma_v2/statusreport/`](https://machadogestao.com/plataforma_v2/statusreport/) |
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply device, browser, query-parameter, authentication, or
 session checks after its static HTML loads. The deployed `landing-page/`
-namespace and the `plataforma_v2/` source directory do not contain root
+namespace and the `apps/learning-platform/` source directory do not contain root
 `index.html` files and therefore are not independent routes. There is no
 single-page-application fallback: those namespaces and unknown paths return
 `404` when no entry point exists.

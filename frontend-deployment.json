@@ -103,7 +103,7 @@
       "id": "conecta-referral-form",
       "mappings": [
         {
-          "source": "apps/conecta/referral-form",
+          "source": "apps/referrals-management/referral-form",
           "output": "conecta/cadastro-recomendacoes"
         }
       ],
@@ -119,7 +119,7 @@
       "id": "learning-platform",
       "mappings": [
         {
-          "source": "plataforma_v2",
+          "source": "apps/learning-platform",
           "output": "plataforma_v2"
         }
       ],

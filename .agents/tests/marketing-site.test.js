@@ -1789,7 +1789,7 @@ test("external article, media, Instagram, and Shaka URLs remain exact", () => {
 
 test("marketing favicon is byte-identical to the login favicon", () => {
   const loginFavicon = fs.readFileSync(
-    path.join(repositoryRoot, "plataforma_v2", "login", "img", "FAVICON.ico")
+    path.join(repositoryRoot, "apps", "learning-platform", "login", "img", "FAVICON.ico")
   );
   const marketingFavicon = fs.readFileSync(
     path.join(marketingRoot, "img", "FAVICON.ico")

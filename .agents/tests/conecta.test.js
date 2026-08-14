@@ -7,7 +7,15 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(
-  path.join(__dirname, '..', '..', 'apps', 'conecta', 'referral-form', 'main.js'),
+  path.join(
+    __dirname,
+    '..',
+    '..',
+    'apps',
+    'referrals-management',
+    'referral-form',
+    'main.js',
+  ),
   'utf8',
 );
 

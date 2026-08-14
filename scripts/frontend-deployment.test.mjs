@@ -179,13 +179,9 @@ test("deployment inventory exhaustively separates maintained frontends from the 
   assert.equal(learningPlatformApplications.length, 1);
 
   const [learningPlatform] = learningPlatformApplications;
-  for (const mapping of learningPlatform.mappings) {
-    assert.ok(
-      mapping.source === "plataforma_v2" ||
-        mapping.source.startsWith("plataforma_v2/"),
-      "learning-platform must be sourced only from plataforma_v2/**"
-    );
-  }
+  assert.deepEqual(learningPlatform.mappings, [
+    { source: "apps/learning-platform", output: "plataforma_v2" }
+  ]);
   assert.deepEqual(learningPlatform.publicEntries, [
     {
       path: "/plataforma_v2/aviso-dispositivo/",
@@ -369,7 +365,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     ),
     {
       applicationId: "conecta-referral-form",
-      source: "apps/conecta/referral-form/index.html",
+      source: "apps/referrals-management/referral-form/index.html",
       output: "conecta/cadastro-recomendacoes/index.html"
     }
   );
@@ -818,7 +814,7 @@ test("generated JavaScript imports require exact files without index fallback", 
 test("source preview and deployment references resolve to the same mapped asset", () => {
   const mappedFiles = [
     {
-      source: "apps/conecta/referral-form/style.css",
+      source: "apps/referrals-management/referral-form/style.css",
       output: "conecta/cadastro-recomendacoes/style.css"
     },
     {
@@ -831,16 +827,16 @@ test("source preview and deployment references resolve to the same mapped asset"
     compareSourcePreviewReference(
       "./style.css?v=1#theme",
       "conecta/cadastro-recomendacoes/index.html",
-      "apps/conecta/referral-form/index.html",
+      "apps/referrals-management/referral-form/index.html",
       mappedFiles
     ),
     {
-      expectedSource: "apps/conecta/referral-form/style.css",
+      expectedSource: "apps/referrals-management/referral-form/style.css",
       matches: true,
       output: "conecta/cadastro-recomendacoes/style.css",
       sourceCandidates: [
-        "apps/conecta/referral-form/style.css",
-        "apps/conecta/referral-form/style.css/index.html"
+        "apps/referrals-management/referral-form/style.css",
+        "apps/referrals-management/referral-form/style.css/index.html"
       ]
     }
   );
@@ -915,7 +911,7 @@ test("source preview and deployment references resolve to the same mapped asset"
     compareSourcePreviewReference(
       "/conecta/cadastro-recomendacoes/style.css",
       "conecta/cadastro-recomendacoes/index.html",
-      "apps/conecta/referral-form/index.html",
+      "apps/referrals-management/referral-form/index.html",
       mappedFiles
     ).matches,
     false
@@ -925,7 +921,7 @@ test("source preview and deployment references resolve to the same mapped asset"
     compareSourcePreviewReference(
       "/shared/logo.png",
       "conecta/cadastro-recomendacoes/index.html",
-      "apps/conecta/referral-form/index.html",
+      "apps/referrals-management/referral-form/index.html",
       mappedFiles
     ).matches,
     true
@@ -934,7 +930,7 @@ test("source preview and deployment references resolve to the same mapped asset"
     compareSourcePreviewReference(
       "data:image/svg+xml;base64,abc",
       "conecta/cadastro-recomendacoes/style.css",
-      "apps/conecta/referral-form/style.css",
+      "apps/referrals-management/referral-form/style.css",
       mappedFiles
     ),
     null
@@ -943,7 +939,7 @@ test("source preview and deployment references resolve to the same mapped asset"
     compareSourcePreviewReference(
       "#filter",
       "conecta/cadastro-recomendacoes/style.css",
-      "apps/conecta/referral-form/style.css",
+      "apps/referrals-management/referral-form/style.css",
       mappedFiles
     ),
     null
@@ -1484,7 +1480,7 @@ test("client intake normalizes only its slashless public route before assets loa
 
 test("Conecta normalizes only extensionless entry URLs before assets load", async () => {
   const html = await readFile(
-    new URL("../apps/conecta/referral-form/index.html", import.meta.url),
+    new URL("../apps/referrals-management/referral-form/index.html", import.meta.url),
     "utf8"
   );
   const inlineScript = html.match(/<script>\s*([\s\S]*?)<\/script>/);
@@ -1501,7 +1497,7 @@ test("Conecta normalizes only extensionless entry URLs before assets load", asyn
       expected: null
     },
     {
-      pathname: "/apps/conecta/referral-form/index.html",
+      pathname: "/apps/referrals-management/referral-form/index.html",
       expected: null
     }
   ]) {
@@ -1576,7 +1572,7 @@ test("certificate validation normalizes only its slashless public route before a
 
 test("generated certificates print the canonical validation URL", async () => {
   const platformSource = await readFile(
-    new URL("../plataforma_v2/estudo/main.js", import.meta.url),
+    new URL("../apps/learning-platform/estudo/main.js", import.meta.url),
     "utf8"
   );
   const validationUrls = platformSource.match(
