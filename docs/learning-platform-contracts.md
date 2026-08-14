@@ -1,18 +1,21 @@
 # Learning-platform compatibility contracts
 
-Status: authoritative current-state characterization for the behavior-baseline
-task. This document describes the frozen `sistemas` source at
-`c68f361de054a936b7a6871d82d75a1cdb457c97` and companion `backend` evidence at
-`7151f134c2cc1b57097bade5557ef6e422204303`. It does not authorize a behavior
-change, production request, data migration, or integration exercise.
+Status: authoritative current-state compatibility specification. Its frozen
+behavior baseline was characterized from `sistemas` commit
+`c68f361de054a936b7a6871d82d75a1cdb457c97`; source-layout, public-route, and
+artifact sections are maintained against the current repository tree. Companion
+`backend` evidence remains pinned at
+`7151f134c2cc1b57097bade5557ef6e422204303`. This document does not authorize
+application modernization, a production request, data migration, or an
+integration exercise.
 
 ## How to use this specification
 
 The stable descriptions and acceptance IDs in this document are the contracts
-to carry across the source move. Links under **Current source anchors** identify
-where the behavior happens in the frozen tree; they are evidence, not future
-directory requirements. When sources move, update those anchors without
-silently changing the stable description.
+to preserve across route adoption and later modernization. Links under
+**Current source anchors** identify where the behavior happens in the current
+tree; they are evidence, not future directory requirements. When sources move,
+update those anchors without silently changing the stable description.
 
 Evidence was reconciled in this order:
 
@@ -27,12 +30,14 @@ configuration or external integration was exercised. In particular, this
 characterization did not call the backend, Microsoft Graph or workbooks, Azure
 Face, the media store, EZDRM, email, or any customer-facing route.
 
-The document keeps four categories separate:
+The document keeps five categories separate:
 
 - **Source-observed current behavior** is the compatibility baseline.
 - **Known risks and unresolved legacy behavior** must be preserved by a pure
   move/baseline unless a later task explicitly changes them.
-- **Approved future decisions** are direction already chosen, but not
+- **Route-adoption history** records the approved frontend namespace change
+  without redefining backend or remote-media contracts.
+- **Approved future decisions** are remaining direction already chosen, but not
   implemented here.
 - **Questions requiring implementation-time evidence** must not be converted
   into assertions without a safe synthetic or local observation.
@@ -42,19 +47,19 @@ The document keeps four categories separate:
 ### Public entries and navigation
 
 `frontend-deployment.json` maps the entire tracked `apps/learning-platform/`
-directory to `dist/plataforma_v2/` without renaming relative paths. It declares
+directory to `dist/plataforma/` without renaming relative paths. It declares
 exactly seven public entries. Each canonical entry includes a trailing slash
 and must return its listed `index.html` with HTTP `200` and no redirect.
 
 | Stable entry | Canonical public path | Current entry file | Direct dependencies |
 | --- | --- | --- | --- |
-| `LP-ENTRY-DEVICE` | `/plataforma_v2/aviso-dispositivo/` | `apps/learning-platform/aviso-dispositivo/index.html` | Login favicon; own CSS, logo, and async classic script |
-| `LP-ENTRY-BROWSER` | `/plataforma_v2/aviso-navegador/` | `apps/learning-platform/aviso-navegador/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
-| `LP-ENTRY-NOTICES` | `/plataforma_v2/avisos-iniciais/` | `apps/learning-platform/avisos-iniciais/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
-| `LP-ENTRY-REGISTER` | `/plataforma_v2/cadastro/` | `apps/learning-platform/cadastro/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
-| `LP-ENTRY-STUDY` | `/plataforma_v2/estudo/` | `apps/learning-platform/estudo/index.html` | Own favicon/CSS/logo; Shaka Player 4.6.0 CSS/JS; jsPDF 2.5.1; synchronous monolithic JS; stored session state; remote DASH media |
-| `LP-ENTRY-LOGIN` | `/plataforma_v2/login/` | `apps/learning-platform/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; production backend role |
-| `LP-ENTRY-REPORT` | `/plataforma_v2/statusreport/` | `apps/learning-platform/statusreport/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
+| `LP-ENTRY-DEVICE` | `/plataforma/aviso-dispositivo/` | `apps/learning-platform/aviso-dispositivo/index.html` | Login favicon; own CSS, logo, and async classic script |
+| `LP-ENTRY-BROWSER` | `/plataforma/aviso-navegador/` | `apps/learning-platform/aviso-navegador/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
+| `LP-ENTRY-NOTICES` | `/plataforma/avisos-iniciais/` | `apps/learning-platform/avisos-iniciais/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
+| `LP-ENTRY-REGISTER` | `/plataforma/cadastro/` | `apps/learning-platform/cadastro/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
+| `LP-ENTRY-STUDY` | `/plataforma/estudo/` | `apps/learning-platform/estudo/index.html` | Own favicon/CSS/logo; Shaka Player 4.6.0 CSS/JS; jsPDF 2.5.1; synchronous monolithic JS; stored session state; remote DASH media |
+| `LP-ENTRY-LOGIN` | `/plataforma/login/` | `apps/learning-platform/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; production backend role |
+| `LP-ENTRY-REPORT` | `/plataforma/statusreport/` | `apps/learning-platform/statusreport/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
 
 The entry documents use these exact initial URL literals; later dynamic Face,
 download, certificate, and video paths are specified in their dedicated
@@ -62,19 +67,40 @@ sections below:
 
 | Entry | Root-relative and external initial dependencies |
 | --- | --- |
-| Device warning | `/plataforma_v2/login/img/FAVICON.ico`; `/plataforma_v2/aviso-dispositivo/style.css`; `/plataforma_v2/aviso-dispositivo/img/LOGO_MACHADO.png`; `/plataforma_v2/aviso-dispositivo/main.js` |
-| Browser warning | `/plataforma_v2/login/img/FAVICON.ico`; `/plataforma_v2/aviso-navegador/style.css`; `/plataforma_v2/aviso-navegador/img/LOGO_MACHADO.png`; `/plataforma_v2/aviso-navegador/main.js` |
-| Initial notices | `/plataforma_v2/login/img/FAVICON.ico`; `/plataforma_v2/avisos-iniciais/style.css`; `/plataforma_v2/avisos-iniciais/img/LOGO_MACHADO.png`; `/plataforma_v2/avisos-iniciais/main.js` |
-| Registration | `/plataforma_v2/login/img/FAVICON.ico`; `/plataforma_v2/cadastro/style.css`; `/plataforma_v2/azure-ai-vision-face-ui/` as `<base>`; `/plataforma_v2/cadastro/img/LOGO_MACHADO.png`; `/plataforma_v2/cadastro/img/REFERÊNCIAS_FOTOS.png`; `/plataforma_v2/cadastro/main.js`; user-invoked `https://www.resizepixel.com/` and `https://cloudconvert.com/` links |
-| Study | `/plataforma_v2/estudo/img/FAVICON.ico`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.css`; `/plataforma_v2/estudo/style.css`; `/plataforma_v2/estudo/img/LOGO_MACHADO.png`; `https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js`; `/plataforma_v2/estudo/main.js` |
-| Login | `/plataforma_v2/login/img/FAVICON.ico`; `/plataforma_v2/login/style.css`; `/plataforma_v2/azure-ai-vision-face-ui/` as `<base>`; `/plataforma_v2/login/img/LOGO_MACHADO.png`; `/plataforma_v2/login/main.js` |
-| Status report | `/plataforma_v2/statusreport/img/FAVICON.ico`; `/plataforma_v2/statusreport/style.css`; `/plataforma_v2/statusreport/img/LOGO_MACHADO.png`; `/plataforma_v2/statusreport/main.js` |
+| Device warning | `/plataforma/login/img/FAVICON.ico`; `/plataforma/aviso-dispositivo/style.css`; `/plataforma/aviso-dispositivo/img/LOGO_MACHADO.png`; `/plataforma/aviso-dispositivo/main.js` |
+| Browser warning | `/plataforma/login/img/FAVICON.ico`; `/plataforma/aviso-navegador/style.css`; `/plataforma/aviso-navegador/img/LOGO_MACHADO.png`; `/plataforma/aviso-navegador/main.js` |
+| Initial notices | `/plataforma/login/img/FAVICON.ico`; `/plataforma/avisos-iniciais/style.css`; `/plataforma/avisos-iniciais/img/LOGO_MACHADO.png`; `/plataforma/avisos-iniciais/main.js` |
+| Registration | `/plataforma/login/img/FAVICON.ico`; `/plataforma/cadastro/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/cadastro/img/LOGO_MACHADO.png`; `/plataforma/cadastro/img/REFERÊNCIAS_FOTOS.png`; `/plataforma/cadastro/main.js`; user-invoked `https://www.resizepixel.com/` and `https://cloudconvert.com/` links |
+| Study | `/plataforma/estudo/img/FAVICON.ico`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.css`; `/plataforma/estudo/style.css`; `/plataforma/estudo/img/LOGO_MACHADO.png`; `https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js`; `/plataforma/estudo/main.js` |
+| Login | `/plataforma/login/img/FAVICON.ico`; `/plataforma/login/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/login/img/LOGO_MACHADO.png`; `/plataforma/login/main.js` |
+| Status report | `/plataforma/statusreport/img/FAVICON.ico`; `/plataforma/statusreport/style.css`; `/plataforma/statusreport/img/LOGO_MACHADO.png`; `/plataforma/statusreport/main.js` |
 
-`/plataforma_v2/` is intentionally an HTTP `404` with no redirect. There is no
+`/plataforma/` is intentionally an HTTP `404` with no redirect. There is no
 root `index.html` and no SPA fallback. The seven entries are URL entry points,
 not claims that every entry is anonymous: client JavaScript applies the gates
 described below after HTML loads. The status-report entry is the exception that
 has no Edge, login, session, or participant gate.
+
+#### Route-adoption history
+
+The frontend public and deployment-output namespace changed from
+`/plataforma_v2` to `/plataforma`. The former `/plataforma_v2/` root and all
+seven former canonical entries are retired and return `404` without redirect:
+`/plataforma_v2/aviso-dispositivo/`,
+`/plataforma_v2/aviso-navegador/`,
+`/plataforma_v2/avisos-iniciais/`, `/plataforma_v2/cadastro/`,
+`/plataforma_v2/estudo/`, `/plataforma_v2/login/`, and
+`/plataforma_v2/statusreport/`. No `dist/plataforma_v2/` subtree is emitted and
+there is no compatibility redirect. The customer-facing URL change is
+communicated manually outside this repository.
+
+This adoption changed frontend paths only. The physical source remains
+`apps/learning-platform/`, the application ID remains `learning-platform`, the
+backend API remains under `/plataforma_v2`, and the protected and bypass
+remote-media branches remain under `videosv3/plataforma_v2/` and
+`videosv3/plataforma_v2_sem_drm/`. The Conecta source, application ID,
+`/conecta/cadastro-recomendacoes/` route, and
+`dist/conecta/cadastro-recomendacoes/` output are unchanged.
 
 Current internal navigation is normal document navigation through
 `window.location.href`, always using the following **slashless**, lower-case,
@@ -82,12 +108,17 @@ root-relative strings:
 
 | Destination | Exact internal path | Writers |
 | --- | --- | --- |
-| Device warning | `/plataforma_v2/aviso-dispositivo` | Login, initial notices, registration, study, status report |
-| Browser warning | `/plataforma_v2/aviso-navegador` | Login, initial notices, registration, study |
-| Login | `/plataforma_v2/login` | Registration failure/rejection, unauthenticated study, logout, session expiry |
-| Initial notices | `/plataforma_v2/avisos-iniciais` | Active login with Face enabled and no registered photo |
-| Registration | `/plataforma_v2/cadastro` | Successful initial-notices acknowledgement |
-| Study | `/plataforma_v2/estudo` | Existing logged flag, Face-disabled login, successful Face verification/registration |
+| Device warning | `/plataforma/aviso-dispositivo` | Login, initial notices, registration, study, status report |
+| Browser warning | `/plataforma/aviso-navegador` | Login, initial notices, registration, study |
+| Login | `/plataforma/login` | Registration failure/rejection, unauthenticated study, logout, session expiry |
+| Initial notices | `/plataforma/avisos-iniciais` | Active login with Face enabled and no registered photo |
+| Registration | `/plataforma/cadastro` | Successful initial-notices acknowledgement |
+| Study | `/plataforma/estudo` | Existing logged flag, Face-disabled login, successful Face verification/registration |
+
+The maintained client-intake application separately targets the canonical
+`/plataforma/aviso-dispositivo/` entry, including its trailing slash, as an
+explicit cross-application device-warning destination. It is not part of the
+platform's slashless internal-navigation table.
 
 There is no `location.replace`, History API state, hash router, `popstate`, or
 client-side route normalizer in the platform. Module and topic changes are
@@ -109,11 +140,13 @@ history entry.
 
 #### Current source anchors
 
-- Deployment mapping, entries, and root 404:
-  [`frontend-deployment.json` lines 119-180](../frontend-deployment.json#L119-L180).
-- Exhaustive entry test:
-  [`scripts/frontend-deployment.test.mjs` lines 153-219](../scripts/frontend-deployment.test.mjs#L153-L219).
-- README route/404 contract: [`README.md` lines 26-59](../README.md#L26-L59).
+- Deployment mapping, entries, current root 404, and former-route retirement:
+  [`frontend-deployment.json`](../frontend-deployment.json).
+- Exhaustive entry and retirement test:
+  [`scripts/frontend-deployment.test.mjs`](../scripts/frontend-deployment.test.mjs).
+- README route/404 contract: [`README.md` lines 26-69](../README.md#L26-L69).
+- Client-intake cross-application warning destination:
+  [`main.js` line 4](../apps/client-intake/main.js#L4).
 - Published `200`/no-redirect and `404`/no-redirect checks:
   [`scripts/frontend-deployment-lib.mjs` lines 1268-1334](../scripts/frontend-deployment-lib.mjs#L1268-L1334).
 - Slashless local behavior: source-preview aliases
@@ -568,10 +601,13 @@ backend projection
 
 ### Runtime assets and resolution rules
 
-The complete tracked/emitted platform set is the union below. File counts and
-bytes are raw file-content totals at the characterized commit.
+The complete tracked/emitted platform set is the union below. File counts remain
+current. The byte column is retained as explicit pre-adoption history from
+`sistemas` commit `38b8d27f272dc13c549d895df174af8622829827`; frontend path
+literal changes mean those byte totals are not the post-adoption artifact
+identity.
 
-| Area | Files | Bytes | Complete set description |
+| Area | Files | Pre-adoption bytes | Complete set description |
 | --- | ---: | ---: | --- |
 | `aviso-dispositivo/` | 5 | 124,681 | `index.html`, `main.js`, `style.css`, `img/FAVICON.ico`, `img/LOGO_MACHADO.png` |
 | `aviso-navegador/` | 5 | 124,504 | Same five relative names as device warning |
@@ -581,7 +617,7 @@ bytes are raw file-content totals at the characterized commit.
 | `estudo/` | 41 | 10,073,597 | HTML/JS/CSS, 33 study files, five images |
 | `login/` | 6 | 146,875 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
 | `statusreport/` | 5 | 144,652 | HTML/JS/CSS, favicon, logo |
-| **Total** | **156** | **20,709,083** | Identity-mapped to `dist/plataforma_v2/` |
+| **Total** | **156** | **20,709,083** | Current output root is `dist/plataforma/`; byte total is pre-adoption history |
 
 By extension, the set is 7 CSS, 7 HTML, 10 JS, 75 JSON, 2 WASM, 11 PNG,
 5 ICO, 5 SVG, 1 JPG, 19 XLSM, 11 XLSX, 2 VSDX, and 1 VSSX. The exact complete
@@ -628,7 +664,7 @@ WASM beside the chosen JS. It loads images and dictionaries with relative
 `pt-BR`, so their current dictionary is `i18n/pt-BR/en.json`.
 
 Both entry HTML files set
-`<base href="/plataforma_v2/azure-ai-vision-face-ui/">`. Their own CSS, images,
+`<base href="/plataforma/azure-ai-vision-face-ui/">`. Their own CSS, images,
 and module scripts are root-relative, while the vendor's relative dynamic
 requests resolve through this base. Removing or moving the base without an
 equivalent resolution seam breaks engine, WASM, image, and locale loading.
@@ -714,15 +750,18 @@ The exact topic-to-download rules, preserving slot order, are:
   `TEMPLATE FOP (A2).vsdx`, `SIMBOLOGIA FOPs (BPMN).vssx`;
   `9. POPs - BOAS PRÁTICAS` → `TEMPLATE POP (A4).xlsx`.
 
-Download controls are four placeholder anchors whose root-relative paths and
-visibility are reassigned for exact module/video-name pairs. Every other video
-hides all four controls. The same `BD DESLIGAMENTOS (2034-06 A 2035-01).xlsx`
-content occurs under modules 4 and 5 as two distinct public paths.
+Download controls are four placeholder anchors whose root-relative paths under
+`/plataforma/estudo/files/<module>/<filename>` and visibility are reassigned for
+exact module/video-name pairs. Every other video hides all four controls. The
+same `BD DESLIGAMENTOS (2034-06 A 2035-01).xlsx` content occurs under modules 4
+and 5 as two distinct public paths.
 
 No certificate PDF/template file is stored. jsPDF builds it in the browser from
-`LOGO_MACHADO_CERTIFICADO.jpg`, `ASSINATURA.png`, and `ATLAS.png`. The JPG logo
-is passed to jsPDF with the legacy format label `PNG`. Study also uses
-`FAVICON.ico` and `LOGO_MACHADO.png`.
+`/plataforma/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg`,
+`/plataforma/estudo/img/ASSINATURA.png`, and
+`/plataforma/estudo/img/ATLAS.png`. The JPG logo is passed to jsPDF with the
+legacy format label `PNG`. Study also uses `FAVICON.ico` and
+`LOGO_MACHADO.png`.
 
 Current anchors: download placeholders
 [`index.html` lines 1353-1377](../apps/learning-platform/estudo/index.html#L1353-L1377),
@@ -807,17 +846,32 @@ and [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L
 ### Deployment artifact and whole-tree digest
 
 The mapping copies tracked bytes; it performs no bundling, minification, or
-transformation. The characterized platform source and emitted subtree have the
-same 156 paths relative to their roots and identical bytes.
+transformation. The current platform source and emitted `dist/plataforma/`
+subtree have the same 156 paths relative to their roots and identical bytes.
+
+The current post-adoption identity comes from the verified build for this
+change. File counts are fixed by the checked mapping; the byte totals and
+digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Current platform subset, retaining full output paths `plataforma/...` | 156 | 20,708,799 | `10dee6c96d402149bd3ffe66cff96058ec4ed2de1561998f10e1444c67868b15` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 156 | 20,708,799 | `7accfa3b272fbdf039ea29049858ac351cab245bf5bfc062b938769c7be01dd5` |
+| Current complete generated `dist/` artifact | 231 | 27,313,834 | `21b0c501fd32ebce8678b8970aa30c3cb173d7119ed527d9e0b47037a1599991` |
+
+For pre-adoption comparison only, commit
+`38b8d27f272dc13c549d895df174af8622829827` produced the following historical
+artifact identities:
+
+| Pre-adoption scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
 | Platform subset, retaining full output paths `plataforma_v2/...` | 156 | 20,709,083 | `6b7ae5adbd00b9f5a1319aaf9c86aeaef9e688217ce452b3ce018ebe8770bb4b` |
 | Platform subtree rooted at `dist/plataforma_v2` (prefix omitted; diagnostic only) | 156 | 20,709,083 | `6eb7b6d8c46e43d570e4cffff251377cd7496ff17a4c03dfe5ae69d642a3c9ba` |
 | Complete generated `dist/` artifact | 231 | 27,314,121 | `cb23b90f85e8d2dbc4d440f1547c42ab4a6164cfd53a0af25bd8b2155e9da81f` |
 
-The two platform digests differ only because the digest includes path bytes.
-Use the first when comparing a platform subset within the whole artifact.
+Within either snapshot, the two platform digests differ only because the digest
+includes path bytes. Use the first when comparing a platform subset within the
+whole artifact.
 
 The repository digest procedure ordinal-sorts relative output paths. For each
 file it updates SHA-256 with UTF-8 bytes in this exact sequence:
@@ -990,11 +1044,9 @@ future work, not permission to change compatibility behavior in the baseline.
 
 ## Approved future decisions
 
-These decisions are approved roadmap direction only. They do not redefine the
-current behavior above and are not implemented by this documentation change.
-
-- Replace the learning-platform public namespace with `/plataforma` and retire
-  `/plataforma_v2`; Lucas will communicate that change manually.
+These remaining decisions are approved roadmap direction only. They do not
+redefine the current behavior above and are not implemented by the frontend
+route-adoption change.
 - Use Azure SQL Database Basic as the initial relational target, subject to
   representative load testing.
 - Migrate workbook capabilities sequentially, with reconciliation and rollback
@@ -1058,14 +1110,14 @@ changes the relevant seam must collect evidence without contacting production:
 
 ## Behavior-baseline acceptance matrix
 
-The next task should turn this matrix into safe compatibility tests before
-moving sources or changing behavior. Stable contract descriptions are the test
-intent; current source anchors are only the oracle for this frozen snapshot.
+The compatibility suite implements this matrix and remains the executable guard
+for route adoption and later modernization. Stable contract descriptions are
+the test intent; current source anchors identify the current oracle.
 
 | ID | Compatibility surface | Required synthetic assertion |
 | --- | --- | --- |
-| ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical trailing-slash entries listed above, with exact case, and every index is emitted. |
-| ROUTE-02 | Root and slash behavior | `/plataforma_v2/` remains an intentional 404; internal source navigation remains slashless and published slashless behavior is marked unproven rather than invented. |
+| ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, with exact case, and every index is emitted under `dist/plataforma/`. |
+| ROUTE-02 | Root, retirement, and slash behavior | `/plataforma/` is an intentional 404; the former `/plataforma_v2/` root and seven former entries are 404 without redirect; no `dist/plataforma_v2/` subtree exists; internal source navigation remains slashless and published slashless behavior is marked unproven rather than invented. |
 | ROUTE-03 | Navigation/history | Login, initial notices, Face registration, study, warning pages, logout, and back navigation use the exact current targets and history operations. |
 | GATE-01 | Edge detection | Login/notices/registration/study accept when either current Edge signal matches and redirect when neither matches; status report does not gate; the browser-warning diagnostic throws when `userAgentData` is absent. |
 | GATE-02 | Width and resize | Initial and resize decisions cover 1023, 1024, and 1025 pixels, including each page's current ordering and the warning page's `history.back()` condition. |
@@ -1087,11 +1139,11 @@ intent; current source anchors are only the oracle for this frozen snapshot.
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
 | FACE-01 | SDK resolution | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, and regular/SIMD JS+WASM branch paths resolve exactly without loading production Face. |
-| ASSET-01 | File identity | The exact 156-file, 20,709,083-byte platform set and full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
+| ASSET-01 | File identity | The exact 156-file current platform set, verified post-adoption byte total, and current full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit; 31 are reachable, two remain unreferenced, and all browser-generated certificate inputs resolve with exact case. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The complete artifact remains 231 files, 27,314,121 bytes, with digest `cb23b90f85e8d2dbc4d440f1547c42ab4a6164cfd53a0af25bd8b2155e9da81f`. |
+| ARTIFACT-01 | Full frontend artifact | The complete artifact remains 231 files and matches the verified post-adoption byte total and digest recorded above. |
 | ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 149 implicitly emitted runtime/support files. |
 
 ### Automated traceability
@@ -1122,8 +1174,8 @@ behavior.
 
 ## Safe synthetic-dependency strategy
 
-The behavior-baseline task should use Node.js 24 and make outbound networking a
-test failure before any application script executes.
+The behavior-baseline suite uses Node.js 24 and makes outbound networking a test
+failure before any application script executes.
 
 1. Start with static contract extraction: parse deployment JSON, HTML attributes,
    source literals, tracked paths, and digest framing. This covers routes,
@@ -1166,9 +1218,9 @@ email, or use live credentials.
 
 ## Reproducing this characterization
 
-Run from the `sistemas` repository at the frozen commit, using Node.js 24.x.
-These commands enumerate source evidence only; they do not start an application
-server or call an external dependency.
+Run from the current `sistemas` tree using Node.js 24.x. These commands enumerate
+source evidence only; they do not start an application server or call an
+external dependency.
 
 ```powershell
 git -c core.quotepath=false ls-files -- apps/learning-platform
@@ -1181,6 +1233,8 @@ git diff --check
 
 The build/check pair proves the source-derived artifact rather than production
 hosting behavior. After building, compare the exact emitted file set and bytes
-using the repository helpers and digest framing above. A documentation-only
-change passes only when the three characterized digests and all file/byte
-counts remain unchanged.
+using the repository helpers and digest framing above. For this route adoption,
+the platform and complete-artifact file counts remain 156 and 231 while byte
+totals and digests intentionally change; the current artifact table records the
+verified post-adoption values and retains the old identities only as
+pre-adoption history.

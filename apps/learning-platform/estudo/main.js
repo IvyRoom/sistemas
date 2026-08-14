@@ -75,7 +75,7 @@ window.addEventListener('load', function() {
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
         
-    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma_v2/aviso-navegador'; } else {
+    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma/aviso-navegador'; } else {
     
         ////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ window.addEventListener('load', function() {
         ////////////////////////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////////////////////
         
-        if (sessionStorage.getItem('Usuário_Logado') !== 'Sim') { window.location.href = '/plataforma_v2/login'; } else {
+        if (sessionStorage.getItem('Usuário_Logado') !== 'Sim') { window.location.href = '/plataforma/login'; } else {
         
             ////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ window.addEventListener('load', function() {
             ////////////////////////////////////////////////////////////////////////////////////////
             ////////////////////////////////////////////////////////////////////////////////////////
 
-            function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma_v2/aviso-dispositivo"; } }
+            function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma/aviso-dispositivo"; } }
             
             LevaàPáginaAvisoDispositivo();
             
@@ -154,7 +154,7 @@ window.addEventListener('load', function() {
                 // Ativa o processamento do Botão-Sair.
                 ////////////////////////////////////////////////////////////////////////////////////////
                         
-                document.getElementById("Botão-Sair").addEventListener("click", function(){ sessionStorage.setItem('Usuário_Logado', 'Não'); window.location.href = '/plataforma_v2/login'; })
+                document.getElementById("Botão-Sair").addEventListener("click", function(){ sessionStorage.setItem('Usuário_Logado', 'Não'); window.location.href = '/plataforma/login'; })
 
                 ////////////////////////////////////////////////////////////////////////////////////////
                 // Atualiza o Prazo de Acesso.
@@ -227,7 +227,7 @@ window.addEventListener('load', function() {
                     UsuárioTempoSessão.textContent = `Tempo Sessão: ${String((SegundosRestantes / 3600 | 0)).padStart(2, "0")}:${String(((SegundosRestantes % 3600) / 60 | 0)).padStart(2, "0")}:${String(SegundosRestantes % 60).padStart(2, "0")}`;
                     if (SegundosRestantes <= 600 && UsuárioTempoSessão.style.color !== "red") { UsuárioTempoSessão.style.color = "red"; }
                     if (SegundosRestantes <= 300 && !UsuárioTempoSessão.classList.contains("Tempo-Sessão-Últimos-5min")) { UsuárioTempoSessão.classList.add("Tempo-Sessão-Últimos-5min"); }
-                    if (SegundosRestantes <= 0) { clearInterval(ContadorRegressivoTempoSessão); sessionStorage.setItem('Usuário_Logado', 'Não'); window.location.href = '/plataforma_v2/login';}
+                    if (SegundosRestantes <= 0) { clearInterval(ContadorRegressivoTempoSessão); sessionStorage.setItem('Usuário_Logado', 'Não'); window.location.href = '/plataforma/login';}
 
                 }, 1000);
 
@@ -492,7 +492,7 @@ function AbreTópico() {
 
         if (MóduloAberto === "Módulo 2" && NomeVídeo === "8. PRIORIDADE"){            
             NomeArquivo1.innerHTML = "PLANO DE AÇÃO";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO.xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO.xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -501,7 +501,7 @@ function AbreTópico() {
         
         else if (MóduloAberto === "Módulo 2" && NomeVídeo === "10. PLANO DE AÇÃO CLÁUDIA"){
             NomeArquivo1.innerHTML = "PLANO DE AÇÃO (CLÁUDIA)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (CLÁUDIA).xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (CLÁUDIA).xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -510,7 +510,7 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 2" && NomeVídeo === "13. RACIOCÍNIO") {
             NomeArquivo1.innerHTML = "PLANO DE AÇÃO (RODRIGO)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (RODRIGO).xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (RODRIGO).xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -522,7 +522,7 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 3" && NomeVídeo === "2. ANÁLISE DO FENÔMENO") {
             NomeArquivo1.innerHTML = "BASE DE DADOS";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/Boyá-Arquitetura-Campaigns-Jul-01-2035-Jul-31-2035.xlsx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/Boyá-Arquitetura-Campaigns-Jul-01-2035-Jul-31-2035.xlsx";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -531,7 +531,7 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 3" && NomeVídeo === "4. ANÁLISE DO FENÔMENO") {
             NomeArquivo1.innerHTML = "BD TRATADA";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/BD TRATADA.xlsx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/BD TRATADA.xlsx";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -543,10 +543,10 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 4" && NomeVídeo === "7. CÁLCULO DE METAS") {
             NomeArquivo1.innerHTML = "BD INDENIZAÇÕES (2033-01 a 2034-10)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/BD INDENIZAÇÕES (2033-01 a 2034-10).xlsx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/BD INDENIZAÇÕES (2033-01 a 2034-10).xlsx";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "AN. FUNCIONAL (VALOR MÉDIO INDENIZADO)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (VALOR MÉDIO INDENIZADO).xlsx";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (VALOR MÉDIO INDENIZADO).xlsx";
             ContainerDownloadArquivo2.style.display = "flex";
             ContainerDownloadArquivo3.style.display = "none";
             ContainerDownloadArquivo4.style.display = "none";
@@ -554,10 +554,10 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 4" && NomeVídeo === "9. CÁLCULO DE METAS") {
             NomeArquivo1.innerHTML = "BD DESLIGAMENTOS (2032-10 A 2034-10)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/BD DESLIGAMENTOS (2032-10 A 2034-10).xlsx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/BD DESLIGAMENTOS (2032-10 A 2034-10).xlsx";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "AN. FUNCIONAL (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (ENTRADA DE PROCESSOS TRABALHISTAS).xlsx";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (ENTRADA DE PROCESSOS TRABALHISTAS).xlsx";
             ContainerDownloadArquivo2.style.display = "flex";
             ContainerDownloadArquivo3.style.display = "none";
             ContainerDownloadArquivo4.style.display = "none";
@@ -565,40 +565,40 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 4" && NomeVídeo === "12. PREPARAR GRÁFICOS DE CONTROLE") {
             NomeArquivo1.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS.xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS.xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "AN. FUNCIONAL (VALOR MÉDIO INDENIZADO)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (VALOR MÉDIO INDENIZADO).xlsx";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (VALOR MÉDIO INDENIZADO).xlsx";
             ContainerDownloadArquivo2.style.display = "flex";
             NomeArquivo3.innerHTML = "BD INDENIZAÇÕES (2034-06 A 2035-01)";
-            BotãoDownload3.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/BD INDENIZAÇÕES (2034-06 A 2035-01).xlsx";
+            BotãoDownload3.href = "/plataforma/estudo/files/" + MóduloAberto + "/BD INDENIZAÇÕES (2034-06 A 2035-01).xlsx";
             ContainerDownloadArquivo3.style.display = "flex";
             NomeArquivo4.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-01 (VALOR MÉDIO INDENIZADO)";
-            BotãoDownload4.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (VALOR MÉDIO INDENIZADO) - 1.xlsm";
+            BotãoDownload4.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (VALOR MÉDIO INDENIZADO) - 1.xlsm";
             ContainerDownloadArquivo4.style.display = "flex";
         }
 
         else if (MóduloAberto === "Módulo 4" && NomeVídeo === "14. PREPARAR GRÁFICOS DE CONTROLE") {
             NomeArquivo1.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS.xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS.xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "AN. FUNCIONAL (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (ENTRADA DE PROCESSOS TRABALHISTAS).xlsx";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/AN. FUNCIONAL (ENTRADA DE PROCESSOS TRABALHISTAS).xlsx";
             ContainerDownloadArquivo2.style.display = "flex";
             NomeArquivo3.innerHTML = "BD DESLIGAMENTOS (2034-06 A 2035-01)";
-            BotãoDownload3.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/BD DESLIGAMENTOS (2034-06 A 2035-01).xlsx";
+            BotãoDownload3.href = "/plataforma/estudo/files/" + MóduloAberto + "/BD DESLIGAMENTOS (2034-06 A 2035-01).xlsx";
             ContainerDownloadArquivo3.style.display = "flex";
             NomeArquivo4.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-01 (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload4.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (ENTRADA DE PROCESSOS TRABALHISTAS) - 1.xlsm";
+            BotãoDownload4.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (ENTRADA DE PROCESSOS TRABALHISTAS) - 1.xlsm";
             ContainerDownloadArquivo4.style.display = "flex";
         }
 
         else if (MóduloAberto === "Módulo 4" && NomeVídeo === "15. FAZER A REUNIÃO DE NÍVEL") {
             NomeArquivo1.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-01 (VALOR MÉDIO INDENIZADO)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (VALOR MÉDIO INDENIZADO) - 2.xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (VALOR MÉDIO INDENIZADO) - 2.xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-01 (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (ENTRADA DE PROCESSOS TRABALHISTAS) - 2.xlsm";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-01 (ENTRADA DE PROCESSOS TRABALHISTAS) - 2.xlsm";
             ContainerDownloadArquivo2.style.display = "flex";
             ContainerDownloadArquivo3.style.display = "none";
             ContainerDownloadArquivo4.style.display = "none";
@@ -609,10 +609,10 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 5" && NomeVídeo === "1. ANÁLISE DO FENÔMENO") {
             NomeArquivo1.innerHTML = "BD DESLIGAMENTOS (2034-06 A 2035-01)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/BD DESLIGAMENTOS (2034-06 A 2035-01).xlsx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/BD DESLIGAMENTOS (2034-06 A 2035-01).xlsx";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "AN. FENÔMENO (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/AN. FENÔMENO (ENTRADA DE PROCESSOS TRABALHISTAS).xlsx";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/AN. FENÔMENO (ENTRADA DE PROCESSOS TRABALHISTAS).xlsx";
             ContainerDownloadArquivo2.style.display = "flex";
             ContainerDownloadArquivo3.style.display = "none";
             ContainerDownloadArquivo4.style.display = "none";
@@ -620,23 +620,23 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 5" && NomeVídeo === "5. PLANO DE AÇÃO") {
             NomeArquivo1.innerHTML = "PLANO DE AÇÃO (DAVI)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (DAVI).xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (DAVI).xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "PLANO DE AÇÃO (SAMARA)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (SAMARA).xlsm";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (SAMARA).xlsm";
             ContainerDownloadArquivo2.style.display = "flex";
             NomeArquivo3.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-02-17 (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload3.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02-17 (ENTRADA DE PROCESSOS TRABALHISTAS).xlsm";
+            BotãoDownload3.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02-17 (ENTRADA DE PROCESSOS TRABALHISTAS).xlsm";
             ContainerDownloadArquivo3.style.display = "flex";
             ContainerDownloadArquivo4.style.display = "none";
         }
 
         else if (MóduloAberto === "Módulo 5" && NomeVídeo === "8. PREPARAR GRÁFICOS DE CONTROLE") {
             NomeArquivo1.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-02 (ENTRADA DE PROCESSOS TRABALHISTAS)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (ENTRADA DE PROCESSOS TRABALHISTAS).xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (ENTRADA DE PROCESSOS TRABALHISTAS).xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-02 (VALOR MÉDIO INDENIZADO)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (VALOR MÉDIO INDENIZADO).xlsm";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (VALOR MÉDIO INDENIZADO).xlsm";
             ContainerDownloadArquivo2.style.display = "flex";
             ContainerDownloadArquivo3.style.display = "none";
             ContainerDownloadArquivo4.style.display = "none";
@@ -644,10 +644,10 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 5" && NomeVídeo === "9. FAZER REUNIÃO DE NÍVEL") {
             NomeArquivo1.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-02 (ENTRADA DE PROCESSOS TRABALHISTAS) - REVISADO";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (ENTRADA DE PROCESSOS TRABALHISTAS) - REVISADO.xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (ENTRADA DE PROCESSOS TRABALHISTAS) - REVISADO.xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "GRÁFICO CONTROLE DE RESULTADOS 2035-02 (VALOR MÉDIO INDENIZADO) - REVISADO";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (VALOR MÉDIO INDENIZADO) - REVISADO.xlsm";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/GRÁFICO CONTROLE DE RESULTADOS 2035-02 (VALOR MÉDIO INDENIZADO) - REVISADO.xlsm";
             ContainerDownloadArquivo2.style.display = "flex";
             ContainerDownloadArquivo3.style.display = "none";
             ContainerDownloadArquivo4.style.display = "none";
@@ -658,7 +658,7 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 7" && NomeVídeo === "10. PADRONIZAÇÃO - CONSTRUIR O PADRÃO") {
             NomeArquivo1.innerHTML = "PLANO DE AÇÃO (RAFAEL)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (RAFAEL).xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (RAFAEL).xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -670,7 +670,7 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 8" && NomeVídeo === "9. TREINAMENTO - COMO ACONTECE") {
             NomeArquivo1.innerHTML = "PLANO DE AÇÃO (RAFAEL)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (RAFAEL).xlsm";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/PLANO DE AÇÃO (RAFAEL).xlsm";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -682,20 +682,20 @@ function AbreTópico() {
 
         else if (MóduloAberto === "Módulo 9" && NomeVídeo === "5. FOPs - BOAS PRÁTICAS") {
             NomeArquivo1.innerHTML = "TEMPLATE FOP (A3)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/TEMPLATE FOP (A3).vsdx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/TEMPLATE FOP (A3).vsdx";
             ContainerDownloadArquivo1.style.display = "flex";
             NomeArquivo2.innerHTML = "TEMPLATE FOP (A2)";
-            BotãoDownload2.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/TEMPLATE FOP (A2).vsdx";
+            BotãoDownload2.href = "/plataforma/estudo/files/" + MóduloAberto + "/TEMPLATE FOP (A2).vsdx";
             ContainerDownloadArquivo2.style.display = "flex";
             NomeArquivo3.innerHTML = "SIMBOLOGIA FOPs (BPMN)";
-            BotãoDownload3.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/SIMBOLOGIA FOPs (BPMN).vssx";
+            BotãoDownload3.href = "/plataforma/estudo/files/" + MóduloAberto + "/SIMBOLOGIA FOPs (BPMN).vssx";
             ContainerDownloadArquivo3.style.display = "flex";
             ContainerDownloadArquivo4.style.display = "none";
         }
 
         else if (MóduloAberto === "Módulo 9" && NomeVídeo === "9. POPs - BOAS PRÁTICAS") {
             NomeArquivo1.innerHTML = "TEMPLATE POP (A4)";
-            BotãoDownload1.href = "/plataforma_v2/estudo/files/" + MóduloAberto + "/TEMPLATE POP (A4).xlsx";
+            BotãoDownload1.href = "/plataforma/estudo/files/" + MóduloAberto + "/TEMPLATE POP (A4).xlsx";
             ContainerDownloadArquivo1.style.display = "flex";
             ContainerDownloadArquivo2.style.display = "none";
             ContainerDownloadArquivo3.style.display = "none";
@@ -1217,7 +1217,7 @@ function AbreDesempenhoeCertificado(){
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
 
-        doc.addImage('/plataforma_v2/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg', 'PNG', 20, 20, 17, 17);
+        doc.addImage('/plataforma/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg', 'PNG', 20, 20, 17, 17);
 
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(14);
@@ -1268,7 +1268,7 @@ function AbreDesempenhoeCertificado(){
         doc.text('CURITIBA, PARANÁ', 20, 200);
         doc.text('____________________________', 20, 210);
 
-        doc.addImage('/plataforma_v2/estudo/img/ASSINATURA.png', 'PNG', 20, 203, 55, 8);
+        doc.addImage('/plataforma/estudo/img/ASSINATURA.png', 'PNG', 20, 203, 55, 8);
 
         doc.setFontSize(10);
         doc.text('L. B. MACHADO', 20, 215);
@@ -1276,7 +1276,7 @@ function AbreDesempenhoeCertificado(){
         doc.text('Formação em Método Gerencial (Competências Técnicas)', 20, 225);
         doc.text('Machado | Método Gerencial para Empresas', 20, 230);
 
-        doc.addImage('/plataforma_v2/estudo/img/ATLAS.png', 'PNG', 140, 187, 50, 50);
+        doc.addImage('/plataforma/estudo/img/ATLAS.png', 'PNG', 140, 187, 50, 50);
 
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(15);

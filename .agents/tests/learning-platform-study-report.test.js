@@ -466,7 +466,7 @@ test("[ERROR-01] protected refresh 401 remains the current generic Erro_000 outc
   assert.match(harness.alerts[0], /^Erro_000:/);
   assert.doesNotMatch(harness.alerts[0], /expir|autoriza/i);
   assert.equal(harness.sessionStorage.snapshot().Usuário_Logado, "Sim");
-  assert.equal(harness.navigation.includes("/plataforma_v2/login"), false);
+  assert.equal(harness.navigation.includes("/plataforma/login"), false);
 });
 
 test("[FLOW-03] manual and ended completion can race into two optimistic protected updates", async () => {
@@ -946,7 +946,7 @@ test("[ERROR-01] every protected study mutation maps synthetic 401 to generic Er
       kind
     );
     assert.equal(harness.sessionStorage.snapshot().Usuário_Logado, "Sim", kind);
-    assert.equal(harness.navigation.includes("/plataforma_v2/login"), false, kind);
+    assert.equal(harness.navigation.includes("/plataforma/login"), false, kind);
   }
 });
 
@@ -1028,9 +1028,9 @@ test("[FLOW-06] certificate PDF uses client-held identity, grade branch, ID, val
   );
   const images = recorder.calls.filter((call) => call.format);
   assert.deepEqual(images, [
-    { format: "PNG", path: "/plataforma_v2/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg" },
-    { format: "PNG", path: "/plataforma_v2/estudo/img/ASSINATURA.png" },
-    { format: "PNG", path: "/plataforma_v2/estudo/img/ATLAS.png" }
+    { format: "PNG", path: "/plataforma/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg" },
+    { format: "PNG", path: "/plataforma/estudo/img/ASSINATURA.png" },
+    { format: "PNG", path: "/plataforma/estudo/img/ATLAS.png" }
   ]);
   assert.ok(recorder.calls.some((call) => call.text === "Invented Learner"));
   assert.ok(recorder.calls.some((call) => call.text === "Certificado ID#: CERT-FIXTURE-001"));
@@ -1052,7 +1052,7 @@ test("[FLOW-06] logout and timer expiry only flip the logged flag and navigate w
   for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão", "URL_Base_Backend"]) {
     assert.equal(afterLogout[key], preservedBefore[key]);
   }
-  assert.equal(harness.navigation.at(-1), "/plataforma_v2/login");
+  assert.equal(harness.navigation.at(-1), "/plataforma/login");
 
   const expiryRun = await runRefresh("171", {
     storage: { "Horário-Encerramento-Sessão": "1999999999999" }
@@ -1068,7 +1068,7 @@ test("[FLOW-06] logout and timer expiry only flip the logged flag and navigate w
   for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão", "URL_Base_Backend"]) {
     assert.equal(afterExpiry[key], preservedBeforeExpiry[key]);
   }
-  assert.equal(expiryRun.harness.navigation.at(-1), "/plataforma_v2/login");
+  assert.equal(expiryRun.harness.navigation.at(-1), "/plataforma/login");
 });
 
 test("[FLOW-06] timer preserves formatting, warning thresholds, missing expiry, and malformed non-expiry", async () => {
@@ -1112,7 +1112,7 @@ test("[FLOW-06] timer preserves formatting, warning thresholds, missing expiry, 
   malformedRun.harness.runTimer(malformedTimer);
   assert.equal(malformedRun.harness.element("Usuário-Tempo-Sessão").textContent, "Tempo Sessão: 00:00:NaN");
   assert.equal(malformedRun.harness.sessionStorage.snapshot().Usuário_Logado, "Sim");
-  assert.notEqual(malformedRun.harness.navigation.at(-1), "/plataforma_v2/login");
+  assert.notEqual(malformedRun.harness.navigation.at(-1), "/plataforma/login");
 });
 
 test("[VIDEO-02] Shaka keeps one player, exact controls, protected default, source-derived bypass, and local completion handlers", async () => {

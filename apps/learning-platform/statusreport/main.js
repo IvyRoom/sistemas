@@ -48,7 +48,7 @@ Informações_Estáticas_Gráficos_Controle_Resultados[11] = { Título: `Desempe
 // Cria a função que leva à página aviso-dispositivo e processa alterações do tamanho da tela.
 ////////////////////////////////////////////////////////////////////////////////////////
 
-function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma_v2/aviso-dispositivo" } }
+function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma/aviso-dispositivo" } }
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Processa o carregamento da página.
@@ -56,7 +56,7 @@ function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { wind
 
 window.onload = async function () {
 
-    if (window.innerWidth <= 1024) { window.location.href = "/plataforma_v2/aviso-dispositivo" }
+    if (window.innerWidth <= 1024) { window.location.href = "/plataforma/aviso-dispositivo" }
 
     else {
 

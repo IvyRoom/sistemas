@@ -120,37 +120,37 @@
       "mappings": [
         {
           "source": "apps/learning-platform",
-          "output": "plataforma_v2"
+          "output": "plataforma"
         }
       ],
       "publicEntries": [
         {
-          "path": "/plataforma_v2/aviso-dispositivo/",
-          "file": "plataforma_v2/aviso-dispositivo/index.html"
+          "path": "/plataforma/aviso-dispositivo/",
+          "file": "plataforma/aviso-dispositivo/index.html"
         },
         {
-          "path": "/plataforma_v2/aviso-navegador/",
-          "file": "plataforma_v2/aviso-navegador/index.html"
+          "path": "/plataforma/aviso-navegador/",
+          "file": "plataforma/aviso-navegador/index.html"
         },
         {
-          "path": "/plataforma_v2/avisos-iniciais/",
-          "file": "plataforma_v2/avisos-iniciais/index.html"
+          "path": "/plataforma/avisos-iniciais/",
+          "file": "plataforma/avisos-iniciais/index.html"
         },
         {
-          "path": "/plataforma_v2/cadastro/",
-          "file": "plataforma_v2/cadastro/index.html"
+          "path": "/plataforma/cadastro/",
+          "file": "plataforma/cadastro/index.html"
         },
         {
-          "path": "/plataforma_v2/estudo/",
-          "file": "plataforma_v2/estudo/index.html"
+          "path": "/plataforma/estudo/",
+          "file": "plataforma/estudo/index.html"
         },
         {
-          "path": "/plataforma_v2/login/",
-          "file": "plataforma_v2/login/index.html"
+          "path": "/plataforma/login/",
+          "file": "plataforma/login/index.html"
         },
         {
-          "path": "/plataforma_v2/statusreport/",
-          "file": "plataforma_v2/statusreport/index.html"
+          "path": "/plataforma/statusreport/",
+          "file": "plataforma/statusreport/index.html"
         }
       ],
       "publicDownloads": []
@@ -177,7 +177,15 @@
     "/principal/pdf/BIBLIOGRAFIA.pdf",
     "/principal/pdf/CRONOGRAMA.pdf",
     "/landing-page/",
+    "/plataforma/",
     "/plataforma_v2/",
+    "/plataforma_v2/aviso-dispositivo/",
+    "/plataforma_v2/aviso-navegador/",
+    "/plataforma_v2/avisos-iniciais/",
+    "/plataforma_v2/cadastro/",
+    "/plataforma_v2/estudo/",
+    "/plataforma_v2/login/",
+    "/plataforma_v2/statusreport/",
     "/validacao",
     "/validacao/",
     "/validacao/index.html"

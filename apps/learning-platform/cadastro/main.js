@@ -25,7 +25,7 @@ const ContainerAuxiliarFaceID = document.getElementById('Container-Auxiliar-Face
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma_v2/aviso-dispositivo"; } }
+function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma/aviso-dispositivo"; } }
 
 window.addEventListener('resize', LevaàPáginaAvisoDispositivo);
 
@@ -39,11 +39,11 @@ window.addEventListener('load', function() {
         
     sessionStorage.setItem('Origem_Aviso_Dispositivo', 'Não');
 
-    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma_v2/aviso-navegador'; }
+    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma/aviso-navegador'; }
     
     else {
     
-        if (sessionStorage.getItem('Usuário_Autorização_Cadastro') !== 'Sim') { window.location.href = '/plataforma_v2/login'; }
+        if (sessionStorage.getItem('Usuário_Autorização_Cadastro') !== 'Sim') { window.location.href = '/plataforma/login'; }
             
         else { LevaàPáginaAvisoDispositivo(); }
 
@@ -124,7 +124,7 @@ FormulárioFotoReferência.addEventListener('submit', function(event) {
 
                 if (data.Azure_Face_API_LivenessSession_LivenessDecision === 'realface' && data.Azure_Face_API_LivenessSession_MatchDecision === true) {
                     sessionStorage.setItem('Usuário_Logado', 'Sim');
-                    window.location.href = '/plataforma_v2/estudo';
+                    window.location.href = '/plataforma/estudo';
                 }
 
                 ////////////////////////////////////////////////////////////////////////////////////////
@@ -133,7 +133,7 @@ FormulárioFotoReferência.addEventListener('submit', function(event) {
 
                 else {
                     alert("⮾ FaceID reprovado. Tente novamente.\nLiveness Decision: " + data.Azure_Face_API_LivenessSession_LivenessDecision + "\nMatch Confidence: " + data.Azure_Face_API_LivenessSession_MatchConfidence + "\nMatch Decision: " + data.Azure_Face_API_LivenessSession_MatchDecision);
-                    window.location.href = '/plataforma_v2/login';
+                    window.location.href = '/plataforma/login';
                 }
 
             })
@@ -144,8 +144,8 @@ FormulárioFotoReferência.addEventListener('submit', function(event) {
 
             .catch(err => {
 
-                if (err.error !== 'Erro_007') { alert("Erro_000. Tente novamente."); window.location.href = '/plataforma_v2/login'; }
-                else { alert("Erro_007. Tente novamente."); window.location.href = '/plataforma_v2/login'; }
+                if (err.error !== 'Erro_007') { alert("Erro_000. Tente novamente."); window.location.href = '/plataforma/login'; }
+                else { alert("Erro_007. Tente novamente."); window.location.href = '/plataforma/login'; }
 
             });
 
@@ -155,7 +155,7 @@ FormulárioFotoReferência.addEventListener('submit', function(event) {
         // Processa avisos / alertas.
         ////////////////////////////////////////////////////////////////////////////////////////
 
-        .catch(err => { alert("Erro_006. Aguarde 2min e tente novamente."); window.location.href = '/plataforma_v2/login'; })
+        .catch(err => { alert("Erro_006. Aguarde 2min e tente novamente."); window.location.href = '/plataforma/login'; })
 
     })
 

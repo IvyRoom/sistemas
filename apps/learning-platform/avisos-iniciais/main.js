@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma_v2/aviso-dispositivo"; } }
+function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma/aviso-dispositivo"; } }
 
 window.addEventListener('resize', LevaàPáginaAvisoDispositivo);
 
@@ -18,11 +18,11 @@ window.addEventListener('load', function () {
 
     sessionStorage.setItem('Origem_Aviso_Dispositivo', 'Não');
 
-    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma_v2/aviso-navegador'; }
+    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma/aviso-navegador'; }
 
     else {
 
-        if (sessionStorage.getItem('Usuário_Autorização_Cadastro') !== 'Sim') { window.location.href = '/plataforma_v2/login'; }
+        if (sessionStorage.getItem('Usuário_Autorização_Cadastro') !== 'Sim') { window.location.href = '/plataforma/login'; }
 
         else { LevaàPáginaAvisoDispositivo(); }
 
@@ -54,7 +54,7 @@ document.getElementById('Formulário').addEventListener('submit', function (even
     if (PalavraPasseDireitos.value !== "direitos") { document.getElementById('Alerta-Palavra-Passe-Direitos').style.display = "block"; }
     if (PalavraPasseJanela.value !== "janela") { document.getElementById('Alerta-Palavra-Passe-Janela').style.display = "block"; }
 
-    if (PalavraPasseCredenciais.value === "credenciais" && PalavraPasseDireitos.value === "direitos" && PalavraPasseJanela.value === "janela") { window.location.href = '/plataforma_v2/cadastro'; }
+    if (PalavraPasseCredenciais.value === "credenciais" && PalavraPasseDireitos.value === "direitos" && PalavraPasseJanela.value === "janela") { window.location.href = '/plataforma/cadastro'; }
     else { document.body.style.cursor = 'default'; }
 
 });

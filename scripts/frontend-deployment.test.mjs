@@ -38,6 +38,19 @@ const maintainedNonPlatformApplicationIds = [
   "certificate-validation",
   "conecta-referral-form"
 ];
+const learningPlatformEntrySuffixes = [
+  "aviso-dispositivo",
+  "aviso-navegador",
+  "avisos-iniciais",
+  "cadastro",
+  "estudo",
+  "login",
+  "statusreport"
+];
+const retiredLearningPlatformPaths = [
+  "/plataforma_v2/",
+  ...learningPlatformEntrySuffixes.map((suffix) => `/plataforma_v2/${suffix}/`)
+];
 
 const mappedTextExtensions = new Set([
   ".css",
@@ -180,36 +193,36 @@ test("deployment inventory exhaustively separates maintained frontends from the 
 
   const [learningPlatform] = learningPlatformApplications;
   assert.deepEqual(learningPlatform.mappings, [
-    { source: "apps/learning-platform", output: "plataforma_v2" }
+    { source: "apps/learning-platform", output: "plataforma" }
   ]);
   assert.deepEqual(learningPlatform.publicEntries, [
     {
-      path: "/plataforma_v2/aviso-dispositivo/",
-      file: "plataforma_v2/aviso-dispositivo/index.html"
+      path: "/plataforma/aviso-dispositivo/",
+      file: "plataforma/aviso-dispositivo/index.html"
     },
     {
-      path: "/plataforma_v2/aviso-navegador/",
-      file: "plataforma_v2/aviso-navegador/index.html"
+      path: "/plataforma/aviso-navegador/",
+      file: "plataforma/aviso-navegador/index.html"
     },
     {
-      path: "/plataforma_v2/avisos-iniciais/",
-      file: "plataforma_v2/avisos-iniciais/index.html"
+      path: "/plataforma/avisos-iniciais/",
+      file: "plataforma/avisos-iniciais/index.html"
     },
     {
-      path: "/plataforma_v2/cadastro/",
-      file: "plataforma_v2/cadastro/index.html"
+      path: "/plataforma/cadastro/",
+      file: "plataforma/cadastro/index.html"
     },
     {
-      path: "/plataforma_v2/estudo/",
-      file: "plataforma_v2/estudo/index.html"
+      path: "/plataforma/estudo/",
+      file: "plataforma/estudo/index.html"
     },
     {
-      path: "/plataforma_v2/login/",
-      file: "plataforma_v2/login/index.html"
+      path: "/plataforma/login/",
+      file: "plataforma/login/index.html"
     },
     {
-      path: "/plataforma_v2/statusreport/",
-      file: "plataforma_v2/statusreport/index.html"
+      path: "/plataforma/statusreport/",
+      file: "plataforma/statusreport/index.html"
     }
   ]);
 });
@@ -379,6 +392,26 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       file: "conecta/cadastro-recomendacoes/index.html"
     }
   );
+  assert.ok(
+    manifest.notFoundPaths.includes("/plataforma/"),
+    "The current learning-platform root must remain an explicit 404"
+  );
+  for (const retiredPath of retiredLearningPlatformPaths) {
+    assert.ok(
+      manifest.notFoundPaths.includes(retiredPath),
+      `${retiredPath} must remain an explicit retired-route 404`
+    );
+  }
+  assert.equal(
+    validation.entries.some(({ path }) => path.startsWith("/plataforma_v2/")),
+    false,
+    "Former learning-platform entries must not remain published"
+  );
+  assert.equal(
+    validation.files.some(({ output }) => output.startsWith("plataforma_v2/")),
+    false,
+    "dist/plataforma_v2 must not be emitted"
+  );
   assert.deepEqual(
     validation.files.find(
       (file) => file.output === "validacao-certificados/index.html"
@@ -458,6 +491,9 @@ test("source preview serves only manifest-mapped routes and files", async () => 
     const quoteCss = await readFile(
       new URL("../apps/quote-request/style.css", import.meta.url)
     );
+    const conectaHtml = await readFile(
+      new URL("../apps/referrals-management/referral-form/index.html", import.meta.url)
+    );
 
     for (const path of [
       "/solicitacao-orcamento/",
@@ -483,6 +519,35 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       assert.equal(response.status, 200, path);
       assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
       assert.deepEqual(response.body, marketingHtml, path);
+    }
+
+    for (const suffix of learningPlatformEntrySuffixes) {
+      const path = `/plataforma/${suffix}/`;
+      const response = await requestPreview(server.baseUrl, path);
+      const source = await readFile(
+        new URL(`../apps/learning-platform/${suffix}/index.html`, import.meta.url)
+      );
+
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers.location, undefined, path);
+      assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
+      assert.deepEqual(response.body, source, path);
+    }
+
+    const conectaResponse = await requestPreview(
+      server.baseUrl,
+      "/conecta/cadastro-recomendacoes/"
+    );
+    assert.equal(conectaResponse.status, 200);
+    assert.equal(conectaResponse.headers.location, undefined);
+    assert.equal(conectaResponse.headers["content-type"], "text/html; charset=utf-8");
+    assert.deepEqual(conectaResponse.body, conectaHtml);
+
+    for (const path of ["/plataforma/", ...retiredLearningPlatformPaths]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 404, path);
+      assert.equal(response.headers.location, undefined, `${path} must not redirect`);
     }
 
     for (const asset of [
