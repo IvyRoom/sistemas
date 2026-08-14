@@ -1096,6 +1096,32 @@ intent; current source anchors are only the oracle for this frozen snapshot.
 | ARTIFACT-01 | Full frontend artifact | The complete artifact remains 231 files, 27,314,121 bytes, with digest `cb23b90f85e8d2dbc4d440f1547c42ab4a6164cfd53a0af25bd8b2155e9da81f`. |
 | ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 149 implicitly emitted runtime/support files. |
 
+### Automated traceability
+
+Every coverage-bearing compatibility test title begins with its acceptance ID
+in brackets. The coverage is grouped by execution seam rather than by future
+source location:
+
+- `.agents/tests/learning-platform-static.test.js` covers declarative route,
+  Face asset, download, video/DRM, and artifact contracts;
+- `.agents/tests/learning-platform-entry-api.test.js` covers entry gates,
+  navigation, storage, login, Face, and request behavior;
+- `.agents/tests/learning-platform-study-report.test.js` covers study progress,
+  assessment, feedback, certificate, logout/expiry, and status-report behavior;
+- `.agents/tests/learning-platform-traceability.test.js` derives the acceptance
+  IDs from this matrix, requires every ID to remain in a named test, and audits
+  the suite for sensitive source literals and complete network URL literals.
+
+Shared helpers under `.agents/tests/helpers/` provide isolated browser seams and
+install the deny-all network guard before application code executes. All
+behavior fixtures are invented and local; no test uses a production service.
+
+Backend-internal feedback ordering and partial-success boundaries remain
+independently executable in `backend/test/app-platform-routes.test.js` at the
+verified companion commit `7151f134c2cc1b57097bade5557ef6e422204303`. The
+frontend harness models only the resulting client-visible retry and rollback
+behavior.
+
 ## Safe synthetic-dependency strategy
 
 The behavior-baseline task should use Node.js 24 and make outbound networking a

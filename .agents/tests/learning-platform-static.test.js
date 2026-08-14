@@ -1,0 +1,798 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const { spawnSync } = require("node:child_process");
+const crypto = require("node:crypto");
+const fs = require("node:fs");
+const path = require("node:path");
+const test = require("node:test");
+
+const repositoryRoot = path.join(__dirname, "..", "..");
+const platformRoot = path.join(repositoryRoot, "plataforma_v2");
+const studyRoot = path.join(platformRoot, "estudo");
+const faceRoot = path.join(platformRoot, "azure-ai-vision-face-ui");
+const manifest = JSON.parse(
+  fs.readFileSync(path.join(repositoryRoot, "frontend-deployment.json"), "utf8")
+);
+const contractSource = fs.readFileSync(
+  path.join(repositoryRoot, "docs", "learning-platform-contracts.md"),
+  "utf8"
+);
+const studySource = fs.readFileSync(path.join(studyRoot, "main.js"), "utf8");
+const studyHtml = fs.readFileSync(path.join(studyRoot, "index.html"), "utf8");
+const faceSource = fs.readFileSync(
+  path.join(faceRoot, "FaceLivenessDetector.js"),
+  "utf8"
+);
+
+const platformApplication = manifest.applications.find(
+  (application) => application.id === "learning-platform"
+);
+const pageSourcePaths = [
+  "aviso-dispositivo/main.js",
+  "aviso-navegador/main.js",
+  "avisos-iniciais/main.js",
+  "cadastro/main.js",
+  "estudo/main.js",
+  "login/main.js",
+  "statusreport/main.js"
+];
+const pageSources = pageSourcePaths.map((relativePath) => ({
+  relativePath,
+  source: fs.readFileSync(path.join(platformRoot, ...relativePath.split("/")), "utf8")
+}));
+
+function compareText(left, right) {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+}
+
+function gitTrackedFiles(scope) {
+  const result = spawnSync(
+    "git",
+    ["-c", "core.quotepath=false", "ls-files", "-z", "--", scope],
+    {
+      cwd: repositoryRoot,
+      encoding: "utf8",
+      windowsHide: true
+    }
+  );
+
+  assert.equal(result.status, 0, "Tracked-file enumeration must succeed");
+  return result.stdout.split("\0").filter(Boolean).sort(compareText);
+}
+
+function localPath(relativePath) {
+  return path.join(repositoryRoot, ...relativePath.split("/"));
+}
+
+function regularFilesRecursively(directory) {
+  if (!fs.existsSync(directory)) return [];
+
+  return fs
+    .readdirSync(directory, { withFileTypes: true })
+    .sort((left, right) => compareText(left.name, right.name))
+    .flatMap((entry) => {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) return regularFilesRecursively(entryPath);
+      return entry.isFile() ? [entryPath] : [];
+    });
+}
+
+function mappedFiles(applications = manifest.applications) {
+  const records = [];
+
+  for (const application of applications) {
+    for (const mapping of application.mappings) {
+      const sourcePath = localPath(mapping.source);
+      const sourceStats = fs.statSync(sourcePath);
+      const trackedFiles = gitTrackedFiles(mapping.source);
+
+      for (const trackedFile of trackedFiles) {
+        const suffix = sourceStats.isFile()
+          ? ""
+          : trackedFile.slice(mapping.source.length + 1);
+        records.push({
+          output: sourceStats.isFile()
+            ? mapping.output
+            : path.posix.join(mapping.output, suffix),
+          source: trackedFile
+        });
+      }
+    }
+  }
+
+  return records.sort((left, right) => compareText(left.output, right.output));
+}
+
+function treeStats(records) {
+  const hash = crypto.createHash("sha256");
+  let bytes = 0;
+
+  for (const record of records) {
+    const contents = fs.readFileSync(localPath(record.source));
+    const pathBytes = Buffer.from(record.output, "utf8");
+    hash.update(Buffer.from(`${pathBytes.length}:`, "utf8"));
+    hash.update(pathBytes);
+    hash.update(Buffer.from(`:${contents.length}:`, "utf8"));
+    hash.update(contents);
+    bytes += contents.length;
+  }
+
+  return {
+    bytes,
+    digest: hash.digest("hex"),
+    files: records.length
+  };
+}
+
+function digestStrings(values) {
+  return crypto
+    .createHash("sha256")
+    .update([...values].sort(compareText).join("\n"), "utf8")
+    .digest("hex");
+}
+
+function inspectUrlRole(value) {
+  try {
+    const parsed = new URL(value);
+    return {
+      hostnamePresent: parsed.hostname.length > 0,
+      originDigest: crypto.createHash("sha256").update(parsed.origin).digest("hex"),
+      pathname: parsed.pathname,
+      protocol: parsed.protocol,
+      searchPresent: parsed.search.length > 1,
+      valid: true
+    };
+  } catch {
+    return {
+      hostnamePresent: false,
+      originDigest: null,
+      pathname: null,
+      protocol: null,
+      searchPresent: false,
+      valid: false
+    };
+  }
+}
+
+function isStructurallyValidUrl(value) {
+  return inspectUrlRole(value).valid;
+}
+
+function platformRecords() {
+  return mappedFiles([platformApplication]);
+}
+
+function htmlDataNodes() {
+  return Array.from(
+    studyHtml.matchAll(/<div\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
+    ([, attributes, rawIndex]) => ({
+      index: Number(rawIndex),
+      name: attributes.match(/\bname="([^"]+)"/)?.[1]
+    })
+  );
+}
+
+function downloadReferences() {
+  const references = [];
+  let currentModule = null;
+
+  for (const line of studySource.split(/\r?\n/)) {
+    const condition = line.match(
+      /M.duloAberto === "([^"]+)" && NomeV.deo === "([^"]+)"/u
+    );
+    if (condition) currentModule = condition[1];
+
+    const assignment = line.match(
+      /Bot.oDownload\d+\.href\s*=\s*"\/plataforma_v2\/estudo\/files\/"\s*\+\s*M.duloAberto\s*\+\s*"\/([^"]+)"/u
+    );
+    if (!assignment) continue;
+
+    assert.ok(currentModule, "Every download assignment must have a module branch");
+    references.push(
+      `plataforma_v2/estudo/files/${currentModule}/${assignment[1]}`
+    );
+  }
+
+  return references;
+}
+
+function mediaLoadPrefixes() {
+  return Array.from(
+    studySource.matchAll(
+      /ShakaPlayer\.load\('([^']+)'\s*\+\s*M.duloAberto\s*\+\s*'\/'\s*\+\s*NomeV.deo\s*\+\s*'_dash\.mpd'\)/gu
+    ),
+    ([, prefix]) => prefix
+  );
+}
+
+function sourceDerivedSensitiveLiterals() {
+  const bypassLine = studySource
+    .split(/\r?\n/)
+    .find((line) => line.includes("DRM_Ativo = false"));
+  assert.ok(bypassLine, "The bypass branch must remain statically discoverable");
+  const participantNames = Array.from(
+    bypassLine.matchAll(/'([^']+)'/g),
+    ([, value]) => value
+  );
+  assert.equal(participantNames.length, 5, "The bypass branch must retain five entries");
+
+  const playReady = studySource.match(
+    /servers:\s*\{\s*'com\.microsoft\.playready'\s*:\s*'([^']+)'\s*\}/
+  );
+  assert.ok(playReady, "The PlayReady role must remain statically discoverable");
+
+  const loginSource = pageSources.find(
+    ({ relativePath }) => relativePath === "login/main.js"
+  ).source;
+  const backendBase = loginSource.match(
+    /sessionStorage\.setItem\('URL_Base_Backend',\s*'([^']+)'\)/
+  );
+  assert.ok(backendBase, "The backend role must remain statically discoverable");
+
+  return {
+    backendBase: backendBase[1],
+    participantNames,
+    playReadyUrl: playReady[1]
+  };
+}
+
+test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entries", () => {
+  assert.ok(platformApplication, "The learning-platform manifest entry must exist");
+  assert.deepEqual(platformApplication.mappings, [
+    { source: "plataforma_v2", output: "plataforma_v2" }
+  ]);
+  assert.deepEqual(platformApplication.publicEntries, [
+    {
+      path: "/plataforma_v2/aviso-dispositivo/",
+      file: "plataforma_v2/aviso-dispositivo/index.html"
+    },
+    {
+      path: "/plataforma_v2/aviso-navegador/",
+      file: "plataforma_v2/aviso-navegador/index.html"
+    },
+    {
+      path: "/plataforma_v2/avisos-iniciais/",
+      file: "plataforma_v2/avisos-iniciais/index.html"
+    },
+    {
+      path: "/plataforma_v2/cadastro/",
+      file: "plataforma_v2/cadastro/index.html"
+    },
+    {
+      path: "/plataforma_v2/estudo/",
+      file: "plataforma_v2/estudo/index.html"
+    },
+    {
+      path: "/plataforma_v2/login/",
+      file: "plataforma_v2/login/index.html"
+    },
+    {
+      path: "/plataforma_v2/statusreport/",
+      file: "plataforma_v2/statusreport/index.html"
+    }
+  ]);
+
+  for (const entry of platformApplication.publicEntries) {
+    assert.ok(entry.path.endsWith("/"), "Canonical entries must retain trailing slashes");
+    assert.ok(fs.statSync(localPath(entry.file)).isFile(), "Every canonical entry must emit its index");
+  }
+});
+
+test("[ROUTE-02] root remains a 404 and source navigation remains slashless without an SPA router", () => {
+  assert.ok(
+    manifest.notFoundPaths.includes("/plataforma_v2/"),
+    "The platform root must remain an explicit not-found contract"
+  );
+  assert.equal(
+    fs.existsSync(path.join(platformRoot, "index.html")),
+    false,
+    "The platform root must not gain an index"
+  );
+
+  const destinations = new Set();
+  const combinedPageSource = pageSources.map(({ source }) => source).join("\n");
+  for (const { source } of pageSources) {
+    for (const match of source.matchAll(/window\.location\.href\s*=\s*["']([^"']+)["']/g)) {
+      destinations.add(match[1]);
+    }
+  }
+  assert.deepEqual([...destinations].sort(compareText), [
+    "/plataforma_v2/aviso-dispositivo",
+    "/plataforma_v2/aviso-navegador",
+    "/plataforma_v2/avisos-iniciais",
+    "/plataforma_v2/cadastro",
+    "/plataforma_v2/estudo",
+    "/plataforma_v2/login"
+  ]);
+  assert.ok(
+    [...destinations].every((destination) => !destination.endsWith("/")),
+    "Internal document destinations must remain slashless"
+  );
+  assert.equal(
+    /location\.replace|history\.(?:pushState|replaceState)|\bpopstate\b|hashchange/.test(
+      combinedPageSource
+    ),
+    false,
+    "The platform must not gain SPA navigation or route normalization"
+  );
+  assert.ok(
+    /production slashless redirect\/status\/history behavior remains\s+an\s+implementation-time evidence question/.test(
+      contractSource
+    ),
+    "Published slashless-host behavior must remain explicitly unproven"
+  );
+});
+
+test("[FACE-01] Face SDK 1.5.0 assets and base-relative resolution remain frozen", () => {
+  const engineAlternatives = [
+    {
+      javascript: "facelivenessdetector-assets/js/AzureAIVisionFace.js",
+      wasm: "facelivenessdetector-assets/js/AzureAIVisionFace.wasm"
+    },
+    {
+      javascript: "facelivenessdetector-assets/js/AzureAIVisionFace_SIMD.js",
+      wasm: "facelivenessdetector-assets/js/AzureAIVisionFace_SIMD.wasm"
+    }
+  ];
+  const expectedEngines = engineAlternatives.flatMap(({ javascript, wasm }) => [
+    javascript,
+    wasm
+  ]);
+  const faceFiles = gitTrackedFiles("plataforma_v2/azure-ai-vision-face-ui");
+  const relativeFaceFiles = faceFiles.map((file) =>
+    file.slice("plataforma_v2/azure-ai-vision-face-ui/".length)
+  );
+  const dictionaries = relativeFaceFiles.filter(
+    (file) => file.startsWith("facelivenessdetector-assets/i18n/") && file.endsWith("/en.json") ||
+      file === "facelivenessdetector-assets/i18n/en.json"
+  );
+  const images = relativeFaceFiles.filter((file) =>
+    file.startsWith("facelivenessdetector-assets/images/")
+  );
+  const engines = relativeFaceFiles.filter((file) =>
+    file.startsWith("facelivenessdetector-assets/js/")
+  );
+
+  assert.equal(relativeFaceFiles.length, 85, "The Face subtree must retain 85 files");
+  assert.equal(dictionaries.length, 75, "The Face subtree must retain 75 dictionaries");
+  assert.deepEqual(images, [
+    "facelivenessdetector-assets/images/Brightness.svg",
+    "facelivenessdetector-assets/images/FaceId.svg",
+    "facelivenessdetector-assets/images/Smile.svg",
+    "facelivenessdetector-assets/images/activeMotionVisualHint.png",
+    "facelivenessdetector-assets/images/logo.svg"
+  ]);
+  assert.deepEqual(engines, expectedEngines);
+  assert.ok(
+    relativeFaceFiles.includes("facelivenessdetector-assets/i18n/pt-BR/en.json"),
+    "The pt-BR dictionary must remain emitted"
+  );
+  assert.ok(/clientSDKversion:"1\.5\.0"/.test(faceSource), "The Face version must remain 1.5.0");
+  assert.ok(/WebAssembly\.validate\(/.test(faceSource), "The Face loader must retain its SIMD probe");
+  assert.ok(faceSource.includes("AzureAIVisionFace.js"));
+  assert.ok(faceSource.includes("AzureAIVisionFace_SIMD.js"));
+  assert.ok(faceSource.includes("./facelivenessdetector-assets/i18n/"));
+  assert.ok(faceSource.includes("/facelivenessdetector-assets/js/"));
+  assert.ok(faceSource.includes(".wasm"));
+
+  const basePath = "/plataforma_v2/azure-ai-vision-face-ui/";
+  const inertOrigin = ["https:", "", "platform.invalid"].join("/");
+  for (const entryName of ["login", "cadastro"]) {
+    const entryHtml = fs.readFileSync(path.join(platformRoot, entryName, "index.html"), "utf8");
+    const entrySource = fs.readFileSync(path.join(platformRoot, entryName, "main.js"), "utf8");
+    assert.ok(
+      /<base\s+href="\/plataforma_v2\/azure-ai-vision-face-ui\/"\s*\/?\s*>/i.test(
+        entryHtml
+      ),
+      "Each Face entry must retain the exact base path"
+    );
+    assert.equal(
+      (entrySource.match(/\.locale\s*=\s*"pt-BR"/g) ?? []).length,
+      1,
+      "Each Face entry must select pt-BR exactly once"
+    );
+  }
+
+  const resolvedBase = new URL(basePath, inertOrigin);
+  const resolvedDictionary = new URL(
+    "./facelivenessdetector-assets/i18n/pt-BR/en.json",
+    resolvedBase
+  );
+  const resolvedEnginePaths = expectedEngines.map(
+    (relativePath) => new URL(`./${relativePath}`, resolvedBase).pathname
+  );
+  assert.equal(
+    resolvedDictionary.pathname,
+    `${basePath}facelivenessdetector-assets/i18n/pt-BR/en.json`
+  );
+  assert.deepEqual(
+    resolvedEnginePaths,
+    expectedEngines.map((relativePath) => `${basePath}${relativePath}`),
+    "Both regular and SIMD JavaScript/WASM alternatives must resolve beneath the Face base"
+  );
+});
+
+test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact", () => {
+  const records = platformRecords();
+  const outputPaths = records.map(({ output }) => output);
+  const extensionCounts = Object.fromEntries(
+    Array.from(
+      outputPaths.reduce((counts, file) => {
+        const extension = path.posix.extname(file).slice(1).toLowerCase();
+        counts.set(extension, (counts.get(extension) ?? 0) + 1);
+        return counts;
+      }, new Map()).entries()
+    ).sort(([left], [right]) => compareText(left, right))
+  );
+
+  assert.deepEqual(treeStats(records), {
+    files: 156,
+    bytes: 20709083,
+    digest: "6b7ae5adbd00b9f5a1319aaf9c86aeaef9e688217ce452b3ce018ebe8770bb4b"
+  });
+  assert.deepEqual(
+    treeStats(records.map((record) => ({
+      ...record,
+      output: record.output.slice("plataforma_v2/".length)
+    }))),
+    {
+      files: 156,
+      bytes: 20709083,
+      digest: "6eb7b6d8c46e43d570e4cffff251377cd7496ff17a4c03dfe5ae69d642a3c9ba"
+    },
+    "The prefix-omitted platform-root diagnostic digest must remain exact"
+  );
+  assert.ok(
+    outputPaths.every((file) => file === file.normalize("NFC")),
+    "Every platform path must remain NFC"
+  );
+  assert.equal(
+    outputPaths.filter((file) => /[^\x00-\x7f]/.test(file)).length,
+    34,
+    "The platform must retain 34 non-ASCII paths"
+  );
+  assert.deepEqual(extensionCounts, {
+    css: 7,
+    html: 7,
+    ico: 5,
+    jpg: 1,
+    js: 10,
+    json: 75,
+    png: 11,
+    svg: 5,
+    vssx: 1,
+    vsdx: 2,
+    wasm: 2,
+    xlsm: 19,
+    xlsx: 11
+  });
+});
+
+test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and reachability", () => {
+  const downloadFiles = gitTrackedFiles("plataforma_v2/estudo/files");
+  const assignments = downloadReferences();
+  const reachableFiles = new Set(assignments);
+  const emittedFiles = new Set(downloadFiles);
+
+  assert.equal(downloadFiles.length, 33, "The study subtree must retain 33 downloads");
+  assert.equal(
+    downloadFiles.reduce((total, file) => total + fs.statSync(localPath(file)).size, 0),
+    9163893,
+    "Download bytes must remain exact"
+  );
+  assert.equal(
+    digestStrings(
+      downloadFiles.map((file) => file.slice("plataforma_v2/estudo/files/".length))
+    ),
+    "e8b215eb672d70fdab52c3085cbfa4cab227869ec841e4eb2d38852ea65837f2",
+    "The exact download path set must remain unchanged"
+  );
+  assert.equal(assignments.length, 34, "The source must retain 34 download assignments");
+  assert.equal(reachableFiles.size, 31, "Exactly 31 emitted downloads must remain reachable");
+  assert.equal(
+    digestStrings(
+      [...reachableFiles].map((file) =>
+        file.slice("plataforma_v2/estudo/files/".length)
+      )
+    ),
+    "91aa2b77d0eecdf43dcffddce9934f0962e4e4ac33129bbd59ffceb9b92253da",
+    "The exact 31 reachable download targets must remain unchanged"
+  );
+  const unreferencedFiles = downloadFiles.filter((file) => !reachableFiles.has(file));
+  assert.equal(
+    unreferencedFiles.length,
+    2,
+    "Exactly two emitted downloads must remain unreferenced"
+  );
+  assert.equal(
+    digestStrings(
+      unreferencedFiles.map((file) =>
+        file.slice("plataforma_v2/estudo/files/".length)
+      )
+    ),
+    "22500feb327130bae8b091dc51abdecf34ded81aa52a293bc0146649f5c1647b",
+    "The exact two unreferenced download files must remain unchanged"
+  );
+  assert.ok(
+    assignments.every((file) => emittedFiles.has(file)),
+    "Every root-relative download assignment must resolve with exact case"
+  );
+  assert.ok(
+    downloadFiles.every((file) => file === file.normalize("NFC")),
+    "Every download path must remain NFC"
+  );
+
+  const certificatePaths = Array.from(
+    studySource.matchAll(/doc\.addImage\('([^']+)'\s*,\s*'[^']+'/g),
+    ([, publicPath]) => publicPath
+  );
+  assert.deepEqual(certificatePaths, [
+    "/plataforma_v2/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg",
+    "/plataforma_v2/estudo/img/ASSINATURA.png",
+    "/plataforma_v2/estudo/img/ATLAS.png"
+  ]);
+  assert.ok(
+    certificatePaths.every((publicPath) => fs.statSync(localPath(publicPath.slice(1))).isFile()),
+    "Every browser-generated certificate input must resolve with exact case"
+  );
+});
+
+test("[VIDEO-01] 151 exact module-topic keys derive both DASH namespace manifests offline", () => {
+  const moduleVideoCounts = [11, 15, 19, 18, 17, 8, 12, 22, 17, 12];
+  const moduleNodeCounts = moduleVideoCounts.map((count) => count + 2);
+  const nodes = htmlDataNodes();
+  const videoKeys = [];
+  let offset = 0;
+
+  assert.equal(nodes.length, 171, "The study index must retain 171 nodes");
+  assert.deepEqual(
+    nodes.map(({ index }) => index),
+    Array.from({ length: 171 }, (_, index) => index + 1),
+    "Study data-index values must remain contiguous"
+  );
+
+  for (let moduleIndex = 0; moduleIndex < moduleVideoCounts.length; moduleIndex += 1) {
+    const nodesInModule = nodes.slice(offset, offset + moduleNodeCounts[moduleIndex]);
+    assert.equal(
+      nodesInModule.length,
+      moduleNodeCounts[moduleIndex],
+      "Each module must retain its exact node boundary"
+    );
+    for (const node of nodesInModule.slice(0, moduleVideoCounts[moduleIndex])) {
+      assert.equal(typeof node.name, "string", "Every video topic must retain its name key");
+      videoKeys.push(`M${String.fromCodePoint(0xf3)}dulo ${moduleIndex + 1}\0${node.name}`);
+    }
+    offset += moduleNodeCounts[moduleIndex];
+  }
+
+  assert.equal(videoKeys.length, 151, "The platform must retain 151 video keys");
+  assert.equal(new Set(videoKeys).size, 151, "Module-topic video keys must remain unique");
+  assert.equal(
+    digestStrings(videoKeys),
+    "3605b52cca78a60da97b9992665af20a1cb6cd474cb80e9ced2df4f8fae44c7f",
+    "The exact module-topic manifest-key set must remain unchanged"
+  );
+  assert.ok(
+    /M.duloAberto\s*=\s*`M.dulo \$\{N.meroM.duloAtivo \+ 1\}`/u.test(studySource),
+    "Module folders must remain derived from the one-based module number"
+  );
+
+  const prefixes = mediaLoadPrefixes();
+  assert.equal(prefixes.length, 2, "Protected and bypass load expressions must both remain");
+  const namespaceKinds = prefixes.map((prefix) => {
+    const parsedPrefix = inspectUrlRole(prefix);
+    assert.equal(parsedPrefix.valid, true, "Media namespaces must remain valid URL roles");
+    assert.equal(parsedPrefix.protocol, "https:", "Media namespaces must remain absolute HTTPS roles");
+    if (parsedPrefix.pathname.endsWith("/videosv3/plataforma_v2/")) return "protected";
+    if (parsedPrefix.pathname.endsWith("/videosv3/plataforma_v2_sem_drm/")) return "bypass";
+    return "unknown";
+  });
+  assert.deepEqual(namespaceKinds.sort(compareText), ["bypass", "protected"]);
+  assert.equal(
+    new Set(prefixes.map((prefix) => inspectUrlRole(prefix).originDigest)).size,
+    1,
+    "Both media namespaces must retain the same storage origin"
+  );
+
+  for (const prefix of prefixes) {
+    for (const key of videoKeys) {
+      const [moduleName, topicName] = key.split("\0");
+      const manifestReference = `${prefix}${moduleName}/${topicName}_dash.mpd`;
+      assert.ok(
+        manifestReference.endsWith(`/${moduleName}/${topicName}_dash.mpd`),
+        "Every exact module-topic key must retain the DASH suffix rule"
+      );
+      assert.doesNotThrow(
+        () => assert.equal(isStructurallyValidUrl(manifestReference), true),
+        "Every derived manifest reference must remain structurally valid"
+      );
+    }
+  }
+});
+
+test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring remain source-frozen", () => {
+  const sensitive = sourceDerivedSensitiveLiterals();
+  assert.equal(sensitive.participantNames.length, 5, "The bypass branch must retain five entries");
+  assert.equal(
+    new Set(sensitive.participantNames).size,
+    5,
+    "The bypass entries must remain five distinct source-derived values"
+  );
+  assert.ok(
+    /\{ DRM_Ativo = false \} else \{ DRM_Ativo = true \}/.test(studySource),
+    "The allowlist branch must bypass DRM and default to protected media"
+  );
+
+  const playReadyConfiguration = studySource.match(
+    /servers:\s*\{\s*'([^']+)'\s*:\s*'([^']+)'\s*\}/
+  );
+  assert.ok(playReadyConfiguration, "A single DRM server role must remain configured");
+  assert.equal(playReadyConfiguration[1], "com.microsoft.playready");
+  const playReadyRole = inspectUrlRole(playReadyConfiguration[2]);
+  assert.equal(playReadyRole.valid, true, "The PlayReady role must remain a valid URL");
+  assert.equal(playReadyRole.protocol, "https:", "The PlayReady role must remain HTTPS");
+  assert.ok(playReadyRole.pathname.length > 1, "The PlayReady role must retain its path");
+  assert.equal(playReadyRole.searchPresent, true, "The PlayReady role must retain credential parameters");
+  assert.equal(
+    (studySource.match(/\bShakaPlayer\.configure\(/g) ?? []).length,
+    1,
+    "Only the PlayReady player configuration must remain authored"
+  );
+
+  assert.ok(/let ShakaPlayer;/.test(studySource), "The retained player variable must remain");
+  assert.ok(/let UIShakaPlayer;/.test(studySource), "The retained UI variable must remain");
+  assert.ok(
+    /let AlgumV.deoJ.FoiCarregado = false;/u.test(studySource),
+    "The one-time player initialization flag must remain false initially"
+  );
+  assert.equal(
+    (studySource.match(/new shaka\.Player\(\)/g) ?? []).length,
+    1,
+    "One retained player must be constructed"
+  );
+  assert.ok(
+    /if \(AlgumV.deoJ.FoiCarregado === false\)[\s\S]*AlgumV.deoJ.FoiCarregado = true;/u.test(
+      studySource
+    ),
+    "Player construction must remain guarded and flip the retained flag"
+  );
+
+  const controlsMatch = studySource.match(
+    /controlPanelElements:\s*\[([^\]]+)\]\s*,\s*overflowMenuButtons:\s*\[\]/
+  );
+  assert.ok(controlsMatch, "The Shaka control configuration must remain present");
+  const controls = Array.from(controlsMatch[1].matchAll(/'([^']+)'/g), ([, value]) => value);
+  assert.deepEqual(controls, [
+    "play_pause",
+    "time_and_duration",
+    "spacer",
+    "mute",
+    "volume",
+    "quality",
+    "playback_rate",
+    "fullscreen"
+  ]);
+  assert.equal(mediaLoadPrefixes().length, 2, "Both media load expressions must remain");
+  assert.equal(
+    (studySource.match(/ContainerInternoShakaPlayer\.play\(\)/g) ?? []).length,
+    1,
+    "Each topic open must retain the authored autoplay call"
+  );
+  assert.equal(
+    (studySource.match(/ContainerInternoShakaPlayer\.pause\(\)/g) ?? []).length,
+    3,
+    "Assessment, feedback, and certificate views must retain pause calls"
+  );
+  assert.equal(
+    (studySource.match(/ContainerInternoShakaPlayer\.onended\s*=/g) ?? []).length,
+    2,
+    "Open and completed topics must retain distinct ended handlers"
+  );
+  assert.ok(
+    /onended = \(\) => \{ Completar_e_Continuar_T.pico/u.test(studySource),
+    "Open topics must complete on ended"
+  );
+  assert.ok(
+    /onended = \(\) => \{ AbreT.pico\.call/u.test(studySource),
+    "Completed topics must advance on ended"
+  );
+  assert.equal(
+    /ShakaPlayer\.(?:unload|destroy)\(|\babr\s*:|streaming\s*:|restrictions\s*:/i.test(
+      studySource
+    ),
+    false,
+    "Player teardown and rendition policy must remain delegated to Shaka defaults"
+  );
+
+  const shakaReferences = Array.from(
+    studyHtml.matchAll(/(?:href|src)="([^"]*\/shaka-player\/4\.6\.0\/[^"]+)"/g),
+    ([, value]) => value
+  );
+  assert.equal(shakaReferences.length, 2, "Study must retain both Shaka 4.6.0 CDN assets");
+  assert.ok(
+    shakaReferences.every((value) => inspectUrlRole(value).protocol === "https:"),
+    "Shaka assets must remain absolute HTTPS references"
+  );
+});
+
+test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
+  assert.deepEqual(treeStats(mappedFiles()), {
+    files: 231,
+    bytes: 27314121,
+    digest: "cb23b90f85e8d2dbc4d440f1547c42ab4a6164cfd53a0af25bd8b2155e9da81f"
+  });
+});
+
+test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform downloads", () => {
+  const records = platformRecords();
+  assert.equal(platformApplication.publicEntries.length, 7);
+  assert.deepEqual(platformApplication.publicDownloads, []);
+  assert.equal(
+    records.length - platformApplication.publicEntries.length,
+    149,
+    "The platform must retain 149 implicitly emitted runtime/support files"
+  );
+  assert.equal(
+    records.filter(({ output }) => output.startsWith("plataforma_v2/estudo/files/")).length,
+    33,
+    "All 33 study downloads must remain implicit rather than publicDownloads entries"
+  );
+});
+
+test("[SAFETY-REDACTION] source-derived media and backend literals remain absent from tests, support sources, and docs", () => {
+  const sensitive = sourceDerivedSensitiveLiterals();
+  const learningTestPaths = fs
+    .readdirSync(__dirname, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        entry.name.startsWith("learning-platform") &&
+        entry.name.endsWith(".test.js")
+    )
+    .map((entry) => path.join(__dirname, entry.name));
+  const helperPaths = regularFilesRecursively(path.join(__dirname, "helpers"));
+  const fixturePaths = regularFilesRecursively(path.join(__dirname, "fixtures"));
+  const auditablePaths = [...learningTestPaths, ...helperPaths, ...fixturePaths];
+  const auditableSource = [
+    ...auditablePaths.map((sourcePath) => fs.readFileSync(sourcePath, "utf8")),
+    contractSource
+  ].join("\n");
+
+  assert.deepEqual(
+    {
+      fixtureSources: fixturePaths.length,
+      helperSources: helperPaths.length,
+      learningTests: learningTestPaths.length,
+      supportSourcesCovered: helperPaths.length + fixturePaths.length > 0
+    },
+    {
+      fixtureSources: fixturePaths.length,
+      helperSources: helperPaths.length,
+      learningTests: learningTestPaths.length,
+      supportSourcesCovered: true
+    },
+    "The redaction audit must cover every learning-platform test and recursive support source"
+  );
+
+  const leakCounts = {
+    backendRole: Number(auditableSource.includes(sensitive.backendBase)),
+    bypassEntries: sensitive.participantNames.filter((value) => auditableSource.includes(value)).length,
+    playReadyRole: Number(auditableSource.includes(sensitive.playReadyUrl))
+  };
+  assert.deepEqual(
+    leakCounts,
+    { backendRole: 0, bypassEntries: 0, playReadyRole: 0 },
+    "Source-derived sensitive categories must remain absent from auditable baseline text"
+  );
+
+  for (const value of [sensitive.backendBase, sensitive.playReadyUrl]) {
+    const parsed = inspectUrlRole(value);
+    assert.ok(
+      parsed.valid && parsed.protocol === "https:" && parsed.hostnamePresent,
+      "Sensitive network roles must be structurally validated without snapshotting them"
+    );
+  }
+});
