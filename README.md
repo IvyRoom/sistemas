@@ -42,13 +42,13 @@ points. The deployment contract requires every listed route to return HTTP
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/referrals-management/referral-form/index.html](apps/referrals-management/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
-| Platform device warning | [apps/learning-platform/aviso-dispositivo/index.html](apps/learning-platform/aviso-dispositivo/index.html) | [`/plataforma_v2/aviso-dispositivo/`](https://machadogestao.com/plataforma_v2/aviso-dispositivo/) |
-| Platform browser warning | [apps/learning-platform/aviso-navegador/index.html](apps/learning-platform/aviso-navegador/index.html) | [`/plataforma_v2/aviso-navegador/`](https://machadogestao.com/plataforma_v2/aviso-navegador/) |
-| Platform initial notices | [apps/learning-platform/avisos-iniciais/index.html](apps/learning-platform/avisos-iniciais/index.html) | [`/plataforma_v2/avisos-iniciais/`](https://machadogestao.com/plataforma_v2/avisos-iniciais/) |
-| Platform registration | [apps/learning-platform/cadastro/index.html](apps/learning-platform/cadastro/index.html) | [`/plataforma_v2/cadastro/`](https://machadogestao.com/plataforma_v2/cadastro/) |
-| Platform study page | [apps/learning-platform/estudo/index.html](apps/learning-platform/estudo/index.html) | [`/plataforma_v2/estudo/`](https://machadogestao.com/plataforma_v2/estudo/) |
-| Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma_v2/login/`](https://machadogestao.com/plataforma_v2/login/) |
-| Platform status report | [apps/learning-platform/statusreport/index.html](apps/learning-platform/statusreport/index.html) | [`/plataforma_v2/statusreport/`](https://machadogestao.com/plataforma_v2/statusreport/) |
+| Platform device warning | [apps/learning-platform/aviso-dispositivo/index.html](apps/learning-platform/aviso-dispositivo/index.html) | [`/plataforma/aviso-dispositivo/`](https://machadogestao.com/plataforma/aviso-dispositivo/) |
+| Platform browser warning | [apps/learning-platform/aviso-navegador/index.html](apps/learning-platform/aviso-navegador/index.html) | [`/plataforma/aviso-navegador/`](https://machadogestao.com/plataforma/aviso-navegador/) |
+| Platform initial notices | [apps/learning-platform/avisos-iniciais/index.html](apps/learning-platform/avisos-iniciais/index.html) | [`/plataforma/avisos-iniciais/`](https://machadogestao.com/plataforma/avisos-iniciais/) |
+| Platform registration | [apps/learning-platform/cadastro/index.html](apps/learning-platform/cadastro/index.html) | [`/plataforma/cadastro/`](https://machadogestao.com/plataforma/cadastro/) |
+| Platform study page | [apps/learning-platform/estudo/index.html](apps/learning-platform/estudo/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
+| Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
+| Platform status report | [apps/learning-platform/statusreport/index.html](apps/learning-platform/statusreport/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply device, browser, query-parameter, authentication, or
@@ -57,6 +57,16 @@ namespace and the `apps/learning-platform/` source directory do not contain root
 `index.html` files and therefore are not independent routes. There is no
 single-page-application fallback: those namespaces and unknown paths return
 `404` when no entry point exists.
+
+The learning-platform namespace intentionally has no root entry:
+`/plataforma/` returns `404` without redirect. The former `/plataforma_v2/`
+root and all seven former entries are retired without redirects:
+`/plataforma_v2/aviso-dispositivo/`,
+`/plataforma_v2/aviso-navegador/`,
+`/plataforma_v2/avisos-iniciais/`, `/plataforma_v2/cadastro/`,
+`/plataforma_v2/estudo/`, `/plataforma_v2/login/`, and
+`/plataforma_v2/statusreport/`. The backend API and remote-media namespaces
+that retain `plataforma_v2` are separate contracts, not frontend routes.
 
 The authoritative current-state compatibility specification for the legacy
 learning platform is

@@ -41,6 +41,19 @@ const pageSources = pageSourcePaths.map((relativePath) => ({
   relativePath,
   source: fs.readFileSync(path.join(platformRoot, ...relativePath.split("/")), "utf8")
 }));
+const platformEntrySuffixes = [
+  "aviso-dispositivo",
+  "aviso-navegador",
+  "avisos-iniciais",
+  "cadastro",
+  "estudo",
+  "login",
+  "statusreport"
+];
+const retiredPlatformPaths = [
+  "/plataforma_v2/",
+  ...platformEntrySuffixes.map((suffix) => `/plataforma_v2/${suffix}/`)
+];
 
 function compareText(left, right) {
   if (left < right) return -1;
@@ -192,13 +205,13 @@ function downloadReferences() {
     if (condition) currentModule = condition[1];
 
     const assignment = line.match(
-      /Bot.oDownload\d+\.href\s*=\s*"\/plataforma_v2\/estudo\/files\/"\s*\+\s*M.duloAberto\s*\+\s*"\/([^"]+)"/u
+      /Bot.oDownload\d+\.href\s*=\s*"\/plataforma\/estudo\/files\/"\s*\+\s*M.duloAberto\s*\+\s*"\/([^"]+)"/u
     );
     if (!assignment) continue;
 
     assert.ok(currentModule, "Every download assignment must have a module branch");
     references.push(
-      `plataforma_v2/estudo/files/${currentModule}/${assignment[1]}`
+      `plataforma/estudo/files/${currentModule}/${assignment[1]}`
     );
   }
 
@@ -248,36 +261,36 @@ function sourceDerivedSensitiveLiterals() {
 test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entries", () => {
   assert.ok(platformApplication, "The learning-platform manifest entry must exist");
   assert.deepEqual(platformApplication.mappings, [
-    { source: "apps/learning-platform", output: "plataforma_v2" }
+    { source: "apps/learning-platform", output: "plataforma" }
   ]);
   assert.deepEqual(platformApplication.publicEntries, [
     {
-      path: "/plataforma_v2/aviso-dispositivo/",
-      file: "plataforma_v2/aviso-dispositivo/index.html"
+      path: "/plataforma/aviso-dispositivo/",
+      file: "plataforma/aviso-dispositivo/index.html"
     },
     {
-      path: "/plataforma_v2/aviso-navegador/",
-      file: "plataforma_v2/aviso-navegador/index.html"
+      path: "/plataforma/aviso-navegador/",
+      file: "plataforma/aviso-navegador/index.html"
     },
     {
-      path: "/plataforma_v2/avisos-iniciais/",
-      file: "plataforma_v2/avisos-iniciais/index.html"
+      path: "/plataforma/avisos-iniciais/",
+      file: "plataforma/avisos-iniciais/index.html"
     },
     {
-      path: "/plataforma_v2/cadastro/",
-      file: "plataforma_v2/cadastro/index.html"
+      path: "/plataforma/cadastro/",
+      file: "plataforma/cadastro/index.html"
     },
     {
-      path: "/plataforma_v2/estudo/",
-      file: "plataforma_v2/estudo/index.html"
+      path: "/plataforma/estudo/",
+      file: "plataforma/estudo/index.html"
     },
     {
-      path: "/plataforma_v2/login/",
-      file: "plataforma_v2/login/index.html"
+      path: "/plataforma/login/",
+      file: "plataforma/login/index.html"
     },
     {
-      path: "/plataforma_v2/statusreport/",
-      file: "plataforma_v2/statusreport/index.html"
+      path: "/plataforma/statusreport/",
+      file: "plataforma/statusreport/index.html"
     }
   ]);
 
@@ -289,12 +302,27 @@ test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entr
       "Every canonical entry must emit its index"
     );
   }
+  assert.equal(
+    platformApplication.publicEntries.some(({ path }) => path.startsWith("/plataforma_v2/")),
+    false,
+    "Former learning-platform entries must not remain public"
+  );
+  assert.equal(
+    records.some(({ output }) => output.startsWith("plataforma_v2/")),
+    false,
+    "The former learning-platform output subtree must not be emitted"
+  );
 });
 
-test("[ROUTE-02] root remains a 404 and source navigation remains slashless without an SPA router", () => {
+test("[ROUTE-02] current root and retired routes remain 404 while source navigation stays slashless", () => {
   assert.ok(
-    manifest.notFoundPaths.includes("/plataforma_v2/"),
-    "The platform root must remain an explicit not-found contract"
+    manifest.notFoundPaths.includes("/plataforma/"),
+    "The current platform root must remain an explicit not-found contract"
+  );
+  assert.deepEqual(
+    retiredPlatformPaths.filter((retiredPath) => manifest.notFoundPaths.includes(retiredPath)),
+    retiredPlatformPaths,
+    "The former root and all seven former canonical entries must remain explicit not-found contracts"
   );
   assert.equal(
     fs.existsSync(path.join(platformRoot, "index.html")),
@@ -310,12 +338,12 @@ test("[ROUTE-02] root remains a 404 and source navigation remains slashless with
     }
   }
   assert.deepEqual([...destinations].sort(compareText), [
-    "/plataforma_v2/aviso-dispositivo",
-    "/plataforma_v2/aviso-navegador",
-    "/plataforma_v2/avisos-iniciais",
-    "/plataforma_v2/cadastro",
-    "/plataforma_v2/estudo",
-    "/plataforma_v2/login"
+    "/plataforma/aviso-dispositivo",
+    "/plataforma/aviso-navegador",
+    "/plataforma/avisos-iniciais",
+    "/plataforma/cadastro",
+    "/plataforma/estudo",
+    "/plataforma/login"
   ]);
   assert.ok(
     [...destinations].every((destination) => !destination.endsWith("/")),
@@ -388,13 +416,13 @@ test("[FACE-01] Face SDK 1.5.0 assets and base-relative resolution remain frozen
   assert.ok(faceSource.includes("/facelivenessdetector-assets/js/"));
   assert.ok(faceSource.includes(".wasm"));
 
-  const basePath = "/plataforma_v2/azure-ai-vision-face-ui/";
+  const basePath = "/plataforma/azure-ai-vision-face-ui/";
   const inertOrigin = ["https:", "", "platform.invalid"].join("/");
   for (const entryName of ["login", "cadastro"]) {
     const entryHtml = fs.readFileSync(path.join(platformRoot, entryName, "index.html"), "utf8");
     const entrySource = fs.readFileSync(path.join(platformRoot, entryName, "main.js"), "utf8");
     assert.ok(
-      /<base\s+href="\/plataforma_v2\/azure-ai-vision-face-ui\/"\s*\/?\s*>/i.test(
+      /<base\s+href="\/plataforma\/azure-ai-vision-face-ui\/"\s*\/?\s*>/i.test(
         entryHtml
       ),
       "Each Face entry must retain the exact base path"
@@ -440,18 +468,18 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 
   assert.deepEqual(treeStats(records), {
     files: 156,
-    bytes: 20709083,
-    digest: "6b7ae5adbd00b9f5a1319aaf9c86aeaef9e688217ce452b3ce018ebe8770bb4b"
+    bytes: 20708799,
+    digest: "10dee6c96d402149bd3ffe66cff96058ec4ed2de1561998f10e1444c67868b15"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
       ...record,
-      output: record.output.slice("plataforma_v2/".length)
+      output: record.output.slice("plataforma/".length)
     }))),
     {
       files: 156,
-      bytes: 20709083,
-      digest: "6eb7b6d8c46e43d570e4cffff251377cd7496ff17a4c03dfe5ae69d642a3c9ba"
+      bytes: 20708799,
+      digest: "7accfa3b272fbdf039ea29049858ac351cab245bf5bfc062b938769c7be01dd5"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
   );
@@ -483,7 +511,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 
 test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and reachability", () => {
   const downloadRecords = platformRecords().filter(({ output }) =>
-    output.startsWith("plataforma_v2/estudo/files/")
+    output.startsWith("plataforma/estudo/files/")
   );
   const downloadFiles = downloadRecords.map(({ output }) => output);
   const assignments = downloadReferences();
@@ -501,7 +529,7 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
   );
   assert.equal(
     digestStrings(
-      downloadFiles.map((file) => file.slice("plataforma_v2/estudo/files/".length))
+      downloadFiles.map((file) => file.slice("plataforma/estudo/files/".length))
     ),
     "e8b215eb672d70fdab52c3085cbfa4cab227869ec841e4eb2d38852ea65837f2",
     "The exact download path set must remain unchanged"
@@ -511,7 +539,7 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
   assert.equal(
     digestStrings(
       [...reachableFiles].map((file) =>
-        file.slice("plataforma_v2/estudo/files/".length)
+        file.slice("plataforma/estudo/files/".length)
       )
     ),
     "91aa2b77d0eecdf43dcffddce9934f0962e4e4ac33129bbd59ffceb9b92253da",
@@ -526,7 +554,7 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
   assert.equal(
     digestStrings(
       unreferencedFiles.map((file) =>
-        file.slice("plataforma_v2/estudo/files/".length)
+        file.slice("plataforma/estudo/files/".length)
       )
     ),
     "22500feb327130bae8b091dc51abdecf34ded81aa52a293bc0146649f5c1647b",
@@ -546,9 +574,9 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
     ([, publicPath]) => publicPath
   );
   assert.deepEqual(certificatePaths, [
-    "/plataforma_v2/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg",
-    "/plataforma_v2/estudo/img/ASSINATURA.png",
-    "/plataforma_v2/estudo/img/ATLAS.png"
+    "/plataforma/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg",
+    "/plataforma/estudo/img/ASSINATURA.png",
+    "/plataforma/estudo/img/ATLAS.png"
   ]);
   const platformFiles = platformRecords();
   assert.ok(
@@ -740,8 +768,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
     files: 231,
-    bytes: 27314121,
-    digest: "cb23b90f85e8d2dbc4d440f1547c42ab4a6164cfd53a0af25bd8b2155e9da81f"
+    bytes: 27313834,
+    digest: "21b0c501fd32ebce8678b8970aa30c3cb173d7119ed527d9e0b47037a1599991"
   });
 });
 
@@ -755,7 +783,7 @@ test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform do
     "The platform must retain 149 implicitly emitted runtime/support files"
   );
   assert.equal(
-    records.filter(({ output }) => output.startsWith("plataforma_v2/estudo/files/")).length,
+    records.filter(({ output }) => output.startsWith("plataforma/estudo/files/")).length,
     33,
     "All 33 study downloads must remain implicit rather than publicDownloads entries"
   );

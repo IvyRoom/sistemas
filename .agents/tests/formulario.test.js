@@ -514,7 +514,7 @@ test('legacy client-intake cases remain named node:test coverage', async (t) => 
       harness.window.innerWidth = 1024;
       helpers.enforceDeviceGate();
       return harness.window.location.href;
-    }, '/plataforma_v2/aviso-dispositivo/'],
+    }, '/plataforma/aviso-dispositivo/'],
     ['CPF valid 529.982.247-25', () => helpers.isValidCpf('529.982.247-25'), true],
     ['CPF valid 111.444.777-35', () => helpers.isValidCpf('111.444.777-35'), true],
     ['CPF invalid check digit', () => helpers.isValidCpf('529.982.247-26'), false],
@@ -544,14 +544,14 @@ test('legacy client-intake cases remain named node:test coverage', async (t) => 
 
 test('device gate redirects at 1024 and leaves the 1025 form available', () => {
   const atBoundary = createHarness({ innerWidth: 1024 });
-  assert.equal(atBoundary.window.location.href, '/plataforma_v2/aviso-dispositivo/');
+  assert.equal(atBoundary.window.location.href, '/plataforma/aviso-dispositivo/');
 
   const aboveBoundary = createHarness({ innerWidth: 1025 });
   assert.equal(aboveBoundary.window.location.href, aboveBoundary.initialHref);
 
   aboveBoundary.window.innerWidth = 1024;
   aboveBoundary.dispatchResize();
-  assert.equal(aboveBoundary.window.location.href, '/plataforma_v2/aviso-dispositivo/');
+  assert.equal(aboveBoundary.window.location.href, '/plataforma/aviso-dispositivo/');
 });
 
 test('local previews and production select their exact isolated submit endpoints', async () => {

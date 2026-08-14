@@ -22,12 +22,12 @@ const SCRIPT_PATHS = {
 };
 
 const PATHS = {
-  browser: "/plataforma_v2/aviso-navegador",
-  device: "/plataforma_v2/aviso-dispositivo",
-  login: "/plataforma_v2/login",
-  notices: "/plataforma_v2/avisos-iniciais",
-  register: "/plataforma_v2/cadastro",
-  study: "/plataforma_v2/estudo"
+  browser: "/plataforma/aviso-navegador",
+  device: "/plataforma/aviso-dispositivo",
+  login: "/plataforma/login",
+  notices: "/plataforma/avisos-iniciais",
+  register: "/plataforma/cadastro",
+  study: "/plataforma/estudo"
 };
 
 function opaqueValue(kind) {

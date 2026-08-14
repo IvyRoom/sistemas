@@ -44,7 +44,7 @@ const ContainerAuxiliarFaceID = document.getElementById('Container-Auxiliar-Face
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma_v2/aviso-dispositivo"; } }
+function LevaàPáginaAvisoDispositivo() { if (window.innerWidth <= 1024) { window.location.href = "/plataforma/aviso-dispositivo"; } }
 
 window.addEventListener('resize', LevaàPáginaAvisoDispositivo);
 
@@ -58,11 +58,11 @@ window.addEventListener('resize', LevaàPáginaAvisoDispositivo);
 
 window.addEventListener('load', function() {
     
-    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma_v2/aviso-navegador'; } 
+    if ((navigator.userAgentData?.brands?.some(b => b.brand === "Microsoft Edge") || navigator.userAgent.includes("Edg")) === false) { window.location.href = '/plataforma/aviso-navegador'; }
     
     else { 
         
-        if (sessionStorage.getItem('Usuário_Logado') === 'Sim') { window.location.href = '/plataforma_v2/estudo'; } 
+        if (sessionStorage.getItem('Usuário_Logado') === 'Sim') { window.location.href = '/plataforma/estudo'; }
         
         else if (sessionStorage.getItem('Usuário_Autorização_Cadastro') === 'Sim' && sessionStorage.getItem('Origem_Aviso_Dispositivo') !== 'Sim') { sessionStorage.setItem('Origem_Aviso_Dispositivo', 'Não'); window.history.back(); }
         
@@ -133,7 +133,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
             
             if ( Usuário_Status_FaceID === 'Inativo' ) { 
                 sessionStorage.setItem('Usuário_Logado', 'Sim'); 
-                window.location.href = '/plataforma_v2/estudo'; 
+                window.location.href = '/plataforma/estudo';
             } 
             
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -142,7 +142,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
 
             else if (Usuário_Foto_Cadastrada === 'Não') { 
                 sessionStorage.setItem('Usuário_Autorização_Cadastro', 'Sim'); 
-                window.location.href = '/plataforma_v2/avisos-iniciais'; 
+                window.location.href = '/plataforma/avisos-iniciais';
             }
 
             ////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +204,7 @@ FormulárioLogin.addEventListener('submit', function(event) {
                                 data.Azure_Face_API_LivenessSession_MatchDecision === true ) 
                             { 
                                 sessionStorage.setItem('Usuário_Logado', 'Sim'); 
-                                window.location.href = '/plataforma_v2/estudo'; 
+                                window.location.href = '/plataforma/estudo';
                             } 
                             
                             ////////////////////////////////////////////////////////////////////////////////////////

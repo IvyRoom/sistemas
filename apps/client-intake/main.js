@@ -1,7 +1,7 @@
 'use strict';
 
 const MIN_VIEWPORT_WIDTH = 1024;
-const DEVICE_WARNING_URL = '/plataforma_v2/aviso-dispositivo/';
+const DEVICE_WARNING_URL = '/plataforma/aviso-dispositivo/';
 const SUBMIT_ENDPOINT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
   ? 'http://localhost:3000/clientes/processa-formulario'
   : 'https://plataforma-backend-v3.azurewebsites.net/clientes/processa-formulario';
