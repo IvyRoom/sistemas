@@ -41,20 +41,20 @@ The document keeps four categories separate:
 
 ### Public entries and navigation
 
-`frontend-deployment.json` maps the entire tracked `plataforma_v2/` directory to
-`dist/plataforma_v2/` without renaming paths. It declares exactly seven public
-entries. Each canonical entry includes a trailing slash and must return its
-listed `index.html` with HTTP `200` and no redirect.
+`frontend-deployment.json` maps the entire tracked `apps/learning-platform/`
+directory to `dist/plataforma_v2/` without renaming relative paths. It declares
+exactly seven public entries. Each canonical entry includes a trailing slash
+and must return its listed `index.html` with HTTP `200` and no redirect.
 
 | Stable entry | Canonical public path | Current entry file | Direct dependencies |
 | --- | --- | --- | --- |
-| `LP-ENTRY-DEVICE` | `/plataforma_v2/aviso-dispositivo/` | `plataforma_v2/aviso-dispositivo/index.html` | Login favicon; own CSS, logo, and async classic script |
-| `LP-ENTRY-BROWSER` | `/plataforma_v2/aviso-navegador/` | `plataforma_v2/aviso-navegador/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
-| `LP-ENTRY-NOTICES` | `/plataforma_v2/avisos-iniciais/` | `plataforma_v2/avisos-iniciais/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
-| `LP-ENTRY-REGISTER` | `/plataforma_v2/cadastro/` | `plataforma_v2/cadastro/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
-| `LP-ENTRY-STUDY` | `/plataforma_v2/estudo/` | `plataforma_v2/estudo/index.html` | Own favicon/CSS/logo; Shaka Player 4.6.0 CSS/JS; jsPDF 2.5.1; synchronous monolithic JS; stored session state; remote DASH media |
-| `LP-ENTRY-LOGIN` | `/plataforma_v2/login/` | `plataforma_v2/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; production backend role |
-| `LP-ENTRY-REPORT` | `/plataforma_v2/statusreport/` | `plataforma_v2/statusreport/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
+| `LP-ENTRY-DEVICE` | `/plataforma_v2/aviso-dispositivo/` | `apps/learning-platform/aviso-dispositivo/index.html` | Login favicon; own CSS, logo, and async classic script |
+| `LP-ENTRY-BROWSER` | `/plataforma_v2/aviso-navegador/` | `apps/learning-platform/aviso-navegador/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
+| `LP-ENTRY-NOTICES` | `/plataforma_v2/avisos-iniciais/` | `apps/learning-platform/avisos-iniciais/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
+| `LP-ENTRY-REGISTER` | `/plataforma_v2/cadastro/` | `apps/learning-platform/cadastro/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
+| `LP-ENTRY-STUDY` | `/plataforma_v2/estudo/` | `apps/learning-platform/estudo/index.html` | Own favicon/CSS/logo; Shaka Player 4.6.0 CSS/JS; jsPDF 2.5.1; synchronous monolithic JS; stored session state; remote DASH media |
+| `LP-ENTRY-LOGIN` | `/plataforma_v2/login/` | `apps/learning-platform/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; production backend role |
+| `LP-ENTRY-REPORT` | `/plataforma_v2/statusreport/` | `apps/learning-platform/statusreport/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
 
 The entry documents use these exact initial URL literals; later dynamic Face,
 download, certificate, and video paths are specified in their dedicated
@@ -121,21 +121,21 @@ history entry.
   and generated-artifact index fallback
   [`scripts/frontend-deployment-lib.mjs` lines 1200-1224](../scripts/frontend-deployment-lib.mjs#L1200-L1224).
 - Exact HTML dependencies: device
-  [`index.html` lines 9-28](../plataforma_v2/aviso-dispositivo/index.html#L9-L28),
-  browser [`index.html` lines 9-28](../plataforma_v2/aviso-navegador/index.html#L9-L28),
-  notices [`index.html` lines 9-18](../plataforma_v2/avisos-iniciais/index.html#L9-L18),
-  registration [`index.html` lines 9-62](../plataforma_v2/cadastro/index.html#L9-L62),
-  login [`index.html` lines 9-59](../plataforma_v2/login/index.html#L9-L59),
-  study [`index.html` lines 9-32](../plataforma_v2/estudo/index.html#L9-L32) and
-  [`index.html` lines 9109-9113](../plataforma_v2/estudo/index.html#L9109-L9113),
-  report [`index.html` lines 9-45](../plataforma_v2/statusreport/index.html#L9-L45).
+  [`index.html` lines 9-28](../apps/learning-platform/aviso-dispositivo/index.html#L9-L28),
+  browser [`index.html` lines 9-28](../apps/learning-platform/aviso-navegador/index.html#L9-L28),
+  notices [`index.html` lines 9-18](../apps/learning-platform/avisos-iniciais/index.html#L9-L18),
+  registration [`index.html` lines 9-62](../apps/learning-platform/cadastro/index.html#L9-L62),
+  login [`index.html` lines 9-59](../apps/learning-platform/login/index.html#L9-L59),
+  study [`index.html` lines 9-32](../apps/learning-platform/estudo/index.html#L9-L32) and
+  [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L9109-L9113),
+  report [`index.html` lines 9-45](../apps/learning-platform/statusreport/index.html#L9-L45).
 - Slashless destinations and history: device
-  [`main.js` lines 1-3](../plataforma_v2/aviso-dispositivo/main.js#L1-L3), notices
-  [`main.js` lines 7-57](../plataforma_v2/avisos-iniciais/main.js#L7-L57), registration
-  [`main.js` lines 28-48](../plataforma_v2/cadastro/main.js#L28-L48), login
-  [`main.js` lines 47-69](../plataforma_v2/login/main.js#L47-L69), study
-  [`main.js` lines 78-103](../plataforma_v2/estudo/main.js#L78-L103), and report
-  [`main.js` lines 51-63](../plataforma_v2/statusreport/main.js#L51-L63).
+  [`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3), notices
+  [`main.js` lines 7-57](../apps/learning-platform/avisos-iniciais/main.js#L7-L57), registration
+  [`main.js` lines 28-48](../apps/learning-platform/cadastro/main.js#L28-L48), login
+  [`main.js` lines 47-69](../apps/learning-platform/login/main.js#L47-L69), study
+  [`main.js` lines 78-103](../apps/learning-platform/estudo/main.js#L78-L103), and report
+  [`main.js` lines 51-63](../apps/learning-platform/statusreport/main.js#L51-L63).
 
 ### Browser, viewport, resize, and back-navigation gates
 
@@ -174,13 +174,13 @@ if module evaluation occurs after `load`; study's classic script registers its
 handler synchronously at the end of the document. No page handles `pageshow`,
 BFCache restoration, `pagehide`, `beforeunload`, or `popstate`.
 
-Current anchors: login [`main.js` lines 47-73](../plataforma_v2/login/main.js#L47-L73),
-notices [`main.js` lines 7-31](../plataforma_v2/avisos-iniciais/main.js#L7-L31),
-registration [`main.js` lines 28-52](../plataforma_v2/cadastro/main.js#L28-L52),
-study [`main.js` lines 66-103](../plataforma_v2/estudo/main.js#L66-L103), report
-[`main.js` lines 51-65](../plataforma_v2/statusreport/main.js#L51-L65), warning
-[`main.js` lines 1-3](../plataforma_v2/aviso-dispositivo/main.js#L1-L3), and
-browser diagnostic [`main.js` lines 1-2](../plataforma_v2/aviso-navegador/main.js#L1-L2).
+Current anchors: login [`main.js` lines 47-73](../apps/learning-platform/login/main.js#L47-L73),
+notices [`main.js` lines 7-31](../apps/learning-platform/avisos-iniciais/main.js#L7-L31),
+registration [`main.js` lines 28-52](../apps/learning-platform/cadastro/main.js#L28-L52),
+study [`main.js` lines 66-103](../apps/learning-platform/estudo/main.js#L66-L103), report
+[`main.js` lines 51-65](../apps/learning-platform/statusreport/main.js#L51-L65), warning
+[`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3), and
+browser diagnostic [`main.js` lines 1-2](../apps/learning-platform/aviso-navegador/main.js#L1-L2).
 
 ### Session-storage contract
 
@@ -207,15 +207,15 @@ a handle, and it does not recheck workbook login status as an authorization
 condition. Explicit logout only changes the UI flag.
 
 Current anchors: all storage reads/writes in login
-[`main.js` lines 9-11](../plataforma_v2/login/main.js#L9-L11),
-[`main.js` lines 65-67](../plataforma_v2/login/main.js#L65-L67), and
-[`main.js` lines 113-145](../plataforma_v2/login/main.js#L113-L145); registration
-[`main.js` lines 15-16](../plataforma_v2/cadastro/main.js#L15-L16) and
-[`main.js` lines 90-127](../plataforma_v2/cadastro/main.js#L90-L127); study
-[`main.js` lines 11-34](../plataforma_v2/estudo/main.js#L11-L34),
-[`main.js` lines 113-157](../plataforma_v2/estudo/main.js#L113-L157), and
-[`main.js` lines 220-232](../plataforma_v2/estudo/main.js#L220-L232); warning
-[`main.js` lines 1-3](../plataforma_v2/aviso-dispositivo/main.js#L1-L3); backend
+[`main.js` lines 9-11](../apps/learning-platform/login/main.js#L9-L11),
+[`main.js` lines 65-67](../apps/learning-platform/login/main.js#L65-L67), and
+[`main.js` lines 113-145](../apps/learning-platform/login/main.js#L113-L145); registration
+[`main.js` lines 15-16](../apps/learning-platform/cadastro/main.js#L15-L16) and
+[`main.js` lines 90-127](../apps/learning-platform/cadastro/main.js#L90-L127); study
+[`main.js` lines 11-34](../apps/learning-platform/estudo/main.js#L11-L34),
+[`main.js` lines 113-157](../apps/learning-platform/estudo/main.js#L113-L157), and
+[`main.js` lines 220-232](../apps/learning-platform/estudo/main.js#L220-L232); warning
+[`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3); backend
 handle contract at the pinned companion
 [`api-contracts.md` lines 209-242](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L209-L242).
 
@@ -292,14 +292,14 @@ consumer renders that response as generic `Erro_000` behavior.
 
 #### Current source anchors
 
-- Login client [`main.js` lines 83-294](../plataforma_v2/login/main.js#L83-L294).
-- Registration client [`main.js` lines 60-178](../plataforma_v2/cadastro/main.js#L60-L178).
-- Study refresh [`main.js` lines 113-137](../plataforma_v2/estudo/main.js#L113-L137),
-  updates [`main.js` lines 777-884](../plataforma_v2/estudo/main.js#L777-L884) and
-  [`main.js` lines 1061-1118](../plataforma_v2/estudo/main.js#L1061-L1118), feedback
-  [`main.js` lines 958-1031](../plataforma_v2/estudo/main.js#L958-L1031).
-- Status-report client [`main.js` lines 5-17](../plataforma_v2/statusreport/main.js#L5-L17)
-  and [`main.js` lines 168-303](../plataforma_v2/statusreport/main.js#L168-L303).
+- Login client [`main.js` lines 83-294](../apps/learning-platform/login/main.js#L83-L294).
+- Registration client [`main.js` lines 60-178](../apps/learning-platform/cadastro/main.js#L60-L178).
+- Study refresh [`main.js` lines 113-137](../apps/learning-platform/estudo/main.js#L113-L137),
+  updates [`main.js` lines 777-884](../apps/learning-platform/estudo/main.js#L777-L884) and
+  [`main.js` lines 1061-1118](../apps/learning-platform/estudo/main.js#L1061-L1118), feedback
+  [`main.js` lines 958-1031](../apps/learning-platform/estudo/main.js#L958-L1031).
+- Status-report client [`main.js` lines 5-17](../apps/learning-platform/statusreport/main.js#L5-L17)
+  and [`main.js` lines 168-303](../apps/learning-platform/statusreport/main.js#L168-L303).
 - Pinned companion backend route sections:
   [login](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L497-L526),
   [registration](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L528-L573),
@@ -346,10 +346,10 @@ shows per-field alerts and leaves the submit button hidden until a field emits
 `change`. No consent state is stored and no backend call occurs.
 
 Current anchors: login
-[`main.js` lines 59-145](../plataforma_v2/login/main.js#L59-L145),
-[`main.js` lines 152-294](../plataforma_v2/login/main.js#L152-L294), and reset
-[`main.js` lines 304-325](../plataforma_v2/login/main.js#L304-L325); notices
-[`main.js` lines 17-70](../plataforma_v2/avisos-iniciais/main.js#L17-L70).
+[`main.js` lines 59-145](../apps/learning-platform/login/main.js#L59-L145),
+[`main.js` lines 152-294](../apps/learning-platform/login/main.js#L152-L294), and reset
+[`main.js` lines 304-325](../apps/learning-platform/login/main.js#L304-L325); notices
+[`main.js` lines 17-70](../apps/learning-platform/avisos-iniciais/main.js#L17-L70).
 
 #### Face registration and verification
 
@@ -380,10 +380,10 @@ long-load delay, and rejects on its own timeout/failure states; those failures
 map to frontend `Erro_006`.
 
 Current anchors: registration HTML
-[`index.html` lines 32-48](../plataforma_v2/cadastro/index.html#L32-L48) and flow
-[`main.js` lines 60-178](../plataforma_v2/cadastro/main.js#L60-L178); login Face
-flow [`main.js` lines 152-263](../plataforma_v2/login/main.js#L152-L263); vendored
-loader [`FaceLivenessDetector.js` line 1](../plataforma_v2/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1).
+[`index.html` lines 32-48](../apps/learning-platform/cadastro/index.html#L32-L48) and flow
+[`main.js` lines 60-178](../apps/learning-platform/cadastro/main.js#L60-L178); login Face
+flow [`main.js` lines 152-263](../apps/learning-platform/login/main.js#L152-L263); vendored
+loader [`FaceLivenessDetector.js` line 1](../apps/learning-platform/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1).
 
 #### Study initialization and sequential progress
 
@@ -409,9 +409,9 @@ topic containers; selecting a topic highlights it and selects content, test,
 or feedback behavior from the visible topic text.
 
 Current anchors: topic totals and state variables
-[`main.js` lines 11-54](../plataforma_v2/estudo/main.js#L11-L54), initialization
-[`main.js` lines 66-266](../plataforma_v2/estudo/main.js#L66-L266), module/topic
-selection [`main.js` lines 337-435](../plataforma_v2/estudo/main.js#L337-L435).
+[`main.js` lines 11-54](../apps/learning-platform/estudo/main.js#L11-L54), initialization
+[`main.js` lines 66-266](../apps/learning-platform/estudo/main.js#L66-L266), module/topic
+selection [`main.js` lines 337-435](../apps/learning-platform/estudo/main.js#L337-L435).
 
 #### Content/video progress
 
@@ -428,9 +428,9 @@ state. There is no refetch. Manual completion and `ended` share no in-flight
 guard and can race into separate increments/writes.
 
 Current anchors: video completion
-[`main.js` lines 447-468](../plataforma_v2/estudo/main.js#L447-L468), manual
-control [`main.js` lines 707-725](../plataforma_v2/estudo/main.js#L707-L725),
-update flow [`main.js` lines 1061-1118](../plataforma_v2/estudo/main.js#L1061-L1118).
+[`main.js` lines 447-468](../apps/learning-platform/estudo/main.js#L447-L468), manual
+control [`main.js` lines 707-725](../apps/learning-platform/estudo/main.js#L707-L725),
+update flow [`main.js` lines 1061-1118](../apps/learning-platform/estudo/main.js#L1061-L1118).
 
 #### Assessments
 
@@ -453,10 +453,10 @@ completed test clears and disables its answers rather than reconstructing the
 submitted selection.
 
 Current anchors: visible time guidance
-[`index.html` line 1401](../plataforma_v2/estudo/index.html#L1401), representative
+[`index.html` line 1401](../apps/learning-platform/estudo/index.html#L1401), representative
 correctness attributes
-[`index.html` lines 1477-1519](../plataforma_v2/estudo/index.html#L1477-L1519),
-assessment flow [`main.js` lines 735-915](../plataforma_v2/estudo/main.js#L735-L915).
+[`index.html` lines 1477-1519](../apps/learning-platform/estudo/index.html#L1477-L1519),
+assessment flow [`main.js` lines 735-915](../apps/learning-platform/estudo/main.js#L735-L915).
 
 #### Feedback
 
@@ -477,8 +477,8 @@ The four current rating conventions are strings: module size uses `-2` through
 through `10`. Comments have only the browser `maxlength=1000` constraint.
 
 Current anchors: feedback values and comment limit
-[`index.html` lines 8745-8909](../plataforma_v2/estudo/index.html#L8745-L8909), flow
-[`main.js` lines 925-1045](../plataforma_v2/estudo/main.js#L925-L1045).
+[`index.html` lines 8745-8909](../apps/learning-platform/estudo/index.html#L8745-L8909), flow
+[`main.js` lines 925-1045](../apps/learning-platform/estudo/main.js#L925-L1045).
 
 #### Performance, certificate, logout, and expiry
 
@@ -496,9 +496,9 @@ normal navigation to login. They do not remove the row handle, deadline,
 registration authorization, backend base, photo mirror, or origin marker.
 
 Current anchors: performance/certificate
-[`main.js` lines 1126-1301](../plataforma_v2/estudo/main.js#L1126-L1301), logout
-[`main.js` line 157](../plataforma_v2/estudo/main.js#L157), timer
-[`main.js` lines 220-232](../plataforma_v2/estudo/main.js#L220-L232).
+[`main.js` lines 1126-1301](../apps/learning-platform/estudo/main.js#L1126-L1301), logout
+[`main.js` line 157](../apps/learning-platform/estudo/main.js#L157), timer
+[`main.js` lines 220-232](../apps/learning-platform/estudo/main.js#L220-L232).
 
 ### Status-report contract
 
@@ -559,10 +559,10 @@ Current disclosure and integrity surfaces are:
 - an unrestricted range wider than the 15 rendered slots.
 
 Current anchors: query parsing
-[`main.js` lines 5-17](../plataforma_v2/statusreport/main.js#L5-L17), title and
-chart creation [`main.js` lines 57-162](../plataforma_v2/statusreport/main.js#L57-L162),
+[`main.js` lines 5-17](../apps/learning-platform/statusreport/main.js#L5-L17), title and
+chart creation [`main.js` lines 57-162](../apps/learning-platform/statusreport/main.js#L57-L162),
 live request/sorting/rendering
-[`main.js` lines 168-303](../plataforma_v2/statusreport/main.js#L168-L303),
+[`main.js` lines 168-303](../apps/learning-platform/statusreport/main.js#L168-L303),
 backend projection
 [`api-contracts.md` lines 770-801](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L770-L801).
 
@@ -588,7 +588,7 @@ By extension, the set is 7 CSS, 7 HTML, 10 JS, 75 JSON, 2 WASM, 11 PNG,
 path listing is reproducible with:
 
 ```powershell
-git -c core.quotepath=false ls-files -- plataforma_v2
+git -c core.quotepath=false ls-files -- apps/learning-platform
 ```
 
 All 156 paths are NFC. Thirty-four contain non-ASCII characters: the
@@ -638,14 +638,14 @@ has no source reference. The device and browser warning subtrees each emit an
 own favicon, but both HTML entries deliberately reference the login favicon.
 
 Current anchors: Face imports and locale at login
-[`main.js` lines 15-19](../plataforma_v2/login/main.js#L15-L19) and
-[`main.js` lines 170-180](../plataforma_v2/login/main.js#L170-L180), registration
-[`main.js` lines 3-7](../plataforma_v2/cadastro/main.js#L3-L7) and
-[`main.js` lines 96-102](../plataforma_v2/cadastro/main.js#L96-L102), base tags
-at login [`index.html` lines 9-11](../plataforma_v2/login/index.html#L9-L11) and
-registration [`index.html` lines 9-11](../plataforma_v2/cadastro/index.html#L9-L11),
+[`main.js` lines 15-19](../apps/learning-platform/login/main.js#L15-L19) and
+[`main.js` lines 170-180](../apps/learning-platform/login/main.js#L170-L180), registration
+[`main.js` lines 3-7](../apps/learning-platform/cadastro/main.js#L3-L7) and
+[`main.js` lines 96-102](../apps/learning-platform/cadastro/main.js#L96-L102), base tags
+at login [`index.html` lines 9-11](../apps/learning-platform/login/index.html#L9-L11) and
+registration [`index.html` lines 9-11](../apps/learning-platform/cadastro/index.html#L9-L11),
 vendored paths/version/selection
-[`FaceLivenessDetector.js` line 1](../plataforma_v2/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1).
+[`FaceLivenessDetector.js` line 1](../apps/learning-platform/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1).
 
 #### Study downloads and certificate assets
 
@@ -654,7 +654,8 @@ The study subtree emits 33 download files (9,163,893 bytes). Dynamic source has
 emitted files have no current runtime reference: `Módulo 3/PLANO DE AÇÃO
 (CLÁUDIA).xlsm` and `Módulo 4/GRÁFICO CONTROLE DE RESULTADOS - Copia.xlsm`.
 
-The complete exact inventory, relative to `plataforma_v2/estudo/files/`, is:
+The complete exact inventory, relative to
+`apps/learning-platform/estudo/files/`, is:
 
 | Directory | Exact filenames |
 | --- | --- |
@@ -724,12 +725,12 @@ is passed to jsPDF with the legacy format label `PNG`. Study also uses
 `FAVICON.ico` and `LOGO_MACHADO.png`.
 
 Current anchors: download placeholders
-[`index.html` lines 1353-1377](../plataforma_v2/estudo/index.html#L1353-L1377),
+[`index.html` lines 1353-1377](../apps/learning-platform/estudo/index.html#L1353-L1377),
 assignment matrix
-[`main.js` lines 470-705](../plataforma_v2/estudo/main.js#L470-L705), certificate
-library/UI [`index.html` lines 9085-9111](../plataforma_v2/estudo/index.html#L9085-L9111),
+[`main.js` lines 470-705](../apps/learning-platform/estudo/main.js#L470-L705), certificate
+library/UI [`index.html` lines 9085-9111](../apps/learning-platform/estudo/index.html#L9085-L9111),
 certificate construction
-[`main.js` lines 1213-1292](../plataforma_v2/estudo/main.js#L1213-L1292).
+[`main.js` lines 1213-1292](../apps/learning-platform/estudo/main.js#L1213-L1292).
 
 ### Video and DRM contract
 
@@ -796,12 +797,12 @@ does not assert ladder widths, bitrates, codecs, segment naming, or the number
 of renditions.
 
 Current anchors: module folder and topic behavior
-[`main.js` lines 337-456](../plataforma_v2/estudo/main.js#L337-L456), player
+[`main.js` lines 337-456](../apps/learning-platform/estudo/main.js#L337-L456), player
 lifecycle/completion
-[`main.js` lines 38-42](../plataforma_v2/estudo/main.js#L38-L42) and
-[`main.js` lines 447-468](../plataforma_v2/estudo/main.js#L447-L468), external
-libraries [`index.html` lines 10-12](../plataforma_v2/estudo/index.html#L10-L12)
-and [`index.html` lines 9109-9113](../plataforma_v2/estudo/index.html#L9109-L9113).
+[`main.js` lines 38-42](../apps/learning-platform/estudo/main.js#L38-L42) and
+[`main.js` lines 447-468](../apps/learning-platform/estudo/main.js#L447-L468), external
+libraries [`index.html` lines 10-12](../apps/learning-platform/estudo/index.html#L10-L12)
+and [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L9109-L9113).
 
 ### Deployment artifact and whole-tree digest
 
@@ -939,8 +940,8 @@ future work, not permission to change compatibility behavior in the baseline.
 - The visible Module 3 feedback form is named `FEEDBACK MÓDULO 2`; current
   parsing therefore submits it as module 2. This is an unresolved source bug,
   deliberately preserved as baseline evidence. Current anchors:
-  [`index.html` lines 423-430](../plataforma_v2/estudo/index.html#L423-L430)
-  and [`main.js` line 966](../plataforma_v2/estudo/main.js#L966).
+  [`index.html` lines 423-430](../apps/learning-platform/estudo/index.html#L423-L430)
+  and [`main.js` line 966](../apps/learning-platform/estudo/main.js#L966).
 - The certificate is generated wholly in the browser from workbook-derived and
   client-held values. Eligibility, name, score, and rendered certificate ID can
   be manipulated locally; validation remains a separate external concern. A
@@ -992,9 +993,6 @@ future work, not permission to change compatibility behavior in the baseline.
 These decisions are approved roadmap direction only. They do not redefine the
 current behavior above and are not implemented by this documentation change.
 
-- Move the `plataforma_v2` source to `apps/learning-platform/`.
-- Rename `apps/conecta/` to `apps/referrals-management/` while preserving the
-  public `/conecta/cadastro-recomendacoes/` route.
 - Replace the learning-platform public namespace with `/plataforma` and retire
   `/plataforma_v2`; Lucas will communicate that change manually.
 - Use Azure SQL Database Basic as the initial relational target, subject to
@@ -1173,7 +1171,7 @@ These commands enumerate source evidence only; they do not start an application
 server or call an external dependency.
 
 ```powershell
-git -c core.quotepath=false ls-files -- plataforma_v2
+git -c core.quotepath=false ls-files -- apps/learning-platform
 node --test .agents/tests/*.test.js
 node --test scripts/frontend-deployment.test.mjs
 node scripts/build-frontend.mjs

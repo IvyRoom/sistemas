@@ -12,13 +12,13 @@ const {
 } = require("./helpers/learning-platform-harness.js");
 
 const SCRIPT_PATHS = {
-  browser: "plataforma_v2/aviso-navegador/main.js",
-  device: "plataforma_v2/aviso-dispositivo/main.js",
-  login: "plataforma_v2/login/main.js",
-  notices: "plataforma_v2/avisos-iniciais/main.js",
-  register: "plataforma_v2/cadastro/main.js",
-  report: "plataforma_v2/statusreport/main.js",
-  study: "plataforma_v2/estudo/main.js"
+  browser: "apps/learning-platform/aviso-navegador/main.js",
+  device: "apps/learning-platform/aviso-dispositivo/main.js",
+  login: "apps/learning-platform/login/main.js",
+  notices: "apps/learning-platform/avisos-iniciais/main.js",
+  register: "apps/learning-platform/cadastro/main.js",
+  report: "apps/learning-platform/statusreport/main.js",
+  study: "apps/learning-platform/estudo/main.js"
 };
 
 const PATHS = {

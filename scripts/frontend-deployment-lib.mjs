@@ -832,6 +832,19 @@ export async function assertSourcePreviewReferences(manifest) {
   const sourceByOutput = new Map(
     validation.files.map((file) => [file.output, file.source])
   );
+  const referenceRoutes = (outputFile = null, sourceFile = null) => {
+    const routes = sourcePreviewRouteSources(
+      validation.files,
+      outputFile,
+      sourceFile
+    );
+
+    for (const [output, source] of sourceByOutput) {
+      addSourcePreviewRoute(routes, output, source);
+    }
+
+    return routes;
+  };
   let htmlReferences = 0;
   let cssReferences = 0;
   let javascriptReferences = 0;
@@ -856,8 +869,8 @@ export async function assertSourcePreviewReferences(manifest) {
       (candidate) => candidate.file === file.output
     );
     const sourceByPreviewRoute = entry
-      ? sourcePreviewRouteSources(validation.files, file.output, file.source)
-      : sourcePreviewRouteSources(validation.files);
+      ? referenceRoutes(file.output, file.source)
+      : referenceRoutes();
 
     for (const reference of references.filter(isHtmlAssetReference)) {
       const result = compareResolvedSourcePreviewReference(
@@ -883,7 +896,7 @@ export async function assertSourcePreviewReferences(manifest) {
     const css = await readFile(toLocalPath(file.source), "utf8");
     const outputStylesheetUrl = new URL(`/${file.output}`, localOrigin);
     const sourceStylesheetUrl = new URL(`/${file.source}`, localOrigin);
-    const sourceByPreviewRoute = sourcePreviewRouteSources(validation.files);
+    const sourceByPreviewRoute = referenceRoutes();
 
     for (const reference of extractCssReferences(css)) {
       const result = compareResolvedSourcePreviewReference(
@@ -909,7 +922,7 @@ export async function assertSourcePreviewReferences(manifest) {
     const javaScript = await readFile(toLocalPath(file.source), "utf8");
     const outputScriptUrl = new URL(`/${file.output}`, localOrigin);
     const sourceScriptUrl = new URL(`/${file.source}`, localOrigin);
-    const sourceByPreviewRoute = sourcePreviewRouteSources(validation.files);
+    const sourceByPreviewRoute = referenceRoutes();
 
     for (const reference of extractJavaScriptImportReferences(javaScript)) {
       const result = compareResolvedSourcePreviewReference(

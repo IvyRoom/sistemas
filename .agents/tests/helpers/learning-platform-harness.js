@@ -695,7 +695,7 @@ function createLearningPlatformHarness({
 }
 
 function readPlatformScript(relativePath) {
-  assert.match(relativePath, /^plataforma_v2[\\/]/);
+  assert.match(relativePath, /^apps[\\/]learning-platform[\\/]/);
   return fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), "utf8");
 }
 

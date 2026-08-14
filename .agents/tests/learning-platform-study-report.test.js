@@ -13,12 +13,12 @@ const {
 } = require("./helpers/learning-platform-harness.js");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
-const studySource = readPlatformScript("plataforma_v2/estudo/main.js");
+const studySource = readPlatformScript("apps/learning-platform/estudo/main.js");
 const studyHtml = fs.readFileSync(
-  path.join(repositoryRoot, "plataforma_v2", "estudo", "index.html"),
+  path.join(repositoryRoot, "apps", "learning-platform", "estudo", "index.html"),
   "utf8"
 );
-const reportSource = readPlatformScript("plataforma_v2/statusreport/main.js");
+const reportSource = readPlatformScript("apps/learning-platform/statusreport/main.js");
 
 const correctAnswerId = "c11aoIurJLm38YTHncm87493KaiowJMca";
 const incorrectAnswerId = "Ij73hRG8120Amb85Ff473LCx3Zaor991";
@@ -194,7 +194,7 @@ function createStudyHarness({ routes = [], storage = {} } = {}) {
     }
   });
   const dom = installStudyDom(harness);
-  harness.loadScript("plataforma_v2/estudo/main.js", { rewriteBackend: false });
+  harness.loadScript("apps/learning-platform/estudo/main.js", { rewriteBackend: false });
   const shaka = installShaka(harness);
   harness.window.jspdf = { jsPDF: class {} };
   return { dom, harness, shaka };
@@ -309,7 +309,7 @@ async function runRefresh(
   });
   const dom = installStudyDom(harness);
   const topics = installClosedTopics(harness);
-  harness.loadScript("plataforma_v2/estudo/main.js", { rewriteBackend: false });
+  harness.loadScript("apps/learning-platform/estudo/main.js", { rewriteBackend: false });
   installShaka(harness);
   harness.window.jspdf = { jsPDF: class {} };
   harness.dispatchWindow("load");
@@ -428,7 +428,7 @@ test("[API-03] refresh retains workbook-specific and generic failure mappings", 
       }
     });
     installStudyDom(harness);
-    harness.loadScript("plataforma_v2/estudo/main.js", { rewriteBackend: false });
+    harness.loadScript("apps/learning-platform/estudo/main.js", { rewriteBackend: false });
     harness.dispatchWindow("load");
     await harness.flush(20);
     assert.equal(harness.alerts.length, 1);
@@ -1244,7 +1244,9 @@ function createReportHarness({ query, response = { data: { Dados_Extraídos_BD_P
     /const URL_Base_Backend = "[^"]+";/,
     `const URL_Base_Backend = "${FIXTURE_ORIGIN}/plataforma_v2";`
   );
-  vm.runInContext(executable, harness.context, { filename: "plataforma_v2/statusreport/main.js" });
+  vm.runInContext(executable, harness.context, {
+    filename: "apps/learning-platform/statusreport/main.js"
+  });
   return { dom, harness };
 }
 
