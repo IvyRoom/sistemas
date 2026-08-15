@@ -1,6 +1,8 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 
@@ -20,6 +22,33 @@ const SCRIPT_PATHS = {
   report: "apps/learning-platform/statusreport/main.js",
   study: "apps/learning-platform/estudo/main.js"
 };
+
+const MODULE_PATHS = {
+  lifecycle: "apps/learning-platform/modules/lifecycle.js",
+  login: "apps/learning-platform/modules/login.js",
+  notices: "apps/learning-platform/modules/initial-notices.js",
+  platformClient: "apps/learning-platform/modules/platform-client.js",
+  register: "apps/learning-platform/modules/registration.js",
+  session: "apps/learning-platform/modules/session.js",
+  statusReport: "apps/learning-platform/modules/status-report/application.js",
+  study: "apps/learning-platform/modules/study/application.js",
+  studyDom: "apps/learning-platform/modules/study/dom.js",
+  studyProgress: "apps/learning-platform/modules/study/progress.js"
+};
+
+function discoverModulePaths(directoryName) {
+  const directory = path.join(
+    __dirname,
+    `../../apps/learning-platform/modules/${directoryName}`
+  );
+  return fs.readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
+    .map((entry) => `apps/learning-platform/modules/${directoryName}/${entry.name}`)
+    .sort();
+}
+
+const STATUS_REPORT_MODULE_PATHS = discoverModulePaths("status-report");
+const STUDY_MODULE_PATHS = discoverModulePaths("study");
 
 const PATHS = {
   browser: "/plataforma/aviso-navegador",
@@ -108,6 +137,154 @@ function assertNoQuery(harness) {
     ),
     true
   );
+  harness.hostGuard.assertUnused();
+}
+
+function moduleDependencies(harness, overrides = {}) {
+  const dependencies = harness.dependencies();
+  return {
+    ...dependencies,
+    FormDataConstructor: dependencies.FormData,
+    alert(message) {
+      harness.alerts.push(String(message));
+    },
+    backendBase: FIXTURE_ORIGIN + "/plataforma_v2",
+    clock: dependencies.Date,
+    console: {
+      log(...args) {
+        harness.consoleCalls.push({ level: "log", size: args.length });
+      }
+    },
+    navigate(target) {
+      dependencies.window.location.href = target;
+    },
+    ...overrides
+  };
+}
+
+async function installLoginApplication(harness, overrides = {}) {
+  const { createLoginApplication } = await harness.loadModule(MODULE_PATHS.login);
+  createLoginApplication(moduleDependencies(harness, overrides));
+  harness.hostGuard.assertUnused();
+}
+
+async function installRegistrationApplication(harness, overrides = {}) {
+  const { createRegistrationApplication } = await harness.loadModule(MODULE_PATHS.register);
+  createRegistrationApplication(moduleDependencies(harness, overrides));
+  harness.hostGuard.assertUnused();
+}
+
+async function installInitialNoticesApplication(harness) {
+  const [noticesModule, lifecycleModule, sessionModule] = await Promise.all([
+    harness.loadModule(MODULE_PATHS.notices),
+    harness.loadModule(MODULE_PATHS.lifecycle),
+    harness.loadModule(MODULE_PATHS.session)
+  ]);
+  const dependencies = harness.dependencies();
+  noticesModule.createInitialNoticesApplication({
+    ...dependencies,
+    isMicrosoftEdge: lifecycleModule.isMicrosoftEdge,
+    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning,
+    requiredAcknowledgements: {
+      credentials: "credenciais",
+      rights: "direitos",
+      window: "janela"
+    },
+    session: sessionModule.createSessionStore(dependencies.sessionStorage)
+  }).install();
+  harness.hostGuard.assertUnused();
+}
+
+async function installStatusReportApplication(harness) {
+  const [applicationModule, lifecycleModule, clientModule] = await Promise.all([
+    harness.loadModule(MODULE_PATHS.statusReport),
+    harness.loadModule(MODULE_PATHS.lifecycle),
+    harness.loadModule(MODULE_PATHS.platformClient)
+  ]);
+  const dependencies = harness.dependencies();
+  const platformClient = clientModule.createPlatformClient({
+    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+    fetch: dependencies.fetch,
+    FormDataConstructor: dependencies.FormDataConstructor
+  });
+  applicationModule.createStatusReportApplication({
+    ...dependencies,
+    platformClient,
+    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+  }).install();
+  harness.hostGuard.assertUnused();
+}
+
+async function installStudyApplication(harness, overrides = {}) {
+  const [applicationModule, domModule, lifecycleModule, clientModule, sessionModule] =
+    await Promise.all([
+      harness.loadModule(MODULE_PATHS.study),
+      harness.loadModule(MODULE_PATHS.studyDom),
+      harness.loadModule(MODULE_PATHS.lifecycle),
+      harness.loadModule(MODULE_PATHS.platformClient),
+      harness.loadModule(MODULE_PATHS.session)
+    ]);
+  const dependencies = harness.dependencies();
+  const session = sessionModule.createSessionStore(dependencies.sessionStorage);
+  const backendBase = session.read("backendBase");
+  const dom = domModule.createStudyDom(dependencies.document);
+  session.read("legacySessionSeconds");
+  const client = clientModule.createPlatformClient({
+    baseUrl: backendBase,
+    fetch: dependencies.fetch,
+    FormDataConstructor: dependencies.FormDataConstructor
+  });
+  const controller = applicationModule.createStudyApplication({
+    alert: dependencies.alert,
+    client,
+    clock: {
+      createDate: (...argumentsList) => new dependencies.Date(...argumentsList),
+      now: dependencies.now
+    },
+    configureDownloads() {},
+    document: dependencies.document,
+    dom,
+    isMicrosoftEdge: lifecycleModule.isMicrosoftEdge,
+    async loadMedia() {},
+    navigate: dependencies.navigate,
+    navigator: dependencies.navigator,
+    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning,
+    renderCertificate() {},
+    session,
+    timers: {
+      clearInterval: dependencies.clearInterval,
+      setInterval: dependencies.setInterval
+    },
+    window: dependencies.window,
+    ...overrides
+  });
+  controller.install();
+  harness.hostGuard.assertUnused();
+  return controller;
+}
+
+async function installEntryApplication(harness, page) {
+  if (page === "login") return installLoginApplication(harness);
+  if (page === "notices") return installInitialNoticesApplication(harness);
+  if (page === "register") return installRegistrationApplication(harness);
+  if (page === "report") return installStatusReportApplication(harness);
+  if (page === "study") return installStudyApplication(harness);
+  return harness.loadScript(SCRIPT_PATHS[page]);
+}
+
+function readApplicationSource(page) {
+  const sourcePaths = [SCRIPT_PATHS[page]];
+  if (page === "login" || page === "register") {
+    sourcePaths.push(MODULE_PATHS[page], MODULE_PATHS.lifecycle);
+  }
+  if (page === "notices") {
+    sourcePaths.push(MODULE_PATHS.notices, MODULE_PATHS.lifecycle);
+  }
+  if (page === "report") {
+    sourcePaths.push(...STATUS_REPORT_MODULE_PATHS, MODULE_PATHS.lifecycle);
+  }
+  if (page === "study") sourcePaths.push(...STUDY_MODULE_PATHS, MODULE_PATHS.lifecycle);
+  return sourcePaths.map(readPlatformScript).join("\n");
 }
 
 test("[SAFETY-NETWORK] deny-all sentinel blocks fallback channels before scripts run", async () => {
@@ -209,9 +386,9 @@ test("[SAFETY-NETWORK] deny-all sentinel blocks fallback channels before scripts
   assertNoQuery(harness);
 });
 
-test("[ROUTE-03] exact slashless destinations and direct-history ambiguity remain fixed", () => {
+test("[ROUTE-03] exact slashless destinations and direct-history ambiguity remain fixed", async () => {
   const sources = Object.fromEntries(
-    Object.entries(SCRIPT_PATHS).map(([name, relativePath]) => [name, readPlatformScript(relativePath)])
+    Object.keys(SCRIPT_PATHS).map((name) => [name, readApplicationSource(name)])
   );
   const expectedWriters = {
     login: [PATHS.device, PATHS.browser, PATHS.study, PATHS.notices],
@@ -225,7 +402,9 @@ test("[ROUTE-03] exact slashless destinations and direct-history ambiguity remai
     for (const destination of destinations) {
       assert.equal(
         sources[page].includes(`window.location.href = '${destination}'`) ||
-          sources[page].includes(`window.location.href = "${destination}"`),
+          sources[page].includes(`window.location.href = "${destination}"`) ||
+          sources[page].includes(`navigate('${destination}')`) ||
+          sources[page].includes(`navigate("${destination}")`),
         true,
         `${page} must retain ${destination}`
       );
@@ -256,7 +435,7 @@ test("[ROUTE-03] exact slashless destinations and direct-history ambiguity remai
       Usuário_Logado: "Não"
     }
   });
-  login.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(login);
   login.dispatchWindow("load");
   assert.equal(login.history.backCalls, 1);
   assert.equal(login.navigation.length, 0);
@@ -271,7 +450,7 @@ test("[GATE-01] Edge signals gate four entries while report remains ungated", as
       userAgent: "FixtureBrowser",
       userAgentData: { brands: [{ brand: "Not Edge" }] }
     });
-    rejected.loadScript(SCRIPT_PATHS[page]);
+    await installEntryApplication(rejected, page);
     await Promise.all(rejected.dispatchWindow("load"));
     assert.deepEqual(rejected.navigation, [PATHS.browser], page);
 
@@ -279,7 +458,7 @@ test("[GATE-01] Edge signals gate four entries while report remains ungated", as
       storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Não" },
       userAgent: "FixtureBrowser"
     });
-    modernSignal.loadScript(SCRIPT_PATHS[page]);
+    await installEntryApplication(modernSignal, page);
     await Promise.all(modernSignal.dispatchWindow("load"));
     assert.equal(modernSignal.navigation.includes(PATHS.browser), false, page);
 
@@ -288,7 +467,7 @@ test("[GATE-01] Edge signals gate four entries while report remains ungated", as
       userAgent: "FixtureBrowser Edg/fixture",
       userAgentData: { brands: [{ brand: "Not Edge" }] }
     });
-    legacySignal.loadScript(SCRIPT_PATHS[page]);
+    await installEntryApplication(legacySignal, page);
     await Promise.all(legacySignal.dispatchWindow("load"));
     assert.equal(legacySignal.navigation.includes(PATHS.browser), false, page);
 
@@ -297,7 +476,7 @@ test("[GATE-01] Edge signals gate four entries while report remains ungated", as
       userAgent: "FixtureBrowser Edg/fixture"
     });
     delete absentModernSignal.window.navigator.userAgentData;
-    absentModernSignal.loadScript(SCRIPT_PATHS[page]);
+    await installEntryApplication(absentModernSignal, page);
     await Promise.all(absentModernSignal.dispatchWindow("load"));
     assert.equal(absentModernSignal.navigation.includes(PATHS.browser), false, page);
   }
@@ -315,7 +494,7 @@ test("[GATE-01] browser-warning diagnostic preserves missing-userAgentData failu
   );
 });
 
-test("[GATE-02] login, notices, and registration keep inclusive width boundary and listener order", () => {
+test("[GATE-02] login, notices, and registration keep inclusive width boundary and listener order", async () => {
   const pages = ["login", "notices", "register"];
   for (const page of pages) {
     for (const width of [1023, 1024, 1025]) {
@@ -327,7 +506,7 @@ test("[GATE-02] login, notices, and registration keep inclusive width boundary a
           Usuário_Logado: "Não"
         }
       });
-      harness.loadScript(SCRIPT_PATHS[page]);
+      await installEntryApplication(harness, page);
       assert.deepEqual(
         harness.timeline
           .filter(({ type }) => type === "window-listener")
@@ -353,6 +532,95 @@ test("[GATE-02] login, notices, and registration keep inclusive width boundary a
   }
 });
 
+test("login and registration factories preserve initial capture and listener order", async () => {
+  const cases = [
+    {
+      install: installLoginApplication,
+      expected: [
+        { id: "Formulário-Login", type: "dom-get" },
+        { id: "E-mail", type: "dom-get" },
+        { id: "Senha", type: "dom-get" },
+        { id: "Entrar", type: "dom-get" },
+        { id: "Aviso-Inicializando", type: "dom-get" },
+        { id: "Aviso-Email-ou-Senha-Inválidos", type: "dom-get" },
+        { id: "Aviso-Login-Expirado", type: "dom-get" },
+        { id: "Aviso-FaceID-Reprovado", type: "dom-get" },
+        { id: "Container-Auxiliar-FaceID", type: "dom-get" },
+        { event: "resize", type: "window-listener" },
+        { event: "load", type: "window-listener" },
+        { event: "submit", id: "Formulário-Login", type: "element-listener" },
+        { event: "input", id: "E-mail", type: "element-listener" },
+        { event: "input", id: "Senha", type: "element-listener" }
+      ],
+      storage: {}
+    },
+    {
+      install: installRegistrationApplication,
+      expected: [
+        { key: "URL_Base_Backend", type: "storage-get" },
+        { key: "IndexVerificado", type: "storage-get" },
+        { id: "Formulário-Foto-Referência", type: "dom-get" },
+        { id: "Botão-Cadastrar-Foto-Referência", type: "dom-get" },
+        { id: "Aviso-Cadastrando", type: "dom-get" },
+        { id: "Container-Auxiliar-FaceID", type: "dom-get" },
+        { event: "resize", type: "window-listener" },
+        { event: "load", type: "window-listener" },
+        { event: "submit", id: "Formulário-Foto-Referência", type: "element-listener" }
+      ],
+      storage: {
+        IndexVerificado: FIXTURE_HANDLE,
+        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2"
+      }
+    }
+  ];
+
+  for (const scenario of cases) {
+    const harness = createLearningPlatformHarness({ storage: scenario.storage });
+    const dependencies = harness.dependencies();
+    const trace = [];
+    const wrappedElements = new Set();
+    const document = {
+      ...dependencies.document,
+      getElementById(id) {
+        trace.push({ id, type: "dom-get" });
+        const element = dependencies.document.getElementById(id);
+        if (!wrappedElements.has(element)) {
+          wrappedElements.add(element);
+          const addEventListener = element.addEventListener;
+          element.addEventListener = function(event, listener) {
+            trace.push({ event, id, type: "element-listener" });
+            return addEventListener.call(this, event, listener);
+          };
+        }
+        return element;
+      }
+    };
+    const sessionStorage = {
+      getItem(key) {
+        trace.push({ key, type: "storage-get" });
+        return dependencies.sessionStorage.getItem(key);
+      },
+      setItem(key, value) {
+        trace.push({ key, type: "storage-set" });
+        return dependencies.sessionStorage.setItem(key, value);
+      }
+    };
+    const window = {
+      ...dependencies.window,
+      addEventListener(event, listener) {
+        trace.push({ event, type: "window-listener" });
+        return dependencies.window.addEventListener(event, listener);
+      },
+      document,
+      sessionStorage
+    };
+
+    await scenario.install(harness, { document, sessionStorage, window });
+    assert.deepEqual(trace, scenario.expected);
+    harness.hostGuard.assertUnused();
+  }
+});
+
 test("[GATE-02] study installs resize after gates and refreshes after its immediate width decision", async () => {
   for (const width of [1023, 1024, 1025]) {
     const harness = createLearningPlatformHarness({
@@ -368,7 +636,7 @@ test("[GATE-02] study installs resize after gates and refreshes after its immedi
         Usuário_Logado: "Sim"
       }
     });
-    harness.loadScript(SCRIPT_PATHS.study, { rewriteBackend: false });
+    await installStudyApplication(harness);
     assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
     harness.dispatchWindow("load");
     await harness.flush();
@@ -428,11 +696,7 @@ test("[GATE-02] status report checks width before installing its resize listener
       ".Gráficos_Controle_Resultados",
       Array.from({ length: 12 }, (_, index) => harness.element(`fixture-report-graph-${index}`))
     );
-    const reportSource = readPlatformScript(SCRIPT_PATHS.report).replace(
-      /const URL_Base_Backend = "[^"]+";/,
-      `const URL_Base_Backend = "${FIXTURE_ORIGIN}/plataforma_v2";`
-    );
-    vm.runInContext(reportSource, harness.context, { filename: SCRIPT_PATHS.report });
+    await installStatusReportApplication(harness);
     await harness.window.onload();
     await harness.flush(10);
 
@@ -462,21 +726,31 @@ test("[GATE-02] status report checks width before installing its resize listener
   }
 });
 
-test("[STORE-01] exact eight key spellings, readers, writers, and value conventions remain represented", () => {
+test("[STORE-01] exact eight key spellings, readers, writers, and value conventions remain represented", async () => {
+  const harness = createLearningPlatformHarness();
+  const { SESSION_KEYS } = await harness.loadModule(MODULE_PATHS.session);
   const sourcesByPage = Object.fromEntries(
-    Object.entries(SCRIPT_PATHS).map(([page, scriptPath]) => [page, readPlatformScript(scriptPath)])
+    Object.keys(SCRIPT_PATHS).map((page) => [page, readApplicationSource(page)])
   );
-  const sources = Object.values(sourcesByPage);
-  const keyCalls = [];
-  const pattern = /sessionStorage\.(getItem|setItem)\(\s*['"]([^'"]+)['"]/g;
-  for (const source of sources) {
-    for (const match of source.matchAll(pattern)) {
-      keyCalls.push({ key: match[2], method: match[1] });
+  const callsByPage = Object.fromEntries(Object.keys(sourcesByPage).map((page) => [page, []]));
+  const directPattern = /sessionStorage\.(getItem|setItem)\(\s*['"]([^'"]+)['"]/g;
+  const seamPattern = /\bsession\.(read|write)\(\s*['"]([^'"]+)['"]/g;
+
+  for (const [page, source] of Object.entries(sourcesByPage)) {
+    for (const match of source.matchAll(directPattern)) {
+      callsByPage[page].push({ key: match[2], method: match[1] });
+    }
+    for (const match of source.matchAll(seamPattern)) {
+      assert.ok(SESSION_KEYS[match[2]], `Unknown session-key alias: ${match[2]}`);
+      callsByPage[page].push({
+        key: SESSION_KEYS[match[2]],
+        method: match[1] === "read" ? "getItem" : "setItem"
+      });
     }
   }
 
-  const inventory = [...new Set(keyCalls.map(({ key }) => key))].sort();
-  assert.deepEqual(inventory, [
+  const keyCalls = Object.values(callsByPage).flat();
+  assert.deepEqual(Object.values(SESSION_KEYS).sort(), [
     "Horário-Encerramento-Sessão",
     "IndexVerificado",
     "Origem_Aviso_Dispositivo",
@@ -486,14 +760,21 @@ test("[STORE-01] exact eight key spellings, readers, writers, and value conventi
     "Usuário_Foto_Cadastrada",
     "Usuário_Logado"
   ].sort());
+  assert.deepEqual(
+    [...new Set(keyCalls.map(({ key }) => key))].sort(),
+    Object.values(SESSION_KEYS).sort()
+  );
 
   assert.deepEqual(
     [...new Set(keyCalls.filter(({ key }) => key === "TempoSessão_Segundos").map(({ method }) => method))],
     ["getItem"]
   );
-  const combined = sources.join("\n");
-  assert.equal(/sessionStorage\.(?:removeItem|clear)\s*\(/.test(combined), false);
-  assert.equal(combined.includes("Date.now() + (14400 * 1000)"), true);
+  const combined = [
+    ...Object.values(sourcesByPage),
+    readPlatformScript(MODULE_PATHS.session)
+  ].join("\n");
+  assert.equal(/(?:sessionStorage|storage)\.(?:removeItem|clear)\s*\(/.test(combined), false);
+  assert.equal(combined.includes("clock.now() + (14400 * 1000)"), true);
   for (const value of ["Sim", "Não"]) assert.equal(combined.includes(`'${value}'`), true);
 
   const expectedReaders = {
@@ -518,8 +799,8 @@ test("[STORE-01] exact eight key spellings, readers, writers, and value conventi
   };
   for (const [key, pages] of Object.entries(expectedReaders)) {
     assert.deepEqual(
-      Object.entries(sourcesByPage)
-        .filter(([, source]) => source.includes(`getItem('${key}')`))
+      Object.entries(callsByPage)
+        .filter(([, calls]) => calls.some((call) => call.key === key && call.method === "getItem"))
         .map(([page]) => page)
         .sort(),
       [...pages].sort(),
@@ -528,14 +809,15 @@ test("[STORE-01] exact eight key spellings, readers, writers, and value conventi
   }
   for (const [key, pages] of Object.entries(expectedWriters)) {
     assert.deepEqual(
-      Object.entries(sourcesByPage)
-        .filter(([, source]) => source.includes(`setItem('${key}'`))
+      Object.entries(callsByPage)
+        .filter(([, calls]) => calls.some((call) => call.key === key && call.method === "setItem"))
         .map(([page]) => page)
         .sort(),
       [...pages].sort(),
       `Writers must remain exact for ${key}`
     );
   }
+  harness.hostGuard.assertUnused();
 });
 
 test("[STORE-02] refresh preserves stored deadline and handle while logout changes only the login flag", async () => {
@@ -560,7 +842,7 @@ test("[STORE-02] refresh preserves stored deadline and handle while logout chang
       Usuário_Logado: "Sim"
     }
   });
-  harness.loadScript(SCRIPT_PATHS.study, { rewriteBackend: false });
+  await installStudyApplication(harness);
   harness.dispatchWindow("load");
   await harness.flush(20);
 
@@ -603,7 +885,7 @@ test("[API-01] login posts untrimmed credentials and preserves active and inacti
       response: { data: loginResponse({ Usuário_Status_FaceID: "Inativo" }) }
     }]
   });
-  active.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(active);
   active.element("E-mail").value = expectedLogin;
   active.element("Senha").value = expectedPassword;
   submit(active.element("Formulário-Login"));
@@ -644,7 +926,7 @@ test("[API-01] login posts untrimmed credentials and preserves active and inacti
       }
     }]
   });
-  inactive.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(inactive);
   submit(inactive.element("Formulário-Login"));
   await inactive.flush(20);
   assert.equal(inactive.sessionStorage.getItem("IndexVerificado"), "undefined");
@@ -669,7 +951,7 @@ test("[API-01] login preserves invalid-credential, workbook, generic, and unexpe
         response: { data: fixture.data, status: fixture.status }
       }]
     });
-    harness.loadScript(SCRIPT_PATHS.login);
+    await installLoginApplication(harness);
     submit(harness.element("Formulário-Login"));
     await harness.flush(20);
     if (fixture.expectedInline) {
@@ -688,7 +970,7 @@ test("[API-01] login preserves invalid-credential, workbook, generic, and unexpe
       path: "/plataforma_v2/login-FaceID"
     }]
   });
-  networkFailure.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(networkFailure);
   submit(networkFailure.element("Formulário-Login"));
   await networkFailure.flush(20);
   assertOnlyErrorCode(networkFailure.alerts, "Erro_000");
@@ -705,7 +987,7 @@ test("[API-01] login preserves invalid-credential, workbook, generic, and unexpe
       }
     }]
   });
-  unexpected.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(unexpected);
   submit(unexpected.element("Formulário-Login"));
   await unexpected.flush(20);
   assert.equal(unexpected.navigation.length, 0);
@@ -743,10 +1025,33 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
     }
   });
   success.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
-  success.loadScript(SCRIPT_PATHS.register, { rewriteBackend: false });
+  await installRegistrationApplication(success);
   submit(success.element("Formulário-Foto-Referência"));
   await success.flush(30);
 
+  assert.deepEqual(
+    success.timeline.filter(({ type }) => [
+      "storage-get", "fetch", "storage-set", "append", "face-start", "navigate"
+    ].includes(type)),
+    [
+      { key: "URL_Base_Backend", type: "storage-get" },
+      { key: "IndexVerificado", type: "storage-get" },
+      { method: "POST", path: "/plataforma_v2/CadastroFoto_e_FaceID", type: "fetch" },
+      { key: "Usuário_Autorização_Cadastro", type: "storage-set" },
+      { tagName: "AZURE-AI-VISION-FACE-UI", type: "append" },
+      { tokenPresent: true, type: "face-start" },
+      { method: "GET", path: "/plataforma_v2/FaceID_resultado/:sessionId", type: "fetch" },
+      { key: "Usuário_Logado", type: "storage-set" },
+      { path: PATHS.study, type: "navigate" }
+    ]
+  );
+  const registrationFaceElement = success.element("Container-Auxiliar-FaceID").children[0];
+  assert.equal(registrationFaceElement.locale, "pt-BR");
+  assert.equal(registrationFaceElement.fontSize, "18px");
+  assert.equal(
+    registrationFaceElement.buttonStyles,
+    "margin-top: 10px; height: 40px; width: 110px; font-size: 16px; border-radius: 20px; box-shadow: 0px 0px 8px #4a0816; border: 0px; cursor: pointer;"
+  );
   assert.deepEqual(success.guard.requests[0], {
     body: undefined,
     formFields: [
@@ -778,7 +1083,7 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
       }
     });
     failure.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
-    failure.loadScript(SCRIPT_PATHS.register, { rewriteBackend: false });
+    await installRegistrationApplication(failure);
     submit(failure.element("Formulário-Foto-Referência"));
     await failure.flush(20);
     assertOnlyErrorCode(failure.alerts, code);
@@ -835,7 +1140,7 @@ test("[FLOW-01] registration post-success Face failures keep authorization clear
       }
     });
     harness.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
-    harness.loadScript(SCRIPT_PATHS.register, { rewriteBackend: false });
+    await installRegistrationApplication(harness);
     submit(harness.element("Formulário-Foto-Referência"));
     await harness.flush(30);
 
@@ -901,7 +1206,7 @@ test("[API-01] registration result consumer keeps decision, generic, header, and
       }
     });
     harness.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
-    harness.loadScript(SCRIPT_PATHS.register, { rewriteBackend: false });
+    await installRegistrationApplication(harness);
     submit(harness.element("Formulário-Foto-Referência"));
     await harness.flush(30);
 
@@ -957,10 +1262,30 @@ test("[API-02] Face verification creates a protected session then performs exact
       }
     ]
   });
-  harness.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(harness);
   submit(harness.element("Formulário-Login"));
   await harness.flush(30);
 
+  assert.deepEqual(
+    harness.timeline.filter(({ type }) => [
+      "fetch", "storage-set", "append", "face-start", "navigate"
+    ].includes(type)),
+    [
+      { method: "POST", path: "/plataforma_v2/login-FaceID", type: "fetch" },
+      { key: "IndexVerificado", type: "storage-set" },
+      { key: "Usuário_Foto_Cadastrada", type: "storage-set" },
+      { key: "Horário-Encerramento-Sessão", type: "storage-set" },
+      { method: "POST", path: "/plataforma_v2/FaceID", type: "fetch" },
+      { tagName: "AZURE-AI-VISION-FACE-UI", type: "append" },
+      { tokenPresent: true, type: "face-start" },
+      { method: "GET", path: "/plataforma_v2/FaceID_resultado/:sessionId", type: "fetch" },
+      { key: "Usuário_Logado", type: "storage-set" },
+      { path: PATHS.study, type: "navigate" }
+    ]
+  );
+  const loginFaceElement = harness.element("Container-Auxiliar-FaceID").children[0];
+  assert.equal(loginFaceElement.locale, "pt-BR");
+  assert.equal(loginFaceElement.fontSize, "18px");
   assert.deepEqual(harness.guard.requests.map(({ method, path }) => ({ method, path })), [
     { method: "POST", path: "/plataforma_v2/login-FaceID" },
     { method: "POST", path: "/plataforma_v2/FaceID" },
@@ -1028,7 +1353,7 @@ test("[API-02] Face decision, SDK rejection, and result error branches remain si
         }
       ]
     });
-    harness.loadScript(SCRIPT_PATHS.login);
+    await installLoginApplication(harness);
     submit(harness.element("Formulário-Login"));
     await harness.flush(30);
 
@@ -1063,7 +1388,7 @@ test("[API-02] Face start and result retain exact specific and generic mappings"
         }
       ]
     });
-    harness.loadScript(SCRIPT_PATHS.login);
+    await installLoginApplication(harness);
     submit(harness.element("Formulário-Login"));
     await harness.flush(20);
     assertOnlyErrorCode(harness.alerts, code);
@@ -1086,7 +1411,7 @@ test("[API-02] Face start and result retain exact specific and generic mappings"
       }
     ]
   });
-  result401.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(result401);
   submit(result401.element("Formulário-Login"));
   await result401.flush(30);
   assertOnlyErrorCode(result401.alerts, "Erro_000");
@@ -1115,7 +1440,7 @@ test("[API-02] a backend-retry-visible Face result delay remains one client GET 
       }
     ]
   });
-  harness.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(harness);
   submit(harness.element("Formulário-Login"));
   await harness.flush(20);
   assert.equal(harness.guard.requests.filter(({ path }) => path.endsWith(":sessionId")).length, 1);
@@ -1146,7 +1471,7 @@ test("[API-03] refresh carries the stored handle and keeps the separate client d
       Usuário_Logado: "Sim"
     }
   });
-  harness.loadScript(SCRIPT_PATHS.study, { rewriteBackend: false });
+  await installStudyApplication(harness);
   harness.dispatchWindow("load");
   await harness.flush(20);
 
@@ -1176,7 +1501,26 @@ async function runProgressUpdate(response) {
     }],
     storage: { URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2" }
   });
-  harness.loadScript(SCRIPT_PATHS.study, { rewriteBackend: false });
+  const [progressModule, clientModule] = await Promise.all([
+    harness.loadModule(MODULE_PATHS.studyProgress),
+    harness.loadModule(MODULE_PATHS.platformClient)
+  ]);
+  const dependencies = harness.dependencies();
+  const client = clientModule.createPlatformClient({
+    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+    fetch: dependencies.fetch,
+    FormDataConstructor: dependencies.FormDataConstructor
+  });
+  const state = { completedTopics: 4, verifiedIndex: FIXTURE_HANDLE };
+  const progress = progressModule.createStudyProgress({
+    alert: dependencies.alert,
+    client,
+    document: dependencies.document,
+    dom: { footer: harness.element("Faixa-Inferior") },
+    navigation: { updateMetrics() {} },
+    openTopic() {},
+    state
+  });
   const current = harness.element("synthetic-current-topic");
   current.dataIndex = 1;
   current.querySelector(".Símbolo-Check-Aberto");
@@ -1184,24 +1528,11 @@ async function runProgressUpdate(response) {
   next.dataIndex = 2;
   next.querySelector(".Símbolo-Check-Fechado");
   harness.selectorResults.set('[data-index="2"]', next);
-  vm.runInContext(
-    `IndexVerificado = ${JSON.stringify(FIXTURE_HANDLE)};\n` +
-      "Usuário_Formação_NúmeroTópicosConcluídos = 4;\n" +
-      "AtualizaMétricasAvançoFormação = function() {};\n" +
-      "AbreTópico = function() {};",
-    harness.context
-  );
-  harness.context.__currentTopic = current;
-  vm.runInContext("Completar_e_Continuar_Tópico(__currentTopic)", harness.context);
-  const optimisticValue = vm.runInContext(
-    "Usuário_Formação_NúmeroTópicosConcluídos",
-    harness.context
-  );
+  progress.completeTopic(current);
+  const optimisticValue = state.completedTopics;
   await harness.flush(20);
-  const settledValue = vm.runInContext(
-    "Usuário_Formação_NúmeroTópicosConcluídos",
-    harness.context
-  );
+  const settledValue = state.completedTopics;
+  harness.hostGuard.assertUnused();
   return { harness, optimisticValue, settledValue };
 }
 
@@ -1255,7 +1586,7 @@ test("[ERROR-01] protected synthetic 401 responses remain generic Erro_000 outco
       }
     ]
   });
-  faceStart.loadScript(SCRIPT_PATHS.login);
+  await installLoginApplication(faceStart);
   submit(faceStart.element("Formulário-Login"));
   await faceStart.flush(20);
   assertExpectationFlags(faceStart, { handleExact: true });
@@ -1279,7 +1610,7 @@ test("[ERROR-01] protected synthetic 401 responses remain generic Erro_000 outco
     }
   });
   registration.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
-  registration.loadScript(SCRIPT_PATHS.register, { rewriteBackend: false });
+  await installRegistrationApplication(registration);
   submit(registration.element("Formulário-Foto-Referência"));
   await registration.flush(20);
   assertExpectationFlags(registration, { handleExact: true });
@@ -1303,7 +1634,7 @@ test("[ERROR-01] protected synthetic 401 responses remain generic Erro_000 outco
       Usuário_Logado: "Sim"
     }
   });
-  refresh.loadScript(SCRIPT_PATHS.study, { rewriteBackend: false });
+  await installStudyApplication(refresh);
   refresh.dispatchWindow("load");
   await refresh.flush(20);
   assertExpectationFlags(refresh, { handleExact: true });
@@ -1334,7 +1665,7 @@ test("[FLOW-01] credential, first-access, notice, and Face branches preserve sto
         response: { data: scenario.response }
       }]
     });
-    harness.loadScript(SCRIPT_PATHS.login);
+    await installLoginApplication(harness);
     submit(harness.element("Formulário-Login"));
     await harness.flush(20);
     assert.equal(harness.navigation.at(-1), scenario.expectedPath);
@@ -1346,7 +1677,7 @@ test("[FLOW-01] credential, first-access, notice, and Face branches preserve sto
   const notices = createLearningPlatformHarness({
     storage: { Usuário_Autorização_Cadastro: "Sim" }
   });
-  notices.loadScript(SCRIPT_PATHS.notices);
+  await installInitialNoticesApplication(notices);
   notices.element("Palavra-Passe-Credenciais").value = "credenciais";
   notices.element("Palavra-Passe-Direitos").value = "direitos";
   notices.element("Palavra-Passe-Janela").value = "janela";
@@ -1356,7 +1687,7 @@ test("[FLOW-01] credential, first-access, notice, and Face branches preserve sto
   const wrongNotices = createLearningPlatformHarness({
     storage: { Usuário_Autorização_Cadastro: "Sim" }
   });
-  wrongNotices.loadScript(SCRIPT_PATHS.notices);
+  await installInitialNoticesApplication(wrongNotices);
   wrongNotices.element("Palavra-Passe-Credenciais").value = " credenciais";
   wrongNotices.element("Palavra-Passe-Direitos").value = "direitos";
   wrongNotices.element("Palavra-Passe-Janela").value = "janela";
@@ -1368,7 +1699,7 @@ test("[FLOW-01] credential, first-access, notice, and Face branches preserve sto
     const unauthorized = createLearningPlatformHarness({
       storage: { Usuário_Autorização_Cadastro: "Não" }
     });
-    unauthorized.loadScript(SCRIPT_PATHS[page]);
+    await installEntryApplication(unauthorized, page);
     unauthorized.dispatchWindow("load");
     assert.equal(unauthorized.navigation.at(-1), PATHS.login);
   }
@@ -1400,10 +1731,23 @@ test("[FLOW-01] registration clears authorization before local Face resolution",
     }
   });
   harness.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
-  harness.loadScript(SCRIPT_PATHS.register, { rewriteBackend: false });
+  await installRegistrationApplication(harness);
   submit(harness.element("Formulário-Foto-Referência"));
   await harness.flush(20);
 
+  assert.deepEqual(
+    harness.timeline.filter(({ type }) => [
+      "storage-get", "fetch", "storage-set", "append", "face-start"
+    ].includes(type)),
+    [
+      { key: "URL_Base_Backend", type: "storage-get" },
+      { key: "IndexVerificado", type: "storage-get" },
+      { method: "POST", path: "/plataforma_v2/CadastroFoto_e_FaceID", type: "fetch" },
+      { key: "Usuário_Autorização_Cadastro", type: "storage-set" },
+      { tagName: "AZURE-AI-VISION-FACE-UI", type: "append" },
+      { tokenPresent: true, type: "face-start" }
+    ]
+  );
   assert.equal(harness.sessionStorage.getItem("Usuário_Autorização_Cadastro"), "Não");
   assert.equal(harness.guard.requests.length, 1);
   assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), null);

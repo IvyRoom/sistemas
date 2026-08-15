@@ -66,11 +66,11 @@ function sensitiveSourceLiterals() {
     "utf8"
   );
   const bypassCondition = studySource.match(
-    /if \(Usuário_NomeCompleto === ([\s\S]*?)\) \{ DRM_Ativo = false \}/
+    /function isDrmEnabled\(fullName\) \{[\s\S]*?if \(([\s\S]*?)\) \{ drmEnabled = false \} else \{ drmEnabled = true \};[\s\S]*?\}/
   );
   assert.ok(bypassCondition, "The five-person bypass branch must remain discoverable");
   const participantNames = Array.from(
-    bypassCondition[1].matchAll(/'([^']+)'/g),
+    bypassCondition[1].matchAll(/fullName === '([^']+)'/g),
     ([, value]) => value
   );
   assert.equal(participantNames.length, 5, "The bypass branch must retain five entries");

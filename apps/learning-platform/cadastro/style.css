@@ -127,3 +127,7 @@
     align-items: center;
     justify-content: center;
 }
+
+#face-liveness-loading .loading-dot {
+    background: #4a0816;
+}

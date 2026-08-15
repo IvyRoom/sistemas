@@ -2,17 +2,316 @@
 
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const { registerHooks } = require("node:module");
 const path = require("node:path");
+const { fileURLToPath, pathToFileURL } = require("node:url");
 const vm = require("node:vm");
 
 const REPOSITORY_ROOT = path.join(__dirname, "..", "..", "..");
+const PLATFORM_MODULE_ROOT = path.join(
+  REPOSITORY_ROOT,
+  "apps",
+  "learning-platform",
+  "modules"
+);
+const PLATFORM_MODULE_ROOT_REAL_PATH = fs.realpathSync(PLATFORM_MODULE_ROOT);
 const FIXTURE_ORIGIN = "https:" + "//learning-platform.test";
+const CLASSIC_SCRIPT_PATHS = new Set([
+  "apps/learning-platform/aviso-dispositivo/main.js",
+  "apps/learning-platform/aviso-navegador/main.js"
+]);
+
+let platformModuleHooksRegistered = false;
+let hostNetworkGuard;
 
 class NetworkGuardError extends Error {
   constructor(channel) {
     super(`Blocked ${channel} network access`);
     this.name = "NetworkGuardError";
   }
+}
+
+function platformModulePathFromUrl(url) {
+  if (typeof url !== "string" || !url.startsWith("file:")) return null;
+
+  let filePath;
+  try {
+    filePath = fs.realpathSync(fileURLToPath(url));
+  } catch {
+    return null;
+  }
+  const relativePath = path.relative(PLATFORM_MODULE_ROOT_REAL_PATH, filePath);
+  if (
+    relativePath === "" ||
+    relativePath.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativePath) ||
+    path.extname(relativePath) !== ".js"
+  ) {
+    return null;
+  }
+  return filePath;
+}
+
+function registerPlatformModuleHooks() {
+  if (platformModuleHooksRegistered) return;
+
+  registerHooks({
+    load(url, context, nextLoad) {
+      const modulePath = platformModulePathFromUrl(url);
+      if (!modulePath) return nextLoad(url, context);
+      return {
+        format: "module",
+        shortCircuit: true,
+        source: fs.readFileSync(modulePath, "utf8")
+      };
+    },
+    resolve(specifier, context, nextResolve) {
+      const resolution = nextResolve(specifier, context);
+      if (
+        platformModulePathFromUrl(context.parentURL) &&
+        !platformModulePathFromUrl(resolution.url)
+      ) {
+        throw new Error(
+          "Learning-platform test modules may import only application-owned modules"
+        );
+      }
+      return resolution;
+    }
+  });
+  platformModuleHooksRegistered = true;
+}
+
+function installHostNetworkGuard() {
+  if (hostNetworkGuard) return hostNetworkGuard;
+
+  const attempts = [];
+  function blocked(channel) {
+    attempts.push({ channel });
+    throw new NetworkGuardError(channel);
+  }
+
+  class GuardedHostXMLHttpRequest {
+    open() {}
+
+    send() {
+      blocked("host XMLHttpRequest");
+    }
+  }
+
+  class GuardedHostWebSocket {
+    constructor() {
+      blocked("host WebSocket");
+    }
+  }
+
+  class GuardedHostEventSource {
+    constructor() {
+      blocked("host EventSource");
+    }
+  }
+
+  class GuardedHostWorker {
+    constructor() {
+      blocked("host Worker");
+    }
+  }
+
+  class GuardedHostSharedWorker {
+    constructor() {
+      blocked("host SharedWorker");
+    }
+  }
+
+  class GuardedHostImage {
+    constructor() {
+      blocked("host image");
+    }
+  }
+
+  class GuardedHostAudio {
+    constructor() {
+      blocked("host media");
+    }
+  }
+
+  class GuardedHostBroadcastChannel {
+    constructor() {
+      blocked("host BroadcastChannel");
+    }
+  }
+
+  class GuardedHostFormData {
+    constructor() {
+      blocked("host FormData");
+    }
+  }
+
+  const guardedHostDocument = new Proxy(Object.create(null), {
+    get(_target, property) {
+      if (property === Symbol.toStringTag) return "Document";
+      blocked("host document");
+    },
+    set() {
+      blocked("host document");
+    }
+  });
+
+  const guardedHostStorage = Object.freeze({
+    clear() {
+      blocked("host storage");
+    },
+    get length() {
+      blocked("host storage");
+    },
+    getItem() {
+      blocked("host storage");
+    },
+    key() {
+      blocked("host storage");
+    },
+    removeItem() {
+      blocked("host storage");
+    },
+    setItem() {
+      blocked("host storage");
+    }
+  });
+
+  const guardedHostLocation = Object.freeze({
+    assign() {
+      blocked("host navigation");
+    },
+    get href() {
+      blocked("host navigation");
+    },
+    reload() {
+      blocked("host navigation");
+    },
+    replace() {
+      blocked("host navigation");
+    }
+  });
+
+  const guardedHostHistory = Object.freeze({
+    back() {
+      blocked("host history");
+    },
+    forward() {
+      blocked("host history");
+    },
+    go() {
+      blocked("host history");
+    },
+    pushState() {
+      blocked("host history");
+    },
+    replaceState() {
+      blocked("host history");
+    }
+  });
+
+  const guardedHostCustomElements = Object.freeze({
+    define() {
+      blocked("host Face custom elements");
+    },
+    get() {
+      blocked("host Face custom elements");
+    },
+    upgrade() {
+      blocked("host Face custom elements");
+    },
+    whenDefined() {
+      blocked("host Face custom elements");
+    }
+  });
+
+  const replacements = {
+    Audio: GuardedHostAudio,
+    BroadcastChannel: GuardedHostBroadcastChannel,
+    EventSource: GuardedHostEventSource,
+    FormData: GuardedHostFormData,
+    Image: GuardedHostImage,
+    SharedWorker: GuardedHostSharedWorker,
+    WebSocket: GuardedHostWebSocket,
+    Worker: GuardedHostWorker,
+    XMLHttpRequest: GuardedHostXMLHttpRequest,
+    customElements: guardedHostCustomElements,
+    document: guardedHostDocument,
+    fetch() {
+      blocked("host fetch");
+    },
+    history: guardedHostHistory,
+    localStorage: guardedHostStorage,
+    location: guardedHostLocation,
+    open() {
+      blocked("host window.open");
+    },
+    sessionStorage: guardedHostStorage
+  };
+  for (const [name, value] of Object.entries(replacements)) {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
+    if (descriptor && descriptor.configurable === false && descriptor.writable === false) {
+      throw new Error(`Unable to install the host ${name} network sentinel`);
+    }
+    Object.defineProperty(globalThis, name, {
+      configurable: true,
+      value,
+      writable: false
+    });
+  }
+
+  const hostNavigator = globalThis.navigator;
+  if (hostNavigator && typeof hostNavigator === "object") {
+    for (const [name, value] of Object.entries({
+      sendBeacon() {
+        blocked("host sendBeacon");
+      },
+      serviceWorker: new Proxy(Object.create(null), {
+        get() {
+          blocked("host service worker");
+        }
+      })
+    })) {
+      const descriptor = Object.getOwnPropertyDescriptor(hostNavigator, name);
+      if (descriptor && descriptor.configurable === false && descriptor.writable === false) {
+        throw new Error(`Unable to install the host navigator.${name} network sentinel`);
+      }
+      Object.defineProperty(hostNavigator, name, {
+        configurable: true,
+        value,
+        writable: false
+      });
+    }
+  }
+
+  hostNetworkGuard = {
+    assertUnused() {
+      assert.deepEqual(attempts, [], "Application modules must not use host network globals");
+    },
+    attempts,
+    reset() {
+      attempts.length = 0;
+    }
+  };
+  return hostNetworkGuard;
+}
+
+async function loadPlatformModule(relativePath) {
+  assert.match(
+    relativePath,
+    /^apps[\\/]learning-platform[\\/]modules[\\/].+\.js$/,
+    "Only application-owned learning-platform modules can use the ESM test loader"
+  );
+  const modulePath = path.resolve(REPOSITORY_ROOT, relativePath);
+  assert.ok(
+    platformModulePathFromUrl(pathToFileURL(modulePath).href),
+    "The requested module must remain beneath the learning-platform module root"
+  );
+  assert.equal(fs.statSync(modulePath).isFile(), true, "The requested module must exist");
+
+  installHostNetworkGuard();
+  registerPlatformModuleHooks();
+  return import(pathToFileURL(modulePath).href);
 }
 
 function sanitizePathname(pathname) {
@@ -32,6 +331,21 @@ function sanitizeNavigationTarget(target) {
   } catch {
     return "<invalid-navigation>";
   }
+}
+
+function isLocalPlatformTarget(target) {
+  let url;
+  try {
+    url = new URL(String(target), FIXTURE_ORIGIN);
+  } catch {
+    return false;
+  }
+  return url.origin === FIXTURE_ORIGIN &&
+    url.username === "" &&
+    url.password === "" &&
+    (url.pathname === "/plataforma" || url.pathname.startsWith("/plataforma/")) &&
+    url.search === "" &&
+    url.hash === "";
 }
 
 function sanitizeBody(body) {
@@ -390,45 +704,39 @@ function createElementFactory({ faceStartImplementation, guard, timeline }) {
       };
     }
 
-    const resourceTags = new Set(["audio", "embed", "iframe", "img", "object", "script", "source", "track", "video"]);
-    if (resourceTags.has(normalizedTagName)) {
-      Object.defineProperty(element, "src", {
+    for (const property of [
+      "action", "background", "data", "formAction", "ping", "poster", "src", "srcdoc",
+      "srcObject", "srcset"
+    ]) {
+      Object.defineProperty(element, property, {
         get() {
           return "";
         },
         set(target) {
-          guard.block(`${normalizedTagName} resource`, target);
+          guard.block(`${normalizedTagName} ${property} resource`, target);
         }
       });
-      for (const property of ["poster", "srcObject", "srcset"]) {
-        Object.defineProperty(element, property, {
-          set(target) {
-            guard.block(`${normalizedTagName} ${property}`, target);
-          }
-        });
-      }
     }
 
-    if (["a", "link"].includes(normalizedTagName)) {
-      Object.defineProperty(element, "href", {
-        get() {
-          return "";
-        },
-        set(target) {
+    Object.defineProperty(element, "href", {
+      get() {
+        return attributes.get("href") ?? "";
+      },
+      set(target) {
+        if (
+          normalizedTagName === "link" ||
+          !isLocalPlatformTarget(target)
+        ) {
           guard.block("link resource", target);
         }
-      });
-    }
+        attributes.set("href", String(target));
+      }
+    });
 
     if (normalizedTagName === "form") {
       for (const method of ["requestSubmit", "submit"]) {
         element[method] = () => guard.block(`form ${method}`, element.getAttribute("action"));
       }
-      Object.defineProperty(element, "action", {
-        set(target) {
-          guard.block("form action", target);
-        }
-      });
     }
 
     return element;
@@ -455,6 +763,7 @@ function createLearningPlatformHarness({
   let nextTimerId = 1;
   let currentNow = now;
 
+  const hostGuard = installHostNetworkGuard();
   const guard = createDenyAllNetworkGuard({ routes, timeline });
   const sessionStorage = createStorage(storage, timeline);
   const createElement = createElementFactory({ faceStartImplementation, guard, timeline });
@@ -490,6 +799,9 @@ function createLearningPlatformHarness({
       return href;
     },
     set(value) {
+      if (!isLocalPlatformTarget(value)) {
+        guard.block("navigation", value);
+      }
       href = String(value);
       const recordedTarget = sanitizeNavigationTarget(value);
       navigation.push(recordedTarget);
@@ -634,15 +946,13 @@ function createLearningPlatformHarness({
 
   const context = vm.createContext(sandbox);
 
-  function loadScript(relativePath, { rewriteBackend = true, stripImports = true } = {}) {
-    let source = fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), "utf8");
-    if (stripImports) source = source.replace(/^\s*import\s+["'][^"']+["'];?\s*$/gm, "");
-    if (rewriteBackend) {
-      source = source.replace(
-        /sessionStorage\.setItem\('URL_Base_Backend',\s*'[^']+'\)/,
-        `sessionStorage.setItem('URL_Base_Backend', '${FIXTURE_ORIGIN}/plataforma_v2')`
-      );
-    }
+  function loadScript(relativePath) {
+    assert.equal(
+      CLASSIC_SCRIPT_PATHS.has(relativePath),
+      true,
+      "Only unchanged classic warning scripts can use the VM script loader"
+    );
+    const source = fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), "utf8");
     vm.runInContext(source, context, { filename: relativePath });
     return source;
   }
@@ -657,6 +967,42 @@ function createLearningPlatformHarness({
     for (let index = 0; index < turns; index += 1) await Promise.resolve();
   }
 
+  function dependencies(overrides = {}) {
+    return {
+      Date: FixtureDate,
+      FormData: FixtureFormData,
+      FormDataConstructor: FixtureFormData,
+      URLSearchParamsConstructor: URLSearchParams,
+      alert(message) {
+        alerts.push(String(message));
+      },
+      clearInterval: window.clearInterval,
+      clearTimeout: window.clearTimeout,
+      createFaceElement() {
+        return document.createElement("azure-ai-vision-face-ui");
+      },
+      document,
+      fetch: guard.fetch,
+      history,
+      location,
+      navigate(target) {
+        location.href = target;
+      },
+      navigator: window.navigator,
+      now() {
+        return currentNow;
+      },
+      sessionStorage,
+      setInterval: window.setInterval,
+      setTimeout: window.setTimeout,
+      showAlert(message) {
+        alerts.push(String(message));
+      },
+      window,
+      ...overrides
+    };
+  }
+
   return {
     advanceClock(milliseconds) {
       currentNow += milliseconds;
@@ -666,6 +1012,7 @@ function createLearningPlatformHarness({
     classResults,
     consoleCalls,
     context,
+    dependencies,
     dispatchWindow,
     document,
     element,
@@ -673,6 +1020,10 @@ function createLearningPlatformHarness({
     flush,
     guard,
     history,
+    hostGuard,
+    async loadModule(relativePath) {
+      return loadPlatformModule(relativePath);
+    },
     loadScript,
     navigation,
     now,
@@ -704,6 +1055,8 @@ module.exports = {
   NetworkGuardError,
   createDenyAllNetworkGuard,
   createLearningPlatformHarness,
+  installHostNetworkGuard,
+  loadPlatformModule,
   readPlatformScript,
   sanitizePathname
 };
