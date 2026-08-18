@@ -4,21 +4,97 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
-const vm = require("node:vm");
 
 const {
   FIXTURE_ORIGIN,
   createLearningPlatformHarness,
+  loadPlatformModule,
   readPlatformScript
 } = require("./helpers/learning-platform-harness.js");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
-const studySource = readPlatformScript("apps/learning-platform/estudo/main.js");
+const studyMainSource = readPlatformScript("apps/learning-platform/estudo/main.js");
+const studyModulePaths = [
+  "application.js",
+  "assessment.js",
+  "certificate-renderer.js",
+  "certificate.js",
+  "content.js",
+  "dom.js",
+  "downloads.js",
+  "feedback.js",
+  "navigation.js",
+  "performance.js",
+  "player.js",
+  "progress.js",
+  "session-timer.js",
+  "state.js"
+].map((fileName) => `apps/learning-platform/modules/study/${fileName}`);
+// Source-frozen assertions intentionally compose the public edge and every
+// application-owned responsibility module that now implements study behavior.
+const studySource = [studyMainSource, ...studyModulePaths.map(readPlatformScript)].join("\n");
 const studyHtml = fs.readFileSync(
   path.join(repositoryRoot, "apps", "learning-platform", "estudo", "index.html"),
   "utf8"
 );
-const reportSource = readPlatformScript("apps/learning-platform/statusreport/main.js");
+const reportModulePaths = [
+  "apps/learning-platform/modules/status-report/application.js",
+  "apps/learning-platform/modules/status-report/charts.js",
+  "apps/learning-platform/modules/status-report/query.js"
+];
+// Report source assertions use the same explicit production source graph.
+const reportSource = [
+  readPlatformScript("apps/learning-platform/statusreport/main.js"),
+  ...reportModulePaths.map(readPlatformScript)
+].join("\n");
+
+let createCertificateRenderer;
+let createDownloadConfigurator;
+let createPlatformClient;
+let createSessionStore;
+let createStatusReportApplication;
+let createStudyApplication;
+let createStudyDom;
+let createStudyPlayer;
+let redirectToDeviceWarning;
+let studyModuleTopicCounts;
+
+test.before(async () => {
+  const [
+    sessionModule,
+    clientModule,
+    lifecycleModule,
+    applicationModule,
+    domModule,
+    downloadsModule,
+    playerModule,
+    certificateRendererModule,
+    stateModule,
+    reportApplicationModule
+  ] = await Promise.all([
+    loadPlatformModule("apps/learning-platform/modules/session.js"),
+    loadPlatformModule("apps/learning-platform/modules/platform-client.js"),
+    loadPlatformModule("apps/learning-platform/modules/lifecycle.js"),
+    loadPlatformModule("apps/learning-platform/modules/study/application.js"),
+    loadPlatformModule("apps/learning-platform/modules/study/dom.js"),
+    loadPlatformModule("apps/learning-platform/modules/study/downloads.js"),
+    loadPlatformModule("apps/learning-platform/modules/study/player.js"),
+    loadPlatformModule("apps/learning-platform/modules/study/certificate-renderer.js"),
+    loadPlatformModule("apps/learning-platform/modules/study/state.js"),
+    loadPlatformModule("apps/learning-platform/modules/status-report/application.js")
+  ]);
+
+  ({ createSessionStore } = sessionModule);
+  ({ createPlatformClient } = clientModule);
+  ({ redirectToDeviceWarning } = lifecycleModule);
+  ({ createStudyApplication } = applicationModule);
+  ({ createStudyDom } = domModule);
+  ({ createDownloadConfigurator } = downloadsModule);
+  ({ createStudyPlayer } = playerModule);
+  ({ createCertificateRenderer } = certificateRendererModule);
+  studyModuleTopicCounts = stateModule.STUDY_MODULE_TOPIC_COUNTS;
+  ({ createStatusReportApplication } = reportApplicationModule);
+});
 
 const correctAnswerId = "c11aoIurJLm38YTHncm87493KaiowJMca";
 const incorrectAnswerId = "Ij73hRG8120Amb85Ff473LCx3Zaor991";
@@ -122,7 +198,7 @@ function installStudyDom(harness) {
   return { arrows, moduleHeaders, moduleTopicContainers, questionContainers };
 }
 
-function installShaka(harness) {
+function installShaka() {
   const observations = {
     attachCount: 0,
     controls: [],
@@ -170,7 +246,7 @@ function installShaka(harness) {
     }
   }
 
-  harness.context.shaka = {
+  const runtime = {
     Player,
     polyfill: {
       installAll() {
@@ -179,28 +255,99 @@ function installShaka(harness) {
     },
     ui: { Overlay }
   };
-  return observations;
+  return { observations, runtime };
 }
 
-function createStudyHarness({ routes = [], storage = {} } = {}) {
+function createStudyHarness({
+  configureDrm,
+  includeDefaultDeadline = true,
+  installTopics = false,
+  isDrmEnabled = () => true,
+  loadSelectedMedia,
+  routes = [],
+  storage = {}
+} = {}) {
   const harness = createLearningPlatformHarness({
     routes: routes.map(withProtectedHandleExpectation),
     storage: {
-      "Horário-Encerramento-Sessão": "2000003600000",
+      ...(includeDefaultDeadline
+        ? { "Horário-Encerramento-Sessão": "2000003600000" }
+        : {}),
       IndexVerificado: syntheticHandle,
       URL_Base_Backend: `${FIXTURE_ORIGIN}/plataforma_v2`,
       Usuário_Logado: "Sim",
       ...storage
     }
   });
-  const dom = installStudyDom(harness);
-  harness.loadScript("apps/learning-platform/estudo/main.js", { rewriteBackend: false });
-  const shaka = installShaka(harness);
-  harness.window.jspdf = { jsPDF: class {} };
-  return { dom, harness, shaka };
+  const domFixtures = installStudyDom(harness);
+  const topics = installTopics ? installClosedTopics(harness) : undefined;
+  const dependencies = harness.dependencies();
+  const session = createSessionStore(dependencies.sessionStorage);
+  const client = createPlatformClient({
+    baseUrl: session.read("backendBase"),
+    fetch: dependencies.fetch,
+    FormDataConstructor: dependencies.FormDataConstructor
+  });
+  const dom = createStudyDom(dependencies.document);
+  const shaka = installShaka();
+  let PdfConstructor = class {};
+  const player = createStudyPlayer({
+    alert: dependencies.alert,
+    configureDrm: configureDrm ?? ((shakaPlayer) => {
+      shakaPlayer.configure({
+        drm: { servers: { "com.microsoft.playready": `${FIXTURE_ORIGIN}/fixture-license` } }
+      });
+    }),
+    document: dependencies.document,
+    dom,
+    getShaka: () => shaka.runtime,
+    isDrmEnabled,
+    loadSelectedMedia: loadSelectedMedia ?? ((shakaPlayer, media) => {
+      const kind = media.drmEnabled ? "protected" : "bypass";
+      return shakaPlayer.load(
+        `${FIXTURE_ORIGIN}/fixture-media/${kind}/${encodeURIComponent(media.moduleName)}/${encodeURIComponent(media.videoName)}`
+      );
+    }),
+    state: {}
+  });
+  const clock = {
+    createDate: (...args) => new dependencies.Date(...args),
+    now: dependencies.now
+  };
+  const controller = createStudyApplication({
+    alert: dependencies.alert,
+    client,
+    clock,
+    configureDownloads: createDownloadConfigurator(dependencies.document),
+    document: dependencies.document,
+    dom,
+    isMicrosoftEdge: () => true,
+    loadMedia: player.loadMedia,
+    navigate: dependencies.navigate,
+    navigator: dependencies.navigator,
+    redirectToDeviceWarning,
+    renderCertificate: createCertificateRenderer(() => PdfConstructor),
+    session,
+    timers: {
+      clearInterval: dependencies.clearInterval,
+      setInterval: dependencies.setInterval
+    },
+    window: dependencies.window
+  });
+  player.setState(controller.state);
+  controller.install();
+  return {
+    controller,
+    dom: domFixtures,
+    harness,
+    player,
+    setPdfConstructor(value) { PdfConstructor = value; },
+    shaka: shaka.observations,
+    topics
+  };
 }
 
-function setStudyState(harness, {
+function setStudyState(controller, {
   accumulatedGrade = 0.8,
   certificateId = "CERT-FIXTURE-001",
   completed = 0,
@@ -208,27 +355,17 @@ function setStudyState(harness, {
   fullName = "Invented Learner",
   grades = Array(10).fill(0.8)
 } = {}) {
-  harness.context.__fixtureState = {
+  const moduleGrades = [];
+  grades.forEach((grade, index) => { moduleGrades[index + 1] = grade; });
+  Object.assign(controller.state, {
     accumulatedGrade,
     certificateId,
-    completed,
+    completedTopics: completed,
     email,
     fullName,
-    grades
-  };
-  vm.runInContext(`
-    IndexVerificado = sessionStorage.getItem('IndexVerificado');
-    Usuário_NomeCompleto = __fixtureState.fullName;
-    Usuário_Email = __fixtureState.email;
-    Usuário_Formação_NúmeroTópicosConcluídos = __fixtureState.completed;
-    Usuário_Formação_NotasMódulos = [];
-    __fixtureState.grades.forEach((grade, index) => {
-      Usuário_Formação_NotasMódulos[index + 1] = grade;
-    });
-    Usuário_Formação_NotaAcumulado = __fixtureState.accumulatedGrade;
-    Usuário_Formação_CertificadoID = __fixtureState.certificateId;
-  `, harness.context);
-  delete harness.context.__fixtureState;
+    moduleGrades,
+    verifiedIndex: syntheticHandle
+  });
 }
 
 function fixtureRefreshData(progress) {
@@ -287,14 +424,14 @@ async function runRefresh(
   progress,
   { omitDeadline = false, responseStatus = 200, storage = {} } = {}
 ) {
-  const routes = [withProtectedHandleExpectation({
+  const routes = [{
     method: "POST",
     path: "/plataforma_v2/refresh",
     response: {
       data: responseStatus === 200 ? fixtureRefreshData(progress) : {},
       status: responseStatus
     }
-  })];
+  }];
   const initialStorage = {
     "Horário-Encerramento-Sessão": "2000003600000",
     IndexVerificado: syntheticHandle,
@@ -303,18 +440,15 @@ async function runRefresh(
     ...storage
   };
   if (omitDeadline) delete initialStorage["Horário-Encerramento-Sessão"];
-  const harness = createLearningPlatformHarness({
+  const result = createStudyHarness({
+    includeDefaultDeadline: !omitDeadline,
+    installTopics: true,
     routes,
     storage: initialStorage
   });
-  const dom = installStudyDom(harness);
-  const topics = installClosedTopics(harness);
-  harness.loadScript("apps/learning-platform/estudo/main.js", { rewriteBackend: false });
-  installShaka(harness);
-  harness.window.jspdf = { jsPDF: class {} };
-  harness.dispatchWindow("load");
-  await harness.flush(20);
-  return { dom, harness, topics };
+  result.harness.dispatchWindow("load");
+  await result.harness.flush(20);
+  return result;
 }
 
 test("[FLOW-02] study keeps 171 contiguous nodes and the ten frozen module boundaries", () => {
@@ -326,17 +460,9 @@ test("[FLOW-02] study keeps 171 contiguous nodes and the ten frozen module bound
     })
   );
   const topics = topicRecords.map(({ index }) => index);
-  const moduleCounts = Array.from(
-    studySource.matchAll(/const NúmeroTópicosMódulos = \[([^\]]+)\]/g),
-    ([, expression]) => expression
-  );
 
   assert.deepEqual(topics, Array.from({ length: 171 }, (_, index) => index + 1));
-  assert.equal(moduleCounts.length, 1);
-  assert.deepEqual(
-    [...vm.runInNewContext(`[${moduleCounts[0]}]`)],
-    [13, 17, 21, 20, 19, 10, 14, 24, 19, 14]
-  );
+  assert.deepEqual([...studyModuleTopicCounts], [13, 17, 21, 20, 19, 10, 14, 24, 19, 14]);
 
   const moduleEnds = [13, 30, 51, 71, 90, 100, 114, 138, 157, 171];
   for (const [moduleOffset, moduleEnd] of moduleEnds.entries()) {
@@ -368,7 +494,7 @@ test("[FLOW-02] saved progress opens the exact next module boundary and keeps pe
 });
 
 test("[FLOW-02] saved progress leaves only completed/open topics interactive and module headers toggle", async () => {
-  const { dom, harness, topics } = await runRefresh("13");
+  const { controller, dom, harness, topics } = await runRefresh("13");
 
   assert.equal(topics[0].dispatch("click").length, 1);
   assert.equal(topics[13].dispatch("click").length, 1);
@@ -377,7 +503,7 @@ test("[FLOW-02] saved progress leaves only completed/open topics interactive and
   assert.equal(dom.moduleHeaders[0].dispatch("click").length, 1);
   assert.equal(dom.moduleTopicContainers[0].style.display, "block");
   assert.equal(dom.moduleTopicContainers[1].style.display, "none");
-  assert.equal(vm.runInContext("MóduloAberto", harness.context), "Módulo 1");
+  assert.equal(controller.state.openModule, "Módulo 1");
 
   dom.moduleHeaders[0].dispatch("click");
   assert.equal(dom.moduleTopicContainers[0].style.display, "none");
@@ -385,7 +511,7 @@ test("[FLOW-02] saved progress leaves only completed/open topics interactive and
 });
 
 test("[API-03] refresh carries the protected handle and preserves the separate client deadline", async () => {
-  const { harness, topics } = await runRefresh("171");
+  const { controller, harness, topics } = await runRefresh("171");
   const request = harness.guard.requests[0];
 
   assert.equal(request.path, "/plataforma_v2/refresh");
@@ -401,21 +527,18 @@ test("[API-03] refresh carries the protected handle and preserves the separate c
   );
   assert.equal(harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] }).IndexVerificado, "<redacted>");
   assert.equal(topics.filter((topic) => topic.className === "Container-Tópico-Concluído").length, 171);
-  assert.equal(vm.runInContext("Usuário_NomeCompleto", harness.context), "Invented Learner");
-  assert.equal(vm.runInContext("Usuário_PrimeiroNome", harness.context), "Invented");
-  assert.equal(vm.runInContext("Usuário_Email", harness.context), "learner@example.test");
-  assert.equal(vm.runInContext("Usuário_Status_Login", harness.context), "Inativo");
-  assert.deepEqual(
-    [...vm.runInContext("Usuário_Formação_NotasMódulos.slice(1)", harness.context)],
-    Array(10).fill(0.8)
-  );
-  assert.equal(vm.runInContext("Usuário_Formação_NotaAcumulado", harness.context), 0.8);
-  assert.equal(vm.runInContext("Usuário_Formação_CertificadoID", harness.context), "CERT-FIXTURE-001");
+  assert.equal(controller.state.fullName, "Invented Learner");
+  assert.equal(controller.state.firstName, "Invented");
+  assert.equal(controller.state.email, "learner@example.test");
+  assert.equal(controller.state.loginStatus, "Inativo");
+  assert.deepEqual(controller.state.moduleGrades.slice(1), Array(10).fill(0.8));
+  assert.equal(controller.state.accumulatedGrade, 0.8);
+  assert.equal(controller.state.certificateId, "CERT-FIXTURE-001");
 });
 
 test("[API-03] refresh retains workbook-specific and generic failure mappings", async () => {
   for (const [error, expected] of [["Erro_001", "Erro_001"], [undefined, "Erro_000"]]) {
-    const harness = createLearningPlatformHarness({
+    const { harness } = createStudyHarness({
       routes: [{
         method: "POST",
         path: "/plataforma_v2/refresh",
@@ -427,8 +550,6 @@ test("[API-03] refresh retains workbook-specific and generic failure mappings", 
         Usuário_Logado: "Sim"
       }
     });
-    installStudyDom(harness);
-    harness.loadScript("apps/learning-platform/estudo/main.js", { rewriteBackend: false });
     harness.dispatchWindow("load");
     await harness.flush(20);
     assert.equal(harness.alerts.length, 1);
@@ -471,18 +592,17 @@ test("[ERROR-01] protected refresh 401 remains the current generic Erro_000 outc
 
 test("[FLOW-03] manual and ended completion can race into two optimistic protected updates", async () => {
   const neverSettles = new Promise(() => {});
-  const { harness } = createStudyHarness({
+  const { controller, harness } = createStudyHarness({
     routes: [{
       handler: async () => neverSettles,
       method: "POST",
       path: "/plataforma_v2/updates"
     }]
   });
-  setStudyState(harness);
-  vm.runInContext("MóduloAberto = 'Módulo 1'", harness.context);
+  setStudyState(controller);
+  controller.state.openModule = "Módulo 1";
   const topic = createTopic(harness);
-  harness.context.__fixtureTopic = topic;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+  controller.openTopic.call(topic);
 
   harness.element("Faixa-Inferior").onclick(eventFor("Botão-Completar-e-Continuar"));
   harness.element("Container-Interno-Shaka-Player").onended();
@@ -495,25 +615,23 @@ test("[FLOW-03] manual and ended completion can race into two optimistic protect
     [1, 2]
   );
   assert.equal(
-    vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context),
+    controller.state.completedTopics,
     2
   );
   assert.ok(harness.guard.requests.every((request) => request.body.IndexVerificado === "<redacted>"));
-  delete harness.context.__fixtureTopic;
 });
 
 test("[API-03] content update keeps exact ordinary fields and rolls back only local state on failure", async () => {
-  const { harness } = createStudyHarness({
+  const { controller, harness } = createStudyHarness({
     routes: [{
       method: "POST",
       path: "/plataforma_v2/updates",
       response: { data: { error: "Erro_008" }, status: 500 }
     }]
   });
-  setStudyState(harness, { completed: 4 });
+  setStudyState(controller, { completed: 4 });
   const topic = createTopic(harness, { dataIndex: 5 });
-  harness.context.__fixtureTopic = topic;
-  vm.runInContext("Completar_e_Continuar_Tópico(__fixtureTopic)", harness.context);
+  controller.completeTopic(topic);
   await harness.flush(20);
 
   const request = harness.guard.requests[0];
@@ -523,17 +641,16 @@ test("[API-03] content update keeps exact ordinary fields and rolls back only lo
   assert.equal(request.body.NúmeroTópicosConcluídos, 5);
   assert.equal(request.body.NúmeroMódulo, "n/a");
   assert.equal(request.body.NotaTeste, "n/a");
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context), 4);
+  assert.equal(controller.state.completedTopics, 4);
   assert.match(harness.element("Faixa-Inferior").innerHTML, /Completar e Continuar/);
   assert.match(harness.alerts[0], /^Erro_008:/);
-  delete harness.context.__fixtureTopic;
 });
 
 test("[FLOW-03] successful content completion advances and rewires the exact next node", async () => {
-  const { harness } = createStudyHarness({
+  const { controller, harness } = createStudyHarness({
     routes: [{ method: "POST", path: "/plataforma_v2/updates", response: { data: {} } }]
   });
-  setStudyState(harness, { completed: 4 });
+  setStudyState(controller, { completed: 4 });
   const topic = createTopic(harness, { dataIndex: 5 });
   const next = createTopic(harness, {
     className: "Container-Tópico-Fechado",
@@ -544,32 +661,23 @@ test("[FLOW-03] successful content completion advances and rewires the exact nex
     if (type === "click") nextOpenCalls += 1;
   };
   harness.selectorResults.set('[data-index="6"]', next);
-  harness.context.__fixtureTopic = topic;
-  harness.context.__fixtureNext = next;
-  vm.runInContext(`
-    AbreTópico = function() {
-      if (this === __fixtureNext) globalThis.__openedNext = true;
-    };
-    Completar_e_Continuar_Tópico(__fixtureTopic);
-  `, harness.context);
+  controller.completeTopic(topic);
   await harness.flush(20);
 
   assertProtectedHandleExpectations(harness, 1);
   assert.equal(topic.className, "Container-Tópico-Concluído");
   assert.equal(next.className, "Container-Tópico-Aberto");
-  assert.equal(harness.context.__openedNext, true);
+  assert.equal(next.querySelector(".Tópico-Nome").style.fontWeight, "500");
+  assert.match(harness.element("Nome-Tópico").innerHTML, /Conteúdo sintético/);
   assert.equal(nextOpenCalls, 1);
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context), 5);
-  delete harness.context.__fixtureTopic;
-  delete harness.context.__fixtureNext;
-  delete harness.context.__openedNext;
+  assert.equal(controller.state.completedTopics, 5);
 });
 
 test("[FLOW-04] assessment mutates controls globally and submits the client-computed grade without timing or dedupe", async () => {
-  const { harness } = createStudyHarness({
+  const { controller, harness } = createStudyHarness({
     routes: [{ method: "POST", path: "/plataforma_v2/updates", response: { data: {}, status: 200 } }]
   });
-  setStudyState(harness, { completed: 11, grades: Array(10).fill(0) });
+  setStudyState(controller, { completed: 11, grades: Array(10).fill(0) });
 
   const topic = createTopic(harness, {
     dataIndex: 12,
@@ -612,8 +720,7 @@ test("[FLOW-04] assessment mutates controls globally and submits the client-comp
     })
   );
 
-  harness.context.__fixtureTopic = topic;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+  controller.openTopic.call(topic);
   assert.equal(outsideModule.checked, false);
   assert.equal(outsideModule.disabled, false);
 
@@ -639,26 +746,26 @@ test("[FLOW-04] assessment mutates controls globally and submits the client-comp
   assert.equal(body.NotaTeste, 0.25);
   assert.equal(Object.keys(body).some((key) => /tempo|tentativa|dedupe|idempot/i.test(key)), false);
   assert.ok(allAnswers.every((input) => input.disabled));
-  assert.equal(vm.runInContext("Usuário_Formação_NotasMódulos[1]", harness.context), 0.25);
-  assert.equal(vm.runInContext("Usuário_Formação_NotaAcumulado", harness.context), 0.025);
+  assert.equal(controller.state.moduleGrades[1], 0.25);
+  assert.equal(controller.state.accumulatedGrade, 0.025);
   assert.equal(harness.element("Nota").innerHTML, "25.0%");
   assert.equal(harness.element("Percentil").innerHTML, "0.0%");
   assert.match(harness.element("Faixa-Inferior").innerHTML, /Botão-Continuar/);
   assert.equal(correct[0].parentElement.style.backgroundColor, "#94fd7f");
   assert.equal(correct[2].parentElement.style.backgroundColor, "#d3ffcb");
   assert.equal(incorrect[0].parentElement.style.backgroundColor, "#fd7f7f");
-  delete harness.context.__fixtureTopic;
 });
 
 test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async () => {
-  const assessment = createStudyHarness({
+  const assessmentRun = createStudyHarness({
     routes: [{
       method: "POST",
       path: "/plataforma_v2/updates",
       response: { data: { error: "Erro_008" }, status: 500 }
     }]
-  }).harness;
-  setStudyState(assessment, { completed: 11, grades: Array(10).fill(0) });
+  });
+  const { controller: assessmentController, harness: assessment } = assessmentRun;
+  setStudyState(assessmentController, { completed: 11, grades: Array(10).fill(0) });
   const assessmentTopic = createTopic(assessment, {
     dataIndex: 12,
     name: "TESTE MÓDULO 1",
@@ -675,23 +782,23 @@ test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async 
   assessment.selectorResults.set(`input[query-id="${correctAnswerId}"]:checked`, [correct]);
   assessment.selectorResults.set(`input[query-id="${incorrectAnswerId}"]:checked`, []);
   assessment.selectorResults.set(`input[query-id="${correctAnswerId}"]`, [correct]);
-  assessment.context.__fixtureTopic = assessmentTopic;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", assessment.context);
+  assessmentController.openTopic.call(assessmentTopic);
   assessment.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Respostas"));
   assessment.element("Faixa-Inferior").onclick(eventFor("Botão-Confirmar-Envio-Respostas"));
   await assessment.flush(20);
   assertProtectedHandleExpectations(assessment, 1);
   assert.match(assessment.alerts[0], /^Erro_008:/);
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", assessment.context), 11);
+  assert.equal(assessmentController.state.completedTopics, 11);
 
-  const feedback = createStudyHarness({
+  const feedbackRun = createStudyHarness({
     routes: [{
       method: "POST",
       path: "/plataforma_v2/processa-feedback",
       response: { data: { error: "Erro_008" }, status: 500 }
     }]
-  }).harness;
-  setStudyState(feedback, { completed: 50 });
+  });
+  const { controller: feedbackController, harness: feedback } = feedbackRun;
+  setStudyState(feedbackController, { completed: 50 });
   const feedbackTopic = createTopic(feedback, {
     dataIndex: 51,
     module: 3,
@@ -699,13 +806,12 @@ test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async 
     visibleName: "Feedback: Módulo 3"
   });
   feedback.selectorResults.set(".Opções-Feedbacks", []);
-  feedback.context.__fixtureTopic = feedbackTopic;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", feedback.context);
+  feedbackController.openTopic.call(feedbackTopic);
   feedback.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Feedback"));
   await feedback.flush(20);
   assertProtectedHandleExpectations(feedback, 1);
   assert.match(feedback.alerts[0], /^Erro_008:/);
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", feedback.context), 50);
+  assert.equal(feedbackController.state.completedTopics, 50);
 });
 
 test("[API-04] assessment preserves client-supplied progress, module, and grade fields", async () => {
@@ -715,12 +821,12 @@ test("[API-04] assessment preserves client-supplied progress, module, and grade 
     "Assessment must retain the grade-bearing update type"
   );
   assert.equal(
-    /NotaTeste:\s*PercentualAcerto/.test(studySource),
+    /NotaTeste:\s*score/.test(studySource),
     true,
     "Assessment must submit its browser-computed grade"
   );
   assert.equal(
-    /Math\.max\(0,\(RespostasCorretasSelecionadas - RespostasIncorretasSelecionadas\) \/ TotalRespostasCorretas\)/.test(studySource),
+    /Math\.max\(0, \(selectedCorrect - selectedIncorrect\) \/ totalCorrect\)/.test(studySource),
     true,
     "Assessment must retain the current score formula"
   );
@@ -734,7 +840,7 @@ test("[API-04] assessment preserves client-supplied progress, module, and grade 
 test("[FLOW-05] feedback preserves partial-success rollback and duplicate-visible retry exposure", async () => {
   const backendTimeline = [];
   let attempts = 0;
-  const { dom, harness } = createStudyHarness({
+  const { controller, dom, harness } = createStudyHarness({
     routes: [{
       method: "POST",
       path: "/plataforma_v2/processa-feedback",
@@ -750,7 +856,7 @@ test("[FLOW-05] feedback preserves partial-success rollback and duplicate-visibl
       }
     }]
   });
-  setStudyState(harness, { completed: 50 });
+  setStudyState(controller, { completed: 50 });
   const topic = createTopic(harness, {
     dataIndex: 51,
     module: 3,
@@ -779,13 +885,12 @@ test("[FLOW-05] feedback preserves partial-success rollback and duplicate-visibl
   harness.selectorResults.set(".Opções-Feedbacks", []);
   harness.element("Campo-Comentários").value = "Invented feedback";
 
-  harness.context.__fixtureTopic = topic;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+  controller.openTopic.call(topic);
   harness.element("Campo-Comentários").value = "Invented feedback";
   harness.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Feedback"));
   await harness.flush(20);
 
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context), 50);
+  assert.equal(controller.state.completedTopics, 50);
   assert.match(harness.alerts[0], /^Erro_009:/);
   assert.deepEqual(backendTimeline, ["progress-write:success", "feedback-append:failure"]);
 
@@ -801,7 +906,7 @@ test("[FLOW-05] feedback preserves partial-success rollback and duplicate-visibl
   ]);
   assert.equal(harness.guard.requests.length, 2);
   assert.equal(harness.alerts.length, 1);
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context), 51);
+  assert.equal(controller.state.completedTopics, 51);
   assert.equal(topic.className, "Container-Tópico-Concluído");
   assert.equal(next.className, "Container-Tópico-Aberto");
   assert.equal(dom.moduleTopicContainers[3].style.display, "block");
@@ -834,18 +939,17 @@ test("[FLOW-05] feedback preserves partial-success rollback and duplicate-visibl
     assert.equal(request.body.Feedback_Comentários, "Invented feedback");
     assert.equal(Object.keys(request.body).some((key) => /dedupe|idempot/i.test(key)), false);
   }
-  delete harness.context.__fixtureTopic;
 });
 
 test("[API-04] feedback omits unselected ratings and keeps the Module 3 visible-label/module 2 payload mismatch", async () => {
-  const { harness } = createStudyHarness({
+  const { controller, harness } = createStudyHarness({
     routes: [{
       method: "POST",
       path: "/plataforma_v2/processa-feedback",
       response: { data: {}, status: 200 }
     }]
   });
-  setStudyState(harness, { completed: 50 });
+  setStudyState(controller, { completed: 50 });
   const topic = createTopic(harness, {
     dataIndex: 51,
     module: 3,
@@ -859,8 +963,7 @@ test("[API-04] feedback omits unselected ratings and keeps the Module 3 visible-
   });
   harness.selectorResults.set('[data-index="52"]', next);
   harness.selectorResults.set(".Opções-Feedbacks", []);
-  harness.context.__fixtureTopic = topic;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+  controller.openTopic.call(topic);
   harness.element("Campo-Comentários").value = "No ratings selected";
   harness.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Feedback"));
   await harness.flush(20);
@@ -868,7 +971,7 @@ test("[API-04] feedback omits unselected ratings and keeps the Module 3 visible-
   const body = harness.guard.requests[0].body;
   assertProtectedHandleExpectations(harness, 1);
   assert.equal(harness.alerts.length, 0);
-  assert.equal(vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context), 51);
+  assert.equal(controller.state.completedTopics, 51);
   assert.equal(topic.className, "Container-Tópico-Concluído");
   assert.equal(next.className, "Container-Tópico-Aberto");
   assert.equal(body.NúmeroMódulo, 2);
@@ -880,21 +983,19 @@ test("[API-04] feedback omits unselected ratings and keeps the Module 3 visible-
   ]) {
     assert.equal(Object.hasOwn(body, key), false, key);
   }
-  delete harness.context.__fixtureTopic;
 });
 
 async function runProtectedStudy401(kind) {
   const path = kind === "feedback" ? "/plataforma_v2/processa-feedback" : "/plataforma_v2/updates";
-  const { harness } = createStudyHarness({
+  const { controller, harness } = createStudyHarness({
     routes: [{ method: "POST", path, response: { data: {}, status: 401 } }]
   });
   const completed = kind === "feedback" ? 50 : kind === "assessment" ? 11 : 4;
-  setStudyState(harness, { completed, grades: Array(10).fill(0) });
+  setStudyState(controller, { completed, grades: Array(10).fill(0) });
 
   if (kind === "content") {
     const topic = createTopic(harness, { dataIndex: 5 });
-    harness.context.__fixtureTopic = topic;
-    vm.runInContext("Completar_e_Continuar_Tópico(__fixtureTopic)", harness.context);
+    controller.completeTopic(topic);
   } else if (kind === "assessment") {
     const topic = createTopic(harness, {
       dataIndex: 12,
@@ -912,8 +1013,7 @@ async function runProtectedStudy401(kind) {
     harness.selectorResults.set(`input[query-id="${correctAnswerId}"]:checked`, [correct]);
     harness.selectorResults.set(`input[query-id="${incorrectAnswerId}"]:checked`, []);
     harness.selectorResults.set(`input[query-id="${correctAnswerId}"]`, [correct]);
-    harness.context.__fixtureTopic = topic;
-    vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+    controller.openTopic.call(topic);
     harness.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Respostas"));
     harness.element("Faixa-Inferior").onclick(eventFor("Botão-Confirmar-Envio-Respostas"));
   } else {
@@ -924,24 +1024,22 @@ async function runProtectedStudy401(kind) {
       visibleName: "Feedback: Módulo 3"
     });
     harness.selectorResults.set(".Opções-Feedbacks", []);
-    harness.context.__fixtureTopic = topic;
-    vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+    controller.openTopic.call(topic);
     harness.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Feedback"));
   }
   await harness.flush(20);
-  delete harness.context.__fixtureTopic;
-  return { completed, harness };
+  return { completed, controller, harness };
 }
 
 test("[ERROR-01] every protected study mutation maps synthetic 401 to generic Erro_000", async () => {
   for (const kind of ["content", "assessment", "feedback"]) {
-    const { completed, harness } = await runProtectedStudy401(kind);
+    const { completed, controller, harness } = await runProtectedStudy401(kind);
     assertProtectedHandleExpectations(harness, 1);
     assert.equal(harness.alerts.length, 1, kind);
     assert.match(harness.alerts[0], /^Erro_000:/, kind);
     assert.doesNotMatch(harness.alerts[0], /expir|autoriza/i, kind);
     assert.equal(
-      vm.runInContext("Usuário_Formação_NúmeroTópicosConcluídos", harness.context),
+      controller.state.completedTopics,
       completed,
       kind
     );
@@ -977,13 +1075,59 @@ function createPdfRecorder() {
 }
 
 function certificateRun({ completed = 171, grade }) {
-  const { harness } = createStudyHarness();
-  setStudyState(harness, { accumulatedGrade: grade, completed });
+  const { controller, harness, setPdfConstructor } = createStudyHarness();
+  setStudyState(controller, { accumulatedGrade: grade, completed });
   const recorder = createPdfRecorder();
-  harness.window.jspdf = { jsPDF: recorder.Pdf };
-  vm.runInContext("AbreDesempenhoeCertificado()", harness.context);
+  setPdfConstructor(recorder.Pdf);
+  controller.openPerformance();
   return { harness, recorder };
 }
+
+test("[FLOW-06] performance view keeps exact chart scale, colors, percentages, and layout changes", () => {
+  const { controller, harness } = createStudyHarness();
+  const grades = [0, 0.35, 0.7, 0.85, 1, 0.8, 0.8, 0.8, 0.8, 0.8];
+  setStudyState(controller, { accumulatedGrade: 0.95, grades });
+
+  controller.openPerformance();
+
+  assert.equal(harness.element("Container-Interno-Shaka-Player").pauseCalls, 1);
+  assert.equal(harness.element("Seção-Navegação").scrollTop, 0);
+  assert.equal(harness.element("Nome-Tópico").innerHTML, "<b>Desempenho e Certificado</b>");
+  assert.equal(harness.element("Container-Externo-Conteúdo").style.display, "none");
+  assert.equal(harness.element("Container-Externo-Testes").style.display, "none");
+  assert.equal(harness.element("Container-Externo-Feedbacks").style.display, "none");
+  assert.equal(
+    harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
+    "block"
+  );
+  assert.equal(harness.element("Faixa-Inferior").style.display, "none");
+
+  const expected = [
+    ["0px", "rgb(164,16,52)", "0.0%"],
+    ["140px", "rgb(188,102,40)", "35.0%"],
+    ["280px", "rgb(212,187,28)", "70.0%"],
+    ["340px", "rgb(111,170,45)", "85.0%"],
+    ["400px", "rgb(10,152,62)", "100.0%"]
+  ];
+  expected.forEach(([height, color, percentage], offset) => {
+    const moduleNumber = offset + 1;
+    assert.equal(harness.element(`Barra-Nota-Teste-Módulo-${moduleNumber}`).style.height, height);
+    assert.equal(
+      harness.element(`Barra-Nota-Teste-Módulo-${moduleNumber}`).style.backgroundColor,
+      color
+    );
+    assert.equal(
+      harness.element(`Percentual-Nota-Teste-Módulo-${moduleNumber}`).innerHTML,
+      percentage
+    );
+  });
+  assert.equal(harness.element("Barra-Nota-Testes-Acumulado").style.height, "380px");
+  assert.equal(
+    harness.element("Barra-Nota-Testes-Acumulado").style.backgroundColor,
+    "rgb(44,158,56)"
+  );
+  assert.equal(harness.element("Percentual-Nota-Testes-Acumulado").innerHTML, "95.0%");
+});
 
 test("[FLOW-06] certificate eligibility keeps exact completion and grade thresholds", () => {
   const cases = [
@@ -1116,33 +1260,36 @@ test("[FLOW-06] timer preserves formatting, warning thresholds, missing expiry, 
 });
 
 test("[VIDEO-02] Shaka keeps one player, exact controls, protected default, source-derived bypass, and local completion handlers", async () => {
-  const { harness, shaka } = createStudyHarness({
+  const bypassCondition = studyMainSource.match(
+    /function isDrmEnabled\(fullName\) \{([\s\S]*?)return drmEnabled;\s*\}/
+  );
+  assert.ok(bypassCondition);
+  const sourceDerivedNames = Array.from(
+    bypassCondition[1].matchAll(/fullName === '([^']+)'/g),
+    ([, value]) => value
+  );
+  assert.equal(sourceDerivedNames.length, 5);
+
+  const { controller, harness, shaka } = createStudyHarness({
+    isDrmEnabled: (fullName) => !sourceDerivedNames.includes(fullName),
     routes: [{
       method: "POST",
       path: "/plataforma_v2/updates",
       handler: async () => new Promise(() => {})
     }]
   });
-  setStudyState(harness);
-  vm.runInContext("MóduloAberto = 'Módulo 1'", harness.context);
+  setStudyState(controller);
+  controller.state.openModule = "Módulo 1";
   const first = createTopic(harness, { dataIndex: 1, name: "1. FIXTURE" });
-  harness.context.__fixtureTopic = first;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
+  controller.openTopic.call(first);
   await harness.flush(20);
 
-  const bypassCondition = studySource.match(/if \(Usuário_NomeCompleto === ([\s\S]*?)\) \{ DRM_Ativo = false \}/);
-  assert.ok(bypassCondition);
-  const sourceDerivedNames = Array.from(bypassCondition[1].matchAll(/'([^']+)'/g), ([, value]) => value);
-  assert.equal(sourceDerivedNames.length, 5);
-  harness.context.__sourceDerivedName = sourceDerivedNames[0];
-  vm.runInContext("Usuário_NomeCompleto = __sourceDerivedName", harness.context);
-  delete harness.context.__sourceDerivedName;
-  sourceDerivedNames.fill("");
+  controller.state.fullName = sourceDerivedNames[0];
 
   const second = createTopic(harness, { dataIndex: 2, name: "2. FIXTURE" });
-  harness.context.__fixtureTopic = second;
-  vm.runInContext("AbreTópico.call(__fixtureTopic)", harness.context);
-  vm.runInContext("Usuário_NomeCompleto = 'Invented Learner'", harness.context);
+  controller.openTopic.call(second);
+  controller.state.fullName = "Invented Learner";
+  sourceDerivedNames.fill("");
   await harness.flush(20);
 
   assert.equal(shaka.playerCount, 1);
@@ -1158,12 +1305,18 @@ test("[VIDEO-02] Shaka keeps one player, exact controls, protected default, sour
   }]);
   assert.deepEqual(shaka.drmServerKinds, [["com.microsoft.playready"]]);
   assert.equal(shaka.loadPaths.every(({ valid }) => valid), true);
-  assert.match(decodeURIComponent(shaka.loadPaths[0].pathname), /\/videosv3\/plataforma_v2\/Módulo 1\/1\. FIXTURE_dash\.mpd$/);
-  assert.match(decodeURIComponent(shaka.loadPaths[1].pathname), /\/videosv3\/plataforma_v2_sem_drm\/Módulo 1\/2\. FIXTURE_dash\.mpd$/);
+  assert.match(
+    decodeURIComponent(shaka.loadPaths[0].pathname),
+    /\/fixture-media\/protected\/Módulo 1\/1\. FIXTURE$/
+  );
+  assert.match(
+    decodeURIComponent(shaka.loadPaths[1].pathname),
+    /\/fixture-media\/bypass\/Módulo 1\/2\. FIXTURE$/
+  );
+  assert.equal((studyMainSource.match(/await player\.load\(/g) ?? []).length, 2);
   assert.equal(harness.element("Container-Interno-Shaka-Player").playCalls, 2);
   assert.equal(typeof harness.element("Container-Interno-Shaka-Player").onended, "function");
   assert.equal(typeof harness.element("Faixa-Inferior").onclick, "function");
-  delete harness.context.__fixtureTopic;
 });
 
 function installReportDom(harness) {
@@ -1240,13 +1393,21 @@ function createReportHarness({ query, response = { data: { Dados_Extraídos_BD_P
   });
   harness.window.location.search = query;
   const dom = installReportDom(harness);
-  const executable = reportSource.replace(
-    /const URL_Base_Backend = "[^"]+";/,
-    `const URL_Base_Backend = "${FIXTURE_ORIGIN}/plataforma_v2";`
-  );
-  vm.runInContext(executable, harness.context, {
-    filename: "apps/learning-platform/statusreport/main.js"
+  const dependencies = harness.dependencies();
+  const platformClient = createPlatformClient({
+    baseUrl: `${FIXTURE_ORIGIN}/plataforma_v2`,
+    fetch: dependencies.fetch,
+    FormDataConstructor: dependencies.FormDataConstructor
   });
+  createStatusReportApplication({
+    URLSearchParamsConstructor: dependencies.URLSearchParamsConstructor,
+    document: dependencies.document,
+    navigate: dependencies.navigate,
+    platformClient,
+    redirectToDeviceWarning,
+    showAlert: dependencies.showAlert,
+    window: dependencies.window
+  }).install();
   return { dom, harness };
 }
 
@@ -1422,7 +1583,7 @@ test("[REPORT-02] all twelve metric columns sort and render independently from f
   assert.equal((reportSource.match(/\.repeat\(15\)/g) ?? []).length, 2);
   assert.equal((reportSource.match(/\.repeat\(14\)/g) ?? []).length, 1);
   assert.equal(
-    /for \(let i = 0; i < Informações_Estáticas_Gráficos_Controle_Resultados\.length; i\+\+\)/.test(
+    /for \(let i = 0; i < chartInformation\.length; i\+\+\)/.test(
       reportSource
     ),
     true,
@@ -1459,7 +1620,7 @@ test("[REPORT-03] only exact consolidado hides all target labels except the rang
     "The contradictory short-code comment must remain observable"
   );
   assert.equal(
-    /modalidade_rótulos_metas === "consolidado"/.test(reportSource),
+    /targetLabelMode === 'consolidado'/.test(reportSource),
     true,
     "Runtime mode must still require the complete consolidado value"
   );

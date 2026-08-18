@@ -284,7 +284,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 231);
+  assert.equal(validation.files.length, 255);
   assert.deepEqual(
     validation.mappings.filter(
       (mapping) => mapping.applicationId === "marketing-site"
@@ -464,7 +464,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
-  assert.equal(sourcePreviewReferences.javascriptReferences, 17);
+  assert.equal(sourcePreviewReferences.javascriptReferences, 54);
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)
@@ -1636,11 +1636,24 @@ test("certificate validation normalizes only its slashless public route before a
 });
 
 test("generated certificates print the canonical validation URL", async () => {
-  const platformSource = await readFile(
-    new URL("../apps/learning-platform/estudo/main.js", import.meta.url),
-    "utf8"
+  const [entrySource, certificateRendererSource] = await Promise.all([
+    readFile(
+      new URL("../apps/learning-platform/estudo/main.js", import.meta.url),
+      "utf8"
+    ),
+    readFile(
+      new URL(
+        "../apps/learning-platform/modules/study/certificate-renderer.js",
+        import.meta.url
+      ),
+      "utf8"
+    )
+  ]);
+  assert.match(
+    entrySource,
+    /import \{ createCertificateRenderer \} from '\.\.\/modules\/study\/certificate-renderer\.js';/
   );
-  const validationUrls = platformSource.match(
+  const validationUrls = certificateRendererSource.match(
     /https:\/\/machadogestao\.com\/validacao[^'"]*/g
   );
 
