@@ -725,10 +725,19 @@ WASM beside the chosen JS. It loads images and dictionaries with relative
 
 The Face loading presentation preserves the vendor's existing white loader,
 three-dot animation and timing, and exact `pt-BR` `AZAIF_FeedbackStarting` copy
-`Iniciando...`. Application-owned login and registration CSS changes only the
-blinking dots' background color to `#4a0816`. It does not replace the localized
-copy, reshape the loading viewport, or edit any vendor asset; the complete
-vendored Face subtree remains byte-identical.
+`Iniciando...`. Application-owned login and registration CSS makes that white
+loading surface fill the browser viewport and applies the company color
+`#4a0816` to both the blinking dots and the native brightness-confirmation
+checkbox. It does not replace localized copy or edit any vendor asset; the
+complete vendored Face subtree remains byte-identical.
+
+These presentation rules live outside the vendored subtree, so replacing the
+SDK cannot overwrite them. Their runtime effect still depends on the SDK
+retaining its current light-DOM loader and native brightness-checkbox hooks. A
+future SDK that changes those hooks, moves them into a non-inheriting shadow
+boundary, or defeats the application rule's specificity requires explicit
+compatibility review. `FACE-01` freezes both hooks and the entire vendor digest
+so that such an update fails tests instead of silently losing the presentation.
 
 Both entry HTML files set
 `<base href="/plataforma/azure-ai-vision-face-ui/">`. Their own CSS, images,
@@ -748,7 +757,7 @@ at login [`index.html` lines 9-11](../apps/learning-platform/login/index.html#L9
 registration [`index.html` lines 9-11](../apps/learning-platform/cadastro/index.html#L9-L11),
 vendored paths/version/selection
 [`FaceLivenessDetector.js` line 1](../apps/learning-platform/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1),
-application-owned dot-color overrides in login
+application-owned full-viewport loader, dot-color, and checkbox overrides in login
 [`style.css`](../apps/learning-platform/login/style.css) and registration
 [`style.css`](../apps/learning-platform/cadastro/style.css), and the preserved
 localized loading copy in
@@ -926,9 +935,9 @@ digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 179 | 20,672,937 | `a933df1e95af7ad7640f79f220542d7cf8d49172470d488ba4a3aa7c3b8d3642` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 179 | 20,672,937 | `8ab308f340fc1d57aa6fd4ba9d0bff81cfbd78a7ec4a124dbb92881a26e1b3e6` |
-| Current complete generated `dist/` artifact | 254 | 27,277,972 | `df478d223debdd9b71ee994299be1db0d12b8fe474b8c4c1a0a38111d5e8b5a6` |
+| Current platform subset, retaining full output paths `plataforma/...` | 179 | 20,673,307 | `b5bba7eb9e392e196ec8dd19129df6967bb1b86b37386bce3e177b2b9767517e` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 179 | 20,673,307 | `55c117fe137b26741fc3523c624aca31939967f32f9b6a94a3ae55b1467789ad` |
+| Current complete generated `dist/` artifact | 254 | 27,278,342 | `ef894ebbae797763aab4e8a7910cc39e52ea3e52b2edb8f81dd078da99c1bd71` |
 
 For pre-modernization comparison, the verified post-adoption baseline at
 commit `52adf0ff6c4646a15a7950f50f9bcb5fecb01490` produced these identities:
@@ -1218,7 +1227,7 @@ the test intent; current source anchors identify the current oracle.
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
-| FACE-01 | SDK resolution | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, and regular/SIMD JS+WASM branch paths resolve exactly without loading production Face. |
+| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, native brightness checkbox, and application-owned viewport/color overrides remain exact without loading production Face. |
 | ASSET-01 | File identity | The exact 179-file current platform set, verified post-modernization byte total, and current full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit; 31 are reachable, two remain unreferenced, and all browser-generated certificate inputs resolve with exact case. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
@@ -1233,7 +1242,7 @@ in brackets. The coverage is grouped by execution seam rather than by future
 source location:
 
 - `.agents/tests/learning-platform-static.test.js` covers declarative route,
-  Face asset, download, video/DRM, and artifact contracts;
+  Face asset/presentation, download, video/DRM, and artifact contracts;
 - `.agents/tests/learning-platform-entry-api.test.js` covers entry gates,
   navigation, storage, login, Face, and request behavior;
 - `.agents/tests/learning-platform-module-seams.test.js` covers the real module

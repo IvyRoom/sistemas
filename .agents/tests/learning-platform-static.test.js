@@ -164,6 +164,18 @@ function digestStrings(values) {
     .digest("hex");
 }
 
+function countBufferOccurrences(source, target) {
+  let count = 0;
+  let offset = 0;
+
+  while ((offset = source.indexOf(target, offset)) !== -1) {
+    count += 1;
+    offset += target.length;
+  }
+
+  return count;
+}
+
 function inspectUrlRole(value) {
   try {
     const parsed = new URL(value);
@@ -384,7 +396,7 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
   );
 });
 
-test("[FACE-01] Face SDK 1.5.0 assets and base-relative resolution remain frozen", () => {
+test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative resolution remain frozen", () => {
   const engineAlternatives = [
     {
       javascript: "facelivenessdetector-assets/js/AzureAIVisionFace.js",
@@ -448,6 +460,30 @@ test("[FACE-01] Face SDK 1.5.0 assets and base-relative resolution remain frozen
   assert.ok(faceSource.includes("./facelivenessdetector-assets/i18n/"));
   assert.ok(faceSource.includes("/facelivenessdetector-assets/js/"));
   assert.ok(faceSource.includes(".wasm"));
+  assert.match(
+    faceSource,
+    /\.id="face-liveness-loading"[\s\S]{0,1500}document\.body\.appendChild\(/,
+    "The application-owned viewport override requires the vendor loader to remain in document.body"
+  );
+
+  const checkboxMarkup = Buffer.from(
+    '<input type="checkbox" id="brightnessCheckbox" name="brightnessCheckbox">',
+    "utf8"
+  );
+  const checkboxStyle = Buffer.from("#brightnessCheckbox {", "utf8");
+  for (const { wasm } of engineAlternatives) {
+    const engineBytes = fs.readFileSync(path.join(faceRoot, ...wasm.split("/")));
+    assert.equal(
+      countBufferOccurrences(engineBytes, checkboxMarkup),
+      1,
+      `${wasm} must retain the native brightness checkbox targeted by application CSS`
+    );
+    assert.equal(
+      countBufferOccurrences(engineBytes, checkboxStyle),
+      1,
+      `${wasm} must retain the brightness checkbox style anchor`
+    );
+  }
 
   const basePath = "/plataforma/azure-ai-vision-face-ui/";
   const inertOrigin = ["https:", "", "platform.invalid"].join("/");
@@ -512,14 +548,34 @@ test("[FACE-01] Face SDK 1.5.0 assets and base-relative resolution remain frozen
       path.join(platformRoot, entryName, "style.css"),
       "utf8"
     );
+    const loaderOverrides = Array.from(
+      styleSource.matchAll(/html body #face-liveness-loading\s*\{([^}]*)\}/g),
+      (match) => match[1]
+    );
     const dotOverrides = Array.from(
       styleSource.matchAll(/#face-liveness-loading\s+\.loading-dot\s*\{([^}]*)\}/g),
       (match) => match[1]
     );
+    const checkboxOverrides = Array.from(
+      styleSource.matchAll(/html body #brightnessCheckbox\s*\{([^}]*)\}/g),
+      (match) => match[1]
+    );
+    assert.deepEqual(
+      loaderOverrides,
+      [
+        "\n    position: fixed;\n    inset: 0;\n    width: auto;\n    height: auto;\n    margin: 0;\n"
+      ],
+      `${entryName} must make the Face loading surface fill the viewport`
+    );
     assert.deepEqual(
       dotOverrides,
       ["\n    background: #4a0816;\n"],
-      `${entryName} must change only the Face loading-dot color`
+      `${entryName} must retain the reviewed Face loading-dot color`
+    );
+    assert.deepEqual(
+      checkboxOverrides,
+      ["\n    accent-color: #4a0816;\n"],
+      `${entryName} must apply the reviewed Face brightness-checkbox color`
     );
   }
 });
@@ -539,8 +595,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 
   assert.deepEqual(treeStats(records), {
     files: 179,
-    bytes: 20672937,
-    digest: "a933df1e95af7ad7640f79f220542d7cf8d49172470d488ba4a3aa7c3b8d3642"
+    bytes: 20673307,
+    digest: "b5bba7eb9e392e196ec8dd19129df6967bb1b86b37386bce3e177b2b9767517e"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -549,8 +605,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 179,
-      bytes: 20672937,
-      digest: "8ab308f340fc1d57aa6fd4ba9d0bff81cfbd78a7ec4a124dbb92881a26e1b3e6"
+      bytes: 20673307,
+      digest: "55c117fe137b26741fc3523c624aca31939967f32f9b6a94a3ae55b1467789ad"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
   );
@@ -837,8 +893,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
     files: 254,
-    bytes: 27277972,
-    digest: "df478d223debdd9b71ee994299be1db0d12b8fe474b8c4c1a0a38111d5e8b5a6"
+    bytes: 27278342,
+    digest: "ef894ebbae797763aab4e8a7910cc39e52ea3e52b2edb8f81dd078da99c1bd71"
   });
 });
 

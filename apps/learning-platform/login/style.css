@@ -121,6 +121,18 @@
     justify-content: center;
 }
 
+html body #face-liveness-loading {
+    position: fixed;
+    inset: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+}
+
 #face-liveness-loading .loading-dot {
     background: #4a0816;
+}
+
+html body #brightnessCheckbox {
+    accent-color: #4a0816;
 }
