@@ -471,17 +471,38 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
     "utf8"
   );
   const checkboxStyle = Buffer.from("#brightnessCheckbox {", "utf8");
+  const shadowRootConstructor = Buffer.from("attachShadow", "utf8");
+  const activeShadowRoot = Buffer.from("_currentShadowRoot", "utf8");
+  const vendorAccentColors = ["accent-color", "accentColor"].map((value) =>
+    Buffer.from(value, "utf8")
+  );
   for (const { wasm } of engineAlternatives) {
     const engineBytes = fs.readFileSync(path.join(faceRoot, ...wasm.split("/")));
     assert.equal(
+      countBufferOccurrences(engineBytes, shadowRootConstructor),
+      1,
+      `${wasm} must retain the Shadow DOM boundary used by the Face controls`
+    );
+    assert.equal(
+      countBufferOccurrences(engineBytes, activeShadowRoot),
+      1,
+      `${wasm} must retain its current Shadow DOM root lifecycle`
+    );
+    assert.equal(
       countBufferOccurrences(engineBytes, checkboxMarkup),
       1,
-      `${wasm} must retain the native brightness checkbox targeted by application CSS`
+      `${wasm} must retain the native brightness checkbox branded through the Face host`
     );
     assert.equal(
       countBufferOccurrences(engineBytes, checkboxStyle),
       1,
       `${wasm} must retain the brightness checkbox style anchor`
+    );
+    assert.ok(
+      vendorAccentColors.every(
+        (value) => countBufferOccurrences(engineBytes, value) === 0
+      ),
+      `${wasm} must continue inheriting the checkbox accent from the Face host`
     );
   }
 
@@ -556,8 +577,8 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
       styleSource.matchAll(/#face-liveness-loading\s+\.loading-dot\s*\{([^}]*)\}/g),
       (match) => match[1]
     );
-    const checkboxOverrides = Array.from(
-      styleSource.matchAll(/html body #brightnessCheckbox\s*\{([^}]*)\}/g),
+    const checkboxHostOverrides = Array.from(
+      styleSource.matchAll(/azure-ai-vision-face-ui\s*\{([^}]*)\}/g),
       (match) => match[1]
     );
     assert.deepEqual(
@@ -573,9 +594,14 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
       `${entryName} must retain the reviewed Face loading-dot color`
     );
     assert.deepEqual(
-      checkboxOverrides,
+      checkboxHostOverrides,
       ["\n    accent-color: #4a0816;\n"],
-      `${entryName} must apply the reviewed Face brightness-checkbox color`
+      `${entryName} must inherit the reviewed checkbox color through the Face host`
+    );
+    assert.equal(
+      /html body #brightnessCheckbox\s*\{/.test(styleSource),
+      false,
+      `${entryName} must not rely on a selector that cannot cross the Face Shadow DOM`
     );
   }
 });
@@ -595,8 +621,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 
   assert.deepEqual(treeStats(records), {
     files: 179,
-    bytes: 20673307,
-    digest: "b5bba7eb9e392e196ec8dd19129df6967bb1b86b37386bce3e177b2b9767517e"
+    bytes: 20673295,
+    digest: "6018d37df724bb697d6786139a52099c11298daa56a345fef84c5bf860c2bd2e"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -605,8 +631,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 179,
-      bytes: 20673307,
-      digest: "55c117fe137b26741fc3523c624aca31939967f32f9b6a94a3ae55b1467789ad"
+      bytes: 20673295,
+      digest: "c6e1c7a9900cf7d709cc0fe0c39517a95a95f328552442aabfd1b30d64dc4173"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
   );
@@ -893,8 +919,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
     files: 254,
-    bytes: 27278342,
-    digest: "ef894ebbae797763aab4e8a7910cc39e52ea3e52b2edb8f81dd078da99c1bd71"
+    bytes: 27278330,
+    digest: "383ef2d6f2b97a4579ee9c813d3c55022222253b48a6c1c1888777ac2568fba9"
   });
 });
 

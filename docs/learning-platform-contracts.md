@@ -727,17 +727,20 @@ The Face loading presentation preserves the vendor's existing white loader,
 three-dot animation and timing, and exact `pt-BR` `AZAIF_FeedbackStarting` copy
 `Iniciando...`. Application-owned login and registration CSS makes that white
 loading surface fill the browser viewport and applies the company color
-`#4a0816` to both the blinking dots and the native brightness-confirmation
-checkbox. It does not replace localized copy or edit any vendor asset; the
-complete vendored Face subtree remains byte-identical.
+`#4a0816` to the blinking dots. The native brightness-confirmation checkbox is
+inside the SDK's Shadow DOM, so the same color is applied as an inherited
+`accent-color` on the `azure-ai-vision-face-ui` custom-element host. These
+rules do not replace localized copy or edit any vendor asset; the complete
+vendored Face subtree remains byte-identical.
 
 These presentation rules live outside the vendored subtree, so replacing the
 SDK cannot overwrite them. Their runtime effect still depends on the SDK
-retaining its current light-DOM loader and native brightness-checkbox hooks. A
-future SDK that changes those hooks, moves them into a non-inheriting shadow
-boundary, or defeats the application rule's specificity requires explicit
-compatibility review. `FACE-01` freezes both hooks and the entire vendor digest
-so that such an update fails tests instead of silently losing the presentation.
+retaining its body-mounted loader and a native checkbox that inherits its accent
+from the custom-element host. A future SDK that changes those hooks, overrides
+the accent inside its Shadow DOM, or defeats the application loader rule's
+specificity requires explicit compatibility review. `FACE-01` freezes those
+hooks and the entire vendor digest so that such an update fails tests instead
+of silently losing the presentation.
 
 Both entry HTML files set
 `<base href="/plataforma/azure-ai-vision-face-ui/">`. Their own CSS, images,
@@ -935,9 +938,9 @@ digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 179 | 20,673,307 | `b5bba7eb9e392e196ec8dd19129df6967bb1b86b37386bce3e177b2b9767517e` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 179 | 20,673,307 | `55c117fe137b26741fc3523c624aca31939967f32f9b6a94a3ae55b1467789ad` |
-| Current complete generated `dist/` artifact | 254 | 27,278,342 | `ef894ebbae797763aab4e8a7910cc39e52ea3e52b2edb8f81dd078da99c1bd71` |
+| Current platform subset, retaining full output paths `plataforma/...` | 179 | 20,673,295 | `6018d37df724bb697d6786139a52099c11298daa56a345fef84c5bf860c2bd2e` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 179 | 20,673,295 | `c6e1c7a9900cf7d709cc0fe0c39517a95a95f328552442aabfd1b30d64dc4173` |
+| Current complete generated `dist/` artifact | 254 | 27,278,330 | `383ef2d6f2b97a4579ee9c813d3c55022222253b48a6c1c1888777ac2568fba9` |
 
 For pre-modernization comparison, the verified post-adoption baseline at
 commit `52adf0ff6c4646a15a7950f50f9bcb5fecb01490` produced these identities:
@@ -1227,7 +1230,7 @@ the test intent; current source anchors identify the current oracle.
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
-| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, native brightness checkbox, and application-owned viewport/color overrides remain exact without loading production Face. |
+| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport/host-color overrides remain exact without loading production Face. |
 | ASSET-01 | File identity | The exact 179-file current platform set, verified post-modernization byte total, and current full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit; 31 are reachable, two remain unreferenced, and all browser-generated certificate inputs resolve with exact case. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
