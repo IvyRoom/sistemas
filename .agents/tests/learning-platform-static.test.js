@@ -472,7 +472,15 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
   );
   const checkboxStyle = Buffer.from("#brightnessCheckbox {", "utf8");
   const shadowRootConstructor = Buffer.from("attachShadow", "utf8");
+  const closedShadowMode = Buffer.from("closed", "utf8");
   const activeShadowRoot = Buffer.from("_currentShadowRoot", "utf8");
+  const completionSpinner = Buffer.from(
+    '<div class="spinnerCheck" id="spinnerCheck">',
+    "utf8"
+  );
+  const completionCircleStyle = Buffer.from(".spinnerCheck #circle {", "utf8");
+  const completionTickStyle = Buffer.from(".spinnerCheck #tick {", "utf8");
+  const completionGreen = Buffer.from("stroke: #63bc01;", "utf8");
   const vendorAccentColors = ["accent-color", "accentColor"].map((value) =>
     Buffer.from(value, "utf8")
   );
@@ -482,6 +490,11 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
       countBufferOccurrences(engineBytes, shadowRootConstructor),
       1,
       `${wasm} must retain the Shadow DOM boundary used by the Face controls`
+    );
+    assert.equal(
+      countBufferOccurrences(engineBytes, closedShadowMode),
+      1,
+      `${wasm} must retain the closed Shadow DOM mode wrapped by the application seam`
     );
     assert.equal(
       countBufferOccurrences(engineBytes, activeShadowRoot),
@@ -498,6 +511,26 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
       1,
       `${wasm} must retain the brightness checkbox style anchor`
     );
+    assert.equal(
+      countBufferOccurrences(engineBytes, completionSpinner),
+      1,
+      `${wasm} must retain the completion spinner branded through the shadow-root seam`
+    );
+    assert.equal(
+      countBufferOccurrences(engineBytes, completionCircleStyle),
+      1,
+      `${wasm} must retain the completion-circle style anchor`
+    );
+    assert.equal(
+      countBufferOccurrences(engineBytes, completionTickStyle),
+      1,
+      `${wasm} must retain the completion-tick style anchor`
+    );
+    assert.equal(
+      countBufferOccurrences(engineBytes, completionGreen),
+      4,
+      `${wasm} must retain the four vendor green strokes overridden by the application seam`
+    );
     assert.ok(
       vendorAccentColors.every(
         (value) => countBufferOccurrences(engineBytes, value) === 0
@@ -511,6 +544,17 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
   const faceStartupSource = pageSources.find(
     ({ relativePath }) => relativePath === "modules/face-startup.js"
   ).source;
+  assert.ok(
+    faceStartupSource.includes(
+      "#spinnerCheck #circle,\\n#spinnerCheck #tick {\\n    stroke: #4a0816 !important;\\n}"
+    ),
+    "The shared Face startup seam must retain the reviewed completion color"
+  );
+  assert.match(
+    faceStartupSource,
+    /shadowRoot\.adoptedStyleSheets\s*=\s*\[\.\.\.shadowRoot\.adoptedStyleSheets,\s*styleSheet\]/,
+    "The shared Face startup seam must adopt its stylesheet inside the closed root"
+  );
   for (const entryName of ["login", "cadastro"]) {
     const entryHtml = fs.readFileSync(path.join(platformRoot, entryName, "index.html"), "utf8");
     const entrySource = fs.readFileSync(path.join(platformRoot, entryName, "main.js"), "utf8");
@@ -530,6 +574,11 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
       (entrySource.match(/import\s+["']\.\.\/azure-ai-vision-face-ui\/FaceLivenessDetector\.js["']/g) ?? []).length,
       1,
       "Each production Face entry must retain the vendored registration import"
+    );
+    assert.equal(
+      (entrySource.match(/createFaceStyleSheet:\s*\(\)\s*=>\s*new CSSStyleSheet\(\)/g) ?? []).length,
+      1,
+      "Each production Face entry must construct the application stylesheet in its browser realm"
     );
   }
 
@@ -620,9 +669,9 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
   );
 
   assert.deepEqual(treeStats(records), {
-    files: 179,
-    bytes: 20673295,
-    digest: "6018d37df724bb697d6786139a52099c11298daa56a345fef84c5bf860c2bd2e"
+    files: 180,
+    bytes: 20674761,
+    digest: "13fe98c38c172205aafa6a0f0875c701462bdeaf70d562658e2632a0bfe9fd4e"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -630,9 +679,9 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
       output: record.output.slice("plataforma/".length)
     }))),
     {
-      files: 179,
-      bytes: 20673295,
-      digest: "c6e1c7a9900cf7d709cc0fe0c39517a95a95f328552442aabfd1b30d64dc4173"
+      files: 180,
+      bytes: 20674761,
+      digest: "19cd19514b1cfa0bf9f5d842886f8a7b31c17f6489b696f7d7787feeac257eb2"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
   );
@@ -650,7 +699,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     html: 7,
     ico: 5,
     jpg: 1,
-    js: 33,
+    js: 34,
     json: 75,
     png: 11,
     svg: 5,
@@ -918,9 +967,9 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
-    files: 254,
-    bytes: 27278330,
-    digest: "383ef2d6f2b97a4579ee9c813d3c55022222253b48a6c1c1888777ac2568fba9"
+    files: 255,
+    bytes: 27279796,
+    digest: "fd1b51781d70942451fabd14843ec1cee3b80dbdb30ce81940f58b679fd02ec5"
   });
 });
 
@@ -930,8 +979,8 @@ test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform do
   assert.deepEqual(platformApplication.publicDownloads, []);
   assert.equal(
     records.length - platformApplication.publicEntries.length,
-    172,
-    "The platform must retain 172 implicitly emitted runtime/support files"
+    173,
+    "The platform must retain 173 implicitly emitted runtime/support files"
   );
   assert.equal(
     records.filter(({ output }) => output.startsWith("plataforma/estudo/files/")).length,

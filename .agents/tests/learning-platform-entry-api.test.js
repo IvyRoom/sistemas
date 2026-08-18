@@ -24,6 +24,7 @@ const SCRIPT_PATHS = {
 };
 
 const MODULE_PATHS = {
+  faceStartup: "apps/learning-platform/modules/face-startup.js",
   lifecycle: "apps/learning-platform/modules/lifecycle.js",
   login: "apps/learning-platform/modules/login.js",
   notices: "apps/learning-platform/modules/initial-notices.js",
@@ -67,6 +68,7 @@ const FIXTURE_FACE_SESSION = opaqueValue("face-session");
 const FIXTURE_FACE_TOKEN = opaqueValue("face-token");
 const FIXTURE_HANDLE = opaqueValue("row-handle");
 const FIXTURE_RESULT_PATH = `/plataforma_v2/FaceID_resultado/${FIXTURE_FACE_SESSION}`;
+const EXPECTED_FACE_SHADOW_STYLES = "#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
 
 function refreshData(overrides = {}) {
   const data = {
@@ -138,6 +140,16 @@ function assertNoQuery(harness) {
     true
   );
   harness.hostGuard.assertUnused();
+}
+
+function assertFaceShadowPresentation(faceElement) {
+  assert.deepEqual(faceElement.faceShadowOptions, { mode: "closed" });
+  assert.equal(faceElement.attachShadow, faceElement.faceNativeAttachShadow);
+  assert.equal(faceElement.faceShadowRoot.adoptedStyleSheets.length, 1);
+  assert.equal(
+    faceElement.faceShadowRoot.adoptedStyleSheets[0].cssText,
+    EXPECTED_FACE_SHADOW_STYLES
+  );
 }
 
 function moduleDependencies(harness, overrides = {}) {
@@ -621,6 +633,80 @@ test("login and registration factories preserve initial capture and listener ord
   }
 });
 
+test("[FACE-01] Face startup themes the closed shadow root without changing startup order", async () => {
+  const harness = createLearningPlatformHarness();
+  const { createFaceStartup } = await harness.loadModule(MODULE_PATHS.faceStartup);
+  const events = [];
+  const shadowRoot = { adoptedStyleSheets: [] };
+  const faceElement = {
+    attachShadow(options) {
+      events.push({ options: { ...options }, type: "attach-shadow" });
+      return shadowRoot;
+    },
+    start(token) {
+      events.push({ tokenPresent: Boolean(token), type: "start" });
+      this.attachShadow({ mode: "closed" });
+      return Promise.resolve("synthetic-face-result");
+    }
+  };
+  const nativeAttachShadow = faceElement.attachShadow;
+  for (const [property, type] of [
+    ["locale", "set-locale"],
+    ["fontSize", "set-font-size"],
+    ["buttonStyles", "set-button-styles"]
+  ]) {
+    Object.defineProperty(faceElement, property, {
+      set(value) {
+        events.push({ type, value });
+      }
+    });
+  }
+
+  const faceStartup = createFaceStartup({
+    createElement(tagName) {
+      events.push({ tagName, type: "create" });
+      return faceElement;
+    },
+    createStyleSheet() {
+      events.push({ type: "create-style-sheet" });
+      return {
+        replaceSync(cssText) {
+          this.cssText = String(cssText);
+          events.push({ cssText: this.cssText, type: "replace-style" });
+        }
+      };
+    },
+    mount(element) {
+      assert.equal(element, faceElement);
+      assert.notEqual(element.attachShadow, nativeAttachShadow);
+      events.push({ type: "mount" });
+    }
+  });
+
+  assert.equal(await faceStartup.start(FIXTURE_FACE_TOKEN), "synthetic-face-result");
+  assert.equal(faceElement.attachShadow, nativeAttachShadow);
+  assert.equal(shadowRoot.adoptedStyleSheets.length, 1);
+  assert.equal(shadowRoot.adoptedStyleSheets[0].cssText, EXPECTED_FACE_SHADOW_STYLES);
+  assert.deepEqual(
+    events.map(({ type }) => type),
+    [
+      "create",
+      "set-locale",
+      "set-font-size",
+      "set-button-styles",
+      "mount",
+      "start",
+      "attach-shadow",
+      "create-style-sheet",
+      "replace-style"
+    ]
+  );
+  assert.deepEqual(events.find(({ type }) => type === "attach-shadow").options, {
+    mode: "closed"
+  });
+  harness.hostGuard.assertUnused();
+});
+
 test("[GATE-02] study installs resize after gates and refreshes after its immediate width decision", async () => {
   for (const width of [1023, 1024, 1025]) {
     const harness = createLearningPlatformHarness({
@@ -1048,6 +1134,7 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
   const registrationFaceElement = success.element("Container-Auxiliar-FaceID").children[0];
   assert.equal(registrationFaceElement.locale, "pt-BR");
   assert.equal(registrationFaceElement.fontSize, "18px");
+  assertFaceShadowPresentation(registrationFaceElement);
   assert.equal(
     registrationFaceElement.buttonStyles,
     "margin-top: 10px; height: 40px; width: 110px; font-size: 16px; border-radius: 20px; box-shadow: 0px 0px 8px #4a0816; border: 0px; cursor: pointer;"
@@ -1286,6 +1373,7 @@ test("[API-02] Face verification creates a protected session then performs exact
   const loginFaceElement = harness.element("Container-Auxiliar-FaceID").children[0];
   assert.equal(loginFaceElement.locale, "pt-BR");
   assert.equal(loginFaceElement.fontSize, "18px");
+  assertFaceShadowPresentation(loginFaceElement);
   assert.deepEqual(harness.guard.requests.map(({ method, path }) => ({ method, path })), [
     { method: "POST", path: "/plataforma_v2/login-FaceID" },
     { method: "POST", path: "/plataforma_v2/FaceID" },

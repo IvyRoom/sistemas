@@ -9,6 +9,7 @@ createRegistrationApplication({
     fetch,
     FormDataConstructor: FormData,
     createFaceElement: tagName => document.createElement(tagName),
+    createFaceStyleSheet: () => new CSSStyleSheet(),
     navigate(target) {
         window.location.href = target;
     },

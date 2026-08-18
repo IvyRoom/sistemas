@@ -3,6 +3,7 @@ import { createStudyCertificate } from './certificate.js';
 import { createStudyContent } from './content.js';
 import { createStudyFeedback } from './feedback.js';
 import { createStudyNavigation } from './navigation.js';
+import { createStudyPerformance } from './performance.js';
 import { createStudyProgress } from './progress.js';
 import { createStudySessionTimer } from './session-timer.js';
 import { createStudyState } from './state.js';
@@ -33,6 +34,7 @@ export function createStudyApplication({
     let assessment;
     let feedback;
     let certificate;
+    let performanceView;
 
     function openTopic() {
         const selectedTopic = this;
@@ -50,7 +52,7 @@ export function createStudyApplication({
     }
 
     function openPerformance() {
-        certificate.open();
+        performanceView.open();
     }
 
     const progress = createStudyProgress({
@@ -72,7 +74,8 @@ export function createStudyApplication({
         openTopic,
         state
     });
-    certificate = createStudyCertificate({ document, dom, navigation, renderCertificate, state });
+    certificate = createStudyCertificate({ document, renderCertificate, state });
+    performanceView = createStudyPerformance({ certificate, document, dom, navigation, state });
     feedback = createStudyFeedback({
         alert,
         client,

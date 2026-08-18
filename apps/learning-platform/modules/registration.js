@@ -11,6 +11,7 @@ export function createRegistrationApplication({
     fetch,
     FormDataConstructor,
     createFaceElement,
+    createFaceStyleSheet,
     navigate,
     alert
 }) {
@@ -25,6 +26,7 @@ export function createRegistrationApplication({
     const faceContainer = document.getElementById('Container-Auxiliar-FaceID');
     const faceStartup = createFaceStartup({
         createElement: createFaceElement,
+        createStyleSheet: createFaceStyleSheet,
         mount: element => faceContainer.appendChild(element)
     });
 

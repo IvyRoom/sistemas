@@ -24,6 +24,7 @@ const studyModulePaths = [
   "downloads.js",
   "feedback.js",
   "navigation.js",
+  "performance.js",
   "player.js",
   "progress.js",
   "session-timer.js",
@@ -1081,6 +1082,52 @@ function certificateRun({ completed = 171, grade }) {
   controller.openPerformance();
   return { harness, recorder };
 }
+
+test("[FLOW-06] performance view keeps exact chart scale, colors, percentages, and layout changes", () => {
+  const { controller, harness } = createStudyHarness();
+  const grades = [0, 0.35, 0.7, 0.85, 1, 0.8, 0.8, 0.8, 0.8, 0.8];
+  setStudyState(controller, { accumulatedGrade: 0.95, grades });
+
+  controller.openPerformance();
+
+  assert.equal(harness.element("Container-Interno-Shaka-Player").pauseCalls, 1);
+  assert.equal(harness.element("Seção-Navegação").scrollTop, 0);
+  assert.equal(harness.element("Nome-Tópico").innerHTML, "<b>Desempenho e Certificado</b>");
+  assert.equal(harness.element("Container-Externo-Conteúdo").style.display, "none");
+  assert.equal(harness.element("Container-Externo-Testes").style.display, "none");
+  assert.equal(harness.element("Container-Externo-Feedbacks").style.display, "none");
+  assert.equal(
+    harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
+    "block"
+  );
+  assert.equal(harness.element("Faixa-Inferior").style.display, "none");
+
+  const expected = [
+    ["0px", "rgb(164,16,52)", "0.0%"],
+    ["140px", "rgb(188,102,40)", "35.0%"],
+    ["280px", "rgb(212,187,28)", "70.0%"],
+    ["340px", "rgb(111,170,45)", "85.0%"],
+    ["400px", "rgb(10,152,62)", "100.0%"]
+  ];
+  expected.forEach(([height, color, percentage], offset) => {
+    const moduleNumber = offset + 1;
+    assert.equal(harness.element(`Barra-Nota-Teste-Módulo-${moduleNumber}`).style.height, height);
+    assert.equal(
+      harness.element(`Barra-Nota-Teste-Módulo-${moduleNumber}`).style.backgroundColor,
+      color
+    );
+    assert.equal(
+      harness.element(`Percentual-Nota-Teste-Módulo-${moduleNumber}`).innerHTML,
+      percentage
+    );
+  });
+  assert.equal(harness.element("Barra-Nota-Testes-Acumulado").style.height, "380px");
+  assert.equal(
+    harness.element("Barra-Nota-Testes-Acumulado").style.backgroundColor,
+    "rgb(44,158,56)"
+  );
+  assert.equal(harness.element("Percentual-Nota-Testes-Acumulado").innerHTML, "95.0%");
+});
 
 test("[FLOW-06] certificate eligibility keeps exact completion and grade thresholds", () => {
   const cases = [

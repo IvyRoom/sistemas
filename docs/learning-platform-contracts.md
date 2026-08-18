@@ -209,7 +209,7 @@ split without changing their ordering:
 | `navigation.js`, `session-timer.js` | 171-node/module navigation and metrics; client deadline display, warning thresholds, expiry flag change, and navigation. |
 | `content.js`, `downloads.js`, `player.js` | Content selection, exact download assignments, injected Shaka lifecycle, protected/bypass selection, retained player/UI, and local completion handlers. Sensitive media and license policy remains only in the production study edge. |
 | `progress.js`, `assessment.js`, `feedback.js` | Optimistic updates, rollback, assessment calculation/global mutations, feedback request ordering, and all documented duplicate/partial-success behavior. |
-| `certificate.js`, `certificate-renderer.js` | Eligibility/performance presentation and the injected jsPDF renderer with the three local certificate inputs. |
+| `performance.js`, `certificate.js`, `certificate-renderer.js` | Combined-view opening and grade-chart rendering; certificate eligibility/status and download binding; and the injected jsPDF renderer with the three local certificate inputs. |
 
 Cross-function mutable state is application-owned rather than implicit
 browser-global state. Login and registration retain captured controls and
@@ -588,8 +588,11 @@ Explicit logout and timer expiry both set only `Usuário_Logado = Não` and use
 normal navigation to login. They do not remove the row handle, deadline,
 registration authorization, backend base, photo mirror, or origin marker.
 
-Current anchors: performance/certificate
-[`certificate.js`](../apps/learning-platform/modules/study/certificate.js) and
+Current anchors: performance view and grade charts
+[`performance.js`](../apps/learning-platform/modules/study/performance.js), certificate
+eligibility/download binding
+[`certificate.js`](../apps/learning-platform/modules/study/certificate.js), certificate
+construction
 [`certificate-renderer.js`](../apps/learning-platform/modules/study/certificate-renderer.js),
 logout [`application.js`](../apps/learning-platform/modules/study/application.js), and
 timer [`session-timer.js`](../apps/learning-platform/modules/study/session-timer.js).
@@ -675,11 +678,11 @@ mapping; there is no bundle or generated-source layer.
 | `cadastro/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
 | `estudo/` | 41 | HTML/JS/CSS, 33 study files, five images |
 | `login/` | 6 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
-| `modules/` | 23 | Shared browser seams, page factories, 13 study responsibility modules, and three status-report modules |
+| `modules/` | 24 | Shared browser seams, page factories, 14 study responsibility modules, and three status-report modules |
 | `statusreport/` | 5 | HTML/JS/CSS, favicon, logo |
-| **Total** | **179** | Current output root is `dist/plataforma/` |
+| **Total** | **180** | Current output root is `dist/plataforma/` |
 
-By extension, the set is 7 CSS, 7 HTML, 33 JS, 75 JSON, 2 WASM, 11 PNG,
+By extension, the set is 7 CSS, 7 HTML, 34 JS, 75 JSON, 2 WASM, 11 PNG,
 5 ICO, 5 SVG, 1 JPG, 19 XLSM, 11 XLSX, 2 VSDX, and 1 VSSX. The exact complete
 path listing is reproducible with:
 
@@ -687,7 +690,7 @@ path listing is reproducible with:
 git -c core.quotepath=false ls-files -- apps/learning-platform
 ```
 
-All 179 paths are NFC. Thirty-four contain non-ASCII characters: the
+All 180 paths are NFC. Thirty-four contain non-ASCII characters: the
 registration reference image and all 33 study-file paths. Exact case, spaces,
 punctuation, accents, and normalization form are runtime contracts. The build
 rejects case/NFC collisions and verifies the exact generated spelling and
@@ -729,18 +732,25 @@ three-dot animation and timing, and exact `pt-BR` `AZAIF_FeedbackStarting` copy
 loading surface fill the browser viewport and applies the company color
 `#4a0816` to the blinking dots. The native brightness-confirmation checkbox is
 inside the SDK's Shadow DOM, so the same color is applied as an inherited
-`accent-color` on the `azure-ai-vision-face-ui` custom-element host. These
-rules do not replace localized copy or edit any vendor asset; the complete
-vendored Face subtree remains byte-identical.
+`accent-color` on the `azure-ai-vision-face-ui` custom-element host. The SDK's
+completion progress circle and final check are SVG strokes hard-coded inside
+the same closed Shadow DOM. Before mounting the Face element, the shared startup
+seam wraps that instance's first `attachShadow` call, preserves the vendor's
+`{ mode: "closed" }` option, and adopts an application-owned constructed
+stylesheet that applies `#4a0816` to `#spinnerCheck #circle` and
+`#spinnerCheck #tick`. These rules do not replace localized copy or edit any
+vendor asset; the complete vendored Face subtree remains byte-identical.
 
 These presentation rules live outside the vendored subtree, so replacing the
 SDK cannot overwrite them. Their runtime effect still depends on the SDK
 retaining its body-mounted loader and a native checkbox that inherits its accent
-from the custom-element host. A future SDK that changes those hooks, overrides
-the accent inside its Shadow DOM, or defeats the application loader rule's
-specificity requires explicit compatibility review. `FACE-01` freezes those
-hooks and the entire vendor digest so that such an update fails tests instead
-of silently losing the presentation.
+from the custom-element host. The completion treatment also depends on the SDK
+retaining its single closed-root `attachShadow` call and the current completion
+circle/tick selectors. A future SDK that changes those hooks, overrides the
+accent inside its Shadow DOM, or defeats an application rule's specificity
+requires explicit compatibility review. `FACE-01` freezes those hooks and the
+entire vendor digest so that such an update fails tests instead of silently
+losing the presentation.
 
 Both entry HTML files set
 `<base href="/plataforma/azure-ai-vision-face-ui/">`. Their own CSS, images,
@@ -760,7 +770,9 @@ at login [`index.html` lines 9-11](../apps/learning-platform/login/index.html#L9
 registration [`index.html` lines 9-11](../apps/learning-platform/cadastro/index.html#L9-L11),
 vendored paths/version/selection
 [`FaceLivenessDetector.js` line 1](../apps/learning-platform/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1),
-application-owned full-viewport loader, dot-color, and checkbox overrides in login
+application-owned completion-circle/check seam in
+[`face-startup.js`](../apps/learning-platform/modules/face-startup.js), full-viewport
+loader, dot-color, and checkbox overrides in login
 [`style.css`](../apps/learning-platform/login/style.css) and registration
 [`style.css`](../apps/learning-platform/cadastro/style.css), and the preserved
 localized loading copy in
@@ -930,7 +942,7 @@ and [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L
 
 The mapping copies tracked bytes; it performs no bundling, minification, or
 transformation. The current platform source and emitted `dist/plataforma/`
-subtree have the same 179 paths relative to their roots and identical bytes.
+subtree have the same 180 paths relative to their roots and identical bytes.
 
 The current post-modernization identity comes from the verified build for this
 change. File counts are fixed by the checked mapping; the byte totals and
@@ -938,9 +950,9 @@ digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 179 | 20,673,295 | `6018d37df724bb697d6786139a52099c11298daa56a345fef84c5bf860c2bd2e` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 179 | 20,673,295 | `c6e1c7a9900cf7d709cc0fe0c39517a95a95f328552442aabfd1b30d64dc4173` |
-| Current complete generated `dist/` artifact | 254 | 27,278,330 | `383ef2d6f2b97a4579ee9c813d3c55022222253b48a6c1c1888777ac2568fba9` |
+| Current platform subset, retaining full output paths `plataforma/...` | 180 | 20,674,761 | `13fe98c38c172205aafa6a0f0875c701462bdeaf70d562658e2632a0bfe9fd4e` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 180 | 20,674,761 | `19cd19514b1cfa0bf9f5d842886f8a7b31c17f6489b696f7d7787feeac257eb2` |
+| Current complete generated `dist/` artifact | 255 | 27,279,796 | `fd1b51781d70942451fabd14843ec1cee3b80dbdb30ce81940f58b679fd02ec5` |
 
 For pre-modernization comparison, the verified post-adoption baseline at
 commit `52adf0ff6c4646a15a7950f50f9bcb5fecb01490` produced these identities:
@@ -978,11 +990,11 @@ computes this digest. Artifact checking separately asserts exact case/path set
 and byte equality against every mapped source.
 
 The platform has seven manifest `publicEntries` and zero `publicDownloads`.
-Thus 172 emitted platform files are supporting/runtime files rather than
+Thus 173 emitted platform files are supporting/runtime files rather than
 individually enumerated public contracts. All 33 study downloads, the entire
 Face subtree, JS/CSS/images, and certificate inputs are absent from
 `publicDownloads` even though the identity mapping publishes them. Remote CDN
-libraries and all media manifests/segments are outside the 254-file artifact.
+libraries and all media manifests/segments are outside the 255-file artifact.
 
 Current anchors: mapping collection
 [`frontend-deployment-lib.mjs` lines 309-358](../scripts/frontend-deployment-lib.mjs#L309-L358),
@@ -1231,12 +1243,12 @@ the test intent; current source anchors identify the current oracle.
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
 | FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport/host-color overrides remain exact without loading production Face. |
-| ASSET-01 | File identity | The exact 179-file current platform set, verified post-modernization byte total, and current full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
+| ASSET-01 | File identity | The exact 180-file current platform set, verified post-modernization byte total, and current full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit; 31 are reachable, two remain unreferenced, and all browser-generated certificate inputs resolve with exact case. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 254 files and matches the verified post-modernization byte total and digest recorded above. |
-| ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 172 implicitly emitted runtime/support files. |
+| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 255 files and matches the verified post-modernization byte total and digest recorded above. |
+| ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 173 implicitly emitted runtime/support files. |
 
 ### Automated traceability
 
@@ -1332,8 +1344,8 @@ git diff --check
 The build/check pair proves the source-derived artifact rather than production
 hosting behavior. After building, compare the exact emitted file set and bytes
 using the repository helpers and digest framing above. For this module
-modernization, 23 new application-owned module files increase the platform and
-complete-artifact counts from 156 and 231 to 179 and 254. The current artifact
+modernization, 24 new application-owned module files increase the platform and
+complete-artifact counts from 156 and 231 to 180 and 255. The current artifact
 table records the verified post-modernization identities, preserves the
 post-adoption values as the pre-modernization baseline, and retains the older
 pre-adoption history separately.

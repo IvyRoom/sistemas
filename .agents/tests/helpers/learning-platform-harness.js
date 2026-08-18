@@ -697,8 +697,17 @@ function createElementFactory({ faceStartImplementation, guard, timeline }) {
     };
 
     if (tagName === "azure-ai-vision-face-ui") {
+      const shadowRoot = { adoptedStyleSheets: [] };
+      const attachShadow = (options) => {
+        element.faceShadowOptions = { ...options };
+        element.faceShadowRoot = shadowRoot;
+        return shadowRoot;
+      };
+      element.attachShadow = attachShadow;
+      element.faceNativeAttachShadow = attachShadow;
       element.start = async (token) => {
         timeline.push({ tokenPresent: Boolean(token), type: "face-start" });
+        element.attachShadow({ mode: "closed" });
         if (faceStartImplementation) return faceStartImplementation(token, element);
         return {};
       };
@@ -980,6 +989,14 @@ function createLearningPlatformHarness({
       clearTimeout: window.clearTimeout,
       createFaceElement() {
         return document.createElement("azure-ai-vision-face-ui");
+      },
+      createFaceStyleSheet() {
+        return {
+          cssText: "",
+          replaceSync(cssText) {
+            this.cssText = String(cssText);
+          }
+        };
       },
       document,
       fetch: guard.fetch,

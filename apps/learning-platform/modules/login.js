@@ -12,6 +12,7 @@ export function createLoginApplication({
     fetch,
     clock,
     createFaceElement,
+    createFaceStyleSheet,
     navigate,
     alert,
     console,
@@ -31,6 +32,7 @@ export function createLoginApplication({
     const faceContainer = document.getElementById('Container-Auxiliar-FaceID');
     const faceStartup = createFaceStartup({
         createElement: createFaceElement,
+        createStyleSheet: createFaceStyleSheet,
         mount: element => faceContainer.appendChild(element)
     });
 
