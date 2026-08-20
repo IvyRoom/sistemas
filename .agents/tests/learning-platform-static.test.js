@@ -229,12 +229,12 @@ function downloadReferences() {
 
   for (const line of studySource.split(/\r?\n/)) {
     const condition = line.match(
-      /M.duloAberto === "([^"]+)" && NomeV.deo === "([^"]+)"/u
+      /moduleName === "([^"]+)" && videoName === "([^"]+)"/u
     );
     if (condition) currentModule = condition[1];
 
     const assignment = line.match(
-      /Bot.oDownload\d+\.href\s*=\s*"\/plataforma\/estudo\/files\/"\s*\+\s*M.duloAberto\s*\+\s*"\/([^"]+)"/u
+      /downloadButton\d+\.href\s*=\s*"\/plataforma\/estudo\/files\/"\s*\+\s*moduleName\s*\+\s*"\/([^"]+)"/u
     );
     if (!assignment) continue;
 
@@ -670,8 +670,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 
   assert.deepEqual(treeStats(records), {
     files: 180,
-    bytes: 20674761,
-    digest: "13fe98c38c172205aafa6a0f0875c701462bdeaf70d562658e2632a0bfe9fd4e"
+    bytes: 20673868,
+    digest: "54e1d31293844e22ad8f20ff5fb19bad30d7436bc91e7af1842f51fb1e6da015"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -680,8 +680,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 180,
-      bytes: 20674761,
-      digest: "19cd19514b1cfa0bf9f5d842886f8a7b31c17f6489b696f7d7787feeac257eb2"
+      bytes: 20673868,
+      digest: "bac09370ab28b2b105fd6753852f5c606c82812783af36d486f1257f4817816a"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
   );
@@ -728,6 +728,15 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
     ),
     9163893,
     "Download bytes must remain exact"
+  );
+  assert.deepEqual(
+    treeStats(downloadRecords),
+    {
+      files: 33,
+      bytes: 9163893,
+      digest: "1073822d29815c0d23e984c347b70c468235be47083b7ce5c23b33565a0dece5"
+    },
+    "Every emitted download path and content byte must retain its digest"
   );
   assert.equal(
     digestStrings(
@@ -781,11 +790,22 @@ test("[ASSET-02] downloads and certificate inputs retain exact emitted paths and
     "/plataforma/estudo/img/ATLAS.png"
   ]);
   const platformFiles = platformRecords();
+  const certificateRecords = certificatePaths.map((publicPath) => {
+    const output = publicPath.slice(1);
+    return { output, source: sourceForOutput(platformFiles, output) };
+  });
   assert.ok(
-    certificatePaths.every((publicPath) =>
-      fs.statSync(localPath(sourceForOutput(platformFiles, publicPath.slice(1)))).isFile()
-    ),
+    certificateRecords.every(({ source }) => fs.statSync(localPath(source)).isFile()),
     "Every browser-generated certificate input must resolve with exact case"
+  );
+  assert.deepEqual(
+    treeStats(certificateRecords),
+    {
+      files: 3,
+      bytes: 148461,
+      digest: "82c735c7ac2fa32e09d71c326765db9c52ce63b58144c7c7b100458f8b897591"
+    },
+    "Every browser-generated certificate input path and content byte must retain its digest"
   );
 });
 
@@ -968,8 +988,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
     files: 255,
-    bytes: 27279796,
-    digest: "fd1b51781d70942451fabd14843ec1cee3b80dbdb30ce81940f58b679fd02ec5"
+    bytes: 27278903,
+    digest: "27e74781d83b39a8ec7085802cfc5b763f2ea04f941b00cc728f0049e53f20ff"
   });
 });
 

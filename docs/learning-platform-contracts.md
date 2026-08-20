@@ -220,6 +220,28 @@ query snapshot and chart arrays in its factory closure. DOM live collections,
 `onclick`/`onended` replacement, and other documented legacy coupling remain
 observable compatibility behavior.
 
+### Application-owned internal language boundary
+
+Application-owned learning-platform identifiers and comments use US English
+and ASCII. The approved behavior-neutral rename map is deliberately narrow:
+
+| Source | Legacy internal | Current internal |
+| --- | --- | --- |
+| `login/main.js`, `statusreport/main.js` | local `URL_Base_Backend` | `backendBase` |
+| `modules/study/downloads.js` | `MóduloAberto`, `NomeVídeo` | existing inputs `moduleName`, `videoName` |
+| `modules/study/downloads.js` | `ContainerDownloadArquivo1` through `ContainerDownloadArquivo4` | `downloadContainer1` through `downloadContainer4` |
+| `modules/study/downloads.js` | `NomeArquivo1` through `NomeArquivo4` | `downloadName1` through `downloadName4` |
+| `modules/study/downloads.js` | `BotãoDownload1` through `BotãoDownload4` | `downloadButton1` through `downloadButton4` |
+| `modules/study/certificate-renderer.js` | `Usuário_NomeCompleto`, `Usuário_Formação_NotaAcumulado`, `Usuário_Formação_CertificadoID` | `fullName`, `accumulatedGrade`, `certificateId` |
+
+This does not rename the exact `URL_Base_Backend` storage string, any
+`Usuário_*` API member, DOM/CSS identifier, query field, route, raw storage
+value, module/video label, filename, download/media/certificate path, Face
+interface, or Brazilian-Portuguese presentation. The frozen legacy status-report
+note about `consolidado` and `individual` also remains documentary evidence.
+Focused static tests enforce this lexical boundary without scanning
+compatibility strings as application-owned internals.
+
 Node.js tests import these exact `.js` modules through a realpath-confined
 native-module loader. A deny-all host guard is installed before import, and the
 factories receive only invented DOM, storage, clock, Face, Shaka, jsPDF, and
@@ -944,15 +966,24 @@ The mapping copies tracked bytes; it performs no bundling, minification, or
 transformation. The current platform source and emitted `dist/plataforma/`
 subtree have the same 180 paths relative to their roots and identical bytes.
 
-The current post-modernization identity comes from the verified build for this
-change. File counts are fixed by the checked mapping; the byte totals and
+The current post-English-internals identity comes from the verified build for
+this change. File counts are fixed by the checked mapping; the byte totals and
 digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 180 | 20,674,761 | `13fe98c38c172205aafa6a0f0875c701462bdeaf70d562658e2632a0bfe9fd4e` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 180 | 20,674,761 | `19cd19514b1cfa0bf9f5d842886f8a7b31c17f6489b696f7d7787feeac257eb2` |
-| Current complete generated `dist/` artifact | 255 | 27,279,796 | `fd1b51781d70942451fabd14843ec1cee3b80dbdb30ce81940f58b679fd02ec5` |
+| Current platform subset, retaining full output paths `plataforma/...` | 180 | 20,673,868 | `54e1d31293844e22ad8f20ff5fb19bad30d7436bc91e7af1842f51fb1e6da015` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 180 | 20,673,868 | `bac09370ab28b2b105fd6753852f5c606c82812783af36d486f1257f4817816a` |
+| Current complete generated `dist/` artifact | 255 | 27,278,903 | `27e74781d83b39a8ec7085802cfc5b763f2ea04f941b00cc728f0049e53f20ff` |
+
+For pre-English-internals comparison, the verified base at commit
+`48579a49e50f866d462aa05a868654564b4f121c` produced these identities:
+
+| Pre-English-internals scope and digest framing | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Platform subset, retaining full output paths `plataforma/...` | 180 | 20,674,761 | `13fe98c38c172205aafa6a0f0875c701462bdeaf70d562658e2632a0bfe9fd4e` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 180 | 20,674,761 | `19cd19514b1cfa0bf9f5d842886f8a7b31c17f6489b696f7d7787feeac257eb2` |
+| Complete generated `dist/` artifact | 255 | 27,279,796 | `fd1b51781d70942451fabd14843ec1cee3b80dbdb30ce81940f58b679fd02ec5` |
 
 For pre-modernization comparison, the verified post-adoption baseline at
 commit `52adf0ff6c4646a15a7950f50f9bcb5fecb01490` produced these identities:
@@ -1160,13 +1191,38 @@ compatibility-preserving module modernization.
 - Replace status reporting with live, participant-named, revocable company
   bearer links. Easy WhatsApp sharing and forwarding remain accepted
   requirements.
-- Modernize remaining internal identifiers and error handling only as a later
-  coordinated contract change.
-- Convert comments and internal identifiers to US English while preserving
-  user-facing Brazilian Portuguese.
-- Replace `Erro_XXX` end to end as a coordinated contract change.
-- Add minimal privacy-safe health signals, logging, correlation, budget alerts,
-  and operational visibility.
+- Separate error handling into three layers rather than treating visible
+  `Erro_XXX` alerts as the contract: Brazilian-Portuguese recovery outcomes for
+  people, stable domain-owned semantic machine errors for frontend/backend
+  decisions, and private sanitized diagnostics for operators. Machine errors
+  must use US-English ASCII names, must not contain translated copy or backend
+  diagnostics, and must never be interpolated into a user-visible message.
+- Centralize frontend transport, malformed-response, HTTP, known-domain,
+  unknown-domain, and application-local failure normalization. Map the
+  resulting semantic kinds through an application-owned presentation catalog
+  to reviewed Brazilian-Portuguese outcomes without changing feature-specific
+  request order, rollback, partial-success, or navigation behavior.
+- Roll the learning-platform contract out in independently deployable stages:
+  first a frontend adapter that accepts both legacy and semantic backend values,
+  then semantic backend producers, then a frontend cleanup after production
+  verification. Quarantine legacy aliases in that adapter; do not scatter or
+  retain a permanent dual protocol.
+- Preserve the current visible alerts during the compatibility stages. In the
+  final reviewed frontend cleanup, remove the `Erro_XXX` prefixes without
+  displaying the replacement machine values or inventing Portuguese copy.
+- Use the learning platform as the reference implementation, then adopt the
+  pattern in other frontend applications and backend domains one domain at a
+  time. Do not globally replace numbered values: unrelated domains can reuse a
+  number with a different meaning and retain their current contracts until
+  their own coordinated migration.
+- Add privacy-safe structured logging, trace correlation, dependency and
+  exception signals, sampling, budget alerts, and operational visibility as a
+  separate Azure operations milestone. Observability diagnoses failures; it
+  neither replaces the client/server error contract nor exposes private
+  diagnostic detail through that contract.
+- Keep session authority and logout, HTTP-status reclassification, retries,
+  idempotency, timeout and cancellation policy, partial-success redesign, and
+  versioned response-envelope changes in separately authorized milestones.
 - Re-encode the video ladder and evaluate storage redundancy before considering
   a CDN.
 - Automate Face SDK and dependency maintenance; remove secret-bearing manual

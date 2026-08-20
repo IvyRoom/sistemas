@@ -3,7 +3,7 @@ import { createLoginApplication } from "../modules/login.js";
 
 sessionStorage.setItem('URL_Base_Backend', 'https://plataforma-backend-v3.azurewebsites.net/plataforma_v2'); // 'http://localhost:3000/plataforma_v2' 
 
-const URL_Base_Backend = sessionStorage.getItem('URL_Base_Backend');
+const backendBase = sessionStorage.getItem('URL_Base_Backend');
 
 createLoginApplication({
     window,
@@ -22,5 +22,5 @@ createLoginApplication({
         window.alert(message);
     },
     console: window.console,
-    backendBase: URL_Base_Backend
+    backendBase
 });
