@@ -1,9 +1,9 @@
 export function createCertificateRenderer(getJsPdfConstructor) {
     return function renderCertificate(event, state) {
         event.preventDefault();
-        const Usuário_NomeCompleto = state.fullName;
-        const Usuário_Formação_NotaAcumulado = state.accumulatedGrade;
-        const Usuário_Formação_CertificadoID = state.certificateId;
+        const fullName = state.fullName;
+        const accumulatedGrade = state.accumulatedGrade;
+        const certificateId = state.certificateId;
 
         const jsPDF = getJsPdfConstructor();
         const doc = new jsPDF();
@@ -18,7 +18,7 @@ export function createCertificateRenderer(getJsPdfConstructor) {
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(20);
         doc.setFont('Helvetica','bold');
-        doc.text(Usuário_NomeCompleto, 105, 80, null, null, 'center');
+        doc.text(fullName, 105, 80, null, null, 'center');
 
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(14);
@@ -39,7 +39,7 @@ export function createCertificateRenderer(getJsPdfConstructor) {
         doc.setFontSize(13);
         doc.setFont('Helvetica','normal');
 
-        if (Usuário_Formação_NotaAcumulado >=0.95){
+        if (accumulatedGrade >=0.95){
 
             doc.text(doc.splitTextToSize('Esta formação capacita profissionais na implementação de soluções gerenciais científicas, passando por inúmeros conceitos e ferramentas do Método Gerencial e do Sistema de Gestão, com ênfase na aplicação da Equação Fundamental da Gestão, dos Princípios Basilares, do Ger. Diretrizes e do Ger. Rotina à solução de problemas reais.', 160), 105, 145, null, null, 'center');
 
@@ -77,10 +77,10 @@ export function createCertificateRenderer(getJsPdfConstructor) {
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(10);
         doc.setFont('Helvetica','normal');
-        doc.text('Certificado ID#: ' + Usuário_Formação_CertificadoID, 105, 260, null, null, 'center');
+        doc.text('Certificado ID#: ' + certificateId, 105, 260, null, null, 'center');
         doc.text('Validação via: https://machadogestao.com/validacao-certificados/', 105, 265, null, null, 'center');
 
-        doc.save('CERTIFICADO - ' + Usuário_NomeCompleto + '.pdf');
+        doc.save('CERTIFICADO - ' + fullName + '.pdf');
 
     };
 }
