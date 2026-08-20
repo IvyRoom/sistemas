@@ -152,6 +152,15 @@ function assertFaceShadowPresentation(faceElement) {
   );
 }
 
+function assertMachineValueHidden(harness, machineValue) {
+  const renderedText = [harness.document.body, ...harness.elements.values()]
+    .map((element) => `${element.innerHTML}\n${element.textContent}`)
+    .join("\n");
+  assert.equal(harness.alerts.join("\n").includes(machineValue), false);
+  assert.deepEqual(harness.consoleCalls, []);
+  assert.equal(renderedText.includes(machineValue), false);
+}
+
 function moduleDependencies(harness, overrides = {}) {
   const dependencies = harness.dependencies();
   return {
@@ -1508,6 +1517,275 @@ test("[API-02] Face start and result retain exact specific and generic mappings"
     result401.guard.requests.filter(({ path }) => path.endsWith(":sessionId")).length,
     1
   );
+});
+
+test("[ERROR-02] named backend values preserve legacy entry failure effects", async () => {
+  function snapshotEntryFailure(harness, controls) {
+    return {
+      alerts: [...harness.alerts],
+      consoleCalls: [...harness.consoleCalls],
+      controls,
+      navigation: [...harness.navigation],
+      requests: harness.guard.requests,
+      storage: harness.sessionStorage.snapshot({
+        redact: ["IndexVerificado", "URL_Base_Backend"]
+      }),
+      timeline: harness.timeline.filter(({ type }) => [
+        "append", "face-start", "fetch", "navigate", "storage-set"
+      ].includes(type))
+    };
+  }
+
+  async function runLoginFailure(machineValue) {
+    const harness = createLearningPlatformHarness({
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID",
+        response: { data: { error: machineValue }, status: 500 }
+      }]
+    });
+    await installLoginApplication(harness);
+    harness.element("E-mail").value = "invented@example.test";
+    harness.element("Senha").value = "invented password";
+    submit(harness.element("Formulário-Login"));
+    await harness.flush(20);
+    assertNoQuery(harness);
+    return {
+      harness,
+      snapshot: snapshotEntryFailure(harness, {
+        cursor: harness.document.body.style.cursor,
+        initializing: harness.element("Aviso-Inicializando").style.display,
+        invalidCredentials: harness.element("Aviso-Email-ou-Senha-Inválidos").style.display,
+        password: harness.element("Senha").value,
+        submitDisabled: harness.element("Entrar").disabled,
+        submitDisplay: harness.element("Entrar").style.display,
+        user: harness.element("E-mail").value
+      })
+    };
+  }
+
+  async function runRegistrationFailure(machineValue) {
+    const harness = createLearningPlatformHarness({
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/CadastroFoto_e_FaceID",
+        response: { data: { error: machineValue }, status: 500 }
+      }],
+      storage: {
+        IndexVerificado: FIXTURE_HANDLE,
+        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
+        Usuário_Autorização_Cadastro: "Sim"
+      }
+    });
+    harness.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
+    await installRegistrationApplication(harness);
+    submit(harness.element("Formulário-Foto-Referência"));
+    await harness.flush(20);
+    assertNoQuery(harness);
+    return {
+      harness,
+      snapshot: snapshotEntryFailure(harness, {
+        cursor: harness.document.body.style.cursor,
+        registering: harness.element("Aviso-Cadastrando").style.display,
+        submitDisabled: harness.element("Botão-Cadastrar-Foto-Referência").disabled,
+        submitDisplay: harness.element("Botão-Cadastrar-Foto-Referência").style.display
+      })
+    };
+  }
+
+  async function runFaceSessionFailure(machineValue) {
+    const harness = createLearningPlatformHarness({
+      routes: [
+        {
+          method: "POST",
+          path: "/plataforma_v2/login-FaceID",
+          response: { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+        },
+        {
+          method: "POST",
+          path: "/plataforma_v2/FaceID",
+          response: { data: { error: machineValue }, status: 500 }
+        }
+      ]
+    });
+    await installLoginApplication(harness);
+    submit(harness.element("Formulário-Login"));
+    await harness.flush(20);
+    assertNoQuery(harness);
+    return {
+      harness,
+      snapshot: snapshotEntryFailure(harness, {
+        cursor: harness.document.body.style.cursor,
+        initializing: harness.element("Aviso-Inicializando").style.display,
+        rejectedFace: harness.element("Aviso-FaceID-Reprovado").style.display,
+        submitDisabled: harness.element("Entrar").disabled,
+        submitDisplay: harness.element("Entrar").style.display
+      })
+    };
+  }
+
+  async function runFaceResultFailure(machineValue) {
+    const harness = createLearningPlatformHarness({
+      faceStartImplementation: async () => ({}),
+      routes: [
+        {
+          method: "POST",
+          path: "/plataforma_v2/login-FaceID",
+          response: { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+        },
+        {
+          method: "POST",
+          path: "/plataforma_v2/FaceID",
+          response: { data: faceSessionResponse() }
+        },
+        {
+          method: "GET",
+          path: FIXTURE_RESULT_PATH,
+          response: { data: { error: machineValue }, status: 500 }
+        }
+      ]
+    });
+    await installLoginApplication(harness);
+    submit(harness.element("Formulário-Login"));
+    await harness.flush(30);
+    assertNoQuery(harness);
+    return {
+      harness,
+      snapshot: snapshotEntryFailure(harness, {
+        cursor: harness.document.body.style.cursor,
+        faceChildren: harness.element("Container-Auxiliar-FaceID").children.length,
+        initializing: harness.element("Aviso-Inicializando").style.display,
+        submitDisabled: harness.element("Entrar").disabled,
+        submitDisplay: harness.element("Entrar").style.display
+      })
+    };
+  }
+
+  const transitions = [
+    {
+      legacy: "Erro_001",
+      named: "learning_platform.read_platform_data_failed",
+      run: runLoginFailure
+    },
+    {
+      legacy: "Erro_002",
+      named: "learning_platform.upload_reference_photo_failed",
+      run: runRegistrationFailure
+    },
+    {
+      legacy: "Erro_003",
+      named: "learning_platform.update_reference_photo_registration_failed",
+      run: runRegistrationFailure
+    },
+    {
+      legacy: "Erro_004",
+      named: "learning_platform.create_face_liveness_session_failed",
+      run: runRegistrationFailure
+    },
+    {
+      legacy: "Erro_005",
+      named: "learning_platform.read_reference_photo_failed",
+      run: runFaceSessionFailure
+    },
+    {
+      legacy: "Erro_007",
+      named: "learning_platform.read_face_liveness_result_failed",
+      run: runFaceResultFailure
+    }
+  ];
+
+  for (const { legacy, named, run } of transitions) {
+    const legacyResult = await run(legacy);
+    const namedResult = await run(named);
+    assert.deepEqual(namedResult.snapshot, legacyResult.snapshot, named);
+    assertOnlyErrorCode(namedResult.harness.alerts, legacy);
+    assertMachineValueHidden(namedResult.harness, named);
+  }
+
+  const generic = await runLoginFailure("unrecognized_learning_platform_failure");
+  for (const machineValue of [
+    "learning_platform.append_feedback_failed",
+    "client_intake.read_platform_data_failed"
+  ]) {
+    const isolated = await runLoginFailure(machineValue);
+    assert.deepEqual(isolated.snapshot, generic.snapshot, machineValue);
+    assertOnlyErrorCode(isolated.harness.alerts, "Erro_000");
+    assertMachineValueHidden(isolated.harness, machineValue);
+  }
+});
+
+test("[ERROR-02] malformed, denied-network, and local thrown failures keep their branches", async () => {
+  const responseOrder = [];
+  const malformed = createLearningPlatformHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/login-FaceID",
+      response: {
+        get ok() {
+          responseOrder.push("ok");
+          return true;
+        },
+        get status() {
+          responseOrder.push("status");
+          return 200;
+        },
+        async json() {
+          responseOrder.push("json");
+          throw new SyntaxError("Synthetic malformed JSON");
+        }
+      }
+    }]
+  });
+  await installLoginApplication(malformed);
+  submit(malformed.element("Formulário-Login"));
+  await malformed.flush(20);
+  assert.deepEqual(responseOrder, ["json"]);
+  assertOnlyErrorCode(malformed.alerts, "Erro_000");
+  assert.equal(malformed.element("Entrar").disabled, false);
+  assertNoQuery(malformed);
+
+  const deniedNetwork = createLearningPlatformHarness();
+  await installLoginApplication(deniedNetwork);
+  submit(deniedNetwork.element("Formulário-Login"));
+  await deniedNetwork.flush(20);
+  assertOnlyErrorCode(deniedNetwork.alerts, "Erro_000");
+  assert.equal(deniedNetwork.guard.requests.length, 0);
+  assert.equal(deniedNetwork.element("Entrar").disabled, false);
+  deniedNetwork.hostGuard.assertUnused();
+
+  const applicationThrown = createLearningPlatformHarness({
+    faceStartImplementation: async () => {
+      throw new Error("Synthetic application-local Face failure");
+    },
+    routes: [
+      {
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID",
+        response: { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+      },
+      {
+        method: "POST",
+        path: "/plataforma_v2/FaceID",
+        response: { data: faceSessionResponse() }
+      }
+    ]
+  });
+  await installLoginApplication(applicationThrown);
+  submit(applicationThrown.element("Formulário-Login"));
+  await applicationThrown.flush(30);
+  assert.deepEqual(
+    applicationThrown.guard.requests.map(({ method, path }) => ({ method, path })),
+    [
+      { method: "POST", path: "/plataforma_v2/login-FaceID" },
+      { method: "POST", path: "/plataforma_v2/FaceID" }
+    ]
+  );
+  assertOnlyErrorCode(applicationThrown.alerts, "Erro_006");
+  assert.deepEqual(applicationThrown.consoleCalls, [{ level: "log", size: 1 }]);
+  assert.equal(applicationThrown.element("Entrar").disabled, false);
+  assert.equal(applicationThrown.sessionStorage.getItem("Usuário_Logado"), null);
+  assert.equal(applicationThrown.navigation.length, 0);
+  assertNoQuery(applicationThrown);
 });
 
 test("[API-02] a backend-retry-visible Face result delay remains one client GET with no polling", async () => {

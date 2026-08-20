@@ -1,3 +1,12 @@
+import {
+    learningPlatformErrorKinds,
+    learningPlatformErrorOperations,
+    normalizeLearningPlatformError
+} from '../error-adapter.js';
+import {
+    learningPlatformErrorMessage,
+    learningPlatformErrorPresentations
+} from '../error-presentation.js';
 import { createStudyAssessment } from './assessment.js';
 import { createStudyCertificate } from './certificate.js';
 import { createStudyContent } from './content.js';
@@ -140,10 +149,18 @@ export function createStudyApplication({
             client.postJson('/refresh', {
                 IndexVerificado: state.verifiedIndex
             }).then(hydrate).catch(error => {
-                if (error.error !== 'Erro_001') {
-                    alert("Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e então atualize a página.");
+                const failure = normalizeLearningPlatformError(
+                    error,
+                    learningPlatformErrorOperations.REFRESH
+                );
+                if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE) {
+                    alert(learningPlatformErrorMessage(
+                        learningPlatformErrorPresentations.STUDY_REFRESH_GENERIC
+                    ));
                 } else {
-                    alert("Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nAtualize a página.");
+                    alert(learningPlatformErrorMessage(
+                        learningPlatformErrorPresentations.STUDY_REFRESH_PLATFORM_DATA
+                    ));
                 }
             });
         }

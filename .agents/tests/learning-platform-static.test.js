@@ -669,9 +669,9 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
   );
 
   assert.deepEqual(treeStats(records), {
-    files: 180,
-    bytes: 20673868,
-    digest: "54e1d31293844e22ad8f20ff5fb19bad30d7436bc91e7af1842f51fb1e6da015"
+    files: 182,
+    bytes: 20694259,
+    digest: "46714330081562637fa6ccb0d226836448cf6997e496f7bee5452625a581db13"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -679,11 +679,57 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
       output: record.output.slice("plataforma/".length)
     }))),
     {
-      files: 180,
-      bytes: 20673868,
-      digest: "bac09370ab28b2b105fd6753852f5c606c82812783af36d486f1257f4817816a"
+      files: 182,
+      bytes: 20694259,
+      digest: "9228356ddbe9484f12d36a239f27738f6b6dad2dde9c1477fbd0377f3fc591a2"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
+  );
+  const nonJavaScriptRecords = records.filter(
+    ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
+  );
+  assert.deepEqual(
+    treeStats(nonJavaScriptRecords),
+    {
+      files: 146,
+      bytes: 20252436,
+      digest: "1df6bd6de3e16a58ff8f65500c4aedde241d87237fb4a826c238bdf14b6aa13e"
+    },
+    "The platform non-JavaScript paths and bytes must remain isolated from the adapter migration"
+  );
+  const binaryExtensions = new Set([
+    ".ico",
+    ".jpg",
+    ".png",
+    ".vsdx",
+    ".vssx",
+    ".wasm",
+    ".xlsm",
+    ".xlsx"
+  ]);
+  const binaryRecords = records.filter(({ output }) =>
+    binaryExtensions.has(path.posix.extname(output).toLowerCase())
+  );
+  assert.deepEqual(
+    treeStats(binaryRecords),
+    {
+      files: 52,
+      bytes: 19319394,
+      digest: "8703d7811a1d91db3069b55c0d17b87dbda9cfc754613ac6c44d172d668c4394"
+    },
+    "The complete platform binary set must remain byte-identical"
+  );
+  const unrelatedRecords = mappedFiles(
+    manifest.applications.filter(({ id }) => id !== "learning-platform")
+  );
+  assert.deepEqual(
+    treeStats(unrelatedRecords),
+    {
+      files: 75,
+      bytes: 6605035,
+      digest: "c83305484393d44eecbdab18325f582e87fc253ed50a782985256f90f2f651f2"
+    },
+    "Unrelated frontend applications must remain byte-identical"
   );
   assert.ok(
     outputPaths.every((file) => file === file.normalize("NFC")),
@@ -699,7 +745,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     html: 7,
     ico: 5,
     jpg: 1,
-    js: 34,
+    js: 36,
     json: 75,
     png: 11,
     svg: 5,
@@ -987,9 +1033,9 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
-    files: 255,
-    bytes: 27278903,
-    digest: "27e74781d83b39a8ec7085802cfc5b763f2ea04f941b00cc728f0049e53f20ff"
+    files: 257,
+    bytes: 27299294,
+    digest: "8866fe67fb110e748ba7b0bbd5c9fbd40397f8b437274d069ff321e530bd2750"
   });
 });
 
@@ -999,8 +1045,8 @@ test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform do
   assert.deepEqual(platformApplication.publicDownloads, []);
   assert.equal(
     records.length - platformApplication.publicEntries.length,
-    173,
-    "The platform must retain 173 implicitly emitted runtime/support files"
+    175,
+    "The platform must retain 175 implicitly emitted runtime/support files"
   );
   assert.equal(
     records.filter(({ output }) => output.startsWith("plataforma/estudo/files/")).length,

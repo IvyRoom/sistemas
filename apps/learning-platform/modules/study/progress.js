@@ -1,3 +1,13 @@
+import {
+    learningPlatformErrorKinds,
+    learningPlatformErrorOperations,
+    normalizeLearningPlatformError
+} from '../error-adapter.js';
+import {
+    learningPlatformErrorMessage,
+    learningPlatformErrorPresentations
+} from '../error-presentation.js';
+
 export function createStudyProgress({ alert, client, document, dom, navigation, openTopic, state }) {
     function completeTopic(selectedTopic) {
         dom.footer.innerHTML = '';
@@ -36,10 +46,18 @@ export function createStudyProgress({ alert, client, document, dom, navigation, 
             document.body.style.cursor = 'default';
             state.completedTopics -= 1;
 
-            if (error.error !== 'Erro_008') {
-                alert("Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.");
+            const failure = normalizeLearningPlatformError(
+                error,
+                learningPlatformErrorOperations.PROGRESS_UPDATE
+            );
+            if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_WRITE_FAILURE) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+                ));
             } else {
-                alert("Erro_008: falha ao atualizar a base de dados de controle da plataforma.\nTente novamente.");
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.PLATFORM_DATA_WRITE
+                ));
             }
         });
     }

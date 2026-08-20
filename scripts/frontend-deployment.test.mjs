@@ -284,7 +284,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 255);
+  assert.equal(validation.files.length, 257);
   assert.deepEqual(
     validation.mappings.filter(
       (mapping) => mapping.applicationId === "marketing-site"
@@ -464,7 +464,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
-  assert.equal(sourcePreviewReferences.javascriptReferences, 54);
+  assert.equal(sourcePreviewReferences.javascriptReferences, 69);
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)

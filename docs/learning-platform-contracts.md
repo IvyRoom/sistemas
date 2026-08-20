@@ -192,7 +192,9 @@ dependency, generated source, or additional build step is involved.
 | Boundary | Current responsibility |
 | --- | --- |
 | `modules/session.js` | Centralizes the eight exact legacy key constants and raw `getItem`/`setItem` access for extracted modules. The preserved device-warning script and login production edge retain their direct raw storage access. The seam adds no validation, normalization, removal, authority, expiry, or revocation semantics. |
-| `modules/platform-client.js` | Owns injected JSON GET/POST and ordered multipart POST mechanics. It parses JSON before checking `ok`, throws the legacy `{ status, error }` shape, and adds no retry, timeout, abort, dedupe, idempotency, or authorization header. |
+| `modules/platform-client.js` | Owns injected JSON GET/POST and ordered multipart POST mechanics. It normalizes fetch rejection and malformed JSON through the application error seam, still parses JSON before checking `ok`, and for parsed non-OK responses still throws exactly `{ status: response.status, error: data.error }`. It adds no retry, timeout, abort, dedupe, idempotency, or authorization header. |
+| `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, legacy backend aliases, reserved named backend values, the two frontend legacy aliases, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
+| `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
 | `modules/lifecycle.js` | Owns the exact Edge signal and inclusive `<= 1024` device-warning decision. Entry factories retain listener installation and gate order. |
 | `modules/face-startup.js` | Constructs one injected Face custom element, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
 | `modules/login.js`, `modules/registration.js`, `modules/initial-notices.js` | Own their existing credential, upload, Face, notice, form-reset, gate, storage, request, and navigation branches. Production configuration stays at the existing entry edge and is injected without being copied into tests or documentation. |
@@ -384,27 +386,114 @@ segment. Backend routing is currently case-insensitive and non-strict, but the
 canonical method/path spellings in the table and the frontend's exact casing
 remain the compatibility target.
 
-#### Error crosswalk
+#### Error normalization and transition boundary
 
-| Code | Current role |
+The frontend now owns one learning-platform error adapter. Backend machine
+strings are inputs to that seam only; login, registration, Face, study,
+feedback, progress, assessment, and Status Report branch on semantic `kind`
+values. The separate presentation catalog then selects the exact existing
+Brazilian-Portuguese outcome. No feature module branches on a raw numbered or
+named wire value.
+
+The backend is unchanged at the pinned companion commit and continues producing
+the legacy values in the third column. The named values in the final column are
+the exact reserved US-English ASCII contracts for the next backend-producer
+stage; accepting them now makes that later deployment independently reversible.
+
+| Owner | Semantic kind | Current legacy alias | Reserved named backend value |
+| --- | --- | --- | --- |
+| Backend | `platformDataReadFailure` | `Erro_001` | `learning_platform.read_platform_data_failed` |
+| Backend | `referencePhotoUploadFailure` | `Erro_002` | `learning_platform.upload_reference_photo_failed` |
+| Backend | `referencePhotoRegistrationUpdateFailure` | `Erro_003` | `learning_platform.update_reference_photo_registration_failed` |
+| Backend | `faceLivenessSessionCreationFailure` | `Erro_004` | `learning_platform.create_face_liveness_session_failed` |
+| Backend | `referencePhotoReadFailure` | `Erro_005` | `learning_platform.read_reference_photo_failed` |
+| Backend | `faceLivenessResultReadFailure` | `Erro_007` | `learning_platform.read_face_liveness_result_failed` |
+| Backend | `platformDataWriteFailure` | `Erro_008` | `learning_platform.update_platform_data_failed` |
+| Backend | `feedbackAppendFailure` | `Erro_009` | `learning_platform.append_feedback_failed` |
+
+Frontend-owned `applicationFailure` and `faceComponentFailure` retain
+`Erro_000` and `Erro_006` respectively as adapter-local compatibility aliases;
+they have no backend named values. The other normalized kinds are
+`transportFailure`, `malformedResponse`, `httpFailure`, `invalidCredentials`,
+and `unknownDomainFailure`. Ownership is exact: known domain failures and the
+login-only `401` credential branch are `backend`; transport, malformed, HTTP,
+application, and Face-component failures are `frontend`; an unrecognized or
+operation-inapplicable machine value is `unknown`.
+
+Normalization preserves these branch rules in order:
+
+1. An already normalized `{ kind, owner, status }` failure passes through.
+2. Numeric login status `401` becomes backend-owned `invalidCredentials` before
+   machine-value inspection.
+3. A string `error` becomes its backend semantic kind only when both the legacy
+   or named value is recognized and that kind is allowed for the active
+   operation. Every other string becomes `unknownDomainFailure`.
+4. A numeric status without a string machine value becomes frontend-owned
+   `httpFailure`.
+5. A failure with neither becomes frontend-owned `applicationFailure`.
+6. Fetch rejection and JSON parsing failure use the distinct frontend-owned
+   `transportFailure` and `malformedResponse` entry points. Application-local
+   normalization accepts only `applicationFailure` or `faceComponentFailure`.
+
+The operation allowlists prevent a valid learning-platform value from affecting
+an unrelated consumer:
+
+| Operation | Allowed backend semantic kinds |
 | --- | --- |
-| `Erro_000` | Frontend-only network, JSON-parser, unexpected response, and generic fallback |
-| `Erro_001` | Platform workbook read |
-| `Erro_002` | Reference-photo upload |
-| `Erro_003` | Mark reference photo registered in platform workbook |
-| `Erro_004` | Create Face liveness session |
-| `Erro_005` | Read reference photo |
-| `Erro_006` | Frontend-only Face component failure |
-| `Erro_007` | Read Face liveness result |
-| `Erro_008` | Write platform workbook |
-| `Erro_009` | Append feedback workbook |
+| `assessmentUpdate` | `platformDataWriteFailure` |
+| `faceResult` | `faceLivenessResultReadFailure` |
+| `faceSession` | `faceLivenessSessionCreationFailure`, `referencePhotoReadFailure` |
+| `feedback` | `feedbackAppendFailure`, `platformDataWriteFailure` |
+| `login` | `platformDataReadFailure` |
+| `progressUpdate` | `platformDataWriteFailure` |
+| `refresh` | `platformDataReadFailure` |
+| `registration` | `faceLivenessSessionCreationFailure`, `referencePhotoRegistrationUpdateFailure`, `referencePhotoUploadFailure` |
+| `statusReport` | `platformDataReadFailure` |
 
-Invalid signed handles are `401 {}`, not an `Erro_XXX`. Every current protected
-consumer renders that response as generic `Erro_000` behavior.
+`platform-client.js` still parses JSON before status and, after successful JSON
+parsing, still throws a non-OK response with exactly
+`{ status: response.status, error: data.error }`. The adapter does not change an
+HTTP status, request/response envelope, method, route, field, retry, or ordering
+contract. Invalid signed handles remain `401 {}` and every protected consumer
+still selects its generic `Erro_000` presentation.
+
+The presentation catalog is independent of semantic and machine values. Its 18
+keys retain these exact reviewed outcomes (`<br>` represents the existing
+newline):
+
+| Presentation key | Exact visible outcome |
+| --- | --- |
+| `feedbackAppend` | `Erro_009: falha ao atualizar a base de dados de controle da plataforma.`<br>`Tente novamente.` |
+| `genericServerRetry` | `Erro_000: falha de comunicação com o servidor.`<br>`Verifique sua conexão com a internet e tente novamente.` |
+| `loginFaceComponent` | `Erro_006: falha interna do sistema da Microsoft (Azure Face API).`<br>`Tente novamente.` |
+| `loginFaceResult` | `Erro_007: falha interna do sistema da Microsoft (Azure Face API).`<br>`Tente novamente.` |
+| `loginFaceSession` | `Erro_004: falha interna do sistema da Microsoft (Azure Face API).`<br>`Tente novamente.` |
+| `loginFaceSessionGeneric` | `Erro_000: Verifique sua conexão com a internet.` |
+| `loginReferencePhoto` | `Erro_005: falha ao obter sua foto de referência.`<br>`Tente novamente.` |
+| `platformDataRetry` | `Erro_001: falha de comunicação com a base de dados de controle da plataforma.`<br>`Tente novamente.` |
+| `platformDataWrite` | `Erro_008: falha ao atualizar a base de dados de controle da plataforma.`<br>`Tente novamente.` |
+| `registrationFaceComponent` | `Erro_006. Aguarde 2min e tente novamente.` |
+| `registrationFaceResult` | `Erro_007. Tente novamente.` |
+| `registrationFaceResultGeneric` | `Erro_000. Tente novamente.` |
+| `registrationFaceSession` | `Erro_004. Tente novamente.` |
+| `registrationPhotoRegistrationUpdate` | `Erro_003. Tente novamente.` |
+| `registrationPhotoUpload` | `Erro_002. Tente novamente.` |
+| `registrationRequestGeneric` | `Erro_000. Verifique sua conexão com a internet.` |
+| `studyRefreshGeneric` | `Erro_000: falha de comunicação com o servidor.`<br>`Verifique sua conexão com a internet e então atualize a página.` |
+| `studyRefreshPlatformData` | `Erro_001: falha de comunicação com a base de dados de controle da plataforma.`<br>`Atualize a página.` |
+
+Legacy machine aliases are quarantined in `error-adapter.js`; visible numbered
+prefixes are quarantined in `error-presentation.js`. Explicit tests and this
+reviewed contract remain the only non-production exceptions. Named machine
+values are never displayed or interpolated into alerts, logs, or rendered HTML.
 
 #### Current source anchors
 
 - Shared request mechanics: [`platform-client.js`](../apps/learning-platform/modules/platform-client.js).
+- Semantic normalization and transition aliases:
+  [`error-adapter.js`](../apps/learning-platform/modules/error-adapter.js).
+- Reviewed visible outcomes:
+  [`error-presentation.js`](../apps/learning-platform/modules/error-presentation.js).
 - Login client: [`login.js`](../apps/learning-platform/modules/login.js).
 - Registration client: [`registration.js`](../apps/learning-platform/modules/registration.js).
 - Study refresh coordinator:
@@ -700,11 +789,11 @@ mapping; there is no bundle or generated-source layer.
 | `cadastro/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
 | `estudo/` | 41 | HTML/JS/CSS, 33 study files, five images |
 | `login/` | 6 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
-| `modules/` | 24 | Shared browser seams, page factories, 14 study responsibility modules, and three status-report modules |
+| `modules/` | 26 | Shared browser seams, centralized error adapter/presentation catalog, page factories, 14 study responsibility modules, and three status-report modules |
 | `statusreport/` | 5 | HTML/JS/CSS, favicon, logo |
-| **Total** | **180** | Current output root is `dist/plataforma/` |
+| **Total** | **182** | Current output root is `dist/plataforma/` |
 
-By extension, the set is 7 CSS, 7 HTML, 34 JS, 75 JSON, 2 WASM, 11 PNG,
+By extension, the set is 7 CSS, 7 HTML, 36 JS, 75 JSON, 2 WASM, 11 PNG,
 5 ICO, 5 SVG, 1 JPG, 19 XLSM, 11 XLSX, 2 VSDX, and 1 VSSX. The exact complete
 path listing is reproducible with:
 
@@ -712,7 +801,7 @@ path listing is reproducible with:
 git -c core.quotepath=false ls-files -- apps/learning-platform
 ```
 
-All 180 paths are NFC. Thirty-four contain non-ASCII characters: the
+All 182 paths are NFC. Thirty-four contain non-ASCII characters: the
 registration reference image and all 33 study-file paths. Exact case, spaces,
 punctuation, accents, and normalization form are runtime contracts. The build
 rejects case/NFC collisions and verifies the exact generated spelling and
@@ -964,17 +1053,38 @@ and [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L
 
 The mapping copies tracked bytes; it performs no bundling, minification, or
 transformation. The current platform source and emitted `dist/plataforma/`
-subtree have the same 180 paths relative to their roots and identical bytes.
+subtree have the same 182 paths relative to their roots and identical bytes.
 
-The current post-English-internals identity comes from the verified build for
-this change. File counts are fixed by the checked mapping; the byte totals and
-digests below are the resulting artifact evidence.
+The current dual-reading error-adapter identity comes from the verified build
+for this change. File counts are fixed by the checked mapping; the byte totals
+and digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 180 | 20,673,868 | `54e1d31293844e22ad8f20ff5fb19bad30d7436bc91e7af1842f51fb1e6da015` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 180 | 20,673,868 | `bac09370ab28b2b105fd6753852f5c606c82812783af36d486f1257f4817816a` |
-| Current complete generated `dist/` artifact | 255 | 27,278,903 | `27e74781d83b39a8ec7085802cfc5b763f2ea04f941b00cc728f0049e53f20ff` |
+| Current platform subset, retaining full output paths `plataforma/...` | 182 | 20,694,259 | `46714330081562637fa6ccb0d226836448cf6997e496f7bee5452625a581db13` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,694,259 | `9228356ddbe9484f12d36a239f27738f6b6dad2dde9c1477fbd0377f3fc591a2` |
+| Current complete generated `dist/` artifact | 257 | 27,299,294 | `8866fe67fb110e748ba7b0bbd5c9fbd40397f8b437274d069ff321e530bd2750` |
+
+The adapter changes JavaScript only. Scoped source-derived guards retain these
+identities across the transition:
+
+| Unchanged scope and digest framing | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,252,436 | `1df6bd6de3e16a58ff8f65500c4aedde241d87237fb4a826c238bdf14b6aa13e` |
+| Platform binary files, retaining full output paths | 52 | 19,319,394 | `8703d7811a1d91db3069b55c0d17b87dbda9cfc754613ac6c44d172d668c4394` |
+| All unrelated frontend applications, retaining full output paths | 75 | 6,605,035 | `c83305484393d44eecbdab18325f582e87fc253ed50a782985256f90f2f651f2` |
+| Vendored Face subtree, paths relative to its root | 85 | 9,526,729 | `56da181049f18302b00fdbf04851d1433adf819341564a326e652c75145576e3` |
+| Study downloads, retaining full output paths | 33 | 9,163,893 | `1073822d29815c0d23e984c347b70c468235be47083b7ce5c23b33565a0dece5` |
+| Certificate inputs, source-derived `addImage` order | 3 | 148,461 | `82c735c7ac2fa32e09d71c326765db9c52ce63b58144c7c7b100458f8b897591` |
+
+For pre-adapter comparison, the verified post-English-internals baseline at
+commit `be8e52fc248d073503b8e71abe5afb9e93a4d5f9` produced these identities:
+
+| Post-English-internals, pre-adapter scope and digest framing | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Platform subset, retaining full output paths `plataforma/...` | 180 | 20,673,868 | `54e1d31293844e22ad8f20ff5fb19bad30d7436bc91e7af1842f51fb1e6da015` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 180 | 20,673,868 | `bac09370ab28b2b105fd6753852f5c606c82812783af36d486f1257f4817816a` |
+| Complete generated `dist/` artifact | 255 | 27,278,903 | `27e74781d83b39a8ec7085802cfc5b763f2ea04f941b00cc728f0049e53f20ff` |
 
 For pre-English-internals comparison, the verified base at commit
 `48579a49e50f866d462aa05a868654564b4f121c` produced these identities:
@@ -1021,11 +1131,11 @@ computes this digest. Artifact checking separately asserts exact case/path set
 and byte equality against every mapped source.
 
 The platform has seven manifest `publicEntries` and zero `publicDownloads`.
-Thus 173 emitted platform files are supporting/runtime files rather than
+Thus 175 emitted platform files are supporting/runtime files rather than
 individually enumerated public contracts. All 33 study downloads, the entire
 Face subtree, JS/CSS/images, and certificate inputs are absent from
 `publicDownloads` even though the identity mapping publishes them. Remote CDN
-libraries and all media manifests/segments are outside the 255-file artifact.
+libraries and all media manifests/segments are outside the 257-file artifact.
 
 Current anchors: mapping collection
 [`frontend-deployment-lib.mjs` lines 309-358](../scripts/frontend-deployment-lib.mjs#L309-L358),
@@ -1088,11 +1198,12 @@ future work, not permission to change compatibility behavior in the baseline.
   leave the page in an indeterminate loading/error state. Protected consumers
   generally collapse a `401 {}` response into `Erro_000`, hiding expiration or
   authorization loss from the user.
-- Fetch transport mechanics now use the shared platform-client seam, but
-  page-specific failure mapping remains duplicated. Flows still parse JSON
-  before checking status and have no timeout, cancellation, centralized
-  redaction, or typed error taxonomy beyond the legacy `{ status, error }`
-  shape.
+- Fetch transport mechanics use the shared platform-client and semantic error
+  seams, and visible copy uses the application catalog. Flows deliberately
+  still parse JSON before checking status and retain the raw HTTP
+  `{ status, error }` throw at that boundary. They still have no timeout,
+  cancellation, centralized operator redaction, or private diagnostic/trace
+  correlation layer.
 - Face registration trusts client-selected copy and image input. Multipart
   parsing precedes authorization verification in the backend registration
   route, so unauthenticated input can consume upload-processing resources.
@@ -1181,9 +1292,10 @@ future work, not permission to change compatibility behavior in the baseline.
 
 ## Approved future decisions
 
-These remaining decisions are approved roadmap direction only. They do not
-redefine current behavior and are not implemented by the current
-compatibility-preserving module modernization.
+These remaining decisions are approved roadmap direction only. The dual-reading
+frontend adapter and separate presentation catalog are current behavior above,
+not future work; the remaining producer, cleanup, and operations stages do not
+redefine this compatibility deployment.
 - Use Azure SQL Database Basic as the initial relational target, subject to
   representative load testing.
 - Migrate workbook capabilities sequentially, with reconciliation and rollback
@@ -1191,25 +1303,14 @@ compatibility-preserving module modernization.
 - Replace status reporting with live, participant-named, revocable company
   bearer links. Easy WhatsApp sharing and forwarding remain accepted
   requirements.
-- Separate error handling into three layers rather than treating visible
-  `Erro_XXX` alerts as the contract: Brazilian-Portuguese recovery outcomes for
-  people, stable domain-owned semantic machine errors for frontend/backend
-  decisions, and private sanitized diagnostics for operators. Machine errors
-  must use US-English ASCII names, must not contain translated copy or backend
-  diagnostics, and must never be interpolated into a user-visible message.
-- Centralize frontend transport, malformed-response, HTTP, known-domain,
-  unknown-domain, and application-local failure normalization. Map the
-  resulting semantic kinds through an application-owned presentation catalog
-  to reviewed Brazilian-Portuguese outcomes without changing feature-specific
-  request order, rollback, partial-success, or navigation behavior.
-- Roll the learning-platform contract out in independently deployable stages:
-  first a frontend adapter that accepts both legacy and semantic backend values,
-  then semantic backend producers, then a frontend cleanup after production
-  verification. Quarantine legacy aliases in that adapter; do not scatter or
-  retain a permanent dual protocol.
-- Preserve the current visible alerts during the compatibility stages. In the
-  final reviewed frontend cleanup, remove the `Erro_XXX` prefixes without
-  displaying the replacement machine values or inventing Portuguese copy.
+- In the next coordinated backend stage, replace only the eight
+  learning-platform producers with the exact named values in the transition
+  table. Preserve statuses, envelopes, operation ordering, retries, and every
+  unrelated backend domain; deploy and verify that stage independently.
+- After named backend producers are verified in production, remove legacy
+  aliases from the frontend adapter in a separately reviewed cleanup. Remove
+  visible `Erro_XXX` prefixes only with explicit copy approval; never display a
+  replacement machine value or invent Brazilian-Portuguese copy.
 - Use the learning platform as the reference implementation, then adopt the
   pattern in other frontend applications and backend domains one domain at a
   time. Do not globally replace numbered values: unrelated domains can reuse a
@@ -1283,12 +1384,12 @@ the test intent; current source anchors identify the current oracle.
 | GATE-02 | Width and resize | Initial and resize decisions cover 1023, 1024, and 1025 pixels, including each page's current ordering and the warning page's `history.back()` condition. |
 | STORE-01 | Key inventory | The exact eight accented/cased keys, all readers/writers, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented. |
 | STORE-02 | Lifetime/reset | No flow clears storage; logout changes only `Usuário_Logado`; refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. |
-| API-01 | Login and Face registration | Methods, exact paths, JSON/multipart fields, response fields, status branches, call order, and `Erro_XXX` mappings match the tables above. |
-| API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, request-error, and backend-retry-visible branches with no client polling. |
-| API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, the unchanged stored session deadline, and optimistic update/rollback behavior match current transitions. |
-| API-04 | Assessment and feedback | `/updates` preserves client-supplied grade fields; feedback preserves update-before-append ordering, partial success, retry duplication exposure, and the Module 3/module 2 mismatch. |
-| API-05 | Status report | The public POST carries only exact JSON fields `linha_inicial` and `linha_final`; query/display labels remain client-side. It has no authorization header/body handle and reproduces success plus current `Erro_001`/generic mappings. |
-| ERROR-01 | Protected unauthorized response | Synthetic `401 {}` becomes each current consumer's observed generic `Erro_000` outcome; tests do not introduce a redesigned expiry message. |
+| API-01 | Login and Face registration | Methods, exact paths, JSON/multipart fields, response fields, status branches, and call order remain exact; every allowed legacy/named pair reaches the same semantic kind, exact visible outcome, storage state, and navigation branch. |
+| API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, legacy/named request-error, and backend-retry-visible branches with no client polling. |
+| API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, semantic legacy/named mapping, and optimistic update/rollback behavior match current transitions. |
+| API-04 | Assessment and feedback | `/updates` preserves client-supplied grade fields; legacy/named write and append failures preserve update-before-append ordering, partial success, retry duplication exposure, rollback, and the Module 3/module 2 mismatch. |
+| API-05 | Status report | The public POST carries only exact JSON fields `linha_inicial` and `linha_final`; query/display labels remain client-side. It has no authorization header/body handle, keeps JSON-before-status ordering, and maps legacy/named read failures to the same semantic/presentation outcome. |
+| ERROR-01 | Normalization and protected unauthorized response | Synthetic transport, malformed, HTTP, unknown, local, and operation-inapplicable failures retain their owner/kind and generic branch; `401 {}` keeps each protected consumer's exact `Erro_000` outcome without a redesigned expiry message. |
 | FLOW-01 | Login/notices/registration | Credential, first-access, photo-registration, authorization-code, Face startup/single-result lookup, and destination branches preserve their current storage transitions. |
 | FLOW-02 | Study navigation | The 171 contiguous indices, 10-module boundaries, module prerequisites, content/test/feedback/performance destinations, and saved progress initialization remain fixed, including malformed negative/fractional/`NaN`/greater-than-171 progress behavior. |
 | FLOW-03 | Content completion | Manual and `ended` completion both exercise optimistic increment, protected update, success advance, and local failure rollback. |
@@ -1299,12 +1400,12 @@ the test intent; current source anchors identify the current oracle.
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
 | FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport/host-color overrides remain exact without loading production Face. |
-| ASSET-01 | File identity | The exact 180-file current platform set, verified post-modernization byte total, and current full-output-path digest match; all paths are NFC and 34 contain non-ASCII. |
-| ASSET-02 | Downloads/certificate | All 33 exact download paths emit; 31 are reachable, two remain unreferenced, and all browser-generated certificate inputs resolve with exact case. |
+| ASSET-01 | File identity and isolation | The exact 182-file current platform set, current byte total, and full-output-path digest match; all paths are NFC, 34 contain non-ASCII, and the non-JavaScript, binary, and unrelated-application scoped digests remain exact. |
+| ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 255 files and matches the verified post-modernization byte total and digest recorded above. |
-| ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 173 implicitly emitted runtime/support files. |
+| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 257 files and matches the verified dual-reading-adapter byte total and digest recorded above. |
+| ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 175 implicitly emitted runtime/support files. |
 
 ### Automated traceability
 
@@ -1315,12 +1416,14 @@ source location:
 - `.agents/tests/learning-platform-static.test.js` covers declarative route,
   Face asset/presentation, download, video/DRM, and artifact contracts;
 - `.agents/tests/learning-platform-entry-api.test.js` covers entry gates,
-  navigation, storage, login, Face, and request behavior;
+  navigation, storage, login, Face, request behavior, transition pairs,
+  ownership, operation isolation, malformed JSON, and denied networking;
 - `.agents/tests/learning-platform-module-seams.test.js` covers the real module
   loader and host deny-all guard, bootstrap modes, initial-notices seam, and
   status-report query/request/render seams;
 - `.agents/tests/learning-platform-study-report.test.js` covers study progress,
-  assessment, feedback, certificate, logout/expiry, and status-report behavior;
+  assessment, feedback, legacy/named write transitions, certificate,
+  logout/expiry, and status-report behavior;
 - `.agents/tests/learning-platform-traceability.test.js` derives the acceptance
   IDs from this matrix, requires every ID to remain in a named test, and audits
   the suite for sensitive source literals and complete network URL literals.
@@ -1400,8 +1503,10 @@ git diff --check
 The build/check pair proves the source-derived artifact rather than production
 hosting behavior. After building, compare the exact emitted file set and bytes
 using the repository helpers and digest framing above. For this module
-modernization, 24 new application-owned module files increase the platform and
-complete-artifact counts from 156 and 231 to 180 and 255. The current artifact
-table records the verified post-modernization identities, preserves the
-post-adoption values as the pre-modernization baseline, and retains the older
-pre-adoption history separately.
+modernization, 24 new application-owned module files increased the platform and
+complete-artifact counts from 156 and 231 to 180 and 255. The current error
+transition adds the adapter and presentation catalog, increasing those counts
+to 182 and 257. The current artifact table records the verified dual-reading
+identities, preserves `be8e52fc248d073503b8e71abe5afb9e93a4d5f9` as the
+post-English-internals pre-adapter baseline, and retains the earlier
+pre-modernization and pre-adoption history separately.

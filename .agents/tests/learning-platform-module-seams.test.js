@@ -100,6 +100,15 @@ function reportRow(name, progress, moduleOne, certificateId) {
   ];
 }
 
+function assertMachineValueHidden(harness, machineValue) {
+  const renderedText = [harness.document.body, ...harness.elements.values()]
+    .map((element) => `${element.innerHTML}\n${element.textContent}`)
+    .join("\n");
+  assert.equal(harness.alerts.join("\n").includes(machineValue), false);
+  assert.deepEqual(harness.consoleCalls, []);
+  assert.equal(renderedText.includes(machineValue), false);
+}
+
 test("[SAFETY-NETWORK] real application modules load behind host deny-all sentinels", async () => {
   const hostGuard = installHostNetworkGuard();
   hostGuard.reset();
@@ -541,7 +550,19 @@ test("[API-05] status-report application preserves JSON/status and failure order
       message: "Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente."
     },
     {
+      backendError: "learning_platform.read_platform_data_failed",
+      message: "Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente."
+    },
+    {
       backendError: "Erro_009",
+      message: "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+    },
+    {
+      backendError: "learning_platform.append_feedback_failed",
+      message: "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+    },
+    {
+      backendError: "client_intake.read_platform_data_failed",
       message: "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
     }
   ];
@@ -590,8 +611,55 @@ test("[API-05] status-report application preserves JSON/status and failure order
     assert.deepEqual(responseOrder, ["json", "ok", "status"]);
     assert.deepEqual(harness.alerts, [message]);
     assert.equal(harness.document.body.style.cursor, "default");
+    if (backendError.includes(".")) assertMachineValueHidden(harness, backendError);
     harness.hostGuard.assertUnused();
   }
+
+  const malformedOrder = [];
+  const malformed = createLearningPlatformHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/statusreport",
+      response: {
+        get ok() {
+          malformedOrder.push("ok");
+          return false;
+        },
+        get status() {
+          malformedOrder.push("status");
+          return 503;
+        },
+        async json() {
+          malformedOrder.push("json");
+          throw new SyntaxError("Synthetic malformed status-report JSON");
+        }
+      }
+    }]
+  });
+  malformed.window.location.search =
+    "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
+  installReportDom(malformed);
+  const malformedDependencies = malformed.dependencies();
+  const malformedClient = clientModule.createPlatformClient({
+    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+    fetch: malformedDependencies.fetch,
+    FormDataConstructor: malformedDependencies.FormDataConstructor
+  });
+  applicationModule.createStatusReportApplication({
+    ...malformedDependencies,
+    platformClient: malformedClient,
+    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+  }).install();
+
+  await malformed.window.onload();
+  await malformed.flush(20);
+
+  assert.deepEqual(malformedOrder, ["json"]);
+  assert.deepEqual(malformed.alerts, [
+    "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
+  ]);
+  assert.equal(malformed.document.body.style.cursor, "default");
+  malformed.hostGuard.assertUnused();
 });
 
 test("[REPORT-03] status rendering keeps exact consolidated label behavior and width gate order", async () => {
