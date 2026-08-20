@@ -1,4 +1,14 @@
 import { createFaceStartup } from './face-startup.js';
+import {
+    learningPlatformErrorKinds,
+    learningPlatformErrorOperations,
+    normalizeLearningPlatformError,
+    normalizeLearningPlatformLocalError
+} from './error-adapter.js';
+import {
+    learningPlatformErrorMessage,
+    learningPlatformErrorPresentations
+} from './error-presentation.js';
 import { isMicrosoftEdge, redirectToDeviceWarning } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -86,18 +96,34 @@ export function createRegistrationApplication({
                     }
                 })
                 .catch(err => {
-                    if (err.error !== 'Erro_007') {
-                        alert('Erro_000. Tente novamente.');
+                    const failure = normalizeLearningPlatformError(
+                        err,
+                        learningPlatformErrorOperations.FACE_RESULT
+                    );
+                    if (failure.kind !== learningPlatformErrorKinds.FACE_LIVENESS_RESULT_READ_FAILURE) {
+                        alert(learningPlatformErrorMessage(
+                            learningPlatformErrorPresentations.REGISTRATION_FACE_RESULT_GENERIC
+                        ));
                         navigate('/plataforma/login');
                     }
                     else {
-                        alert('Erro_007. Tente novamente.');
+                        alert(learningPlatformErrorMessage(
+                            learningPlatformErrorPresentations.REGISTRATION_FACE_RESULT
+                        ));
                         navigate('/plataforma/login');
                     }
                 });
             })
             .catch(err => {
-                alert('Erro_006. Aguarde 2min e tente novamente.');
+                const failure = normalizeLearningPlatformLocalError(
+                    err,
+                    learningPlatformErrorKinds.FACE_COMPONENT_FAILURE
+                );
+                if (failure.kind === learningPlatformErrorKinds.FACE_COMPONENT_FAILURE) {
+                    alert(learningPlatformErrorMessage(
+                        learningPlatformErrorPresentations.REGISTRATION_FACE_COMPONENT
+                    ));
+                }
                 navigate('/plataforma/login');
             });
         })
@@ -107,17 +133,33 @@ export function createRegistrationApplication({
             submitButton.style.display = 'block';
             registeringNotice.style.display = 'none';
 
-            if (err.error !== 'Erro_002' & err.error !== 'Erro_003' && err.error !== 'Erro_004') {
-                alert('Erro_000. Verifique sua conexão com a internet.');
+            const failure = normalizeLearningPlatformError(
+                err,
+                learningPlatformErrorOperations.REGISTRATION
+            );
+            if (
+                failure.kind !== learningPlatformErrorKinds.REFERENCE_PHOTO_UPLOAD_FAILURE &
+                failure.kind !== learningPlatformErrorKinds.REFERENCE_PHOTO_REGISTRATION_UPDATE_FAILURE &&
+                failure.kind !== learningPlatformErrorKinds.FACE_LIVENESS_SESSION_CREATION_FAILURE
+            ) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.REGISTRATION_REQUEST_GENERIC
+                ));
             }
-            else if (err.error === 'Erro_002') {
-                alert('Erro_002. Tente novamente.');
+            else if (failure.kind === learningPlatformErrorKinds.REFERENCE_PHOTO_UPLOAD_FAILURE) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.REGISTRATION_PHOTO_UPLOAD
+                ));
             }
-            else if (err.error === 'Erro_003') {
-                alert('Erro_003. Tente novamente.');
+            else if (failure.kind === learningPlatformErrorKinds.REFERENCE_PHOTO_REGISTRATION_UPDATE_FAILURE) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.REGISTRATION_PHOTO_REGISTRATION_UPDATE
+                ));
             }
-            else if (err.error === 'Erro_004') {
-                alert('Erro_004. Tente novamente.');
+            else if (failure.kind === learningPlatformErrorKinds.FACE_LIVENESS_SESSION_CREATION_FAILURE) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.REGISTRATION_FACE_SESSION
+                ));
             }
         });
     });

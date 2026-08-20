@@ -141,6 +141,15 @@ function safeNetworkPath(value) {
   }
 }
 
+function assertMachineValueHidden(harness, machineValue) {
+  const renderedText = [harness.document.body, ...harness.elements.values()]
+    .map((element) => `${element.innerHTML}\n${element.textContent}`)
+    .join("\n");
+  assert.equal(harness.alerts.join("\n").includes(machineValue), false);
+  assert.deepEqual(harness.consoleCalls, []);
+  assert.equal(renderedText.includes(machineValue), false);
+}
+
 function eventFor(controlId) {
   return {
     target: {
@@ -812,6 +821,90 @@ test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async 
   assertProtectedHandleExpectations(feedback, 1);
   assert.match(feedback.alerts[0], /^Erro_008:/);
   assert.equal(feedbackController.state.completedTopics, 50);
+});
+
+test("[ERROR-02] named study writes preserve legacy rollback and request effects", async () => {
+  function snapshotMutationFailure({ controller, harness, topic }) {
+    return {
+      alert: [...harness.alerts],
+      completedTopics: controller.state.completedTopics,
+      consoleCalls: [...harness.consoleCalls],
+      cursor: harness.document.body.style.cursor,
+      footer: harness.element("Faixa-Inferior").innerHTML,
+      navigation: [...harness.navigation],
+      requests: harness.guard.requests,
+      storage: harness.sessionStorage.snapshot({
+        redact: ["IndexVerificado", "URL_Base_Backend"]
+      }),
+      timeline: harness.timeline.filter(({ type }) => [
+        "fetch", "navigate", "storage-set"
+      ].includes(type)),
+      topicClass: topic.className
+    };
+  }
+
+  async function runProgressFailure(machineValue) {
+    const { controller, harness } = createStudyHarness({
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/updates",
+        response: { data: { error: machineValue }, status: 500 }
+      }]
+    });
+    setStudyState(controller, { completed: 4 });
+    const topic = createTopic(harness, { dataIndex: 5 });
+    controller.completeTopic(topic);
+    await harness.flush(20);
+    assertProtectedHandleExpectations(harness, 1);
+    harness.hostGuard.assertUnused();
+    return { controller, harness, snapshot: snapshotMutationFailure({ controller, harness, topic }) };
+  }
+
+  async function runFeedbackFailure(machineValue) {
+    const { controller, harness } = createStudyHarness({
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/processa-feedback",
+        response: { data: { error: machineValue }, status: 500 }
+      }]
+    });
+    setStudyState(controller, { completed: 50 });
+    const topic = createTopic(harness, {
+      dataIndex: 51,
+      module: 3,
+      name: "FEEDBACK MÓDULO 2",
+      visibleName: "Feedback: Módulo 3"
+    });
+    harness.selectorResults.set(".Opções-Feedbacks", []);
+    controller.openTopic.call(topic);
+    harness.element("Campo-Comentários").value = "Invented transition feedback";
+    harness.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Feedback"));
+    await harness.flush(20);
+    assertProtectedHandleExpectations(harness, 1);
+    harness.hostGuard.assertUnused();
+    return { controller, harness, snapshot: snapshotMutationFailure({ controller, harness, topic }) };
+  }
+
+  const transitions = [
+    {
+      legacy: "Erro_008",
+      named: "learning_platform.update_platform_data_failed",
+      run: runProgressFailure
+    },
+    {
+      legacy: "Erro_009",
+      named: "learning_platform.append_feedback_failed",
+      run: runFeedbackFailure
+    }
+  ];
+
+  for (const { legacy, named, run } of transitions) {
+    const legacyResult = await run(legacy);
+    const namedResult = await run(named);
+    assert.deepEqual(namedResult.snapshot, legacyResult.snapshot, named);
+    assert.match(namedResult.harness.alerts[0], new RegExp(`^${legacy}:`));
+    assertMachineValueHidden(namedResult.harness, named);
+  }
 });
 
 test("[API-04] assessment preserves client-supplied progress, module, and grade fields", async () => {

@@ -1,31 +1,47 @@
+import {
+    normalizeLearningPlatformMalformedResponse,
+    normalizeLearningPlatformTransportError
+} from './error-adapter.js';
+
 async function parseJsonResponse(response) {
-    const data = await response.json();
+    let data;
+    try {
+        data = await response.json();
+    } catch (error) {
+        throw normalizeLearningPlatformMalformedResponse(error);
+    }
     if (!response.ok) throw { status: response.status, error: data.error };
     return data;
+}
+
+function normalizeRequest(request) {
+    return request.catch(error => {
+        throw normalizeLearningPlatformTransportError(error);
+    }).then(parseJsonResponse);
 }
 
 export function createPlatformClient({ baseUrl, fetch, FormDataConstructor }) {
     return {
         getJson(path) {
-            return fetch(baseUrl + path, {
+            return normalizeRequest(fetch(baseUrl + path, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
-            }).then(parseJsonResponse);
+            }));
         },
         postJson(path, body) {
-            return fetch(baseUrl + path, {
+            return normalizeRequest(fetch(baseUrl + path, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
-            }).then(parseJsonResponse);
+            }));
         },
         postMultipart(path, fields) {
             const formData = new FormDataConstructor();
             fields.forEach(([key, value]) => formData.append(key, value));
-            return fetch(baseUrl + path, {
+            return normalizeRequest(fetch(baseUrl + path, {
                 method: 'POST',
                 body: formData
-            }).then(parseJsonResponse);
+            }));
         }
     };
 }

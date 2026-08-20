@@ -1,4 +1,13 @@
 import {
+    learningPlatformErrorKinds,
+    learningPlatformErrorOperations,
+    normalizeLearningPlatformError
+} from '../error-adapter.js';
+import {
+    learningPlatformErrorMessage,
+    learningPlatformErrorPresentations
+} from '../error-presentation.js';
+import {
     appendStatusReportCharts,
     appendStatusReportNotes,
     applyStatusReportModuleRange,
@@ -84,10 +93,18 @@ export function createStatusReportApplication({
                 .catch(error => {
                     document.body.style.cursor = 'default';
 
-                    if (error.error !== 'Erro_001') {
-                        showAlert('Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.');
+                    const failure = normalizeLearningPlatformError(
+                        error,
+                        learningPlatformErrorOperations.STATUS_REPORT
+                    );
+                    if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE) {
+                        showAlert(learningPlatformErrorMessage(
+                            learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+                        ));
                     } else {
-                        showAlert('Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente.');
+                        showAlert(learningPlatformErrorMessage(
+                            learningPlatformErrorPresentations.PLATFORM_DATA_RETRY
+                        ));
                     }
                 });
         }

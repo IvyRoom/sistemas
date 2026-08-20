@@ -1,4 +1,14 @@
 import { createFaceStartup } from './face-startup.js';
+import {
+    learningPlatformErrorKinds,
+    learningPlatformErrorOperations,
+    normalizeLearningPlatformError,
+    normalizeLearningPlatformLocalError
+} from './error-adapter.js';
+import {
+    learningPlatformErrorMessage,
+    learningPlatformErrorPresentations
+} from './error-presentation.js';
 import { isMicrosoftEdge, redirectToDeviceWarning } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -122,31 +132,60 @@ export function createLoginApplication({
                             })
                             .catch(err => {
                                 resetLogin();
-                                if (err.error !== 'Erro_007') {
-                                    alert('Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.');
+                                const failure = normalizeLearningPlatformError(
+                                    err,
+                                    learningPlatformErrorOperations.FACE_RESULT
+                                );
+                                if (failure.kind !== learningPlatformErrorKinds.FACE_LIVENESS_RESULT_READ_FAILURE) {
+                                    alert(learningPlatformErrorMessage(
+                                        learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+                                    ));
                                 }
                                 else {
-                                    alert('Erro_007: falha interna do sistema da Microsoft (Azure Face API).\nTente novamente.');
+                                    alert(learningPlatformErrorMessage(
+                                        learningPlatformErrorPresentations.LOGIN_FACE_RESULT
+                                    ));
                                 }
                             });
 
                         })
                         .catch(errorData => {
                             resetLogin();
-                            alert('Erro_006: falha interna do sistema da Microsoft (Azure Face API).\nTente novamente.');
+                            const failure = normalizeLearningPlatformLocalError(
+                                errorData,
+                                learningPlatformErrorKinds.FACE_COMPONENT_FAILURE
+                            );
+                            if (failure.kind === learningPlatformErrorKinds.FACE_COMPONENT_FAILURE) {
+                                alert(learningPlatformErrorMessage(
+                                    learningPlatformErrorPresentations.LOGIN_FACE_COMPONENT
+                                ));
+                            }
                             console.log(errorData);
                         });
                     })
                     .catch(err => {
                         resetLogin();
-                        if (err.error !== 'Erro_004' && err.error !== 'Erro_005') {
-                            alert('Erro_000: Verifique sua conexão com a internet.');
+                        const failure = normalizeLearningPlatformError(
+                            err,
+                            learningPlatformErrorOperations.FACE_SESSION
+                        );
+                        if (
+                            failure.kind !== learningPlatformErrorKinds.FACE_LIVENESS_SESSION_CREATION_FAILURE &&
+                            failure.kind !== learningPlatformErrorKinds.REFERENCE_PHOTO_READ_FAILURE
+                        ) {
+                            alert(learningPlatformErrorMessage(
+                                learningPlatformErrorPresentations.LOGIN_FACE_SESSION_GENERIC
+                            ));
                         }
-                        else if (err.error === 'Erro_004') {
-                            alert('Erro_004: falha interna do sistema da Microsoft (Azure Face API).\nTente novamente.');
+                        else if (failure.kind === learningPlatformErrorKinds.FACE_LIVENESS_SESSION_CREATION_FAILURE) {
+                            alert(learningPlatformErrorMessage(
+                                learningPlatformErrorPresentations.LOGIN_FACE_SESSION
+                            ));
                         }
-                        else if (err.error === 'Erro_005') {
-                            alert('Erro_005: falha ao obter sua foto de referência.\nTente novamente.');
+                        else if (failure.kind === learningPlatformErrorKinds.REFERENCE_PHOTO_READ_FAILURE) {
+                            alert(learningPlatformErrorMessage(
+                                learningPlatformErrorPresentations.LOGIN_REFERENCE_PHOTO
+                            ));
                         }
                     });
                 }
@@ -159,14 +198,22 @@ export function createLoginApplication({
         })
         .catch(err => {
             resetLogin();
-            if (err.status === 401) {
+            const failure = normalizeLearningPlatformError(
+                err,
+                learningPlatformErrorOperations.LOGIN
+            );
+            if (failure.kind === learningPlatformErrorKinds.INVALID_CREDENTIALS) {
                 invalidCredentialsNotice.style.display = 'block';
             }
-            else if (err.error !== 'Erro_001') {
-                alert('Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente.');
+            else if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+                ));
             }
             else {
-                alert('Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente.');
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.PLATFORM_DATA_RETRY
+                ));
             }
         });
     });
