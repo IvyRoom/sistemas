@@ -162,11 +162,11 @@ test("[SAFETY-NETWORK] real application modules load behind host deny-all sentin
   );
   assert.equal(typeof queryModule.parseStatusReportQuery, "function");
   await assert.rejects(
-    loadPlatformModule("apps/learning-platform/statusreport/main.js"),
+    loadPlatformModule("apps/learning-platform/status-report/main.js"),
     (error) => error?.name === "AssertionError"
   );
   await assert.rejects(
-    loadPlatformModule("apps/learning-platform/modules/../statusreport/main.js"),
+    loadPlatformModule("apps/learning-platform/modules/../status-report/main.js"),
     (error) => error?.name === "AssertionError"
   );
   hostGuard.assertUnused();
@@ -219,33 +219,87 @@ test("[SAFETY-NETWORK] injected navigation and by-id resources fail closed", () 
 });
 
 test("[GATE-02] all seven entry assets retain their exact bootstrap loading modes", () => {
-  const expectedModes = {
-    "aviso-dispositivo": { async: true, module: false },
-    "aviso-navegador": { async: false, module: false },
-    "avisos-iniciais": { async: true, module: true },
-    cadastro: { async: true, module: true },
-    estudo: { async: false, module: true },
-    login: { async: true, module: true },
-    statusreport: { async: true, module: true }
-  };
+  const expectedModes = [
+    {
+      sourceDirectory: "device-warning",
+      publicSuffix: "aviso-dispositivo",
+      async: true,
+      module: false
+    },
+    {
+      sourceDirectory: "browser-warning",
+      publicSuffix: "aviso-navegador",
+      async: false,
+      module: false
+    },
+    {
+      sourceDirectory: "initial-notices",
+      publicSuffix: "avisos-iniciais",
+      async: true,
+      module: true
+    },
+    {
+      sourceDirectory: "registration",
+      publicSuffix: "cadastro",
+      async: true,
+      module: true
+    },
+    {
+      sourceDirectory: "study",
+      publicSuffix: "estudo",
+      async: false,
+      module: true
+    },
+    {
+      sourceDirectory: "login",
+      publicSuffix: "login",
+      async: true,
+      module: true
+    },
+    {
+      sourceDirectory: "status-report",
+      publicSuffix: "statusreport",
+      async: true,
+      module: true
+    }
+  ];
 
-  for (const [entry, expected] of Object.entries(expectedModes)) {
+  for (const expected of expectedModes) {
+    const { sourceDirectory, publicSuffix } = expected;
     const html = fs.readFileSync(
-      path.join(REPOSITORY_ROOT, "apps", "learning-platform", entry, "index.html"),
+      path.join(
+        REPOSITORY_ROOT,
+        "apps",
+        "learning-platform",
+        sourceDirectory,
+        "index.html"
+      ),
       "utf8"
     );
     const scriptTags = Array.from(html.matchAll(/<script\b([^>]*)>/gi), ([, attributes]) =>
       attributes
     );
     const mainIndex = scriptTags.findIndex((attributes) =>
-      attributes.includes(`/plataforma/${entry}/main.js`)
+      attributes.includes(`/plataforma/${publicSuffix}/main.js`)
     );
-    assert.notEqual(mainIndex, -1, `${entry} must retain its public main.js asset`);
+    assert.notEqual(
+      mainIndex,
+      -1,
+      `${sourceDirectory} must retain its Portuguese public main.js asset`
+    );
     const mainAttributes = scriptTags[mainIndex];
-    assert.equal(/\basync\b/i.test(mainAttributes), expected.async, `${entry}:async`);
-    assert.equal(/\btype\s*=\s*["']module["']/i.test(mainAttributes), expected.module, `${entry}:module`);
+    assert.equal(
+      /\basync\b/i.test(mainAttributes),
+      expected.async,
+      `${sourceDirectory}:async`
+    );
+    assert.equal(
+      /\btype\s*=\s*["']module["']/i.test(mainAttributes),
+      expected.module,
+      `${sourceDirectory}:module`
+    );
 
-    if (entry === "estudo") {
+    if (sourceDirectory === "study") {
       assert.equal(scriptTags.length, 3);
       assert.equal(mainIndex, 2, "Study dependencies must remain ordered before main.js");
       assert.equal(scriptTags.slice(0, 2).every((attributes) => !/\b(?:async|defer)\b/i.test(attributes)), true);

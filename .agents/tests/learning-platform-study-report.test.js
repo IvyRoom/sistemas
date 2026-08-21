@@ -13,7 +13,7 @@ const {
 } = require("./helpers/learning-platform-harness.js");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
-const studyMainSource = readPlatformScript("apps/learning-platform/estudo/main.js");
+const studyMainSource = readPlatformScript("apps/learning-platform/study/main.js");
 const studyModulePaths = [
   "application.js",
   "assessment.js",
@@ -34,7 +34,7 @@ const studyModulePaths = [
 // application-owned responsibility module that now implements study behavior.
 const studySource = [studyMainSource, ...studyModulePaths.map(readPlatformScript)].join("\n");
 const studyHtml = fs.readFileSync(
-  path.join(repositoryRoot, "apps", "learning-platform", "estudo", "index.html"),
+  path.join(repositoryRoot, "apps", "learning-platform", "study", "index.html"),
   "utf8"
 );
 const reportModulePaths = [
@@ -44,7 +44,7 @@ const reportModulePaths = [
 ];
 // Report source assertions use the same explicit production source graph.
 const reportSource = [
-  readPlatformScript("apps/learning-platform/statusreport/main.js"),
+  readPlatformScript("apps/learning-platform/status-report/main.js"),
   ...reportModulePaths.map(readPlatformScript)
 ].join("\n");
 
