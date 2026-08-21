@@ -119,8 +119,40 @@
       "id": "learning-platform",
       "mappings": [
         {
-          "source": "apps/learning-platform",
-          "output": "plataforma"
+          "source": "apps/learning-platform/device-warning",
+          "output": "plataforma/aviso-dispositivo"
+        },
+        {
+          "source": "apps/learning-platform/browser-warning",
+          "output": "plataforma/aviso-navegador"
+        },
+        {
+          "source": "apps/learning-platform/initial-notices",
+          "output": "plataforma/avisos-iniciais"
+        },
+        {
+          "source": "apps/learning-platform/registration",
+          "output": "plataforma/cadastro"
+        },
+        {
+          "source": "apps/learning-platform/study",
+          "output": "plataforma/estudo"
+        },
+        {
+          "source": "apps/learning-platform/login",
+          "output": "plataforma/login"
+        },
+        {
+          "source": "apps/learning-platform/status-report",
+          "output": "plataforma/statusreport"
+        },
+        {
+          "source": "apps/learning-platform/modules",
+          "output": "plataforma/modules"
+        },
+        {
+          "source": "apps/learning-platform/azure-ai-vision-face-ui",
+          "output": "plataforma/azure-ai-vision-face-ui"
         }
       ],
       "publicEntries": [

@@ -46,20 +46,24 @@ The document keeps five categories separate:
 
 ### Public entries and navigation
 
-`frontend-deployment.json` maps the entire tracked `apps/learning-platform/`
-directory to `dist/plataforma/` without renaming relative paths. It declares
-exactly seven public entries. Each canonical entry includes a trailing slash
-and must return its listed `index.html` with HTTP `200` and no redirect.
+`frontend-deployment.json` explicitly maps the nine tracked top-level source
+directories under `apps/learning-platform/` to their stable locations under
+`dist/plataforma/`. The six renamed entry sources use English directory names
+while their Portuguese output directories remain unchanged; `login`, `modules`,
+and `azure-ai-vision-face-ui` retain the same source and output suffixes. The
+manifest declares exactly seven public entries. Each canonical entry includes a
+trailing slash and must return its listed `index.html` with HTTP `200` and no
+redirect.
 
 | Stable entry | Canonical public path | Current entry file | Direct dependencies |
 | --- | --- | --- | --- |
-| `LP-ENTRY-DEVICE` | `/plataforma/aviso-dispositivo/` | `apps/learning-platform/aviso-dispositivo/index.html` | Login favicon; own CSS, logo, and async classic script |
-| `LP-ENTRY-BROWSER` | `/plataforma/aviso-navegador/` | `apps/learning-platform/aviso-navegador/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
-| `LP-ENTRY-NOTICES` | `/plataforma/avisos-iniciais/` | `apps/learning-platform/avisos-iniciais/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
-| `LP-ENTRY-REGISTER` | `/plataforma/cadastro/` | `apps/learning-platform/cadastro/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
-| `LP-ENTRY-STUDY` | `/plataforma/estudo/` | `apps/learning-platform/estudo/index.html` | Own favicon/CSS/logo; ordered classic Shaka Player 4.6.0 and jsPDF 2.5.1 dependencies; native-module bootstrap; stored session state; remote DASH media |
+| `LP-ENTRY-DEVICE` | `/plataforma/aviso-dispositivo/` | `apps/learning-platform/device-warning/index.html` | Login favicon; own CSS, logo, and async classic script |
+| `LP-ENTRY-BROWSER` | `/plataforma/aviso-navegador/` | `apps/learning-platform/browser-warning/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
+| `LP-ENTRY-NOTICES` | `/plataforma/avisos-iniciais/` | `apps/learning-platform/initial-notices/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
+| `LP-ENTRY-REGISTER` | `/plataforma/cadastro/` | `apps/learning-platform/registration/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
+| `LP-ENTRY-STUDY` | `/plataforma/estudo/` | `apps/learning-platform/study/index.html` | Own favicon/CSS/logo; ordered classic Shaka Player 4.6.0 and jsPDF 2.5.1 dependencies; native-module bootstrap; stored session state; remote DASH media |
 | `LP-ENTRY-LOGIN` | `/plataforma/login/` | `apps/learning-platform/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; production backend role |
-| `LP-ENTRY-REPORT` | `/plataforma/statusreport/` | `apps/learning-platform/statusreport/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
+| `LP-ENTRY-REPORT` | `/plataforma/statusreport/` | `apps/learning-platform/status-report/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
 
 The entry documents use these exact initial URL literals; later dynamic Face,
 download, certificate, and video paths are specified in their dedicated
@@ -154,16 +158,16 @@ history entry.
   and generated-artifact index fallback
   [`scripts/frontend-deployment-lib.mjs` lines 1200-1224](../scripts/frontend-deployment-lib.mjs#L1200-L1224).
 - Exact HTML dependencies: device
-  [`index.html` lines 9-28](../apps/learning-platform/aviso-dispositivo/index.html#L9-L28),
-  browser [`index.html` lines 9-28](../apps/learning-platform/aviso-navegador/index.html#L9-L28),
-  notices [`index.html` lines 9-18](../apps/learning-platform/avisos-iniciais/index.html#L9-L18),
-  registration [`index.html` lines 9-62](../apps/learning-platform/cadastro/index.html#L9-L62),
+  [`index.html` lines 9-28](../apps/learning-platform/device-warning/index.html#L9-L28),
+  browser [`index.html` lines 9-28](../apps/learning-platform/browser-warning/index.html#L9-L28),
+  notices [`index.html` lines 9-18](../apps/learning-platform/initial-notices/index.html#L9-L18),
+  registration [`index.html` lines 9-62](../apps/learning-platform/registration/index.html#L9-L62),
   login [`index.html` lines 9-59](../apps/learning-platform/login/index.html#L9-L59),
-  study [`index.html` lines 9-32](../apps/learning-platform/estudo/index.html#L9-L32) and
-  [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L9109-L9113),
-  report [`index.html` lines 9-45](../apps/learning-platform/statusreport/index.html#L9-L45).
+  study [`index.html` lines 9-32](../apps/learning-platform/study/index.html#L9-L32) and
+  [`index.html` lines 9109-9113](../apps/learning-platform/study/index.html#L9109-L9113),
+  report [`index.html` lines 9-45](../apps/learning-platform/status-report/index.html#L9-L45).
 - Slashless destinations and history: device
-  [`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3), shared
+  [`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3), shared
   [lifecycle seam](../apps/learning-platform/modules/lifecycle.js),
   [notices factory](../apps/learning-platform/modules/initial-notices.js),
   [registration factory](../apps/learning-platform/modules/registration.js),
@@ -229,7 +233,7 @@ and ASCII. The approved behavior-neutral rename map is deliberately narrow:
 
 | Source | Legacy internal | Current internal |
 | --- | --- | --- |
-| `login/main.js`, `statusreport/main.js` | local `URL_Base_Backend` | `backendBase` |
+| `login/main.js`, `status-report/main.js` | local `URL_Base_Backend` | `backendBase` |
 | `modules/study/downloads.js` | `MóduloAberto`, `NomeVídeo` | existing inputs `moduleName`, `videoName` |
 | `modules/study/downloads.js` | `ContainerDownloadArquivo1` through `ContainerDownloadArquivo4` | `downloadContainer1` through `downloadContainer4` |
 | `modules/study/downloads.js` | `NomeArquivo1` through `NomeArquivo4` | `downloadName1` through `downloadName4` |
@@ -294,8 +298,8 @@ Current anchors: [login factory](../apps/learning-platform/modules/login.js),
 [study coordinator](../apps/learning-platform/modules/study/application.js),
 [status-report coordinator](../apps/learning-platform/modules/status-report/application.js),
 shared [lifecycle seam](../apps/learning-platform/modules/lifecycle.js), warning
-[`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3), and
-browser diagnostic [`main.js` lines 1-2](../apps/learning-platform/aviso-navegador/main.js#L1-L2).
+[`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3), and
+browser diagnostic [`main.js` lines 1-2](../apps/learning-platform/browser-warning/main.js#L1-L2).
 
 ### Session-storage contract
 
@@ -326,10 +330,10 @@ Current anchors: exact key spellings and raw access in the shared
 base initialization in [`main.js`](../apps/learning-platform/login/main.js) and
 transitions in the [login factory](../apps/learning-platform/modules/login.js);
 the [registration factory](../apps/learning-platform/modules/registration.js);
-study evaluation reads in [`main.js`](../apps/learning-platform/estudo/main.js),
+study evaluation reads in [`main.js`](../apps/learning-platform/study/main.js),
 refresh/logout in the [study coordinator](../apps/learning-platform/modules/study/application.js),
 and expiry in [`session-timer.js`](../apps/learning-platform/modules/study/session-timer.js); warning
-[`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3); backend
+[`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3); backend
 handle contract at the pinned companion
 [`api-contracts.md` lines 211-248](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L211-L248).
 
@@ -584,7 +588,7 @@ long-load delay, and rejects on its own timeout/failure states; those failures
 map to frontend `Erro_006`.
 
 Current anchors: registration HTML
-[`index.html` lines 32-48](../apps/learning-platform/cadastro/index.html#L32-L48),
+[`index.html` lines 32-48](../apps/learning-platform/registration/index.html#L32-L48),
 [registration factory](../apps/learning-platform/modules/registration.js),
 [login factory](../apps/learning-platform/modules/login.js), shared
 [Face startup seam](../apps/learning-platform/modules/face-startup.js), and vendored
@@ -659,9 +663,9 @@ completed test clears and disables its answers rather than reconstructing the
 submitted selection.
 
 Current anchors: visible time guidance
-[`index.html` line 1401](../apps/learning-platform/estudo/index.html#L1401), representative
+[`index.html` line 1401](../apps/learning-platform/study/index.html#L1401), representative
 correctness attributes
-[`index.html` lines 1477-1519](../apps/learning-platform/estudo/index.html#L1477-L1519),
+[`index.html` lines 1477-1519](../apps/learning-platform/study/index.html#L1477-L1519),
 assessment flow [`assessment.js`](../apps/learning-platform/modules/study/assessment.js).
 
 #### Feedback
@@ -683,7 +687,7 @@ The four current rating conventions are strings: module size uses `-2` through
 through `10`. Comments have only the browser `maxlength=1000` constraint.
 
 Current anchors: feedback values and comment limit
-[`index.html` lines 8745-8909](../apps/learning-platform/estudo/index.html#L8745-L8909), flow
+[`index.html` lines 8745-8909](../apps/learning-platform/study/index.html#L8745-L8909), flow
 [`feedback.js`](../apps/learning-platform/modules/study/feedback.js).
 
 #### Performance, certificate, logout, and expiry
@@ -778,21 +782,21 @@ backend projection
 
 ### Runtime assets and resolution rules
 
-The complete tracked/emitted platform set is the union below. The application
-module directory is copied through the existing whole-directory identity
-mapping; there is no bundle or generated-source layer.
+The complete tracked/emitted platform set is the union below. Each top-level
+source directory is copied through its explicit source-to-output mapping; there
+is no bundle or generated-source layer.
 
-| Area | Files | Complete set description |
+| Source area → output suffix | Files | Complete set description |
 | --- | ---: | --- |
-| `aviso-dispositivo/` | 5 | `index.html`, `main.js`, `style.css`, `img/FAVICON.ico`, `img/LOGO_MACHADO.png` |
-| `aviso-navegador/` | 5 | Same five relative names as device warning |
-| `avisos-iniciais/` | 4 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png` |
-| `azure-ai-vision-face-ui/` | 85 | Face component, 75 dictionaries, five images, regular/SIMD JS and WASM pairs |
-| `cadastro/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
-| `estudo/` | 41 | HTML/JS/CSS, 33 study files, five images |
-| `login/` | 6 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
-| `modules/` | 26 | Shared browser seams, centralized error adapter/presentation catalog, page factories, 14 study responsibility modules, and three status-report modules |
-| `statusreport/` | 5 | HTML/JS/CSS, favicon, logo |
+| `device-warning/` → `aviso-dispositivo/` | 5 | `index.html`, `main.js`, `style.css`, `img/FAVICON.ico`, `img/LOGO_MACHADO.png` |
+| `browser-warning/` → `aviso-navegador/` | 5 | Same five relative names as device warning |
+| `initial-notices/` → `avisos-iniciais/` | 4 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png` |
+| `azure-ai-vision-face-ui/` → `azure-ai-vision-face-ui/` | 85 | Face component, 75 dictionaries, five images, regular/SIMD JS and WASM pairs |
+| `registration/` → `cadastro/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
+| `study/` → `estudo/` | 41 | HTML/JS/CSS, 33 study files, five images |
+| `login/` → `login/` | 6 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
+| `modules/` → `modules/` | 26 | Shared browser seams, centralized error adapter/presentation catalog, page factories, 14 study responsibility modules, and three status-report modules |
+| `status-report/` → `statusreport/` | 5 | HTML/JS/CSS, favicon, logo |
 | **Total** | **182** | Current output root is `dist/plataforma/` |
 
 By extension, the set is 7 CSS, 7 HTML, 36 JS, 75 JSON, 2 WASM, 11 PNG,
@@ -877,17 +881,17 @@ own favicon, but both HTML entries deliberately reference the login favicon.
 
 Current anchors: production Face imports in login
 [`main.js`](../apps/learning-platform/login/main.js) and registration
-[`main.js`](../apps/learning-platform/cadastro/main.js), shared locale/construction/mount/start
+[`main.js`](../apps/learning-platform/registration/main.js), shared locale/construction/mount/start
 [`face-startup.js`](../apps/learning-platform/modules/face-startup.js), base tags
 at login [`index.html` lines 9-11](../apps/learning-platform/login/index.html#L9-L11) and
-registration [`index.html` lines 9-11](../apps/learning-platform/cadastro/index.html#L9-L11),
+registration [`index.html` lines 9-11](../apps/learning-platform/registration/index.html#L9-L11),
 vendored paths/version/selection
 [`FaceLivenessDetector.js` line 1](../apps/learning-platform/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1),
 application-owned completion-circle/check seam in
 [`face-startup.js`](../apps/learning-platform/modules/face-startup.js), full-viewport
 loader, dot-color, and checkbox overrides in login
 [`style.css`](../apps/learning-platform/login/style.css) and registration
-[`style.css`](../apps/learning-platform/cadastro/style.css), and the preserved
+[`style.css`](../apps/learning-platform/registration/style.css), and the preserved
 localized loading copy in
 [`facelivenessdetector-assets/i18n/pt-BR/en.json` line 4](../apps/learning-platform/azure-ai-vision-face-ui/facelivenessdetector-assets/i18n/pt-BR/en.json#L4).
 
@@ -899,7 +903,13 @@ emitted files have no current runtime reference: `Módulo 3/PLANO DE AÇÃO
 (CLÁUDIA).xlsm` and `Módulo 4/GRÁFICO CONTROLE DE RESULTADOS - Copia.xlsm`.
 
 The complete exact inventory, relative to
-`apps/learning-platform/estudo/files/`, is:
+`apps/learning-platform/study/files/`, is:
+
+The English rename stops at the `study` source directory. Every nested
+`Módulo *` directory and downloadable filename remains unchanged because those
+names are preservation-critical public content. The explicit `study` to
+`plataforma/estudo` mapping therefore retains every emitted download path and
+byte exactly.
 
 | Directory | Exact filenames |
 | --- | --- |
@@ -972,10 +982,10 @@ legacy format label `PNG`. Study also uses `FAVICON.ico` and
 `LOGO_MACHADO.png`.
 
 Current anchors: download placeholders
-[`index.html` lines 1353-1377](../apps/learning-platform/estudo/index.html#L1353-L1377),
+[`index.html` lines 1353-1377](../apps/learning-platform/study/index.html#L1353-L1377),
 assignment matrix
 [`downloads.js`](../apps/learning-platform/modules/study/downloads.js), certificate
-library/UI [`index.html` lines 9085-9111](../apps/learning-platform/estudo/index.html#L9085-L9111),
+library/UI [`index.html` lines 9085-9111](../apps/learning-platform/study/index.html#L9085-L9111),
 certificate construction
 [`certificate-renderer.js`](../apps/learning-platform/modules/study/certificate-renderer.js).
 
@@ -995,16 +1005,16 @@ remote object-name contracts. The source has no separate video map.
 
 | Module | Videos | Total nodes | `data-index` range | Current exhaustive HTML span |
 | ---: | ---: | ---: | --- | --- |
-| 1 | 11 | 13 | 1-13 | `estudo/index.html:102-162` |
-| 2 | 15 | 17 | 14-30 | `estudo/index.html:205-285` |
-| 3 | 19 | 21 | 31-51 | `estudo/index.html:328-430` |
-| 4 | 18 | 20 | 52-71 | `estudo/index.html:471-568` |
-| 5 | 17 | 19 | 72-90 | `estudo/index.html:609-701` |
-| 6 | 8 | 10 | 91-100 | `estudo/index.html:742-789` |
-| 7 | 12 | 14 | 101-114 | `estudo/index.html:830-897` |
-| 8 | 22 | 24 | 115-138 | `estudo/index.html:938-1055` |
-| 9 | 17 | 19 | 139-157 | `estudo/index.html:1096-1188` |
-| 10 | 12 | 14 | 158-171 | `estudo/index.html:1230-1297` |
+| 1 | 11 | 13 | 1-13 | `study/index.html:102-162` |
+| 2 | 15 | 17 | 14-30 | `study/index.html:205-285` |
+| 3 | 19 | 21 | 31-51 | `study/index.html:328-430` |
+| 4 | 18 | 20 | 52-71 | `study/index.html:471-568` |
+| 5 | 17 | 19 | 72-90 | `study/index.html:609-701` |
+| 6 | 8 | 10 | 91-100 | `study/index.html:742-789` |
+| 7 | 12 | 14 | 101-114 | `study/index.html:830-897` |
+| 8 | 22 | 24 | 115-138 | `study/index.html:938-1055` |
+| 9 | 17 | 19 | 139-157 | `study/index.html:1096-1188` |
+| 10 | 12 | 14 | 158-171 | `study/index.html:1230-1297` |
 
 The protected media namespace is the remote `videosv3/plataforma_v2/` branch;
 the bypass namespace is sibling `videosv3/plataforma_v2_sem_drm/`. Default is
@@ -1047,9 +1057,9 @@ Current anchors: module folder/topic behavior
 [`content.js`](../apps/learning-platform/modules/study/content.js); player
 lifecycle/completion [`player.js`](../apps/learning-platform/modules/study/player.js);
 source-derived protected/bypass policy remains in the production
-[`main.js`](../apps/learning-platform/estudo/main.js); external
-libraries [`index.html` lines 10-12](../apps/learning-platform/estudo/index.html#L10-L12)
-and [`index.html` lines 9109-9113](../apps/learning-platform/estudo/index.html#L9109-L9113).
+[`main.js`](../apps/learning-platform/study/main.js); external
+libraries [`index.html` lines 10-12](../apps/learning-platform/study/index.html#L10-L12)
+and [`index.html` lines 9109-9113](../apps/learning-platform/study/index.html#L9109-L9113).
 
 ### Deployment artifact and whole-tree digest
 
@@ -1145,7 +1155,7 @@ The platform has seven manifest `publicEntries` and zero `publicDownloads`.
 Thus 175 emitted platform files are supporting/runtime files rather than
 individually enumerated public contracts. All 33 study downloads, the entire
 Face subtree, JS/CSS/images, and certificate inputs are absent from
-`publicDownloads` even though the identity mapping publishes them. Remote CDN
+`publicDownloads` even though the explicit mappings publish them. Remote CDN
 libraries and all media manifests/segments are outside the 257-file artifact.
 
 Current anchors: mapping collection
@@ -1155,7 +1165,7 @@ digest framing
 build/copy/set checks
 [`frontend-deployment-lib.mjs` lines 429-478](../scripts/frontend-deployment-lib.mjs#L429-L478),
 platform `publicDownloads`
-[`frontend-deployment.json` lines 119-156](../frontend-deployment.json#L119-L156).
+[`frontend-deployment.json` lines 119-188](../frontend-deployment.json#L119-L188).
 
 ## Known risks and unresolved legacy behavior
 
@@ -1253,7 +1263,7 @@ future work, not permission to change compatibility behavior in the baseline.
 - The visible Module 3 feedback form is named `FEEDBACK MÓDULO 2`; current
   parsing therefore submits it as module 2. This is an unresolved source bug,
   deliberately preserved as baseline evidence. Current anchors:
-  [`index.html` lines 423-430](../apps/learning-platform/estudo/index.html#L423-L430)
+  [`index.html` lines 423-430](../apps/learning-platform/study/index.html#L423-L430)
   and [`feedback.js`](../apps/learning-platform/modules/study/feedback.js).
 - The certificate is generated wholly in the browser from workbook-derived and
   client-held values. Eligibility, name, score, and rendered certificate ID can

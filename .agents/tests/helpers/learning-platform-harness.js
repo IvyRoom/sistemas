@@ -17,8 +17,8 @@ const PLATFORM_MODULE_ROOT = path.join(
 const PLATFORM_MODULE_ROOT_REAL_PATH = fs.realpathSync(PLATFORM_MODULE_ROOT);
 const FIXTURE_ORIGIN = "https:" + "//learning-platform.test";
 const CLASSIC_SCRIPT_PATHS = new Set([
-  "apps/learning-platform/aviso-dispositivo/main.js",
-  "apps/learning-platform/aviso-navegador/main.js"
+  "apps/learning-platform/device-warning/main.js",
+  "apps/learning-platform/browser-warning/main.js"
 ]);
 
 let platformModuleHooksRegistered = false;
