@@ -1035,7 +1035,11 @@ test("[API-01] login posts untrimmed credentials and preserves active and inacti
 test("[API-01] login preserves invalid-credential, workbook, generic, and unexpected waiting branches", async () => {
   const failures = [
     { data: {}, expectedAlert: null, expectedInline: true, status: 401 },
-    { data: { error: "Erro_001" }, expectedAlert: "Erro_001", status: 500 },
+    {
+      data: { error: "learning_platform.read_platform_data_failed" },
+      expectedAlert: "Erro_001",
+      status: 500
+    },
     { data: { error: "Unexpected" }, expectedAlert: "Erro_000", status: 500 }
   ];
   for (const fixture of failures) {
@@ -1165,12 +1169,25 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
   assert.equal(success.sessionStorage.getItem("Usuário_Logado"), "Sim");
   assert.equal(success.navigation.at(-1), PATHS.study);
 
-  for (const code of ["Erro_002", "Erro_003", "Erro_004"]) {
+  for (const { expectedAlert, machineValue } of [
+    {
+      expectedAlert: "Erro_002",
+      machineValue: "learning_platform.upload_reference_photo_failed"
+    },
+    {
+      expectedAlert: "Erro_003",
+      machineValue: "learning_platform.update_reference_photo_registration_failed"
+    },
+    {
+      expectedAlert: "Erro_004",
+      machineValue: "learning_platform.create_face_liveness_session_failed"
+    }
+  ]) {
     const failure = createLearningPlatformHarness({
       routes: [{
         method: "POST",
         path: "/plataforma_v2/CadastroFoto_e_FaceID",
-        response: { data: { error: code }, status: 500 }
+        response: { data: { error: machineValue }, status: 500 }
       }],
       storage: {
         IndexVerificado: opaqueValue("row-handle"),
@@ -1182,7 +1199,8 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
     await installRegistrationApplication(failure);
     submit(failure.element("Formulário-Foto-Referência"));
     await failure.flush(20);
-    assertOnlyErrorCode(failure.alerts, code);
+    assertOnlyErrorCode(failure.alerts, expectedAlert);
+    assertMachineValueHidden(failure, machineValue);
     assert.equal(failure.element("Botão-Cadastrar-Foto-Referência").disabled, false);
   }
 });
@@ -1202,7 +1220,10 @@ test("[FLOW-01] registration post-success Face failures keep authorization clear
         { method: "POST", path: "/plataforma_v2/CadastroFoto_e_FaceID" },
         { method: "GET", path: "/plataforma_v2/FaceID_resultado/:sessionId" }
       ],
-      resultResponse: { data: { error: "Erro_007" }, status: 500 }
+      resultResponse: {
+        data: { error: "learning_platform.read_face_liveness_result_failed" },
+        status: 500
+      }
     }
   ];
 
@@ -1445,7 +1466,10 @@ test("[API-02] Face decision, SDK rejection, and result error branches remain si
           method: "GET",
           path: FIXTURE_RESULT_PATH,
           response: scenario.resultError
-            ? { data: { error: "Erro_007" }, status: 500 }
+            ? {
+                data: { error: "learning_platform.read_face_liveness_result_failed" },
+                status: 500
+              }
             : { data: scenario.faceResult ?? faceResultResponse() }
         }
       ]
@@ -1470,7 +1494,16 @@ test("[API-02] Face decision, SDK rejection, and result error branches remain si
 });
 
 test("[API-02] Face start and result retain exact specific and generic mappings", async () => {
-  for (const code of ["Erro_004", "Erro_005"]) {
+  for (const { expectedAlert, machineValue } of [
+    {
+      expectedAlert: "Erro_004",
+      machineValue: "learning_platform.create_face_liveness_session_failed"
+    },
+    {
+      expectedAlert: "Erro_005",
+      machineValue: "learning_platform.read_reference_photo_failed"
+    }
+  ]) {
     const harness = createLearningPlatformHarness({
       routes: [
         {
@@ -1481,14 +1514,15 @@ test("[API-02] Face start and result retain exact specific and generic mappings"
         {
           method: "POST",
           path: "/plataforma_v2/FaceID",
-          response: { data: { error: code }, status: 500 }
+          response: { data: { error: machineValue }, status: 500 }
         }
       ]
     });
     await installLoginApplication(harness);
     submit(harness.element("Formulário-Login"));
     await harness.flush(20);
-    assertOnlyErrorCode(harness.alerts, code);
+    assertOnlyErrorCode(harness.alerts, expectedAlert);
+    assertMachineValueHidden(harness, machineValue);
     assert.equal(harness.guard.requests.length, 2);
     assertNoQuery(harness);
   }
@@ -1519,7 +1553,7 @@ test("[API-02] Face start and result retain exact specific and generic mappings"
   );
 });
 
-test("[ERROR-02] named backend values preserve legacy entry failure effects", async () => {
+test("[ERROR-02] named backend values preserve exact entry failure effects", async () => {
   function snapshotEntryFailure(harness, controls) {
     return {
       alerts: [...harness.alerts],
@@ -1661,45 +1695,196 @@ test("[ERROR-02] named backend values preserve legacy entry failure effects", as
     };
   }
 
-  const transitions = [
+  const expectedEffectsByRun = new Map([
+    [runLoginFailure, {
+      consoleCalls: [],
+      controls: {
+        cursor: "default",
+        initializing: "none",
+        invalidCredentials: undefined,
+        password: "",
+        submitDisabled: false,
+        submitDisplay: "block",
+        user: ""
+      },
+      navigation: [],
+      requests: [{
+        body: {
+          Usuário_Login: "invented@example.test",
+          Usuário_Senha: "<redacted>"
+        },
+        formFields: undefined,
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID"
+      }],
+      storage: {},
+      timeline: [
+        { method: "POST", path: "/plataforma_v2/login-FaceID", type: "fetch" }
+      ]
+    }],
+    [runRegistrationFailure, {
+      consoleCalls: [],
+      controls: {
+        cursor: "default",
+        registering: "none",
+        submitDisabled: false,
+        submitDisplay: "block"
+      },
+      navigation: [],
+      requests: [{
+        body: undefined,
+        formFields: [
+          ["IndexVerificado", "<redacted>"],
+          ["file", "<file:invented-reference.jpg>"]
+        ],
+        headers: {},
+        method: "POST",
+        path: "/plataforma_v2/CadastroFoto_e_FaceID"
+      }],
+      storage: {
+        IndexVerificado: "<redacted>",
+        URL_Base_Backend: "<redacted>",
+        Usuário_Autorização_Cadastro: "Sim"
+      },
+      timeline: [
+        {
+          method: "POST",
+          path: "/plataforma_v2/CadastroFoto_e_FaceID",
+          type: "fetch"
+        }
+      ]
+    }],
+    [runFaceSessionFailure, {
+      consoleCalls: [],
+      controls: {
+        cursor: "default",
+        initializing: "none",
+        rejectedFace: undefined,
+        submitDisabled: false,
+        submitDisplay: "block"
+      },
+      navigation: [],
+      requests: [
+        {
+          body: { Usuário_Login: "", Usuário_Senha: "<redacted>" },
+          formFields: undefined,
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          path: "/plataforma_v2/login-FaceID"
+        },
+        {
+          body: { IndexVerificado: "<redacted>" },
+          formFields: undefined,
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          path: "/plataforma_v2/FaceID"
+        }
+      ],
+      storage: {
+        "Horário-Encerramento-Sessão": "2000014400000",
+        IndexVerificado: "<redacted>",
+        Usuário_Foto_Cadastrada: "Sim"
+      },
+      timeline: [
+        { method: "POST", path: "/plataforma_v2/login-FaceID", type: "fetch" },
+        { key: "IndexVerificado", type: "storage-set" },
+        { key: "Usuário_Foto_Cadastrada", type: "storage-set" },
+        { key: "Horário-Encerramento-Sessão", type: "storage-set" },
+        { method: "POST", path: "/plataforma_v2/FaceID", type: "fetch" }
+      ]
+    }],
+    [runFaceResultFailure, {
+      consoleCalls: [],
+      controls: {
+        cursor: "default",
+        faceChildren: 1,
+        initializing: "none",
+        submitDisabled: false,
+        submitDisplay: "block"
+      },
+      navigation: [],
+      requests: [
+        {
+          body: { Usuário_Login: "", Usuário_Senha: "<redacted>" },
+          formFields: undefined,
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          path: "/plataforma_v2/login-FaceID"
+        },
+        {
+          body: { IndexVerificado: "<redacted>" },
+          formFields: undefined,
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          path: "/plataforma_v2/FaceID"
+        },
+        {
+          body: undefined,
+          formFields: undefined,
+          headers: { "Content-Type": "application/json" },
+          method: "GET",
+          path: "/plataforma_v2/FaceID_resultado/:sessionId"
+        }
+      ],
+      storage: {
+        "Horário-Encerramento-Sessão": "2000014400000",
+        IndexVerificado: "<redacted>",
+        Usuário_Foto_Cadastrada: "Sim"
+      },
+      timeline: [
+        { method: "POST", path: "/plataforma_v2/login-FaceID", type: "fetch" },
+        { key: "IndexVerificado", type: "storage-set" },
+        { key: "Usuário_Foto_Cadastrada", type: "storage-set" },
+        { key: "Horário-Encerramento-Sessão", type: "storage-set" },
+        { method: "POST", path: "/plataforma_v2/FaceID", type: "fetch" },
+        { tagName: "AZURE-AI-VISION-FACE-UI", type: "append" },
+        { tokenPresent: true, type: "face-start" },
+        { method: "GET", path: "/plataforma_v2/FaceID_resultado/:sessionId", type: "fetch" }
+      ]
+    }]
+  ]);
+
+  const namedFailures = [
     {
-      legacy: "Erro_001",
+      expectedAlert: "Erro_001",
       named: "learning_platform.read_platform_data_failed",
       run: runLoginFailure
     },
     {
-      legacy: "Erro_002",
+      expectedAlert: "Erro_002",
       named: "learning_platform.upload_reference_photo_failed",
       run: runRegistrationFailure
     },
     {
-      legacy: "Erro_003",
+      expectedAlert: "Erro_003",
       named: "learning_platform.update_reference_photo_registration_failed",
       run: runRegistrationFailure
     },
     {
-      legacy: "Erro_004",
+      expectedAlert: "Erro_004",
       named: "learning_platform.create_face_liveness_session_failed",
       run: runRegistrationFailure
     },
     {
-      legacy: "Erro_005",
+      expectedAlert: "Erro_005",
       named: "learning_platform.read_reference_photo_failed",
       run: runFaceSessionFailure
     },
     {
-      legacy: "Erro_007",
+      expectedAlert: "Erro_007",
       named: "learning_platform.read_face_liveness_result_failed",
       run: runFaceResultFailure
     }
   ];
 
-  for (const { legacy, named, run } of transitions) {
-    const legacyResult = await run(legacy);
-    const namedResult = await run(named);
-    assert.deepEqual(namedResult.snapshot, legacyResult.snapshot, named);
-    assertOnlyErrorCode(namedResult.harness.alerts, legacy);
-    assertMachineValueHidden(namedResult.harness, named);
+  for (const { expectedAlert, named, run } of namedFailures) {
+    const result = await run(named);
+    const { alerts, ...effects } = result.snapshot;
+    assert.equal(alerts.length, 1, named);
+    assert.deepEqual(effects, expectedEffectsByRun.get(run), named);
+    assertOnlyErrorCode(result.harness.alerts, expectedAlert);
+    assertMachineValueHidden(result.harness, named);
   }
 
   const generic = await runLoginFailure("unrecognized_learning_platform_failure");

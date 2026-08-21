@@ -34,7 +34,7 @@ export const learningPlatformErrorOwners = Object.freeze({
     UNKNOWN: 'unknown'
 });
 
-export const learningPlatformFutureWireValues = Object.freeze({
+export const learningPlatformBackendErrorValues = Object.freeze({
     FACE_LIVENESS_RESULT_READ_FAILURE: 'learning_platform.read_face_liveness_result_failed',
     FACE_LIVENESS_SESSION_CREATION_FAILURE: 'learning_platform.create_face_liveness_session_failed',
     FEEDBACK_APPEND_FAILURE: 'learning_platform.append_feedback_failed',
@@ -48,53 +48,40 @@ export const learningPlatformFutureWireValues = Object.freeze({
 const backendDefinitions = [
     {
         kind: learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE,
-        legacy: 'Erro_001',
-        named: learningPlatformFutureWireValues.PLATFORM_DATA_READ_FAILURE
+        named: learningPlatformBackendErrorValues.PLATFORM_DATA_READ_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.REFERENCE_PHOTO_UPLOAD_FAILURE,
-        legacy: 'Erro_002',
-        named: learningPlatformFutureWireValues.REFERENCE_PHOTO_UPLOAD_FAILURE
+        named: learningPlatformBackendErrorValues.REFERENCE_PHOTO_UPLOAD_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.REFERENCE_PHOTO_REGISTRATION_UPDATE_FAILURE,
-        legacy: 'Erro_003',
-        named: learningPlatformFutureWireValues.REFERENCE_PHOTO_REGISTRATION_UPDATE_FAILURE
+        named: learningPlatformBackendErrorValues.REFERENCE_PHOTO_REGISTRATION_UPDATE_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.FACE_LIVENESS_SESSION_CREATION_FAILURE,
-        legacy: 'Erro_004',
-        named: learningPlatformFutureWireValues.FACE_LIVENESS_SESSION_CREATION_FAILURE
+        named: learningPlatformBackendErrorValues.FACE_LIVENESS_SESSION_CREATION_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.REFERENCE_PHOTO_READ_FAILURE,
-        legacy: 'Erro_005',
-        named: learningPlatformFutureWireValues.REFERENCE_PHOTO_READ_FAILURE
+        named: learningPlatformBackendErrorValues.REFERENCE_PHOTO_READ_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.FACE_LIVENESS_RESULT_READ_FAILURE,
-        legacy: 'Erro_007',
-        named: learningPlatformFutureWireValues.FACE_LIVENESS_RESULT_READ_FAILURE
+        named: learningPlatformBackendErrorValues.FACE_LIVENESS_RESULT_READ_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.PLATFORM_DATA_WRITE_FAILURE,
-        legacy: 'Erro_008',
-        named: learningPlatformFutureWireValues.PLATFORM_DATA_WRITE_FAILURE
+        named: learningPlatformBackendErrorValues.PLATFORM_DATA_WRITE_FAILURE
     },
     {
         kind: learningPlatformErrorKinds.FEEDBACK_APPEND_FAILURE,
-        legacy: 'Erro_009',
-        named: learningPlatformFutureWireValues.FEEDBACK_APPEND_FAILURE
+        named: learningPlatformBackendErrorValues.FEEDBACK_APPEND_FAILURE
     }
 ];
 
-const frontendLegacyKinds = new Map([
-    ['Erro_000', learningPlatformErrorKinds.APPLICATION_FAILURE],
-    ['Erro_006', learningPlatformErrorKinds.FACE_COMPONENT_FAILURE]
-]);
 const backendDefinitionByValue = new Map();
 backendDefinitions.forEach(definition => {
-    backendDefinitionByValue.set(definition.legacy, definition);
     backendDefinitionByValue.set(definition.named, definition);
 });
 
@@ -222,18 +209,6 @@ export function normalizeLearningPlatformLocalError(error, kind) {
         kind !== learningPlatformErrorKinds.FACE_COMPONENT_FAILURE
     ) {
         throw new TypeError('Unsupported learning-platform local error kind');
-    }
-    return normalizedFailure(kind, learningPlatformErrorOwners.FRONTEND, undefined);
-}
-
-export function normalizeLearningPlatformLegacyFrontendError(legacyValue) {
-    const kind = frontendLegacyKinds.get(legacyValue);
-    if (!kind) {
-        return normalizedFailure(
-            learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
-            learningPlatformErrorOwners.UNKNOWN,
-            undefined
-        );
     }
     return normalizedFailure(kind, learningPlatformErrorOwners.FRONTEND, undefined);
 }

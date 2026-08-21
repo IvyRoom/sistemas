@@ -670,8 +670,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
 
   assert.deepEqual(treeStats(records), {
     files: 182,
-    bytes: 20694259,
-    digest: "46714330081562637fa6ccb0d226836448cf6997e496f7bee5452625a581db13"
+    bytes: 20693391,
+    digest: "bc453ef0a25080d654b2fd8a24eba17224b41049ceacb6df6dd23b049875a050"
   });
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -680,8 +680,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20694259,
-      digest: "9228356ddbe9484f12d36a239f27738f6b6dad2dde9c1477fbd0377f3fc591a2"
+      bytes: 20693391,
+      digest: "3012efb9be58584876d44e2431b0e19851da71f131daf4e1fa21d4ff0892705a"
     },
     "The prefix-omitted platform-root diagnostic digest must remain exact"
   );
@@ -1034,8 +1034,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
 test("[ARTIFACT-01] complete source-derived frontend artifact identity remains exact", () => {
   assert.deepEqual(treeStats(mappedFiles()), {
     files: 257,
-    bytes: 27299294,
-    digest: "8866fe67fb110e748ba7b0bbd5c9fbd40397f8b437274d069ff321e530bd2750"
+    bytes: 27298426,
+    digest: "c9323ac5b7a70283d34a94f26478a99eddb3209e79da19d78985a2bc644c200b"
   });
 });
 

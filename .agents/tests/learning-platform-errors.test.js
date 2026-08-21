@@ -15,55 +15,61 @@ const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
 const adapterModulePath = "apps/learning-platform/modules/error-adapter.js";
 const presentationModulePath = "apps/learning-platform/modules/error-presentation.js";
 
-const transitionDefinitions = [
+const backendErrorDefinitions = [
   {
     kindKey: "PLATFORM_DATA_READ_FAILURE",
-    legacy: "Erro_001",
     named: "learning_platform.read_platform_data_failed",
-    operationKeys: ["LOGIN", "REFRESH", "STATUS_REPORT"]
+    operationKeys: ["LOGIN", "REFRESH", "STATUS_REPORT"],
+    retiredAlias: "Erro_001"
   },
   {
     kindKey: "REFERENCE_PHOTO_UPLOAD_FAILURE",
-    legacy: "Erro_002",
     named: "learning_platform.upload_reference_photo_failed",
-    operationKeys: ["REGISTRATION"]
+    operationKeys: ["REGISTRATION"],
+    retiredAlias: "Erro_002"
   },
   {
     kindKey: "REFERENCE_PHOTO_REGISTRATION_UPDATE_FAILURE",
-    legacy: "Erro_003",
     named: "learning_platform.update_reference_photo_registration_failed",
-    operationKeys: ["REGISTRATION"]
+    operationKeys: ["REGISTRATION"],
+    retiredAlias: "Erro_003"
   },
   {
     kindKey: "FACE_LIVENESS_SESSION_CREATION_FAILURE",
-    legacy: "Erro_004",
     named: "learning_platform.create_face_liveness_session_failed",
-    operationKeys: ["FACE_SESSION", "REGISTRATION"]
+    operationKeys: ["FACE_SESSION", "REGISTRATION"],
+    retiredAlias: "Erro_004"
   },
   {
     kindKey: "REFERENCE_PHOTO_READ_FAILURE",
-    legacy: "Erro_005",
     named: "learning_platform.read_reference_photo_failed",
-    operationKeys: ["FACE_SESSION"]
+    operationKeys: ["FACE_SESSION"],
+    retiredAlias: "Erro_005"
   },
   {
     kindKey: "FACE_LIVENESS_RESULT_READ_FAILURE",
-    legacy: "Erro_007",
     named: "learning_platform.read_face_liveness_result_failed",
-    operationKeys: ["FACE_RESULT"]
+    operationKeys: ["FACE_RESULT"],
+    retiredAlias: "Erro_007"
   },
   {
     kindKey: "PLATFORM_DATA_WRITE_FAILURE",
-    legacy: "Erro_008",
     named: "learning_platform.update_platform_data_failed",
-    operationKeys: ["ASSESSMENT_UPDATE", "FEEDBACK", "PROGRESS_UPDATE"]
+    operationKeys: ["ASSESSMENT_UPDATE", "FEEDBACK", "PROGRESS_UPDATE"],
+    retiredAlias: "Erro_008"
   },
   {
     kindKey: "FEEDBACK_APPEND_FAILURE",
-    legacy: "Erro_009",
     named: "learning_platform.append_feedback_failed",
-    operationKeys: ["FEEDBACK"]
+    operationKeys: ["FEEDBACK"],
+    retiredAlias: "Erro_009"
   }
+];
+
+const retiredMachineAliases = [
+  ...backendErrorDefinitions.map(({ retiredAlias }) => retiredAlias),
+  "Erro_000",
+  "Erro_006"
 ];
 
 const expectedKinds = {
@@ -188,25 +194,25 @@ test("[ERROR-01] error vocabulary exports remain exact, stable, and frozen", () 
   assert.deepEqual(adapter.learningPlatformErrorOperations, expectedOperations);
   assert.deepEqual(adapter.learningPlatformErrorOwners, expectedOwners);
   assert.deepEqual(
-    adapter.learningPlatformFutureWireValues,
+    adapter.learningPlatformBackendErrorValues,
     Object.fromEntries(
-      transitionDefinitions.map(({ kindKey, named }) => [kindKey, named])
+      backendErrorDefinitions.map(({ kindKey, named }) => [kindKey, named])
     )
   );
   for (const value of [
     adapter.learningPlatformErrorKinds,
     adapter.learningPlatformErrorOperations,
     adapter.learningPlatformErrorOwners,
-    adapter.learningPlatformFutureWireValues
+    adapter.learningPlatformBackendErrorValues
   ]) {
     assert.equal(Object.isFrozen(value), true);
   }
 });
 
-test("[ERROR-01] every legacy and named backend value preserves kind, owner, status, and operation scope", () => {
+test("[ERROR-01] every named backend value preserves kind, owner, status, and operation scope", () => {
   const allOperations = Object.values(adapter.learningPlatformErrorOperations);
 
-  for (const definition of transitionDefinitions) {
+  for (const definition of backendErrorDefinitions) {
     const expectedKind = adapter.learningPlatformErrorKinds[definition.kindKey];
     const allowedOperations = new Set(
       definition.operationKeys.map(
@@ -215,38 +221,52 @@ test("[ERROR-01] every legacy and named backend value preserves kind, owner, sta
     );
 
     for (const operation of allOperations) {
-      const normalizedPair = [definition.legacy, definition.named].map((machineValue) =>
-        adapter.normalizeLearningPlatformError(
-          { status: 500, error: machineValue },
-          operation
-        )
+      const failure = adapter.normalizeLearningPlatformError(
+        { status: 500, error: definition.named },
+        operation
       );
 
       if (allowedOperations.has(operation)) {
-        for (const failure of normalizedPair) {
-          assertNormalized(failure, {
-            kind: expectedKind,
-            owner: adapter.learningPlatformErrorOwners.BACKEND,
-            status: 500
-          });
-        }
+        assertNormalized(failure, {
+          kind: expectedKind,
+          owner: adapter.learningPlatformErrorOwners.BACKEND,
+          status: 500
+        });
       } else {
-        for (const failure of normalizedPair) {
-          assertNormalized(failure, {
-            kind: adapter.learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
-            owner: adapter.learningPlatformErrorOwners.UNKNOWN,
-            status: 500
-          });
-        }
+        assertNormalized(failure, {
+          kind: adapter.learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
+          owner: adapter.learningPlatformErrorOwners.UNKNOWN,
+          status: 500
+        });
       }
-      assert.deepEqual(normalizedPair[0], normalizedPair[1]);
     }
 
-    for (const machineValue of [definition.legacy, definition.named]) {
+    assertNormalized(
+      adapter.normalizeLearningPlatformError(
+        { status: 500, error: definition.named },
+        undefined
+      ),
+      {
+        kind: adapter.learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
+        owner: adapter.learningPlatformErrorOwners.UNKNOWN,
+        status: 500
+      }
+    );
+  }
+});
+
+test("[ERROR-01] every retired numbered machine alias is an unknown domain failure", () => {
+  const operations = [
+    ...Object.values(adapter.learningPlatformErrorOperations),
+    undefined
+  ];
+
+  for (const machineValue of retiredMachineAliases) {
+    for (const operation of operations) {
       assertNormalized(
         adapter.normalizeLearningPlatformError(
           { status: 500, error: machineValue },
-          undefined
+          operation
         ),
         {
           kind: adapter.learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
@@ -259,11 +279,10 @@ test("[ERROR-01] every legacy and named backend value preserves kind, owner, sta
 });
 
 test("[ERROR-01] login 401 precedence and protected 401 generic treatment remain distinct", () => {
-  const wireValues = transitionDefinitions.flatMap(({ legacy, named }) => [legacy, named]);
+  const backendValues = backendErrorDefinitions.map(({ named }) => named);
   for (const machineValue of [
-    ...wireValues,
-    "Erro_000",
-    "Erro_006",
+    ...backendValues,
+    ...retiredMachineAliases,
     "learning_platform.application_failed",
     undefined
   ]) {
@@ -291,49 +310,6 @@ test("[ERROR-01] login 401 precedence and protected 401 generic treatment remain
       }
     );
   }
-});
-
-test("[ERROR-01] backend 000 and 006 cannot spoof frontend-owned local failures", () => {
-  for (const operation of Object.values(adapter.learningPlatformErrorOperations)) {
-    for (const machineValue of ["Erro_000", "Erro_006"]) {
-      assertNormalized(
-        adapter.normalizeLearningPlatformError(
-          { status: 500, error: machineValue },
-          operation
-        ),
-        {
-          kind: adapter.learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
-          owner: adapter.learningPlatformErrorOwners.UNKNOWN,
-          status: 500
-        }
-      );
-    }
-  }
-
-  assertNormalized(
-    adapter.normalizeLearningPlatformLegacyFrontendError("Erro_000"),
-    {
-      kind: adapter.learningPlatformErrorKinds.APPLICATION_FAILURE,
-      owner: adapter.learningPlatformErrorOwners.FRONTEND,
-      status: undefined
-    }
-  );
-  assertNormalized(
-    adapter.normalizeLearningPlatformLegacyFrontendError("Erro_006"),
-    {
-      kind: adapter.learningPlatformErrorKinds.FACE_COMPONENT_FAILURE,
-      owner: adapter.learningPlatformErrorOwners.FRONTEND,
-      status: undefined
-    }
-  );
-  assertNormalized(
-    adapter.normalizeLearningPlatformLegacyFrontendError("Erro_001"),
-    {
-      kind: adapter.learningPlatformErrorKinds.UNKNOWN_DOMAIN_FAILURE,
-      owner: adapter.learningPlatformErrorOwners.UNKNOWN,
-      status: undefined
-    }
-  );
 });
 
 test("[ERROR-01] transport, malformed, HTTP, unknown, application, and local failures normalize idempotently", () => {
@@ -443,8 +419,8 @@ test("[ERROR-01] presentation catalog preserves all eighteen exact visible outco
   assert.equal(renderedMessages.length, 18);
   assert.equal(new Set(renderedMessages).size, 18);
 
-  for (const futureValue of Object.values(adapter.learningPlatformFutureWireValues)) {
-    assert.equal(renderedMessages.some((message) => message.includes(futureValue)), false);
+  for (const backendValue of Object.values(adapter.learningPlatformBackendErrorValues)) {
+    assert.equal(renderedMessages.some((message) => message.includes(backendValue)), false);
   }
   assert.throws(
     () => presentation.learningPlatformErrorMessage("unknownPresentation"),
@@ -455,11 +431,11 @@ test("[ERROR-01] presentation catalog preserves all eighteen exact visible outco
   );
 });
 
-test("[ERROR-01] production aliases, visible prefixes, and future values stay quarantined", () => {
+test("[ERROR-01] numbered machine aliases are absent while visible prefixes and backend values stay quarantined", () => {
   const sources = productionSources();
   const machineAliases = [];
   const visiblePrefixes = [];
-  const futureValues = [];
+  const backendValues = [];
 
   for (const { relativePath, source } of sources) {
     for (const match of source.matchAll(/Erro_00\d/g)) {
@@ -472,30 +448,23 @@ test("[ERROR-01] production aliases, visible prefixes, and future values stay qu
       }
     }
     for (const match of source.matchAll(/learning_platform\.[a-z0-9_]+/g)) {
-      futureValues.push({ relativePath, value: match[0] });
+      backendValues.push({ relativePath, value: match[0] });
     }
   }
 
-  assert.deepEqual(
-    machineAliases.map(({ relativePath }) => relativePath),
-    Array(10).fill("modules/error-adapter.js")
-  );
-  assert.deepEqual(
-    machineAliases.map(({ value }) => value).sort(),
-    Array.from({ length: 10 }, (_, index) => `Erro_${String(index).padStart(3, "0")}`)
-  );
+  assert.deepEqual(machineAliases, []);
   assert.deepEqual(
     [...new Set(visiblePrefixes.map(({ relativePath }) => relativePath))],
     ["modules/error-presentation.js"]
   );
   assert.equal(visiblePrefixes.length, 18);
   assert.deepEqual(
-    futureValues.map(({ relativePath }) => relativePath),
-    Array(transitionDefinitions.length).fill("modules/error-adapter.js")
+    backendValues.map(({ relativePath }) => relativePath),
+    Array(backendErrorDefinitions.length).fill("modules/error-adapter.js")
   );
   assert.deepEqual(
-    futureValues.map(({ value }) => value).sort(),
-    transitionDefinitions.map(({ named }) => named).sort()
+    backendValues.map(({ value }) => value).sort(),
+    backendErrorDefinitions.map(({ named }) => named).sort()
   );
 
   const adapterSource = sources.find(
@@ -513,12 +482,12 @@ test("[ERROR-01] production aliases, visible prefixes, and future values stay qu
     assert.equal(
       /learning_platform\.[a-z0-9_]+/.test(source),
       false,
-      `${relativePath} must not contain a future learning-platform machine value`
+      `${relativePath} must not contain a learning-platform backend error value`
     );
     assert.equal(
-      source.includes("learningPlatformFutureWireValues"),
+      source.includes("learningPlatformBackendErrorValues"),
       false,
-      `${relativePath} must not import or render future wire values`
+      `${relativePath} must not import or render backend error values`
     );
   }
 });
