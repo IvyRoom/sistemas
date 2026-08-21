@@ -545,8 +545,11 @@ test("[API-03] refresh carries the protected handle and preserves the separate c
   assert.equal(controller.state.certificateId, "CERT-FIXTURE-001");
 });
 
-test("[API-03] refresh retains workbook-specific and generic failure mappings", async () => {
-  for (const [error, expected] of [["Erro_001", "Erro_001"], [undefined, "Erro_000"]]) {
+test("[API-03] refresh retains named platform-data and generic failure mappings", async () => {
+  for (const [error, expected] of [
+    ["learning_platform.read_platform_data_failed", "Erro_001"],
+    [undefined, "Erro_000"]
+  ]) {
     const { harness } = createStudyHarness({
       routes: [{
         method: "POST",
@@ -635,7 +638,10 @@ test("[API-03] content update keeps exact ordinary fields and rolls back only lo
     routes: [{
       method: "POST",
       path: "/plataforma_v2/updates",
-      response: { data: { error: "Erro_008" }, status: 500 }
+      response: {
+        data: { error: "learning_platform.update_platform_data_failed" },
+        status: 500
+      }
     }]
   });
   setStudyState(controller, { completed: 4 });
@@ -765,12 +771,15 @@ test("[FLOW-04] assessment mutates controls globally and submits the client-comp
   assert.equal(incorrect[0].parentElement.style.backgroundColor, "#fd7f7f");
 });
 
-test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async () => {
+test("[API-04] assessment and feedback retain named platform-data rollback mapping", async () => {
   const assessmentRun = createStudyHarness({
     routes: [{
       method: "POST",
       path: "/plataforma_v2/updates",
-      response: { data: { error: "Erro_008" }, status: 500 }
+      response: {
+        data: { error: "learning_platform.update_platform_data_failed" },
+        status: 500
+      }
     }]
   });
   const { controller: assessmentController, harness: assessment } = assessmentRun;
@@ -803,7 +812,10 @@ test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async 
     routes: [{
       method: "POST",
       path: "/plataforma_v2/processa-feedback",
-      response: { data: { error: "Erro_008" }, status: 500 }
+      response: {
+        data: { error: "learning_platform.update_platform_data_failed" },
+        status: 500
+      }
     }]
   });
   const { controller: feedbackController, harness: feedback } = feedbackRun;
@@ -823,7 +835,14 @@ test("[API-04] assessment and feedback retain Erro_008 rollback mapping", async 
   assert.equal(feedbackController.state.completedTopics, 50);
 });
 
-test("[ERROR-02] named study writes preserve legacy rollback and request effects", async () => {
+test("[ERROR-02] named study writes preserve rollback and request effects", async () => {
+  const redactedStorage = {
+    "Horário-Encerramento-Sessão": "2000003600000",
+    IndexVerificado: "<redacted>",
+    URL_Base_Backend: "<redacted>",
+    Usuário_Logado: "Sim"
+  };
+
   function snapshotMutationFailure({ controller, harness, topic }) {
     return {
       alert: [...harness.alerts],
@@ -887,22 +906,80 @@ test("[ERROR-02] named study writes preserve legacy rollback and request effects
 
   const transitions = [
     {
-      legacy: "Erro_008",
+      expected: {
+        alert: "Erro_008: falha ao atualizar a base de dados de controle da plataforma.\nTente novamente.",
+        completedTopics: 4,
+        footer: '<div id="Botão-Completar-e-Continuar">Completar e Continuar →</div>',
+        path: "/plataforma_v2/updates",
+        requestBody: {
+          TipoAtualização: "NúmeroTópicosConcluídos",
+          IndexVerificado: "<redacted>",
+          NúmeroTópicosConcluídos: 5,
+          NúmeroMódulo: "n/a",
+          NotaTeste: "n/a"
+        }
+      },
       named: "learning_platform.update_platform_data_failed",
       run: runProgressFailure
     },
     {
-      legacy: "Erro_009",
+      expected: {
+        alert: "Erro_009: falha ao atualizar a base de dados de controle da plataforma.\nTente novamente.",
+        completedTopics: 50,
+        footer: '<div id="Botão-Enviar-Feedback">Enviar Feedback</div>',
+        path: "/plataforma_v2/processa-feedback",
+        requestBody: {
+          IndexVerificado: "<redacted>",
+          NúmeroTópicosConcluídos: 51,
+          Usuário_NomeCompleto: "Invented Learner",
+          Usuário_Email: "learner@example.test",
+          Feedback_DataPreenchimento: "<local-date-time>",
+          NúmeroMódulo: 2,
+          Feedback_Comentários: "Invented transition feedback"
+        }
+      },
       named: "learning_platform.append_feedback_failed",
       run: runFeedbackFailure
     }
   ];
 
-  for (const { legacy, named, run } of transitions) {
-    const legacyResult = await run(legacy);
+  for (const { expected, named, run } of transitions) {
     const namedResult = await run(named);
-    assert.deepEqual(namedResult.snapshot, legacyResult.snapshot, named);
-    assert.match(namedResult.harness.alerts[0], new RegExp(`^${legacy}:`));
+    const [request] = namedResult.snapshot.requests;
+    const normalizedRequest = {
+      ...request,
+      body: { ...request.body }
+    };
+    if (Object.hasOwn(normalizedRequest.body, "Feedback_DataPreenchimento")) {
+      assert.match(
+        normalizedRequest.body.Feedback_DataPreenchimento,
+        /^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/
+      );
+      normalizedRequest.body.Feedback_DataPreenchimento = "<local-date-time>";
+    }
+
+    assert.deepEqual(
+      { ...namedResult.snapshot, requests: [normalizedRequest] },
+      {
+        alert: [expected.alert],
+        completedTopics: expected.completedTopics,
+        consoleCalls: [],
+        cursor: "default",
+        footer: expected.footer,
+        navigation: [],
+        requests: [{
+          body: expected.requestBody,
+          formFields: undefined,
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+          path: expected.path
+        }],
+        storage: redactedStorage,
+        timeline: [{ method: "POST", path: expected.path, type: "fetch" }],
+        topicClass: "Container-Tópico-Aberto"
+      },
+      named
+    );
     assertMachineValueHidden(namedResult.harness, named);
   }
 });
@@ -942,7 +1019,10 @@ test("[FLOW-05] feedback preserves partial-success rollback and duplicate-visibl
         backendTimeline.push("progress-write:success");
         if (attempts === 1) {
           backendTimeline.push("feedback-append:failure");
-          return { data: { error: "Erro_009" }, status: 500 };
+          return {
+            data: { error: "learning_platform.append_feedback_failed" },
+            status: 500
+          };
         }
         backendTimeline.push("feedback-append:success");
         return { data: {}, status: 200 };
@@ -1719,9 +1799,13 @@ test("[REPORT-03] only exact consolidado hides all target labels except the rang
   );
 });
 
-test("[API-05] status report keeps Erro_001 specific and maps unknown failures to Erro_000", async () => {
+test("[API-05] status report keeps named platform-data failure specific and maps unknown failures to Erro_000", async () => {
   for (const fixture of [
-    { error: "Erro_001", expected: "Erro_001", status: 500 },
+    {
+      error: "learning_platform.read_platform_data_failed",
+      expected: "Erro_001",
+      status: 500
+    },
     { error: undefined, expected: "Erro_000", status: 500 },
     { error: undefined, expected: "Erro_000", status: 401 }
   ]) {

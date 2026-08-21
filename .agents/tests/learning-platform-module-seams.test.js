@@ -546,16 +546,8 @@ test("[API-05] status-report application preserves JSON/status and failure order
   ]);
   const cases = [
     {
-      backendError: "Erro_001",
-      message: "Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente."
-    },
-    {
       backendError: "learning_platform.read_platform_data_failed",
       message: "Erro_001: falha de comunicação com a base de dados de controle da plataforma.\nTente novamente."
-    },
-    {
-      backendError: "Erro_009",
-      message: "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
     },
     {
       backendError: "learning_platform.append_feedback_failed",

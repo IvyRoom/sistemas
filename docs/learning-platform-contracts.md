@@ -4,8 +4,8 @@ Status: authoritative current-state compatibility specification. Its frozen
 behavior baseline was characterized from `sistemas` commit
 `c68f361de054a936b7a6871d82d75a1cdb457c97`; source-layout, public-route, and
 artifact sections are maintained against the current repository tree. Companion
-`backend` evidence remains pinned at
-`7151f134c2cc1b57097bade5557ef6e422204303`. This document does not authorize
+`backend` evidence remains pinned at the verified named-producer merge
+`65761539b1fc998e66be383248269270ff2c90a9`. This document does not authorize
 application modernization, a production request, data migration, or an
 integration exercise.
 
@@ -193,7 +193,7 @@ dependency, generated source, or additional build step is involved.
 | --- | --- |
 | `modules/session.js` | Centralizes the eight exact legacy key constants and raw `getItem`/`setItem` access for extracted modules. The preserved device-warning script and login production edge retain their direct raw storage access. The seam adds no validation, normalization, removal, authority, expiry, or revocation semantics. |
 | `modules/platform-client.js` | Owns injected JSON GET/POST and ordered multipart POST mechanics. It normalizes fetch rejection and malformed JSON through the application error seam, still parses JSON before checking `ok`, and for parsed non-OK responses still throws exactly `{ status: response.status, error: data.error }`. It adds no retry, timeout, abort, dedupe, idempotency, or authorization header. |
-| `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, legacy backend aliases, reserved named backend values, the two frontend legacy aliases, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
+| `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, the exact named backend values, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
 | `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
 | `modules/lifecycle.js` | Owns the exact Edge signal and inclusive `<= 1024` device-warning decision. Entry factories retain listener installation and gate order. |
 | `modules/face-startup.js` | Constructs one injected Face custom element, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
@@ -331,7 +331,7 @@ refresh/logout in the [study coordinator](../apps/learning-platform/modules/stud
 and expiry in [`session-timer.js`](../apps/learning-platform/modules/study/session-timer.js); warning
 [`main.js` lines 1-3](../apps/learning-platform/aviso-dispositivo/main.js#L1-L3); backend
 handle contract at the pinned companion
-[`api-contracts.md` lines 209-242](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L209-L242).
+[`api-contracts.md` lines 211-248](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L211-L248).
 
 ### Backend-call contract
 
@@ -356,14 +356,14 @@ application layer unless stated otherwise.
 
 | ID and operation | Exact client request | Success contract | Backend order, authorization, and failures | Current frontend mapping |
 | --- | --- | --- | --- | --- |
-| `LP-API-LOGIN` `POST /plataforma_v2/login-FaceID` | JSON header; body `Usuário_Login`, `Usuário_Senha`, untrimmed | Matched response: `Usuário_Status_FaceID`, `Usuário_Foto_Cadastrada`, `Usuário_PrazoAcesso`, `Usuário_Status_Login`; active exact `Ativo` also gets `IndexVerificado` | Public. Retry full platform-workbook read, scan in returned order, strict login match and password string match. No match: `401 credenciais_inválidas`; read exhaustion: `Erro_001`. Repeats mint time-derived active handles. | `401` shows invalid credentials; `Erro_001` shows database copy; unknown/parser/network is `Erro_000`. |
-| `LP-API-REGISTER` `POST /plataforma_v2/CadastroFoto_e_FaceID` | Browser multipart, append `IndexVerificado` then single `file`; browser supplies boundary | `Azure_Face_API_LivenessSession_authToken`, `Azure_Face_API_LivenessSession_sessionID` | Multer memory-buffer first, signed authorization second. Retry reference-photo upload (`Erro_002`) → retry 22-cell row update with photo flag `Sim` at index 5 (`Erro_003`) → retry passive Face session with uploaded bytes and new correlation UUID (`Erro_004`). Photo/flag can persist before later failure; retries can create multiple Face sessions. | Known `002`-`004` retain code; `401 {}`/unknown is `Erro_000`. After HTTP success client clears registration authorization before local liveness. |
-| `LP-API-FACE-START` `POST /plataforma_v2/FaceID` | JSON header; body `IndexVerificado` | Same auth-token and session-ID keys as registration | Signed authorization. Retry reference-photo read (`Erro_005`) → retry passive Face-session creation with new correlation UUID (`Erro_004`). Session creation is non-idempotent. | `004` Face creation, `005` photo read, local SDK rejection `Erro_006`, unknown/`401` `Erro_000`. |
-| `LP-API-FACE-RESULT` `GET /plataforma_v2/FaceID_resultado/:sessionId` | JSON content-type header despite no body; returned ID concatenated without URL encoding | `Azure_Face_API_LivenessSession_LivenessDecision`, `Azure_Face_API_LivenessSession_MatchConfidence`, `Azure_Face_API_LivenessSession_MatchDecision` | Public. Retry one Face result lookup using decoded path slot; use first attempt result; rejection exhaustion `Erro_007`. Resolved non-success Face HTTP status is not separately checked before projection. | No polling. Exact `realface` plus boolean match `true` passes. Unknown is `Erro_000`; local SDK failure remains `Erro_006`. |
-| `LP-API-REFRESH` `POST /plataforma_v2/refresh` | JSON header; body `IndexVerificado` from storage | 18 exact keys: full/first name, email, access deadline, login status, completed count, module grades 1-10, accumulated grade, certificate ID | Signed authorization. Retry full workbook read and select verified row (`Erro_001`). Read-only; handle is not returned/rotated. Missing/short row has no explicit error contract. | Consumes every key; parses progress with `parseFloat`. Returned login status is stored but not enforced. `401` becomes `Erro_000`. |
-| `LP-API-UPDATE` `POST /plataforma_v2/updates` | JSON header; exact keys `TipoAtualização`, `IndexVerificado`, `NúmeroTópicosConcluídos`, `NúmeroMódulo`, `NotaTeste` | `200 {}` | Signed authorization. Always trust/write client progress at row index 8. Exact type `NúmeroTópicosConcluídos-e-NotaTeste` also trusts/writes grade at JS index `NúmeroMódulo + 9`; ordinary type sends literal `n/a` module/grade. Retry fixed row update (`Erro_008`). No type/range/monotonicity/grade validation. | Progress increment precedes request; catch decrements local count/restores action. `Erro_008` specific; `401`/unknown `Erro_000`. |
-| `LP-API-FEEDBACK` `POST /plataforma_v2/processa-feedback` | JSON header; exact keys `IndexVerificado`, progress, full name, email, browser-local fill date, module, four ratings, comments | `200 {}` | Signed authorization only. Retry progress update (`Erro_008`) → retry append nine client fields in order: name, email, date, module, size, content, platform, printed-material, comments (`Erro_009`). Progress can persist before append failure; append has no dedupe and can duplicate under retry/repeat. | Optimistic local increment; catch decrements only local state. `008`/`009` specific; `401`/unknown `Erro_000`. |
-| `LP-API-REPORT` `POST /plataforma_v2/statusreport` | JSON header; body `linha_inicial`, `linha_final` parsed from `li`, `lf` | `Dados_Extraídos_BD_Plataforma`; each row is 14 values: full name, progress, ten grades, accumulated grade, certificate ID | Public and wildcard-CORS accessible. Retry live full workbook read (`Erro_001`), then exact JS `slice(linha_inicial, linha_final + 1)` and projection. No input validation. Stable numeric end is inclusive; direct nonnumeric API inputs retain JS coercion. | UI consumes indexes 0-12 and ignores certificate ID at 13. Unknown is `Erro_000`. |
+| `LP-API-LOGIN` `POST /plataforma_v2/login-FaceID` | JSON header; body `Usuário_Login`, `Usuário_Senha`, untrimmed | Matched response: `Usuário_Status_FaceID`, `Usuário_Foto_Cadastrada`, `Usuário_PrazoAcesso`, `Usuário_Status_Login`; active exact `Ativo` also gets `IndexVerificado` | Public. Retry full platform-workbook read, scan in returned order, strict login match and password string match. No match: `401 credenciais_inválidas`; read exhaustion: `learning_platform.read_platform_data_failed`. Repeats mint time-derived active handles. | `401` shows invalid credentials; the named read failure shows `Erro_001`; unknown/parser/network is `Erro_000`. |
+| `LP-API-REGISTER` `POST /plataforma_v2/CadastroFoto_e_FaceID` | Browser multipart, append `IndexVerificado` then single `file`; browser supplies boundary | `Azure_Face_API_LivenessSession_authToken`, `Azure_Face_API_LivenessSession_sessionID` | Multer memory-buffer first, signed authorization second. Retry reference-photo upload (`learning_platform.upload_reference_photo_failed`) → retry 22-cell row update with photo flag `Sim` at index 5 (`learning_platform.update_reference_photo_registration_failed`) → retry passive Face session with uploaded bytes and new correlation UUID (`learning_platform.create_face_liveness_session_failed`). Photo/flag can persist before later failure; retries can create multiple Face sessions. | The three named failures retain visible `Erro_002` through `Erro_004`; `401 {}`/unknown is `Erro_000`. After HTTP success client clears registration authorization before local liveness. |
+| `LP-API-FACE-START` `POST /plataforma_v2/FaceID` | JSON header; body `IndexVerificado` | Same auth-token and session-ID keys as registration | Signed authorization. Retry reference-photo read (`learning_platform.read_reference_photo_failed`) → retry passive Face-session creation with new correlation UUID (`learning_platform.create_face_liveness_session_failed`). Session creation is non-idempotent. | The named failures show `Erro_005` and `Erro_004`; local SDK rejection remains `Erro_006`; unknown/`401` remains `Erro_000`. |
+| `LP-API-FACE-RESULT` `GET /plataforma_v2/FaceID_resultado/:sessionId` | JSON content-type header despite no body; returned ID concatenated without URL encoding | `Azure_Face_API_LivenessSession_LivenessDecision`, `Azure_Face_API_LivenessSession_MatchConfidence`, `Azure_Face_API_LivenessSession_MatchDecision` | Public. Retry one Face result lookup using decoded path slot; use first attempt result; rejection exhaustion `learning_platform.read_face_liveness_result_failed`. Resolved non-success Face HTTP status is not separately checked before projection. | No polling. Exact `realface` plus boolean match `true` passes. The named failure shows `Erro_007`; unknown is `Erro_000`; local SDK failure remains `Erro_006`. |
+| `LP-API-REFRESH` `POST /plataforma_v2/refresh` | JSON header; body `IndexVerificado` from storage | 18 exact keys: full/first name, email, access deadline, login status, completed count, module grades 1-10, accumulated grade, certificate ID | Signed authorization. Retry full workbook read and select verified row (`learning_platform.read_platform_data_failed`). Read-only; handle is not returned/rotated. Missing/short row has no explicit error contract. | Consumes every key; parses progress with `parseFloat`. The named failure shows `Erro_001`; returned login status is stored but not enforced. `401` becomes `Erro_000`. |
+| `LP-API-UPDATE` `POST /plataforma_v2/updates` | JSON header; exact keys `TipoAtualização`, `IndexVerificado`, `NúmeroTópicosConcluídos`, `NúmeroMódulo`, `NotaTeste` | `200 {}` | Signed authorization. Always trust/write client progress at row index 8. Exact type `NúmeroTópicosConcluídos-e-NotaTeste` also trusts/writes grade at JS index `NúmeroMódulo + 9`; ordinary type sends literal `n/a` module/grade. Retry fixed row update (`learning_platform.update_platform_data_failed`). No type/range/monotonicity/grade validation. | Progress increment precedes request; catch decrements local count/restores action. The named failure shows `Erro_008`; `401`/unknown shows `Erro_000`. |
+| `LP-API-FEEDBACK` `POST /plataforma_v2/processa-feedback` | JSON header; exact keys `IndexVerificado`, progress, full name, email, browser-local fill date, module, four ratings, comments | `200 {}` | Signed authorization only. Retry progress update (`learning_platform.update_platform_data_failed`) → retry append nine client fields in order: name, email, date, module, size, content, platform, printed-material, comments (`learning_platform.append_feedback_failed`). Progress can persist before append failure; append has no dedupe and can duplicate under retry/repeat. | Optimistic local increment; catch decrements only local state. The named failures show `Erro_008` and `Erro_009`; `401`/unknown shows `Erro_000`. |
+| `LP-API-REPORT` `POST /plataforma_v2/statusreport` | JSON header; body `linha_inicial`, `linha_final` parsed from `li`, `lf` | `Dados_Extraídos_BD_Plataforma`; each row is 14 values: full name, progress, ten grades, accumulated grade, certificate ID | Public and wildcard-CORS accessible. Retry live full workbook read (`learning_platform.read_platform_data_failed`), then exact JS `slice(linha_inicial, linha_final + 1)` and projection. No input validation. Stable numeric end is inclusive; direct nonnumeric API inputs retain JS coercion. | UI consumes indexes 0-12 and ignores certificate ID at 13. The named failure shows `Erro_001`; unknown shows `Erro_000`. |
 
 The refresh response's 18 exact keys are
 `Usuário_NomeCompleto`, `Usuário_PrimeiroNome`, `Usuário_Email`,
@@ -386,48 +386,49 @@ segment. Backend routing is currently case-insensitive and non-strict, but the
 canonical method/path spellings in the table and the frontend's exact casing
 remain the compatibility target.
 
-#### Error normalization and transition boundary
+#### Error normalization and named-only boundary
 
 The frontend now owns one learning-platform error adapter. Backend machine
 strings are inputs to that seam only; login, registration, Face, study,
 feedback, progress, assessment, and Status Report branch on semantic `kind`
 values. The separate presentation catalog then selects the exact existing
-Brazilian-Portuguese outcome. No feature module branches on a raw numbered or
-named wire value.
+Brazilian-Portuguese outcome. No feature module branches on a raw machine
+value.
 
-The backend is unchanged at the pinned companion commit and continues producing
-the legacy values in the third column. The named values in the final column are
-the exact reserved US-English ASCII contracts for the next backend-producer
-stage; accepting them now makes that later deployment independently reversible.
+The backend at the pinned companion commit produces only the exact US-English
+ASCII values in the named-value column. The frontend recognizes those values
+only for their operation-specific consumers.
 
-| Owner | Semantic kind | Current legacy alias | Reserved named backend value |
-| --- | --- | --- | --- |
-| Backend | `platformDataReadFailure` | `Erro_001` | `learning_platform.read_platform_data_failed` |
-| Backend | `referencePhotoUploadFailure` | `Erro_002` | `learning_platform.upload_reference_photo_failed` |
-| Backend | `referencePhotoRegistrationUpdateFailure` | `Erro_003` | `learning_platform.update_reference_photo_registration_failed` |
-| Backend | `faceLivenessSessionCreationFailure` | `Erro_004` | `learning_platform.create_face_liveness_session_failed` |
-| Backend | `referencePhotoReadFailure` | `Erro_005` | `learning_platform.read_reference_photo_failed` |
-| Backend | `faceLivenessResultReadFailure` | `Erro_007` | `learning_platform.read_face_liveness_result_failed` |
-| Backend | `platformDataWriteFailure` | `Erro_008` | `learning_platform.update_platform_data_failed` |
-| Backend | `feedbackAppendFailure` | `Erro_009` | `learning_platform.append_feedback_failed` |
+| Owner | Semantic kind | Named backend value |
+| --- | --- | --- |
+| Backend | `platformDataReadFailure` | `learning_platform.read_platform_data_failed` |
+| Backend | `referencePhotoUploadFailure` | `learning_platform.upload_reference_photo_failed` |
+| Backend | `referencePhotoRegistrationUpdateFailure` | `learning_platform.update_reference_photo_registration_failed` |
+| Backend | `faceLivenessSessionCreationFailure` | `learning_platform.create_face_liveness_session_failed` |
+| Backend | `referencePhotoReadFailure` | `learning_platform.read_reference_photo_failed` |
+| Backend | `faceLivenessResultReadFailure` | `learning_platform.read_face_liveness_result_failed` |
+| Backend | `platformDataWriteFailure` | `learning_platform.update_platform_data_failed` |
+| Backend | `feedbackAppendFailure` | `learning_platform.append_feedback_failed` |
 
-Frontend-owned `applicationFailure` and `faceComponentFailure` retain
-`Erro_000` and `Erro_006` respectively as adapter-local compatibility aliases;
-they have no backend named values. The other normalized kinds are
+Frontend-owned `applicationFailure` and `faceComponentFailure` enter through
+semantic local normalization. They select visible `Erro_000` and `Erro_006`
+presentation outcomes respectively, but neither numbered string is an accepted
+machine value. The other normalized kinds are
 `transportFailure`, `malformedResponse`, `httpFailure`, `invalidCredentials`,
 and `unknownDomainFailure`. Ownership is exact: known domain failures and the
 login-only `401` credential branch are `backend`; transport, malformed, HTTP,
-application, and Face-component failures are `frontend`; an unrecognized or
-operation-inapplicable machine value is `unknown`.
+application, and Face-component failures are `frontend`; an unrecognized,
+retired-numbered, or operation-inapplicable machine value is `unknown`.
 
 Normalization preserves these branch rules in order:
 
 1. An already normalized `{ kind, owner, status }` failure passes through.
 2. Numeric login status `401` becomes backend-owned `invalidCredentials` before
    machine-value inspection.
-3. A string `error` becomes its backend semantic kind only when both the legacy
-   or named value is recognized and that kind is allowed for the active
-   operation. Every other string becomes `unknownDomainFailure`.
+3. A string `error` becomes its backend semantic kind only when the named value
+   is recognized and that kind is allowed for the active operation. Every
+   other string, including a retired numbered alias, becomes
+   `unknownDomainFailure` while preserving its numeric status.
 4. A numeric status without a string machine value becomes frontend-owned
    `httpFailure`.
 5. A failure with neither becomes frontend-owned `applicationFailure`.
@@ -482,15 +483,16 @@ newline):
 | `studyRefreshGeneric` | `Erro_000: falha de comunicação com o servidor.`<br>`Verifique sua conexão com a internet e então atualize a página.` |
 | `studyRefreshPlatformData` | `Erro_001: falha de comunicação com a base de dados de controle da plataforma.`<br>`Atualize a página.` |
 
-Legacy machine aliases are quarantined in `error-adapter.js`; visible numbered
-prefixes are quarantined in `error-presentation.js`. Explicit tests and this
-reviewed contract remain the only non-production exceptions. Named machine
-values are never displayed or interpolated into alerts, logs, or rendered HTML.
+Named backend machine values are confined to `error-adapter.js`; visible
+numbered prefixes are confined to `error-presentation.js`. Retired numbered
+machine inputs remain only as explicit negative test fixtures and documentary
+history. Machine values are never displayed or interpolated into alerts, logs,
+or rendered HTML.
 
 #### Current source anchors
 
 - Shared request mechanics: [`platform-client.js`](../apps/learning-platform/modules/platform-client.js).
-- Semantic normalization and transition aliases:
+- Semantic normalization and named backend values:
   [`error-adapter.js`](../apps/learning-platform/modules/error-adapter.js).
 - Reviewed visible outcomes:
   [`error-presentation.js`](../apps/learning-platform/modules/error-presentation.js).
@@ -505,18 +507,18 @@ values are never displayed or interpolated into alerts, logs, or rendered HTML.
   [`query.js`](../apps/learning-platform/modules/status-report/query.js) and
   [`application.js`](../apps/learning-platform/modules/status-report/application.js).
 - Pinned companion backend route sections:
-  [login](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L497-L526),
-  [registration](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L528-L573),
-  [Face start](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L575-L607),
-  [Face result](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L609-L643),
-  [refresh](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L645-L673),
-  [updates](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L675-L709),
-  [feedback](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L711-L743), and
-  [status report](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L770-L801).
+  [login](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L527-L558),
+  [registration](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L559-L611),
+  [Face start](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L612-L650),
+  [Face result](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L651-L689),
+  [refresh](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L690-L721),
+  [updates](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L722-L759),
+  [feedback](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L760-L796), and
+  [status report](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L822-L855).
 - Pinned retry semantics:
-  [`api-contracts.md` lines 168-207](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L168-L207).
+  [`api-contracts.md` lines 168-210](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L168-L210).
 - Pinned global CORS and Express routing semantics:
-  [`api-contracts.md` lines 117-147](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L117-L147).
+  [`api-contracts.md` lines 117-147](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L117-L147).
 
 ### User and learning-state transitions
 
@@ -772,7 +774,7 @@ construction and sorting/rendering
 [`charts.js`](../apps/learning-platform/modules/status-report/charts.js), live request/lifecycle
 [`application.js`](../apps/learning-platform/modules/status-report/application.js),
 backend projection
-[`api-contracts.md` lines 770-801](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L770-L801).
+[`api-contracts.md` lines 822-855](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L822-L855).
 
 ### Runtime assets and resolution rules
 
@@ -1026,7 +1028,7 @@ it: the platform uses its separate direct third-party PlayReady configuration.
 That backend route is therefore an integration boundary outside the eight
 observed platform/backend operations above, not a ninth current browser call.
 Pinned companion evidence:
-[`api-contracts.md` lines 745-768](https://github.com/IvyRoom/backend/blob/7151f134c2cc1b57097bade5557ef6e422204303/docs/api-contracts.md#L745-L768).
+[`api-contracts.md` lines 797-821](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L797-L821).
 
 The same player is retained for every topic. Each open calls `load(manifest)`
 then video `play()`. Polyfill installation and browser-support checking run for
@@ -1055,18 +1057,18 @@ The mapping copies tracked bytes; it performs no bundling, minification, or
 transformation. The current platform source and emitted `dist/plataforma/`
 subtree have the same 182 paths relative to their roots and identical bytes.
 
-The current dual-reading error-adapter identity comes from the verified build
-for this change. File counts are fixed by the checked mapping; the byte totals
-and digests below are the resulting artifact evidence.
+The current named-only error-adapter identity comes from the verified build for
+this change. File counts are fixed by the checked mapping; the byte totals and
+digests below are the resulting artifact evidence.
 
 | Scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 182 | 20,694,259 | `46714330081562637fa6ccb0d226836448cf6997e496f7bee5452625a581db13` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,694,259 | `9228356ddbe9484f12d36a239f27738f6b6dad2dde9c1477fbd0377f3fc591a2` |
-| Current complete generated `dist/` artifact | 257 | 27,299,294 | `8866fe67fb110e748ba7b0bbd5c9fbd40397f8b437274d069ff321e530bd2750` |
+| Current platform subset, retaining full output paths `plataforma/...` | 182 | 20,693,391 | `bc453ef0a25080d654b2fd8a24eba17224b41049ceacb6df6dd23b049875a050` |
+| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,693,391 | `3012efb9be58584876d44e2431b0e19851da71f131daf4e1fa21d4ff0892705a` |
+| Current complete generated `dist/` artifact | 257 | 27,298,426 | `c9323ac5b7a70283d34a94f26478a99eddb3209e79da19d78985a2bc644c200b` |
 
 The adapter changes JavaScript only. Scoped source-derived guards retain these
-identities across the transition:
+identities across the named-only cleanup:
 
 | Unchanged scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
@@ -1076,6 +1078,15 @@ identities across the transition:
 | Vendored Face subtree, paths relative to its root | 85 | 9,526,729 | `56da181049f18302b00fdbf04851d1433adf819341564a326e652c75145576e3` |
 | Study downloads, retaining full output paths | 33 | 9,163,893 | `1073822d29815c0d23e984c347b70c468235be47083b7ce5c23b33565a0dece5` |
 | Certificate inputs, source-derived `addImage` order | 3 | 148,461 | `82c735c7ac2fa32e09d71c326765db9c52ce63b58144c7c7b100458f8b897591` |
+
+For dual-reading-adapter comparison, the verified base at commit
+`9ff6b61a4bfdcd2cfd511cc406d16b5984577266` produced these identities:
+
+| Dual-reading adapter scope and digest framing | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,694,259 | `46714330081562637fa6ccb0d226836448cf6997e496f7bee5452625a581db13` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,694,259 | `9228356ddbe9484f12d36a239f27738f6b6dad2dde9c1477fbd0377f3fc591a2` |
+| Complete generated `dist/` artifact | 257 | 27,299,294 | `8866fe67fb110e748ba7b0bbd5c9fbd40397f8b437274d069ff321e530bd2750` |
 
 For pre-adapter comparison, the verified post-English-internals baseline at
 commit `be8e52fc248d073503b8e71abe5afb9e93a4d5f9` produced these identities:
@@ -1292,10 +1303,9 @@ future work, not permission to change compatibility behavior in the baseline.
 
 ## Approved future decisions
 
-These remaining decisions are approved roadmap direction only. The dual-reading
-frontend adapter and separate presentation catalog are current behavior above,
-not future work; the remaining producer, cleanup, and operations stages do not
-redefine this compatibility deployment.
+These remaining decisions are approved roadmap direction only. The named-only
+frontend adapter, named backend producers, and separate presentation catalog
+are current behavior above, not future work.
 - Use Azure SQL Database Basic as the initial relational target, subject to
   representative load testing.
 - Migrate workbook capabilities sequentially, with reconciliation and rollback
@@ -1303,14 +1313,8 @@ redefine this compatibility deployment.
 - Replace status reporting with live, participant-named, revocable company
   bearer links. Easy WhatsApp sharing and forwarding remain accepted
   requirements.
-- In the next coordinated backend stage, replace only the eight
-  learning-platform producers with the exact named values in the transition
-  table. Preserve statuses, envelopes, operation ordering, retries, and every
-  unrelated backend domain; deploy and verify that stage independently.
-- After named backend producers are verified in production, remove legacy
-  aliases from the frontend adapter in a separately reviewed cleanup. Remove
-  visible `Erro_XXX` prefixes only with explicit copy approval; never display a
-  replacement machine value or invent Brazilian-Portuguese copy.
+- Remove visible `Erro_XXX` prefixes only with explicit copy approval; never
+  display a machine value or invent Brazilian-Portuguese copy.
 - Use the learning platform as the reference implementation, then adopt the
   pattern in other frontend applications and backend domains one domain at a
   time. Do not globally replace numbered values: unrelated domains can reuse a
@@ -1384,12 +1388,12 @@ the test intent; current source anchors identify the current oracle.
 | GATE-02 | Width and resize | Initial and resize decisions cover 1023, 1024, and 1025 pixels, including each page's current ordering and the warning page's `history.back()` condition. |
 | STORE-01 | Key inventory | The exact eight accented/cased keys, all readers/writers, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented. |
 | STORE-02 | Lifetime/reset | No flow clears storage; logout changes only `Usuário_Logado`; refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. |
-| API-01 | Login and Face registration | Methods, exact paths, JSON/multipart fields, response fields, status branches, and call order remain exact; every allowed legacy/named pair reaches the same semantic kind, exact visible outcome, storage state, and navigation branch. |
-| API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, legacy/named request-error, and backend-retry-visible branches with no client polling. |
-| API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, semantic legacy/named mapping, and optimistic update/rollback behavior match current transitions. |
-| API-04 | Assessment and feedback | `/updates` preserves client-supplied grade fields; legacy/named write and append failures preserve update-before-append ordering, partial success, retry duplication exposure, rollback, and the Module 3/module 2 mismatch. |
-| API-05 | Status report | The public POST carries only exact JSON fields `linha_inicial` and `linha_final`; query/display labels remain client-side. It has no authorization header/body handle, keeps JSON-before-status ordering, and maps legacy/named read failures to the same semantic/presentation outcome. |
-| ERROR-01 | Normalization and protected unauthorized response | Synthetic transport, malformed, HTTP, unknown, local, and operation-inapplicable failures retain their owner/kind and generic branch; `401 {}` keeps each protected consumer's exact `Erro_000` outcome without a redesigned expiry message. |
+| API-01 | Login and Face registration | Methods, exact paths, JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
+| API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, named request-error, and backend-retry-visible branches with no client polling. |
+| API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, named semantic mapping, and optimistic update/rollback behavior match current transitions. |
+| API-04 | Assessment and feedback | `/updates` preserves client-supplied grade fields; named write and append failures preserve update-before-append ordering, partial success, retry duplication exposure, rollback, and the Module 3/module 2 mismatch. |
+| API-05 | Status report | The public POST carries only exact JSON fields `linha_inicial` and `linha_final`; query/display labels remain client-side. It has no authorization header/body handle, keeps JSON-before-status ordering, and maps the named read failure to its semantic/presentation outcome. |
+| ERROR-01 | Normalization and protected unauthorized response | Synthetic transport, malformed, HTTP, unknown, local, and operation-inapplicable failures retain their reviewed owner/kind/status branches; every retired numbered value is unknown across every operation while preserving status; login `401` retains invalid-credential precedence and protected `401 {}` retains each consumer's exact `Erro_000` outcome. |
 | FLOW-01 | Login/notices/registration | Credential, first-access, photo-registration, authorization-code, Face startup/single-result lookup, and destination branches preserve their current storage transitions. |
 | FLOW-02 | Study navigation | The 171 contiguous indices, 10-module boundaries, module prerequisites, content/test/feedback/performance destinations, and saved progress initialization remain fixed, including malformed negative/fractional/`NaN`/greater-than-171 progress behavior. |
 | FLOW-03 | Content completion | Manual and `ended` completion both exercise optimistic increment, protected update, success advance, and local failure rollback. |
@@ -1404,7 +1408,7 @@ the test intent; current source anchors identify the current oracle.
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 257 files and matches the verified dual-reading-adapter byte total and digest recorded above. |
+| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 257 files and matches the verified named-only-adapter byte total and digest recorded above. |
 | ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 175 implicitly emitted runtime/support files. |
 
 ### Automated traceability
@@ -1415,14 +1419,17 @@ source location:
 
 - `.agents/tests/learning-platform-static.test.js` covers declarative route,
   Face asset/presentation, download, video/DRM, and artifact contracts;
+- `.agents/tests/learning-platform-errors.test.js` covers the exact frozen named
+  vocabulary, operation ownership, retired-alias rejection, local semantic
+  normalization, presentation catalog, and source confinement;
 - `.agents/tests/learning-platform-entry-api.test.js` covers entry gates,
-  navigation, storage, login, Face, request behavior, transition pairs,
-  ownership, operation isolation, malformed JSON, and denied networking;
+  navigation, storage, login, Face, named request behavior, ownership,
+  operation isolation, malformed JSON, and denied networking;
 - `.agents/tests/learning-platform-module-seams.test.js` covers the real module
   loader and host deny-all guard, bootstrap modes, initial-notices seam, and
   status-report query/request/render seams;
 - `.agents/tests/learning-platform-study-report.test.js` covers study progress,
-  assessment, feedback, legacy/named write transitions, certificate,
+  assessment, feedback, named write transitions, certificate,
   logout/expiry, and status-report behavior;
 - `.agents/tests/learning-platform-traceability.test.js` derives the acceptance
   IDs from this matrix, requires every ID to remain in a named test, and audits
@@ -1434,7 +1441,7 @@ behavior fixtures are invented and local; no test uses a production service.
 
 Backend-internal feedback ordering and partial-success boundaries remain
 independently executable in `backend/test/app-platform-routes.test.js` at the
-verified companion commit `7151f134c2cc1b57097bade5557ef6e422204303`. The
+verified companion commit `65761539b1fc998e66be383248269270ff2c90a9`. The
 frontend harness models only the resulting client-visible retry and rollback
 behavior.
 
@@ -1504,9 +1511,10 @@ The build/check pair proves the source-derived artifact rather than production
 hosting behavior. After building, compare the exact emitted file set and bytes
 using the repository helpers and digest framing above. For this module
 modernization, 24 new application-owned module files increased the platform and
-complete-artifact counts from 156 and 231 to 180 and 255. The current error
-transition adds the adapter and presentation catalog, increasing those counts
-to 182 and 257. The current artifact table records the verified dual-reading
-identities, preserves `be8e52fc248d073503b8e71abe5afb9e93a4d5f9` as the
-post-English-internals pre-adapter baseline, and retains the earlier
+complete-artifact counts from 156 and 231 to 180 and 255. The error-adapter and
+presentation-catalog stage increased those counts to 182 and 257; the named-only
+cleanup changes only adapter bytes. The current artifact table records the
+verified named-only identities, retains `9ff6b61a4bfdcd2cfd511cc406d16b5984577266`
+as the dual-reading baseline and `be8e52fc248d073503b8e71abe5afb9e93a4d5f9`
+as the post-English-internals pre-adapter baseline, and keeps the earlier
 pre-modernization and pre-adoption history separately.
