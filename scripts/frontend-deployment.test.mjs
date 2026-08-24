@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { request as httpRequest } from "node:http";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { extname, join } from "node:path";
+import { dirname, extname, join } from "node:path";
 import test from "node:test";
 import { runInNewContext } from "node:vm";
 import {
@@ -68,26 +68,24 @@ const courseContentModuleFileNames = [
   "session-timer.js",
   "state.js"
 ];
-const alignedLearningPlatformModulePaths = [
+const learningPlatformModuleRetirementPairs = [
   {
-    publicPath: "/plataforma/modules/photo-registration.js",
+    canonicalPublicPath: "/plataforma/modules/photo-registration.js",
+    retiredPublicPath: "/plataforma/modules/registration.js",
     sourcePath: "apps/learning-platform/modules/photo-registration.js"
   },
   ...courseContentModuleFileNames.map((fileName) => ({
-    publicPath: `/plataforma/modules/course-content/${fileName}`,
+    canonicalPublicPath: `/plataforma/modules/course-content/${fileName}`,
+    retiredPublicPath: `/plataforma/modules/study/${fileName}`,
     sourcePath: `apps/learning-platform/modules/course-content/${fileName}`
   }))
 ];
-const compatibilityLearningPlatformModulePaths = [
-  {
-    publicPath: "/plataforma/modules/registration.js",
-    sourcePath: "apps/learning-platform/modules/photo-registration.js"
-  },
-  ...courseContentModuleFileNames.map((fileName) => ({
-    publicPath: `/plataforma/modules/study/${fileName}`,
-    sourcePath: `apps/learning-platform/modules/course-content/${fileName}`
-  }))
-];
+const alignedLearningPlatformModulePaths = learningPlatformModuleRetirementPairs.map(
+  ({ canonicalPublicPath: publicPath, sourcePath }) => ({ publicPath, sourcePath })
+);
+const retiredLearningPlatformModulePaths = learningPlatformModuleRetirementPairs.map(
+  ({ retiredPublicPath: publicPath, sourcePath }) => ({ publicPath, sourcePath })
+);
 const retiredV2LearningPlatformPaths = [
   "/plataforma_v2/",
   "/plataforma_v2/aviso-dispositivo/",
@@ -100,7 +98,8 @@ const retiredV2LearningPlatformPaths = [
 ];
 const retiredLearningPlatformPaths = [
   ...retiredCurrentRegistrationPaths,
-  ...retiredV2LearningPlatformPaths
+  ...retiredV2LearningPlatformPaths,
+  ...retiredLearningPlatformModulePaths.map(({ publicPath }) => publicPath)
 ];
 
 const mappedTextExtensions = new Set([
@@ -273,56 +272,8 @@ test("deployment inventory exhaustively separates maintained frontends from the 
       output: "plataforma/statusreport"
     },
     {
-      source: "apps/learning-platform/modules/error-adapter.js",
-      output: "plataforma/modules/error-adapter.js"
-    },
-    {
-      source: "apps/learning-platform/modules/error-presentation.js",
-      output: "plataforma/modules/error-presentation.js"
-    },
-    {
-      source: "apps/learning-platform/modules/face-startup.js",
-      output: "plataforma/modules/face-startup.js"
-    },
-    {
-      source: "apps/learning-platform/modules/initial-notices.js",
-      output: "plataforma/modules/initial-notices.js"
-    },
-    {
-      source: "apps/learning-platform/modules/lifecycle.js",
-      output: "plataforma/modules/lifecycle.js"
-    },
-    {
-      source: "apps/learning-platform/modules/login.js",
-      output: "plataforma/modules/login.js"
-    },
-    {
-      source: "apps/learning-platform/modules/platform-client.js",
-      output: "plataforma/modules/platform-client.js"
-    },
-    {
-      source: "apps/learning-platform/modules/session.js",
-      output: "plataforma/modules/session.js"
-    },
-    {
-      source: "apps/learning-platform/modules/photo-registration.js",
-      output: "plataforma/modules/photo-registration.js"
-    },
-    {
-      source: "apps/learning-platform/modules/photo-registration.js",
-      output: "plataforma/modules/registration.js"
-    },
-    {
-      source: "apps/learning-platform/modules/course-content",
-      output: "plataforma/modules/course-content"
-    },
-    {
-      source: "apps/learning-platform/modules/course-content",
-      output: "plataforma/modules/study"
-    },
-    {
-      source: "apps/learning-platform/modules/status-report",
-      output: "plataforma/modules/status-report"
+      source: "apps/learning-platform/modules",
+      output: "plataforma/modules"
     },
     {
       source: "apps/learning-platform/azure-ai-vision-face-ui",
@@ -418,17 +369,36 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 272);
-  const compatibilityOutputs = new Set(
-    compatibilityLearningPlatformModulePaths.map(
-      ({ publicPath }) => publicPath.slice(1)
-    )
-  );
-  assert.equal(compatibilityOutputs.size, 15);
+  assert.equal(validation.files.length, 257);
+  assert.equal(learningPlatformModuleRetirementPairs.length, 15);
+  for (const {
+    canonicalPublicPath,
+    retiredPublicPath,
+    sourcePath
+  } of learningPlatformModuleRetirementPairs) {
+    assert.deepEqual(
+      validation.files.find(({ output }) => output === canonicalPublicPath.slice(1)),
+      {
+        applicationId: "learning-platform",
+        output: canonicalPublicPath.slice(1),
+        source: sourcePath
+      },
+      `${canonicalPublicPath} must retain its exact canonical source`
+    );
+    assert.equal(
+      validation.files.some(({ output }) => output === retiredPublicPath.slice(1)),
+      false,
+      `${retiredPublicPath} must not be emitted`
+    );
+  }
+  const publicContractFiles = new Set([
+    ...publicEntries(manifest).map(({ file }) => file),
+    ...publicDownloads(manifest).map(({ file }) => file)
+  ]);
   assert.equal(
-    validation.files.filter(({ output }) => !compatibilityOutputs.has(output)).length,
-    257,
-    "Removing the bounded module compatibility layer must restore the final file count"
+    validation.files.filter(({ output }) => !publicContractFiles.has(output)).length,
+    242,
+    "The phase-B artifact must contain exactly 242 production support files"
   );
   assert.deepEqual(
     validation.mappings.filter(
@@ -547,17 +517,10 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       `${retiredPath} must remain an explicit retired-route 404`
     );
   }
-  for (const { publicPath } of compatibilityLearningPlatformModulePaths) {
-    assert.equal(
-      manifest.notFoundPaths.includes(publicPath),
-      false,
-      `${publicPath} must remain available only during compatibility phase A`
-    );
-  }
   assert.equal(
     manifest.notFoundPaths.length + manifest.repositoryOnlyPaths.length,
-    43,
-    "Phase A must add only the three retired registration-entry 404 checks"
+    58,
+    "Phase B must verify exactly 58 explicit negative paths"
   );
   assert.equal(
     validation.entries.some(({ path }) => path.startsWith("/plataforma_v2/")),
@@ -623,8 +586,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    94,
-    "Phase A must validate imports from both canonical and compatibility module outputs"
+    69,
+    "Phase B must validate exactly 69 canonical source-preview JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -637,6 +600,27 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     assert.match(encodedPath, /%[0-9A-F]{2}/i);
     assert.equal(decodeURIComponent(encodedPath), path);
   }
+});
+
+test("generated preview resolves exactly 69 phase-B JavaScript imports", async (context) => {
+  const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-phase-b-artifact-"));
+  context.after(() => rm(artifactRoot, { force: true, recursive: true }));
+  const validation = await validateDeploymentManifest(await readDeploymentManifest());
+
+  await Promise.all(
+    validation.files.map(async ({ output, source }) => {
+      const outputPath = join(artifactRoot, ...output.split("/"));
+      await mkdir(dirname(outputPath), { recursive: true });
+      await copyFile(join(repositoryRoot, ...source.split("/")), outputPath);
+    })
+  );
+
+  const references = await assertLocalReferences(artifactRoot);
+  assert.equal(
+    references.javascriptReferences,
+    69,
+    "The generated phase-B module graph must contain exactly 69 resolvable imports"
+  );
 });
 
 test("source preview serves only manifest-mapped routes and files", async () => {
@@ -698,10 +682,7 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       assert.deepEqual(response.body, source, path);
     }
 
-    for (const { publicPath, sourcePath } of [
-      ...alignedLearningPlatformModulePaths,
-      ...compatibilityLearningPlatformModulePaths
-    ]) {
+    for (const { publicPath, sourcePath } of alignedLearningPlatformModulePaths) {
       const response = await requestPreview(server.baseUrl, publicPath);
       const source = await readFile(new URL(`../${sourcePath}`, import.meta.url));
 
