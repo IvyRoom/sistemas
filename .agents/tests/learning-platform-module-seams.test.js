@@ -240,7 +240,7 @@ test("[GATE-02] all seven entry assets retain their exact bootstrap loading mode
     },
     {
       sourceDirectory: "photo-registration",
-      publicSuffix: "cadastro",
+      publicSuffix: "cadastro-foto",
       async: true,
       module: true
     },
@@ -374,7 +374,7 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
   authorized.element("Palavra-Passe-Direitos").value = requiredAcknowledgements.rights;
   authorized.element("Palavra-Passe-Janela").value = requiredAcknowledgements.window;
   form.dispatch("submit");
-  assert.equal(authorized.navigation.at(-1), "/plataforma/cadastro");
+  assert.equal(authorized.navigation.at(-1), "/plataforma/cadastro-foto");
   assert.equal(authorized.document.body.style.cursor, "wait");
   assert.equal(authorized.element("Bot\u00e3o-Li-e-Concordo").style.display, "none");
 

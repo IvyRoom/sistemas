@@ -1,5 +1,5 @@
 import "../azure-ai-vision-face-ui/FaceLivenessDetector.js";
-import { createRegistrationApplication } from "../modules/registration.js";
+import { createRegistrationApplication } from "../modules/photo-registration.js";
 
 createRegistrationApplication({
     window,

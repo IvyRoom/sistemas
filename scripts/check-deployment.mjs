@@ -20,6 +20,7 @@ console.log(
     `Validated ${new URL(process.argv[baseUrlFlag + 1]).origin}`,
     `${result.pageRoutes} page routes`,
     `${result.downloads} downloads`,
+    `${result.supportingFiles} supporting files`,
     `${result.encodedAccentedPaths} URL-encoded accented paths`,
     `${result.conectaQueryRoutes} encoded Conecta query route`,
     `${result.notFoundPaths} expected 404 paths`

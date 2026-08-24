@@ -1303,6 +1303,11 @@ async function assertPublishedFile(baseUrl, contract, outputRoot) {
 export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRoot) {
   const normalizedBaseUrl = new URL(baseUrl).origin;
   const contracts = [...publicEntries(manifest), ...publicDownloads(manifest)];
+  const validation = await validateDeploymentManifest(manifest);
+  const contractFiles = new Set(contracts.map(({ file }) => file));
+  const supportingFiles = validation.files.filter(
+    ({ output }) => !contractFiles.has(output)
+  );
   let encodedAccentedPaths = 0;
 
   for (const contract of contracts) {
@@ -1335,6 +1340,14 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
     "Published Conecta query route differs from its dist entry file."
   );
 
+  for (const file of supportingFiles) {
+    await assertPublishedFile(
+      normalizedBaseUrl,
+      { path: `/${file.output}`, file: file.output },
+      outputRoot
+    );
+  }
+
   const expectedNotFound = [...manifest.notFoundPaths, ...manifest.repositoryOnlyPaths];
   for (const publicPath of expectedNotFound) {
     const requestUrl = new URL(publicPath, `${normalizedBaseUrl}/`);
@@ -1352,6 +1365,7 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
     downloads: publicDownloads(manifest).length,
     encodedAccentedPaths,
     conectaQueryRoutes: 1,
-    notFoundPaths: expectedNotFound.length
+    notFoundPaths: expectedNotFound.length,
+    supportingFiles: supportingFiles.length
   };
 }

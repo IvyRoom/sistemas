@@ -1,11 +1,11 @@
 import { isMicrosoftEdge, redirectToDeviceWarning } from '../modules/lifecycle.js';
 import { createPlatformClient } from '../modules/platform-client.js';
 import { createSessionStore } from '../modules/session.js';
-import { createStudyApplication } from '../modules/study/application.js';
-import { createCertificateRenderer } from '../modules/study/certificate-renderer.js';
-import { createStudyDom } from '../modules/study/dom.js';
-import { createDownloadConfigurator } from '../modules/study/downloads.js';
-import { createStudyPlayer } from '../modules/study/player.js';
+import { createStudyApplication } from '../modules/course-content/application.js';
+import { createCertificateRenderer } from '../modules/course-content/certificate-renderer.js';
+import { createStudyDom } from '../modules/course-content/dom.js';
+import { createDownloadConfigurator } from '../modules/course-content/downloads.js';
+import { createStudyPlayer } from '../modules/course-content/player.js';
 
 function isDrmEnabled(fullName) {
     let drmEnabled;
