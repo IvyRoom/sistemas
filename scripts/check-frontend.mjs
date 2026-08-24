@@ -64,8 +64,11 @@ console.log(
     `${readmeContract.downloads} downloads`,
     `${sourcePreviewReferences.htmlReferences} source-preview HTML assets`,
     `${sourcePreviewReferences.cssReferences} source-preview CSS assets`,
+    `${sourcePreviewReferences.javascriptReferences} source-preview JavaScript imports`,
     `${localReferences.htmlReferences} local HTML references`,
     `${localReferences.cssReferences} local CSS references`,
+    `${localReferences.javascriptReferences} local JavaScript imports`,
+    `${localRoutes.supportingFiles} supporting files`,
     `${localRoutes.encodedAccentedPaths} URL-encoded accented paths`,
     `${localRoutes.notFoundPaths} expected 404 paths`,
     `deterministic rebuild from sha256:${firstArtifact.stats.digest}`

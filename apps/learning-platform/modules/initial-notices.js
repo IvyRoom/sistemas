@@ -58,7 +58,7 @@ export function createInitialNoticesApplication({
                 rightsPassword.value === requiredAcknowledgements.rights &&
                 windowPassword.value === requiredAcknowledgements.window
             ) {
-                navigate('/plataforma/cadastro');
+                navigate('/plataforma/cadastro-foto');
             } else {
                 document.body.style.cursor = 'default';
             }

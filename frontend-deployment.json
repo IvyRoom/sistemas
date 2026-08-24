@@ -132,7 +132,7 @@
         },
         {
           "source": "apps/learning-platform/photo-registration",
-          "output": "plataforma/cadastro"
+          "output": "plataforma/cadastro-foto"
         },
         {
           "source": "apps/learning-platform/course-content",
@@ -180,7 +180,15 @@
         },
         {
           "source": "apps/learning-platform/modules/photo-registration.js",
+          "output": "plataforma/modules/photo-registration.js"
+        },
+        {
+          "source": "apps/learning-platform/modules/photo-registration.js",
           "output": "plataforma/modules/registration.js"
+        },
+        {
+          "source": "apps/learning-platform/modules/course-content",
+          "output": "plataforma/modules/course-content"
         },
         {
           "source": "apps/learning-platform/modules/course-content",
@@ -209,8 +217,8 @@
           "file": "plataforma/avisos-iniciais/index.html"
         },
         {
-          "path": "/plataforma/cadastro/",
-          "file": "plataforma/cadastro/index.html"
+          "path": "/plataforma/cadastro-foto/",
+          "file": "plataforma/cadastro-foto/index.html"
         },
         {
           "path": "/plataforma/estudo/",
@@ -250,6 +258,9 @@
     "/principal/pdf/CRONOGRAMA.pdf",
     "/landing-page/",
     "/plataforma/",
+    "/plataforma/cadastro",
+    "/plataforma/cadastro/",
+    "/plataforma/cadastro/index.html",
     "/plataforma_v2/",
     "/plataforma_v2/aviso-dispositivo/",
     "/plataforma_v2/aviso-navegador/",

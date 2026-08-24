@@ -56,7 +56,7 @@ const PATHS = {
   device: "/plataforma/aviso-dispositivo",
   login: "/plataforma/login",
   notices: "/plataforma/avisos-iniciais",
-  register: "/plataforma/cadastro",
+  register: "/plataforma/cadastro-foto",
   study: "/plataforma/estudo"
 };
 

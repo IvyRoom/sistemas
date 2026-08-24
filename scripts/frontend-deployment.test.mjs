@@ -42,16 +42,65 @@ const learningPlatformEntries = [
   { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
   { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
   { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
-  { sourceDirectory: "photo-registration", publicSuffix: "cadastro" },
+  { sourceDirectory: "photo-registration", publicSuffix: "cadastro-foto" },
   { sourceDirectory: "course-content", publicSuffix: "estudo" },
   { sourceDirectory: "login", publicSuffix: "login" },
   { sourceDirectory: "status-report", publicSuffix: "statusreport" }
 ];
-const retiredLearningPlatformPaths = [
+const retiredCurrentRegistrationPaths = [
+  "/plataforma/cadastro",
+  "/plataforma/cadastro/",
+  "/plataforma/cadastro/index.html"
+];
+const courseContentModuleFileNames = [
+  "application.js",
+  "assessment.js",
+  "certificate-renderer.js",
+  "certificate.js",
+  "content.js",
+  "dom.js",
+  "downloads.js",
+  "feedback.js",
+  "navigation.js",
+  "performance.js",
+  "player.js",
+  "progress.js",
+  "session-timer.js",
+  "state.js"
+];
+const alignedLearningPlatformModulePaths = [
+  {
+    publicPath: "/plataforma/modules/photo-registration.js",
+    sourcePath: "apps/learning-platform/modules/photo-registration.js"
+  },
+  ...courseContentModuleFileNames.map((fileName) => ({
+    publicPath: `/plataforma/modules/course-content/${fileName}`,
+    sourcePath: `apps/learning-platform/modules/course-content/${fileName}`
+  }))
+];
+const compatibilityLearningPlatformModulePaths = [
+  {
+    publicPath: "/plataforma/modules/registration.js",
+    sourcePath: "apps/learning-platform/modules/photo-registration.js"
+  },
+  ...courseContentModuleFileNames.map((fileName) => ({
+    publicPath: `/plataforma/modules/study/${fileName}`,
+    sourcePath: `apps/learning-platform/modules/course-content/${fileName}`
+  }))
+];
+const retiredV2LearningPlatformPaths = [
   "/plataforma_v2/",
-  ...learningPlatformEntries.map(
-    ({ publicSuffix }) => `/plataforma_v2/${publicSuffix}/`
-  )
+  "/plataforma_v2/aviso-dispositivo/",
+  "/plataforma_v2/aviso-navegador/",
+  "/plataforma_v2/avisos-iniciais/",
+  "/plataforma_v2/cadastro/",
+  "/plataforma_v2/estudo/",
+  "/plataforma_v2/login/",
+  "/plataforma_v2/statusreport/"
+];
+const retiredLearningPlatformPaths = [
+  ...retiredCurrentRegistrationPaths,
+  ...retiredV2LearningPlatformPaths
 ];
 
 const mappedTextExtensions = new Set([
@@ -209,7 +258,7 @@ test("deployment inventory exhaustively separates maintained frontends from the 
     },
     {
       source: "apps/learning-platform/photo-registration",
-      output: "plataforma/cadastro"
+      output: "plataforma/cadastro-foto"
     },
     {
       source: "apps/learning-platform/course-content",
@@ -257,7 +306,15 @@ test("deployment inventory exhaustively separates maintained frontends from the 
     },
     {
       source: "apps/learning-platform/modules/photo-registration.js",
+      output: "plataforma/modules/photo-registration.js"
+    },
+    {
+      source: "apps/learning-platform/modules/photo-registration.js",
       output: "plataforma/modules/registration.js"
+    },
+    {
+      source: "apps/learning-platform/modules/course-content",
+      output: "plataforma/modules/course-content"
     },
     {
       source: "apps/learning-platform/modules/course-content",
@@ -286,8 +343,8 @@ test("deployment inventory exhaustively separates maintained frontends from the 
       file: "plataforma/avisos-iniciais/index.html"
     },
     {
-      path: "/plataforma/cadastro/",
-      file: "plataforma/cadastro/index.html"
+      path: "/plataforma/cadastro-foto/",
+      file: "plataforma/cadastro-foto/index.html"
     },
     {
       path: "/plataforma/estudo/",
@@ -361,7 +418,18 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 257);
+  assert.equal(validation.files.length, 272);
+  const compatibilityOutputs = new Set(
+    compatibilityLearningPlatformModulePaths.map(
+      ({ publicPath }) => publicPath.slice(1)
+    )
+  );
+  assert.equal(compatibilityOutputs.size, 15);
+  assert.equal(
+    validation.files.filter(({ output }) => !compatibilityOutputs.has(output)).length,
+    257,
+    "Removing the bounded module compatibility layer must restore the final file count"
+  );
   assert.deepEqual(
     validation.mappings.filter(
       (mapping) => mapping.applicationId === "marketing-site"
@@ -479,6 +547,18 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       `${retiredPath} must remain an explicit retired-route 404`
     );
   }
+  for (const { publicPath } of compatibilityLearningPlatformModulePaths) {
+    assert.equal(
+      manifest.notFoundPaths.includes(publicPath),
+      false,
+      `${publicPath} must remain available only during compatibility phase A`
+    );
+  }
+  assert.equal(
+    manifest.notFoundPaths.length + manifest.repositoryOnlyPaths.length,
+    43,
+    "Phase A must add only the three retired registration-entry 404 checks"
+  );
   assert.equal(
     validation.entries.some(({ path }) => path.startsWith("/plataforma_v2/")),
     false,
@@ -541,7 +621,11 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
-  assert.equal(sourcePreviewReferences.javascriptReferences, 69);
+  assert.equal(
+    sourcePreviewReferences.javascriptReferences,
+    94,
+    "Phase A must validate imports from both canonical and compatibility module outputs"
+  );
 
   const accentedPaths = publicEntries(manifest)
     .map((entry) => entry.path)
@@ -612,6 +696,23 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       assert.equal(response.headers.location, undefined, path);
       assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
       assert.deepEqual(response.body, source, path);
+    }
+
+    for (const { publicPath, sourcePath } of [
+      ...alignedLearningPlatformModulePaths,
+      ...compatibilityLearningPlatformModulePaths
+    ]) {
+      const response = await requestPreview(server.baseUrl, publicPath);
+      const source = await readFile(new URL(`../${sourcePath}`, import.meta.url));
+
+      assert.equal(response.status, 200, publicPath);
+      assert.equal(response.headers.location, undefined, publicPath);
+      assert.equal(
+        response.headers["content-type"],
+        "text/javascript; charset=utf-8",
+        publicPath
+      );
+      assert.deepEqual(response.body, source, publicPath);
     }
 
     const conectaResponse = await requestPreview(
@@ -1731,7 +1832,7 @@ test("generated certificates print the canonical validation URL", async () => {
   ]);
   assert.match(
     entrySource,
-    /import \{ createCertificateRenderer \} from '\.\.\/modules\/study\/certificate-renderer\.js';/
+    /import \{ createCertificateRenderer \} from '\.\.\/modules\/course-content\/certificate-renderer\.js';/
   );
   const validationUrls = certificateRendererSource.match(
     /https:\/\/machadogestao\.com\/validacao[^'"]*/g

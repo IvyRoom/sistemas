@@ -35,8 +35,9 @@ The document keeps five categories separate:
 - **Source-observed current behavior** is the compatibility baseline.
 - **Known risks and unresolved legacy behavior** must be preserved by a pure
   move/baseline unless a later task explicitly changes them.
-- **Route-adoption history** records the approved frontend namespace change
-  without redefining backend or remote-media contracts.
+- **Route-adoption and deployed-path history** records approved frontend path
+  changes and bounded compatibility without redefining backend or remote-media
+  contracts.
 - **Approved future decisions** are remaining direction already chosen, but not
   implemented here.
 - **Questions requiring implementation-time evidence** must not be converted
@@ -46,21 +47,23 @@ The document keeps five categories separate:
 
 ### Public entries and navigation
 
-`frontend-deployment.json` explicitly maps 19 tracked source areas under
-`apps/learning-platform/` to their stable locations under `dist/plataforma/`.
-The six renamed entry sources and two renamed module sources use English names
-while their Portuguese entry outputs and established module URLs remain
-unchanged; `login` and `azure-ai-vision-face-ui` retain the same source and
-output suffixes. The manifest declares exactly seven public entries. Each
-canonical entry includes a trailing slash and must return its listed
-`index.html` with HTTP `200` and no redirect.
+`frontend-deployment.json` maps tracked source areas under
+`apps/learning-platform/` to their reviewed locations under
+`dist/plataforma/`. Seven entry directories retain their approved public
+suffixes, including the aligned `photo-registration/` → `cadastro-foto/`
+mapping; `azure-ai-vision-face-ui/` retains its matching suffix; and the
+canonical module tree preserves matching relative names under `modules/`.
+The bounded phase-A rollout additionally emits 15 temporary compatibility
+module files described below. The manifest declares exactly seven public
+entries. Each canonical entry includes a trailing slash and must return its
+listed `index.html` with HTTP `200` and no redirect.
 
 | Stable entry | Canonical public path | Current entry file | Direct dependencies |
 | --- | --- | --- | --- |
 | `LP-ENTRY-DEVICE` | `/plataforma/aviso-dispositivo/` | `apps/learning-platform/device-warning/index.html` | Login favicon; own CSS, logo, and async classic script |
 | `LP-ENTRY-BROWSER` | `/plataforma/aviso-navegador/` | `apps/learning-platform/browser-warning/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
 | `LP-ENTRY-NOTICES` | `/plataforma/avisos-iniciais/` | `apps/learning-platform/initial-notices/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
-| `LP-ENTRY-REGISTER` | `/plataforma/cadastro/` | `apps/learning-platform/photo-registration/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
+| `LP-ENTRY-REGISTER` | `/plataforma/cadastro-foto/` | `apps/learning-platform/photo-registration/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; stored backend base and row handle |
 | `LP-ENTRY-STUDY` | `/plataforma/estudo/` | `apps/learning-platform/course-content/index.html` | Own favicon/CSS/logo; ordered classic Shaka Player 4.6.0 and jsPDF 2.5.1 dependencies; native-module bootstrap; stored session state; remote DASH media |
 | `LP-ENTRY-LOGIN` | `/plataforma/login/` | `apps/learning-platform/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; production backend role |
 | `LP-ENTRY-REPORT` | `/plataforma/statusreport/` | `apps/learning-platform/status-report/index.html` | Own favicon/CSS/logo; async module; query string; independently coupled production backend role |
@@ -74,7 +77,7 @@ sections below:
 | Device warning | `/plataforma/login/img/FAVICON.ico`; `/plataforma/aviso-dispositivo/style.css`; `/plataforma/aviso-dispositivo/img/LOGO_MACHADO.png`; `/plataforma/aviso-dispositivo/main.js` |
 | Browser warning | `/plataforma/login/img/FAVICON.ico`; `/plataforma/aviso-navegador/style.css`; `/plataforma/aviso-navegador/img/LOGO_MACHADO.png`; `/plataforma/aviso-navegador/main.js` |
 | Initial notices | `/plataforma/login/img/FAVICON.ico`; `/plataforma/avisos-iniciais/style.css`; `/plataforma/avisos-iniciais/img/LOGO_MACHADO.png`; `/plataforma/avisos-iniciais/main.js` |
-| Registration | `/plataforma/login/img/FAVICON.ico`; `/plataforma/cadastro/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/cadastro/img/LOGO_MACHADO.png`; `/plataforma/cadastro/img/REFERÊNCIAS_FOTOS.png`; `/plataforma/cadastro/main.js`; user-invoked `https://www.resizepixel.com/` and `https://cloudconvert.com/` links |
+| Registration | `/plataforma/login/img/FAVICON.ico`; `/plataforma/cadastro-foto/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/cadastro-foto/img/LOGO_MACHADO.png`; `/plataforma/cadastro-foto/img/REFERÊNCIAS_FOTOS.png`; `/plataforma/cadastro-foto/main.js`; user-invoked `https://www.resizepixel.com/` and `https://cloudconvert.com/` links |
 | Study | `/plataforma/estudo/img/FAVICON.ico`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.css`; `/plataforma/estudo/style.css`; `/plataforma/estudo/img/LOGO_MACHADO.png`; `https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js`; `/plataforma/estudo/main.js` |
 | Login | `/plataforma/login/img/FAVICON.ico`; `/plataforma/login/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/login/img/LOGO_MACHADO.png`; `/plataforma/login/main.js` |
 | Status report | `/plataforma/statusreport/img/FAVICON.ico`; `/plataforma/statusreport/style.css`; `/plataforma/statusreport/img/LOGO_MACHADO.png`; `/plataforma/statusreport/main.js` |
@@ -85,7 +88,7 @@ not claims that every entry is anonymous: client JavaScript applies the gates
 described below after HTML loads. The status-report entry is the exception that
 has no Edge, login, session, or participant gate.
 
-#### Route-adoption history
+#### Route-adoption and deployed-path history
 
 The frontend public and deployment-output namespace changed from
 `/plataforma_v2` to `/plataforma`. The former `/plataforma_v2/` root and all
@@ -106,6 +109,34 @@ remote-media branches remain under `videosv3/plataforma_v2/` and
 `/conecta/cadastro-recomendacoes/` route, and
 `dist/conecta/cadastro-recomendacoes/` output are unchanged.
 
+The later deployed-path alignment makes `/plataforma/cadastro-foto/` the
+canonical photo-registration entry. The former current-namespace forms
+`/plataforma/cadastro`, `/plataforma/cadastro/`, and
+`/plataforma/cadastro/index.html` are explicit `404` contracts without an alias
+or redirect. That retirement is independent of the older, still-retired
+`/plataforma_v2/cadastro/` frontend route. It also does not change the backend
+`POST /plataforma_v2/CadastroFoto_e_FaceID` API, its payload, or its behavior.
+
+The module rollout is deliberately separate from the entry retirement. During
+phase A, the artifact emits both the aligned
+`/plataforma/modules/photo-registration.js` and
+`/plataforma/modules/course-content/` files and exactly 15 temporary legacy
+module files: `/plataforma/modules/registration.js` plus all 14 files under
+`/plataforma/modules/study/`. The 14 study aliases cover the fresh-cache race in
+which the unchanged `/plataforma/estudo/main.js` URL can retain its former bytes
+for up to 30 seconds under its observed `Cache-Control: public, must-revalidate,
+max-age=30` policy and request its former imports after deployment. The
+registration alias separately lets an already loaded or cached legacy
+registration bootstrap resolve its former module. Neither compatibility path
+restores any `/plataforma/cadastro` entry form.
+
+Phase B must remove those 15 compatibility outputs and make every legacy module
+URL an explicit `404`, leaving only the aligned module paths after phase A is
+live and its bounded cache window has passed. The deployed-path roadmap step
+remains incomplete until that final artifact is deployed and verified.
+Including the eight repository-only paths, published verification therefore
+expects 43 negative paths in phase A and 58 in phase B.
+
 Current internal navigation is normal document navigation through
 `window.location.href`, always using the following **slashless**, lower-case,
 root-relative strings:
@@ -116,7 +147,7 @@ root-relative strings:
 | Browser warning | `/plataforma/aviso-navegador` | Login, initial notices, registration, study |
 | Login | `/plataforma/login` | Registration failure/rejection, unauthenticated study, logout, session expiry |
 | Initial notices | `/plataforma/avisos-iniciais` | Active login with Face enabled and no registered photo |
-| Registration | `/plataforma/cadastro` | Successful initial-notices acknowledgement |
+| Registration | `/plataforma/cadastro-foto` | Successful initial-notices acknowledgement |
 | Study | `/plataforma/estudo` | Existing logged flag, Face-disabled login, successful Face verification/registration |
 
 The maintained client-intake application separately targets the canonical
@@ -148,15 +179,16 @@ history entry.
   [`frontend-deployment.json`](../frontend-deployment.json).
 - Exhaustive entry and retirement test:
   [`scripts/frontend-deployment.test.mjs`](../scripts/frontend-deployment.test.mjs).
-- README route/404 contract: [`README.md` lines 26-69](../README.md#L26-L69).
+- README route/404 contract: [`README.md` lines 32-78](../README.md#L32-L78).
 - Client-intake cross-application warning destination:
   [`main.js` line 4](../apps/client-intake/main.js#L4).
-- Published `200`/no-redirect and `404`/no-redirect checks:
-  [`scripts/frontend-deployment-lib.mjs` lines 1268-1334](../scripts/frontend-deployment-lib.mjs#L1268-L1334).
-- Slashless local behavior: source-preview aliases
-  [`scripts/frontend-deployment-lib.mjs` lines 1090-1125](../scripts/frontend-deployment-lib.mjs#L1090-L1125)
-  and generated-artifact index fallback
-  [`scripts/frontend-deployment-lib.mjs` lines 1200-1224](../scripts/frontend-deployment-lib.mjs#L1200-L1224).
+- Published page, support-file, and `404`/no-redirect checks:
+  [`scripts/frontend-deployment-lib.mjs` lines 1281-1370](../scripts/frontend-deployment-lib.mjs#L1281-L1370).
+- Slashless local behavior: manifest-aware source-preview aliases and routes
+  [`scripts/frontend-deployment-lib.mjs` lines 708-747](../scripts/frontend-deployment-lib.mjs#L708-L747)
+  and [`scripts/frontend-deployment-lib.mjs` lines 1103-1140](../scripts/frontend-deployment-lib.mjs#L1103-L1140),
+  plus generated-artifact index fallback
+  [`scripts/frontend-deployment-lib.mjs` lines 1213-1259](../scripts/frontend-deployment-lib.mjs#L1213-L1259).
 - Exact HTML dependencies: device
   [`index.html` lines 9-28](../apps/learning-platform/device-warning/index.html#L9-L28),
   browser [`index.html` lines 9-28](../apps/learning-platform/browser-warning/index.html#L9-L28),
@@ -207,12 +239,24 @@ dependency, generated source, or additional build step is involved.
 | `modules/status-report/application.js` | Captures query/DOM state at factory construction, assigns `window.onload`, preserves width/listener order, and owns the public status request and error branches. |
 
 The six import specifiers in `photo-registration/main.js` and
-`course-content/main.js` remain deployment-relative contracts under
-`../modules/registration.js` and `../modules/study/`. The manifest maps the
-current physical module sources to those established output paths, and the
-manifest-aware source preview supplies the corresponding aliases. A raw
-filesystem-only resolver will not follow those legacy specifiers; changing them
-would also change deployed module URLs and artifact bytes.
+`course-content/main.js` now match both source and deployment structure:
+`../modules/photo-registration.js` and
+`../modules/course-content/{application,certificate-renderer,dom,downloads,player}.js`.
+The phase-A manifest uses 13 module mappings to emit the 26 canonical files and
+the 15 temporary compatibility copies. Together with seven entry mappings and
+the Face mapping, that is 21 learning-platform mappings. The canonical outputs
+preserve every relative source suffix, so both source and generated previews
+resolve the new imports without learning-platform-specific aliases. Phase B
+removes the two compatibility mappings and collapses all canonical module
+emission to one `apps/learning-platform/modules` → `plataforma/modules`
+directory mapping, leaving nine learning-platform mappings in total.
+
+The generic manifest-aware alias mechanism remains part of the repository
+preview server because other applications still have intentionally different
+source and deployment layouts. In particular, the flattened marketing entry
+maps source files under `apps/marketing-site/` to root and `landing-page/`
+outputs; its focused comparison coverage remains in
+[`frontend-deployment.test.mjs` lines 1090-1154](../scripts/frontend-deployment.test.mjs#L1090-L1154).
 
 Study is coordinated by `modules/course-content/application.js`. Its
 responsibilities are split without changing their ordering:
@@ -790,9 +834,10 @@ backend projection
 
 ### Runtime assets and resolution rules
 
-The complete tracked/emitted platform set is the union below. Each top-level
-source directory is copied through its explicit source-to-output mapping; there
-is no bundle or generated-source layer.
+The complete phase-A emitted platform set is the union below. Mappings copy
+tracked source bytes without a bundle or generated-source layer; the 15
+compatibility outputs intentionally duplicate existing module sources at their
+former deployed paths.
 
 | Source area → output suffix | Files | Complete set description |
 | --- | ---: | --- |
@@ -800,26 +845,35 @@ is no bundle or generated-source layer.
 | `browser-warning/` → `aviso-navegador/` | 5 | Same five relative names as device warning |
 | `initial-notices/` → `avisos-iniciais/` | 4 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png` |
 | `azure-ai-vision-face-ui/` → `azure-ai-vision-face-ui/` | 85 | Face component, 75 dictionaries, five images, regular/SIMD JS and WASM pairs |
-| `photo-registration/` → `cadastro/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
+| `photo-registration/` → `cadastro-foto/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
 | `course-content/` → `estudo/` | 41 | HTML/JS/CSS, 33 study files, five images |
 | `login/` → `login/` | 6 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
-| `modules/` → `modules/` through 11 explicit mappings | 26 | Eight unchanged shared/page modules; `photo-registration.js` emits as `registration.js`; 14 `course-content/` responsibility modules emit under `study/`; three status-report modules retain their suffixes |
+| Canonical `modules/` → matching `modules/` paths | 26 | Nine top-level modules, 14 `course-content/` responsibility modules, and three `status-report/` modules retain their source-relative suffixes |
+| Temporary phase-A module compatibility outputs | 15 | `photo-registration.js` also emits as `registration.js`; the 14 `course-content/` files also emit under `study/` |
 | `status-report/` → `statusreport/` | 5 | HTML/JS/CSS, favicon, logo |
-| **Total** | **182** | Current output root is `dist/plataforma/` |
+| **Phase-A total** | **197** | Current PR output root is `dist/plataforma/` |
+| **Required phase-B total** | **182** | Same canonical files after removing all 15 compatibility outputs |
 
-By extension, the set is 7 CSS, 7 HTML, 36 JS, 75 JSON, 2 WASM, 11 PNG,
-5 ICO, 5 SVG, 1 JPG, 19 XLSM, 11 XLSX, 2 VSDX, and 1 VSSX. The exact complete
-path listing is reproducible with:
+By extension, phase A contains 7 CSS, 7 HTML, 51 JS, 75 JSON, 2 WASM, 11 PNG,
+5 ICO, 5 SVG, 1 JPG, 19 XLSM, 11 XLSX, 2 VSDX, and 1 VSSX. Phase B removes 15
+JS files and restores the canonical 36-JS, 182-file set. The exact tracked
+source listing is reproducible with:
 
 ```powershell
 git -c core.quotepath=false ls-files -- apps/learning-platform
 ```
 
-All 182 paths are NFC. Thirty-four contain non-ASCII characters: the
-photo-registration reference image and all 33 course-content download paths. Exact case, spaces,
-punctuation, accents, and normalization form are runtime contracts. The build
-rejects case/NFC collisions and verifies the exact generated spelling and
-bytes.
+All 197 phase-A output paths are NFC. Thirty-four contain non-ASCII characters:
+the photo-registration reference image and all 33 course-content download
+paths; every compatibility path is ASCII. Exact case, spaces, punctuation,
+accents, and normalization form are runtime contracts. The build rejects
+case/NFC collisions and verifies the exact generated spelling and bytes.
+
+The temporary legacy set is exactly
+`/plataforma/modules/registration.js` and
+`/plataforma/modules/study/{application,assessment,certificate-renderer,certificate,content,dom,downloads,feedback,navigation,performance,player,progress,session-timer,state}.js`.
+Phase A verifies all 15 as published support assets. Phase B must verify all 15
+as absent and `404` before the deployed-path roadmap step can close.
 
 #### Azure Face UI 1.5.0
 
@@ -1072,30 +1126,67 @@ and [`index.html` lines 9109-9113](../apps/learning-platform/course-content/inde
 ### Deployment artifact and whole-tree digest
 
 The mapping copies tracked bytes; it performs no bundling, minification, or
-transformation. The current platform source and emitted `dist/plataforma/`
-subtree have the same 182 paths relative to their roots and identical bytes.
+transformation. Phase A maps 182 unique platform source files to 197 outputs by
+copying 15 module sources a second time at their former paths. The current PR
+artifact therefore has these temporary identities:
 
-The current named-only error-adapter identity comes from the verified build for
-this change. File counts are fixed by the checked mapping; the byte totals and
-digests below are the resulting artifact evidence.
-
-| Scope and digest framing | Files | Bytes | SHA-256 |
+| Phase-A scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Current platform subset, retaining full output paths `plataforma/...` | 182 | 20,693,391 | `bc453ef0a25080d654b2fd8a24eba17224b41049ceacb6df6dd23b049875a050` |
-| Current platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,693,391 | `3012efb9be58584876d44e2431b0e19851da71f131daf4e1fa21d4ff0892705a` |
-| Current complete generated `dist/` artifact | 257 | 27,298,426 | `c9323ac5b7a70283d34a94f26478a99eddb3209e79da19d78985a2bc644c200b` |
+| Platform subset, retaining full output paths `plataforma/...` | 197 | 20,760,016 | `ad69a58a20b537cd016b813052c5fd07954869b3f44b1d1f92f5f4aa4cb2deec` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 197 | 20,760,016 | `de2b9ca63f5449a4fc0291aca7774d1abf9b475fd17a07adf50733d45812798a` |
+| Complete generated `dist/` artifact | 272 | 27,365,051 | `e394735cbde354c093331e95806739dd85951146b23a6973f09fd4a66d158454` |
 
-The adapter changes JavaScript only. Scoped source-derived guards retain these
-identities across the named-only cleanup:
+Phase B removes the 15 compatibility outputs without changing canonical source
+bytes. These are the required final non-compatibility identities:
 
-| Unchanged scope and digest framing | Files | Bytes | SHA-256 |
+| Required phase-B scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,252,436 | `1df6bd6de3e16a58ff8f65500c4aedde241d87237fb4a826c238bdf14b6aa13e` |
-| Platform binary files, retaining full output paths | 52 | 19,319,394 | `8703d7811a1d91db3069b55c0d17b87dbda9cfc754613ac6c44d172d668c4394` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,693,467 | `25f18cb7306246bb5a4b63efc8046365c50da381c3e10d33e55cf3f1021dd605` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,693,467 | `21ea67296d7fc40555033f4fbe181937b2f3b2a5c869aa38e2b2eab00e67ebcb` |
+| Complete generated `dist/` artifact | 257 | 27,298,502 | `166506b93b3477a175851a089360631894b0a67e9fa3fc9bdab4bd8b5b185561` |
+
+The compatibility copies are JavaScript only, so phase A and phase B share the
+same scoped non-JavaScript identities. The non-JavaScript digest changes from
+the pre-alignment baseline because registration HTML bytes and the registration
+HTML, CSS, and image output paths change; the binary digest changes because the
+two registration image paths move. Unrelated applications and the path-stable
+Face, download, and certificate scopes remain unchanged:
+
+| Current aligned scoped identity | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,252,456 | `47fac3283dd961c7e2bffff0d029cc468e2f66c6e80bc4c36088e1916db3cd1f` |
+| Platform binary files, retaining full output paths | 52 | 19,319,394 | `afd12f0746dd5463077e8d9a879fb852b1ebfd81686afe7ca0b9f63fdf804563` |
 | All unrelated frontend applications, retaining full output paths | 75 | 6,605,035 | `c83305484393d44eecbdab18325f582e87fc253ed50a782985256f90f2f651f2` |
 | Vendored Face subtree, paths relative to its root | 85 | 9,526,729 | `56da181049f18302b00fdbf04851d1433adf819341564a326e652c75145576e3` |
 | Study downloads, retaining full output paths | 33 | 9,163,893 | `1073822d29815c0d23e984c347b70c468235be47083b7ce5c23b33565a0dece5` |
 | Certificate inputs, source-derived `addImage` order | 3 | 148,461 | `82c735c7ac2fa32e09d71c326765db9c52ce63b58144c7c7b100458f8b897591` |
+
+The exact pre-alignment baseline at commit
+`19dacfa870d691e5869a022652fb24f2a8ba8e5f` produced these identities:
+
+| Pre-alignment scope and digest framing | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,693,391 | `bc453ef0a25080d654b2fd8a24eba17224b41049ceacb6df6dd23b049875a050` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,693,391 | `3012efb9be58584876d44e2431b0e19851da71f131daf4e1fa21d4ff0892705a` |
+| Complete generated `dist/` artifact | 257 | 27,298,426 | `c9323ac5b7a70283d34a94f26478a99eddb3209e79da19d78985a2bc644c200b` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,252,436 | `1df6bd6de3e16a58ff8f65500c4aedde241d87237fb4a826c238bdf14b6aa13e` |
+| Platform binary files, retaining full output paths | 52 | 19,319,394 | `8703d7811a1d91db3069b55c0d17b87dbda9cfc754613ac6c44d172d668c4394` |
+
+The required phase-B counts equal that baseline and its aligned URL/import
+strings add exactly 76 bytes: 20 HTML bytes and 56 JavaScript bytes. Phase A
+then adds 15 compatibility files containing 66,549 duplicate bytes, for 15 more
+files and 66,625 more bytes than the pre-alignment baseline.
+
+The per-file comparison accounts for the complete phase-A artifact. Exactly
+five former `plataforma/cadastro/` outputs are removed and 20 outputs are added:
+their five `plataforma/cadastro-foto/` replacements plus the 15 canonical
+module paths. Of the 252 paths common to the baseline and phase A, 250 retain
+identical bytes; only `plataforma/estudo/main.js` and
+`plataforma/modules/initial-notices.js` contain the expected import/navigation
+changes. Across the 20 old-to-new path pairs, 18 retain identical bytes; the
+registration `index.html` and `main.js` replacements contain their expected
+20-byte and 6-byte deltas. All 15 phase-A legacy module outputs also remain
+byte-identical to their baseline versions.
 
 For dual-reading-adapter comparison, the verified base at commit
 `9ff6b61a4bfdcd2cfd511cc406d16b5984577266` produced these identities:
@@ -1160,11 +1251,13 @@ computes this digest. Artifact checking separately asserts exact case/path set
 and byte equality against every mapped source.
 
 The platform has seven manifest `publicEntries` and zero `publicDownloads`.
-Thus 175 emitted platform files are supporting/runtime files rather than
-individually enumerated public contracts. All 33 study downloads, the entire
-Face subtree, JS/CSS/images, and certificate inputs are absent from
-`publicDownloads` even though the explicit mappings publish them. Remote CDN
-libraries and all media manifests/segments are outside the 257-file artifact.
+Thus phase A has 190 emitted supporting/runtime files rather than individually
+enumerated public contracts; the required phase-B artifact has 175. All 33
+study downloads, the entire Face subtree, JS/CSS/images, certificate inputs,
+and temporary compatibility modules are absent from `publicDownloads` even
+though the mappings publish them. Remote CDN libraries and all media
+manifests/segments are outside both the 272-file phase-A artifact and the
+257-file phase-B target.
 
 Current anchors: mapping collection
 [`frontend-deployment-lib.mjs` lines 309-358](../scripts/frontend-deployment-lib.mjs#L309-L358),
@@ -1173,7 +1266,7 @@ digest framing
 build/copy/set checks
 [`frontend-deployment-lib.mjs` lines 429-478](../scripts/frontend-deployment-lib.mjs#L429-L478),
 platform `publicDownloads`
-[`frontend-deployment.json` lines 119-228](../frontend-deployment.json#L119-L228).
+[`frontend-deployment.json` lines 119-237](../frontend-deployment.json#L119-L237).
 
 ## Known risks and unresolved legacy behavior
 
@@ -1399,14 +1492,14 @@ the test intent; current source anchors identify the current oracle.
 
 | ID | Compatibility surface | Required synthetic assertion |
 | --- | --- | --- |
-| ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, with exact case, and every index is emitted under `dist/plataforma/`. |
-| ROUTE-02 | Root, retirement, and slash behavior | `/plataforma/` is an intentional 404; the former `/plataforma_v2/` root and seven former entries are 404 without redirect; no `dist/plataforma_v2/` subtree exists; internal source navigation remains slashless and published slashless behavior is marked unproven rather than invented. |
-| ROUTE-03 | Navigation/history | Login, initial notices, Face registration, study, warning pages, logout, and back navigation use the exact current targets and history operations. |
+| ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, including `/plataforma/cadastro-foto/` with exact case, and every index is emitted under `dist/plataforma/`. |
+| ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/` and all three former `/plataforma/cadastro` entry forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or `dist/plataforma_v2/` subtree exists. Phase A publishes only the 15 enumerated legacy module assets; phase B removes them and verifies those URLs as 404s. Internal source navigation remains slashless and published slashless behavior is marked unproven rather than invented. |
+| ROUTE-03 | Navigation/history | Login, initial notices, Face registration at `/plataforma/cadastro-foto`, study, warning pages, logout, and back navigation use the exact current targets and history operations. |
 | GATE-01 | Edge detection | Login/notices/registration/study accept when either current Edge signal matches and redirect when neither matches; status report does not gate; the browser-warning diagnostic throws when `userAgentData` is absent. |
 | GATE-02 | Width and resize | Initial and resize decisions cover 1023, 1024, and 1025 pixels, including each page's current ordering and the warning page's `history.back()` condition. |
 | STORE-01 | Key inventory | The exact eight accented/cased keys, all readers/writers, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented. |
 | STORE-02 | Lifetime/reset | No flow clears storage; logout changes only `Usuário_Logado`; refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. |
-| API-01 | Login and Face registration | Methods, exact paths, JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
+| API-01 | Login and Face registration | Methods, exact paths—including unchanged `POST /plataforma_v2/CadastroFoto_e_FaceID`—JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
 | API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, named request-error, and backend-retry-visible branches with no client polling. |
 | API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, named semantic mapping, and optimistic update/rollback behavior match current transitions. |
 | API-04 | Assessment and feedback | `/updates` preserves client-supplied grade fields; named write and append failures preserve update-before-append ordering, partial success, retry duplication exposure, rollback, and the Module 3/module 2 mismatch. |
@@ -1422,12 +1515,12 @@ the test intent; current source anchors identify the current oracle.
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
 | FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport/host-color overrides remain exact without loading production Face. |
-| ASSET-01 | File identity and isolation | The exact 182-file current platform set, current byte total, and full-output-path digest match; all paths are NFC, 34 contain non-ASCII, and the non-JavaScript, binary, and unrelated-application scoped digests remain exact. |
+| ASSET-01 | File identity and isolation | The exact 197-file phase-A platform set and required 182-file phase-B set match their byte totals and full-output-path digests; all paths are NFC, 34 contain non-ASCII, and the aligned non-JavaScript, binary, and unrelated-application scoped digests remain exact. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The complete current artifact has 257 files and matches the verified named-only-adapter byte total and digest recorded above. |
-| ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, and the 175 implicitly emitted runtime/support files. |
+| ARTIFACT-01 | Full frontend artifact | The complete phase-A artifact has 272 files and matches its temporary compatibility byte total and digest; the required phase-B artifact has 257 files and matches the recorded final non-compatibility identity. |
+| ARTIFACT-02 | Manifest coverage | Tests distinguish seven `publicEntries`, zero platform `publicDownloads`, 190 phase-A supporting/runtime files, and the required 175-file supporting set after phase-B compatibility removal. |
 
 ### Automated traceability
 
@@ -1502,9 +1595,9 @@ failure before any application script executes.
    slashless production-host behavior explicitly pending until separately
    evidenced.
 8. Snapshot the contract-derived route/request/state matrices and the exact
-   artifact inventory. When source moves, update current anchors separately
-   from stable expected behavior so a path-only move does not silently rewrite
-   the compatibility oracle.
+   artifact inventory. When source or deployed paths move, update current
+   anchors separately from stable expected behavior so a path-alignment change
+   does not silently rewrite the compatibility oracle.
 
 No part of that suite should start a production-backed server, fetch a remote
 manifest or segment, initialize Face/EZDRM, call the backend or workbooks, send
@@ -1531,8 +1624,15 @@ using the repository helpers and digest framing above. For this module
 modernization, 24 new application-owned module files increased the platform and
 complete-artifact counts from 156 and 231 to 180 and 255. The error-adapter and
 presentation-catalog stage increased those counts to 182 and 257; the named-only
-cleanup changes only adapter bytes. The current artifact table records the
-verified named-only identities, retains `9ff6b61a4bfdcd2cfd511cc406d16b5984577266`
+cleanup changed only adapter bytes. The deployed-path phase-A artifact keeps
+the aligned sources plus 15 temporary compatibility outputs, producing 197
+platform files and 272 complete files. Phase B must remove those outputs,
+restore the 182/257 counts, and match the required final identities above.
+
+Commit `19dacfa870d691e5869a022652fb24f2a8ba8e5f` is the exact pre-alignment
+baseline. The final aligned source strings add 76 bytes without changing its
+file counts; phase A adds a further 15 files and 66,549 duplicate bytes. The
+artifact history also retains `9ff6b61a4bfdcd2cfd511cc406d16b5984577266`
 as the dual-reading baseline and `be8e52fc248d073503b8e71abe5afb9e93a4d5f9`
-as the post-English-internals pre-adapter baseline, and keeps the earlier
-pre-modernization and pre-adoption history separately.
+as the post-English-internals pre-adapter baseline, with the earlier
+pre-modernization and pre-adoption snapshots kept separately.
