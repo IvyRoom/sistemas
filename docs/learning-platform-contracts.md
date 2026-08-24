@@ -46,14 +46,14 @@ The document keeps five categories separate:
 
 ### Public entries and navigation
 
-`frontend-deployment.json` explicitly maps the nine tracked top-level source
-directories under `apps/learning-platform/` to their stable locations under
-`dist/plataforma/`. The six renamed entry sources use English directory names
-while their Portuguese output directories remain unchanged; `login`, `modules`,
-and `azure-ai-vision-face-ui` retain the same source and output suffixes. The
-manifest declares exactly seven public entries. Each canonical entry includes a
-trailing slash and must return its listed `index.html` with HTTP `200` and no
-redirect.
+`frontend-deployment.json` explicitly maps 19 tracked source areas under
+`apps/learning-platform/` to their stable locations under `dist/plataforma/`.
+The six renamed entry sources and two renamed module sources use English names
+while their Portuguese entry outputs and established module URLs remain
+unchanged; `login` and `azure-ai-vision-face-ui` retain the same source and
+output suffixes. The manifest declares exactly seven public entries. Each
+canonical entry includes a trailing slash and must return its listed
+`index.html` with HTTP `200` and no redirect.
 
 | Stable entry | Canonical public path | Current entry file | Direct dependencies |
 | --- | --- | --- | --- |
@@ -170,9 +170,9 @@ history entry.
   [`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3), shared
   [lifecycle seam](../apps/learning-platform/modules/lifecycle.js),
   [notices factory](../apps/learning-platform/modules/initial-notices.js),
-  [registration factory](../apps/learning-platform/modules/registration.js),
+  [registration factory](../apps/learning-platform/modules/photo-registration.js),
   [login factory](../apps/learning-platform/modules/login.js),
-  [study coordinator](../apps/learning-platform/modules/study/application.js), and
+  [study coordinator](../apps/learning-platform/modules/course-content/application.js), and
   [status-report coordinator](../apps/learning-platform/modules/status-report/application.js).
 
 ### Application modules and production-edge seams
@@ -201,13 +201,21 @@ dependency, generated source, or additional build step is involved.
 | `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
 | `modules/lifecycle.js` | Owns the exact Edge signal and inclusive `<= 1024` device-warning decision. Entry factories retain listener installation and gate order. |
 | `modules/face-startup.js` | Constructs one injected Face custom element, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
-| `modules/login.js`, `modules/registration.js`, `modules/initial-notices.js` | Own their existing credential, upload, Face, notice, form-reset, gate, storage, request, and navigation branches. Production configuration stays at the existing entry edge and is injected without being copied into tests or documentation. |
+| `modules/login.js`, `modules/photo-registration.js`, `modules/initial-notices.js` | Own their existing credential, upload, Face, notice, form-reset, gate, storage, request, and navigation branches. Production configuration stays at the existing entry edge and is injected without being copied into tests or documentation. |
 | `modules/status-report/query.js` | Parses the nine legacy query keys, including all current coercion and missing-value behavior. |
 | `modules/status-report/charts.js` | Constructs chart markup/targets, applies the module range, independently sorts each metric, and renders the existing 15-slot layout and label quirks. |
 | `modules/status-report/application.js` | Captures query/DOM state at factory construction, assigns `window.onload`, preserves width/listener order, and owns the public status request and error branches. |
 
-Study is coordinated by `modules/study/application.js`. Its responsibilities are
-split without changing their ordering:
+The six import specifiers in `photo-registration/main.js` and
+`course-content/main.js` remain deployment-relative contracts under
+`../modules/registration.js` and `../modules/study/`. The manifest maps the
+current physical module sources to those established output paths, and the
+manifest-aware source preview supplies the corresponding aliases. A raw
+filesystem-only resolver will not follow those legacy specifiers; changing them
+would also change deployed module URLs and artifact bytes.
+
+Study is coordinated by `modules/course-content/application.js`. Its
+responsibilities are split without changing their ordering:
 
 | Study module | Current responsibility |
 | --- | --- |
@@ -234,11 +242,11 @@ and ASCII. The approved behavior-neutral rename map is deliberately narrow:
 | Source | Legacy internal | Current internal |
 | --- | --- | --- |
 | `login/main.js`, `status-report/main.js` | local `URL_Base_Backend` | `backendBase` |
-| `modules/study/downloads.js` | `MóduloAberto`, `NomeVídeo` | existing inputs `moduleName`, `videoName` |
-| `modules/study/downloads.js` | `ContainerDownloadArquivo1` through `ContainerDownloadArquivo4` | `downloadContainer1` through `downloadContainer4` |
-| `modules/study/downloads.js` | `NomeArquivo1` through `NomeArquivo4` | `downloadName1` through `downloadName4` |
-| `modules/study/downloads.js` | `BotãoDownload1` through `BotãoDownload4` | `downloadButton1` through `downloadButton4` |
-| `modules/study/certificate-renderer.js` | `Usuário_NomeCompleto`, `Usuário_Formação_NotaAcumulado`, `Usuário_Formação_CertificadoID` | `fullName`, `accumulatedGrade`, `certificateId` |
+| `modules/course-content/downloads.js` | `MóduloAberto`, `NomeVídeo` | existing inputs `moduleName`, `videoName` |
+| `modules/course-content/downloads.js` | `ContainerDownloadArquivo1` through `ContainerDownloadArquivo4` | `downloadContainer1` through `downloadContainer4` |
+| `modules/course-content/downloads.js` | `NomeArquivo1` through `NomeArquivo4` | `downloadName1` through `downloadName4` |
+| `modules/course-content/downloads.js` | `BotãoDownload1` through `BotãoDownload4` | `downloadButton1` through `downloadButton4` |
+| `modules/course-content/certificate-renderer.js` | `Usuário_NomeCompleto`, `Usuário_Formação_NotaAcumulado`, `Usuário_Formação_CertificadoID` | `fullName`, `accumulatedGrade`, `certificateId` |
 
 This does not rename the exact `URL_Base_Backend` storage string, any
 `Usuário_*` API member, DOM/CSS identifier, query field, route, raw storage
@@ -294,8 +302,8 @@ fallback. No page handles `pageshow`, BFCache restoration, `pagehide`,
 
 Current anchors: [login factory](../apps/learning-platform/modules/login.js),
 [notices factory](../apps/learning-platform/modules/initial-notices.js),
-[registration factory](../apps/learning-platform/modules/registration.js),
-[study coordinator](../apps/learning-platform/modules/study/application.js),
+[registration factory](../apps/learning-platform/modules/photo-registration.js),
+[study coordinator](../apps/learning-platform/modules/course-content/application.js),
 [status-report coordinator](../apps/learning-platform/modules/status-report/application.js),
 shared [lifecycle seam](../apps/learning-platform/modules/lifecycle.js), warning
 [`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3), and
@@ -329,10 +337,10 @@ Current anchors: exact key spellings and raw access in the shared
 [`session.js`](../apps/learning-platform/modules/session.js); login production
 base initialization in [`main.js`](../apps/learning-platform/login/main.js) and
 transitions in the [login factory](../apps/learning-platform/modules/login.js);
-the [registration factory](../apps/learning-platform/modules/registration.js);
+the [registration factory](../apps/learning-platform/modules/photo-registration.js);
 study evaluation reads in [`main.js`](../apps/learning-platform/course-content/main.js),
-refresh/logout in the [study coordinator](../apps/learning-platform/modules/study/application.js),
-and expiry in [`session-timer.js`](../apps/learning-platform/modules/study/session-timer.js); warning
+refresh/logout in the [study coordinator](../apps/learning-platform/modules/course-content/application.js),
+and expiry in [`session-timer.js`](../apps/learning-platform/modules/course-content/session-timer.js); warning
 [`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3); backend
 handle contract at the pinned companion
 [`api-contracts.md` lines 211-248](https://github.com/IvyRoom/backend/blob/65761539b1fc998e66be383248269270ff2c90a9/docs/api-contracts.md#L211-L248).
@@ -501,12 +509,12 @@ or rendered HTML.
 - Reviewed visible outcomes:
   [`error-presentation.js`](../apps/learning-platform/modules/error-presentation.js).
 - Login client: [`login.js`](../apps/learning-platform/modules/login.js).
-- Registration client: [`registration.js`](../apps/learning-platform/modules/registration.js).
+- Registration client: [`photo-registration.js`](../apps/learning-platform/modules/photo-registration.js).
 - Study refresh coordinator:
-  [`application.js`](../apps/learning-platform/modules/study/application.js);
-  ordinary updates [`progress.js`](../apps/learning-platform/modules/study/progress.js),
-  assessment updates [`assessment.js`](../apps/learning-platform/modules/study/assessment.js),
-  and feedback [`feedback.js`](../apps/learning-platform/modules/study/feedback.js).
+  [`application.js`](../apps/learning-platform/modules/course-content/application.js);
+  ordinary updates [`progress.js`](../apps/learning-platform/modules/course-content/progress.js),
+  assessment updates [`assessment.js`](../apps/learning-platform/modules/course-content/assessment.js),
+  and feedback [`feedback.js`](../apps/learning-platform/modules/course-content/feedback.js).
 - Status-report query/client:
   [`query.js`](../apps/learning-platform/modules/status-report/query.js) and
   [`application.js`](../apps/learning-platform/modules/status-report/application.js).
@@ -589,7 +597,7 @@ map to frontend `Erro_006`.
 
 Current anchors: registration HTML
 [`index.html` lines 32-48](../apps/learning-platform/photo-registration/index.html#L32-L48),
-[registration factory](../apps/learning-platform/modules/registration.js),
+[registration factory](../apps/learning-platform/modules/photo-registration.js),
 [login factory](../apps/learning-platform/modules/login.js), shared
 [Face startup seam](../apps/learning-platform/modules/face-startup.js), and vendored
 loader [`FaceLivenessDetector.js` line 1](../apps/learning-platform/azure-ai-vision-face-ui/FaceLivenessDetector.js#L1).
@@ -618,10 +626,10 @@ topic containers; selecting a topic highlights it and selects content, test,
 or feedback behavior from the visible topic text.
 
 Current anchors: topic totals/state
-[`state.js`](../apps/learning-platform/modules/study/state.js), DOM capture
-[`dom.js`](../apps/learning-platform/modules/study/dom.js), initialization
-[`application.js`](../apps/learning-platform/modules/study/application.js), and module/topic
-selection [`navigation.js`](../apps/learning-platform/modules/study/navigation.js).
+[`state.js`](../apps/learning-platform/modules/course-content/state.js), DOM capture
+[`dom.js`](../apps/learning-platform/modules/course-content/dom.js), initialization
+[`application.js`](../apps/learning-platform/modules/course-content/application.js), and module/topic
+selection [`navigation.js`](../apps/learning-platform/modules/course-content/navigation.js).
 
 #### Content/video progress
 
@@ -638,9 +646,9 @@ state. There is no refetch. Manual completion and `ended` share no in-flight
 guard and can race into separate increments/writes.
 
 Current anchors: player/completion
-[`player.js`](../apps/learning-platform/modules/study/player.js), content/manual
-control [`content.js`](../apps/learning-platform/modules/study/content.js), and
-update flow [`progress.js`](../apps/learning-platform/modules/study/progress.js).
+[`player.js`](../apps/learning-platform/modules/course-content/player.js), content/manual
+control [`content.js`](../apps/learning-platform/modules/course-content/content.js), and
+update flow [`progress.js`](../apps/learning-platform/modules/course-content/progress.js).
 
 #### Assessments
 
@@ -666,7 +674,7 @@ Current anchors: visible time guidance
 [`index.html` line 1401](../apps/learning-platform/course-content/index.html#L1401), representative
 correctness attributes
 [`index.html` lines 1477-1519](../apps/learning-platform/course-content/index.html#L1477-L1519),
-assessment flow [`assessment.js`](../apps/learning-platform/modules/study/assessment.js).
+assessment flow [`assessment.js`](../apps/learning-platform/modules/course-content/assessment.js).
 
 #### Feedback
 
@@ -688,7 +696,7 @@ through `10`. Comments have only the browser `maxlength=1000` constraint.
 
 Current anchors: feedback values and comment limit
 [`index.html` lines 8745-8909](../apps/learning-platform/course-content/index.html#L8745-L8909), flow
-[`feedback.js`](../apps/learning-platform/modules/study/feedback.js).
+[`feedback.js`](../apps/learning-platform/modules/course-content/feedback.js).
 
 #### Performance, certificate, logout, and expiry
 
@@ -706,13 +714,13 @@ normal navigation to login. They do not remove the row handle, deadline,
 registration authorization, backend base, photo mirror, or origin marker.
 
 Current anchors: performance view and grade charts
-[`performance.js`](../apps/learning-platform/modules/study/performance.js), certificate
+[`performance.js`](../apps/learning-platform/modules/course-content/performance.js), certificate
 eligibility/download binding
-[`certificate.js`](../apps/learning-platform/modules/study/certificate.js), certificate
+[`certificate.js`](../apps/learning-platform/modules/course-content/certificate.js), certificate
 construction
-[`certificate-renderer.js`](../apps/learning-platform/modules/study/certificate-renderer.js),
-logout [`application.js`](../apps/learning-platform/modules/study/application.js), and
-timer [`session-timer.js`](../apps/learning-platform/modules/study/session-timer.js).
+[`certificate-renderer.js`](../apps/learning-platform/modules/course-content/certificate-renderer.js),
+logout [`application.js`](../apps/learning-platform/modules/course-content/application.js), and
+timer [`session-timer.js`](../apps/learning-platform/modules/course-content/session-timer.js).
 
 ### Status-report contract
 
@@ -795,7 +803,7 @@ is no bundle or generated-source layer.
 | `photo-registration/` → `cadastro/` | 5 | `index.html`, `main.js`, `style.css`, `img/LOGO_MACHADO.png`, `img/REFERÊNCIAS_FOTOS.png` |
 | `course-content/` → `estudo/` | 41 | HTML/JS/CSS, 33 study files, five images |
 | `login/` → `login/` | 6 | HTML/JS/CSS, favicon, logo, unused duplicate `Brightness.svg` |
-| `modules/` → `modules/` | 26 | Shared browser seams, centralized error adapter/presentation catalog, page factories, 14 study responsibility modules, and three status-report modules |
+| `modules/` → `modules/` through 11 explicit mappings | 26 | Eight unchanged shared/page modules; `photo-registration.js` emits as `registration.js`; 14 `course-content/` responsibility modules emit under `study/`; three status-report modules retain their suffixes |
 | `status-report/` → `statusreport/` | 5 | HTML/JS/CSS, favicon, logo |
 | **Total** | **182** | Current output root is `dist/plataforma/` |
 
@@ -984,10 +992,10 @@ legacy format label `PNG`. Study also uses `FAVICON.ico` and
 Current anchors: download placeholders
 [`index.html` lines 1353-1377](../apps/learning-platform/course-content/index.html#L1353-L1377),
 assignment matrix
-[`downloads.js`](../apps/learning-platform/modules/study/downloads.js), certificate
+[`downloads.js`](../apps/learning-platform/modules/course-content/downloads.js), certificate
 library/UI [`index.html` lines 9085-9111](../apps/learning-platform/course-content/index.html#L9085-L9111),
 certificate construction
-[`certificate-renderer.js`](../apps/learning-platform/modules/study/certificate-renderer.js).
+[`certificate-renderer.js`](../apps/learning-platform/modules/course-content/certificate-renderer.js).
 
 ### Video and DRM contract
 
@@ -1053,9 +1061,9 @@ does not assert ladder widths, bitrates, codecs, segment naming, or the number
 of renditions.
 
 Current anchors: module folder/topic behavior
-[`navigation.js`](../apps/learning-platform/modules/study/navigation.js) and
-[`content.js`](../apps/learning-platform/modules/study/content.js); player
-lifecycle/completion [`player.js`](../apps/learning-platform/modules/study/player.js);
+[`navigation.js`](../apps/learning-platform/modules/course-content/navigation.js) and
+[`content.js`](../apps/learning-platform/modules/course-content/content.js); player
+lifecycle/completion [`player.js`](../apps/learning-platform/modules/course-content/player.js);
 source-derived protected/bypass policy remains in the production
 [`main.js`](../apps/learning-platform/course-content/main.js); external
 libraries [`index.html` lines 10-12](../apps/learning-platform/course-content/index.html#L10-L12)
@@ -1165,7 +1173,7 @@ digest framing
 build/copy/set checks
 [`frontend-deployment-lib.mjs` lines 429-478](../scripts/frontend-deployment-lib.mjs#L429-L478),
 platform `publicDownloads`
-[`frontend-deployment.json` lines 119-188](../frontend-deployment.json#L119-L188).
+[`frontend-deployment.json` lines 119-228](../frontend-deployment.json#L119-L228).
 
 ## Known risks and unresolved legacy behavior
 
@@ -1264,7 +1272,7 @@ future work, not permission to change compatibility behavior in the baseline.
   parsing therefore submits it as module 2. This is an unresolved source bug,
   deliberately preserved as baseline evidence. Current anchors:
   [`index.html` lines 423-430](../apps/learning-platform/course-content/index.html#L423-L430)
-  and [`feedback.js`](../apps/learning-platform/modules/study/feedback.js).
+  and [`feedback.js`](../apps/learning-platform/modules/course-content/feedback.js).
 - The certificate is generated wholly in the browser from workbook-derived and
   client-held values. Eligibility, name, score, and rendered certificate ID can
   be manipulated locally; validation remains a separate external concern. A

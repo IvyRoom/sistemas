@@ -896,7 +896,7 @@ export async function assertSourcePreviewReferences(manifest) {
     const css = await readFile(toLocalPath(file.source), "utf8");
     const outputStylesheetUrl = new URL(`/${file.output}`, localOrigin);
     const sourceStylesheetUrl = new URL(`/${file.source}`, localOrigin);
-    const sourceByPreviewRoute = referenceRoutes();
+    const sourceByPreviewRoute = referenceRoutes(file.output, file.source);
 
     for (const reference of extractCssReferences(css)) {
       const result = compareResolvedSourcePreviewReference(
@@ -922,7 +922,7 @@ export async function assertSourcePreviewReferences(manifest) {
     const javaScript = await readFile(toLocalPath(file.source), "utf8");
     const outputScriptUrl = new URL(`/${file.output}`, localOrigin);
     const sourceScriptUrl = new URL(`/${file.source}`, localOrigin);
-    const sourceByPreviewRoute = referenceRoutes();
+    const sourceByPreviewRoute = referenceRoutes(file.output, file.source);
 
     for (const reference of extractJavaScriptImportReferences(javaScript)) {
       const result = compareResolvedSourcePreviewReference(

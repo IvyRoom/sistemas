@@ -53,7 +53,7 @@ const pageSources = pageSourcePaths.map((relativePath) => ({
 const studySourcePaths = [
   "course-content/main.js",
   ...platformModuleSourcePaths.filter((relativePath) =>
-    relativePath.startsWith("modules/study/")
+    relativePath.startsWith("modules/course-content/")
   )
 ];
 const studySource = studySourcePaths
@@ -315,8 +315,48 @@ test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entr
       output: "plataforma/statusreport"
     },
     {
-      source: "apps/learning-platform/modules",
-      output: "plataforma/modules"
+      source: "apps/learning-platform/modules/error-adapter.js",
+      output: "plataforma/modules/error-adapter.js"
+    },
+    {
+      source: "apps/learning-platform/modules/error-presentation.js",
+      output: "plataforma/modules/error-presentation.js"
+    },
+    {
+      source: "apps/learning-platform/modules/face-startup.js",
+      output: "plataforma/modules/face-startup.js"
+    },
+    {
+      source: "apps/learning-platform/modules/initial-notices.js",
+      output: "plataforma/modules/initial-notices.js"
+    },
+    {
+      source: "apps/learning-platform/modules/lifecycle.js",
+      output: "plataforma/modules/lifecycle.js"
+    },
+    {
+      source: "apps/learning-platform/modules/login.js",
+      output: "plataforma/modules/login.js"
+    },
+    {
+      source: "apps/learning-platform/modules/platform-client.js",
+      output: "plataforma/modules/platform-client.js"
+    },
+    {
+      source: "apps/learning-platform/modules/session.js",
+      output: "plataforma/modules/session.js"
+    },
+    {
+      source: "apps/learning-platform/modules/photo-registration.js",
+      output: "plataforma/modules/registration.js"
+    },
+    {
+      source: "apps/learning-platform/modules/course-content",
+      output: "plataforma/modules/study"
+    },
+    {
+      source: "apps/learning-platform/modules/status-report",
+      output: "plataforma/modules/status-report"
     },
     {
       source: "apps/learning-platform/azure-ai-vision-face-ui",

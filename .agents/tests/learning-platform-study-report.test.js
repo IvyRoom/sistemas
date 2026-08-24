@@ -29,7 +29,7 @@ const studyModulePaths = [
   "progress.js",
   "session-timer.js",
   "state.js"
-].map((fileName) => `apps/learning-platform/modules/study/${fileName}`);
+].map((fileName) => `apps/learning-platform/modules/course-content/${fileName}`);
 // Source-frozen assertions intentionally compose the public edge and every
 // application-owned responsibility module that now implements study behavior.
 const studySource = [studyMainSource, ...studyModulePaths.map(readPlatformScript)].join("\n");
@@ -75,12 +75,12 @@ test.before(async () => {
     loadPlatformModule("apps/learning-platform/modules/session.js"),
     loadPlatformModule("apps/learning-platform/modules/platform-client.js"),
     loadPlatformModule("apps/learning-platform/modules/lifecycle.js"),
-    loadPlatformModule("apps/learning-platform/modules/study/application.js"),
-    loadPlatformModule("apps/learning-platform/modules/study/dom.js"),
-    loadPlatformModule("apps/learning-platform/modules/study/downloads.js"),
-    loadPlatformModule("apps/learning-platform/modules/study/player.js"),
-    loadPlatformModule("apps/learning-platform/modules/study/certificate-renderer.js"),
-    loadPlatformModule("apps/learning-platform/modules/study/state.js"),
+    loadPlatformModule("apps/learning-platform/modules/course-content/application.js"),
+    loadPlatformModule("apps/learning-platform/modules/course-content/dom.js"),
+    loadPlatformModule("apps/learning-platform/modules/course-content/downloads.js"),
+    loadPlatformModule("apps/learning-platform/modules/course-content/player.js"),
+    loadPlatformModule("apps/learning-platform/modules/course-content/certificate-renderer.js"),
+    loadPlatformModule("apps/learning-platform/modules/course-content/state.js"),
     loadPlatformModule("apps/learning-platform/modules/status-report/application.js")
   ]);
 

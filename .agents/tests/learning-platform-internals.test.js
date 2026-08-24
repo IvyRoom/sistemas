@@ -81,11 +81,11 @@ const approvedApplicationCommentRules = [
     pattern: /^ Return to the previous page if the viewport becomes wider than 1024 pixels again\.$/u
   },
   {
-    path: "modules/study/downloads.js",
+    path: "modules/course-content/downloads.js",
     pattern: /^\/+$/u
   },
   {
-    path: "modules/study/downloads.js",
+    path: "modules/course-content/downloads.js",
     pattern: /^ Module (?:2|3|4|5|7|8|9)$/u
   }
 ];
