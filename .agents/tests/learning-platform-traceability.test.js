@@ -62,7 +62,7 @@ function namedTestTitles() {
 
 function sensitiveSourceLiterals() {
   const studySource = fs.readFileSync(
-    path.join(repositoryRoot, "apps", "learning-platform", "study", "main.js"),
+    path.join(repositoryRoot, "apps", "learning-platform", "course-content", "main.js"),
     "utf8"
   );
   const bypassCondition = studySource.match(

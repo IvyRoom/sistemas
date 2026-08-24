@@ -131,11 +131,11 @@
           "output": "plataforma/avisos-iniciais"
         },
         {
-          "source": "apps/learning-platform/registration",
+          "source": "apps/learning-platform/photo-registration",
           "output": "plataforma/cadastro"
         },
         {
-          "source": "apps/learning-platform/study",
+          "source": "apps/learning-platform/course-content",
           "output": "plataforma/estudo"
         },
         {

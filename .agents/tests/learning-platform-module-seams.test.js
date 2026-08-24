@@ -239,13 +239,13 @@ test("[GATE-02] all seven entry assets retain their exact bootstrap loading mode
       module: true
     },
     {
-      sourceDirectory: "registration",
+      sourceDirectory: "photo-registration",
       publicSuffix: "cadastro",
       async: true,
       module: true
     },
     {
-      sourceDirectory: "study",
+      sourceDirectory: "course-content",
       publicSuffix: "estudo",
       async: false,
       module: true
@@ -299,7 +299,7 @@ test("[GATE-02] all seven entry assets retain their exact bootstrap loading mode
       `${sourceDirectory}:module`
     );
 
-    if (sourceDirectory === "study") {
+    if (sourceDirectory === "course-content") {
       assert.equal(scriptTags.length, 3);
       assert.equal(mainIndex, 2, "Study dependencies must remain ordered before main.js");
       assert.equal(scriptTags.slice(0, 2).every((attributes) => !/\b(?:async|defer)\b/i.test(attributes)), true);

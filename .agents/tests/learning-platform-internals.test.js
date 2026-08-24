@@ -11,8 +11,8 @@ const entrySourcePaths = [
   "device-warning/main.js",
   "browser-warning/main.js",
   "initial-notices/main.js",
-  "registration/main.js",
-  "study/main.js",
+  "photo-registration/main.js",
+  "course-content/main.js",
   "login/main.js",
   "status-report/main.js"
 ];

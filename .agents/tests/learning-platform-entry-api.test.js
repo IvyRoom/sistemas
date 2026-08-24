@@ -18,9 +18,9 @@ const SCRIPT_PATHS = {
   device: "apps/learning-platform/device-warning/main.js",
   login: "apps/learning-platform/login/main.js",
   notices: "apps/learning-platform/initial-notices/main.js",
-  register: "apps/learning-platform/registration/main.js",
+  register: "apps/learning-platform/photo-registration/main.js",
   report: "apps/learning-platform/status-report/main.js",
-  study: "apps/learning-platform/study/main.js"
+  study: "apps/learning-platform/course-content/main.js"
 };
 
 const MODULE_PATHS = {

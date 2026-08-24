@@ -42,8 +42,8 @@ const learningPlatformEntries = [
   { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
   { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
   { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
-  { sourceDirectory: "registration", publicSuffix: "cadastro" },
-  { sourceDirectory: "study", publicSuffix: "estudo" },
+  { sourceDirectory: "photo-registration", publicSuffix: "cadastro" },
+  { sourceDirectory: "course-content", publicSuffix: "estudo" },
   { sourceDirectory: "login", publicSuffix: "login" },
   { sourceDirectory: "status-report", publicSuffix: "statusreport" }
 ];
@@ -208,11 +208,11 @@ test("deployment inventory exhaustively separates maintained frontends from the 
       output: "plataforma/avisos-iniciais"
     },
     {
-      source: "apps/learning-platform/registration",
+      source: "apps/learning-platform/photo-registration",
       output: "plataforma/cadastro"
     },
     {
-      source: "apps/learning-platform/study",
+      source: "apps/learning-platform/course-content",
       output: "plataforma/estudo"
     },
     {
@@ -1678,7 +1678,7 @@ test("certificate validation normalizes only its slashless public route before a
 test("generated certificates print the canonical validation URL", async () => {
   const [entrySource, certificateRendererSource] = await Promise.all([
     readFile(
-      new URL("../apps/learning-platform/study/main.js", import.meta.url),
+      new URL("../apps/learning-platform/course-content/main.js", import.meta.url),
       "utf8"
     ),
     readFile(

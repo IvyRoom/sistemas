@@ -9,7 +9,7 @@ const test = require("node:test");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
 const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
-const studyRoot = path.join(platformRoot, "study");
+const studyRoot = path.join(platformRoot, "course-content");
 const faceRoot = path.join(platformRoot, "azure-ai-vision-face-ui");
 const manifest = JSON.parse(
   fs.readFileSync(path.join(repositoryRoot, "frontend-deployment.json"), "utf8")
@@ -31,8 +31,8 @@ const platformEntries = [
   { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
   { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
   { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
-  { sourceDirectory: "registration", publicSuffix: "cadastro" },
-  { sourceDirectory: "study", publicSuffix: "estudo" },
+  { sourceDirectory: "photo-registration", publicSuffix: "cadastro" },
+  { sourceDirectory: "course-content", publicSuffix: "estudo" },
   { sourceDirectory: "login", publicSuffix: "login" },
   { sourceDirectory: "status-report", publicSuffix: "statusreport" }
 ];
@@ -51,7 +51,7 @@ const pageSources = pageSourcePaths.map((relativePath) => ({
   source: fs.readFileSync(path.join(platformRoot, ...relativePath.split("/")), "utf8")
 }));
 const studySourcePaths = [
-  "study/main.js",
+  "course-content/main.js",
   ...platformModuleSourcePaths.filter((relativePath) =>
     relativePath.startsWith("modules/study/")
   )
@@ -299,11 +299,11 @@ test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entr
       output: "plataforma/avisos-iniciais"
     },
     {
-      source: "apps/learning-platform/registration",
+      source: "apps/learning-platform/photo-registration",
       output: "plataforma/cadastro"
     },
     {
-      source: "apps/learning-platform/study",
+      source: "apps/learning-platform/course-content",
       output: "plataforma/estudo"
     },
     {
@@ -586,7 +586,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
     /shadowRoot\.adoptedStyleSheets\s*=\s*\[\.\.\.shadowRoot\.adoptedStyleSheets,\s*styleSheet\]/,
     "The shared Face startup seam must adopt its stylesheet inside the closed root"
   );
-  for (const entryName of ["login", "registration"]) {
+  for (const entryName of ["login", "photo-registration"]) {
     const entryHtml = fs.readFileSync(path.join(platformRoot, entryName, "index.html"), "utf8");
     const entrySource = fs.readFileSync(path.join(platformRoot, entryName, "main.js"), "utf8");
     const entrySourceGraph = `${entrySource}\n${faceStartupSource}`;
@@ -644,7 +644,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
     "The reviewed Face loading copy must remain vendor-owned and unchanged"
   );
 
-  for (const entryName of ["login", "registration"]) {
+  for (const entryName of ["login", "photo-registration"]) {
     const styleSource = fs.readFileSync(
       path.join(platformRoot, entryName, "style.css"),
       "utf8"
