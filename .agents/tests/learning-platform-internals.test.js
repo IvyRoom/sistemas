@@ -8,13 +8,13 @@ const test = require("node:test");
 const repositoryRoot = path.join(__dirname, "..", "..");
 const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
 const entrySourcePaths = [
-  "aviso-dispositivo/main.js",
-  "aviso-navegador/main.js",
-  "avisos-iniciais/main.js",
-  "cadastro/main.js",
-  "estudo/main.js",
+  "device-warning/main.js",
+  "browser-warning/main.js",
+  "initial-notices/main.js",
+  "photo-registration/main.js",
+  "course-content/main.js",
   "login/main.js",
-  "statusreport/main.js"
+  "status-report/main.js"
 ];
 
 const deprecatedInternalIdentifiers = new Map([
@@ -72,20 +72,20 @@ const boundaryIdentifierAllowlist = new Set([
 const compatibilityCommentLocations = new Set([
   "login/main.js:4",
   "modules/status-report/query.js:13",
-  "statusreport/main.js:5"
+  "status-report/main.js:5"
 ]);
 
 const approvedApplicationCommentRules = [
   {
-    path: "aviso-dispositivo/main.js",
+    path: "device-warning/main.js",
     pattern: /^ Return to the previous page if the viewport becomes wider than 1024 pixels again\.$/u
   },
   {
-    path: "modules/study/downloads.js",
+    path: "modules/course-content/downloads.js",
     pattern: /^\/+$/u
   },
   {
-    path: "modules/study/downloads.js",
+    path: "modules/course-content/downloads.js",
     pattern: /^ Module (?:2|3|4|5|7|8|9)$/u
   }
 ];

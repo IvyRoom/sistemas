@@ -9,7 +9,7 @@ const test = require("node:test");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
 const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
-const studyRoot = path.join(platformRoot, "estudo");
+const studyRoot = path.join(platformRoot, "course-content");
 const faceRoot = path.join(platformRoot, "azure-ai-vision-face-ui");
 const manifest = JSON.parse(
   fs.readFileSync(path.join(repositoryRoot, "frontend-deployment.json"), "utf8")
@@ -27,15 +27,18 @@ const faceSource = fs.readFileSync(
 const platformApplication = manifest.applications.find(
   (application) => application.id === "learning-platform"
 );
-const entrySourcePaths = [
-  "aviso-dispositivo/main.js",
-  "aviso-navegador/main.js",
-  "avisos-iniciais/main.js",
-  "cadastro/main.js",
-  "estudo/main.js",
-  "login/main.js",
-  "statusreport/main.js"
+const platformEntries = [
+  { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
+  { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
+  { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
+  { sourceDirectory: "photo-registration", publicSuffix: "cadastro" },
+  { sourceDirectory: "course-content", publicSuffix: "estudo" },
+  { sourceDirectory: "login", publicSuffix: "login" },
+  { sourceDirectory: "status-report", publicSuffix: "statusreport" }
 ];
+const entrySourcePaths = platformEntries.map(
+  ({ sourceDirectory }) => `${sourceDirectory}/main.js`
+);
 const platformModuleSourcePaths = regularFilesRecursively(
   path.join(platformRoot, "modules")
 )
@@ -48,9 +51,9 @@ const pageSources = pageSourcePaths.map((relativePath) => ({
   source: fs.readFileSync(path.join(platformRoot, ...relativePath.split("/")), "utf8")
 }));
 const studySourcePaths = [
-  "estudo/main.js",
+  "course-content/main.js",
   ...platformModuleSourcePaths.filter((relativePath) =>
-    relativePath.startsWith("modules/study/")
+    relativePath.startsWith("modules/course-content/")
   )
 ];
 const studySource = studySourcePaths
@@ -58,18 +61,11 @@ const studySource = studySourcePaths
     fs.readFileSync(path.join(platformRoot, ...relativePath.split("/")), "utf8")
   )
   .join("\n");
-const platformEntrySuffixes = [
-  "aviso-dispositivo",
-  "aviso-navegador",
-  "avisos-iniciais",
-  "cadastro",
-  "estudo",
-  "login",
-  "statusreport"
-];
 const retiredPlatformPaths = [
   "/plataforma_v2/",
-  ...platformEntrySuffixes.map((suffix) => `/plataforma_v2/${suffix}/`)
+  ...platformEntries.map(
+    ({ publicSuffix }) => `/plataforma_v2/${publicSuffix}/`
+  )
 ];
 
 function compareText(left, right) {
@@ -290,7 +286,82 @@ function sourceDerivedSensitiveLiterals() {
 test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entries", () => {
   assert.ok(platformApplication, "The learning-platform manifest entry must exist");
   assert.deepEqual(platformApplication.mappings, [
-    { source: "apps/learning-platform", output: "plataforma" }
+    {
+      source: "apps/learning-platform/device-warning",
+      output: "plataforma/aviso-dispositivo"
+    },
+    {
+      source: "apps/learning-platform/browser-warning",
+      output: "plataforma/aviso-navegador"
+    },
+    {
+      source: "apps/learning-platform/initial-notices",
+      output: "plataforma/avisos-iniciais"
+    },
+    {
+      source: "apps/learning-platform/photo-registration",
+      output: "plataforma/cadastro"
+    },
+    {
+      source: "apps/learning-platform/course-content",
+      output: "plataforma/estudo"
+    },
+    {
+      source: "apps/learning-platform/login",
+      output: "plataforma/login"
+    },
+    {
+      source: "apps/learning-platform/status-report",
+      output: "plataforma/statusreport"
+    },
+    {
+      source: "apps/learning-platform/modules/error-adapter.js",
+      output: "plataforma/modules/error-adapter.js"
+    },
+    {
+      source: "apps/learning-platform/modules/error-presentation.js",
+      output: "plataforma/modules/error-presentation.js"
+    },
+    {
+      source: "apps/learning-platform/modules/face-startup.js",
+      output: "plataforma/modules/face-startup.js"
+    },
+    {
+      source: "apps/learning-platform/modules/initial-notices.js",
+      output: "plataforma/modules/initial-notices.js"
+    },
+    {
+      source: "apps/learning-platform/modules/lifecycle.js",
+      output: "plataforma/modules/lifecycle.js"
+    },
+    {
+      source: "apps/learning-platform/modules/login.js",
+      output: "plataforma/modules/login.js"
+    },
+    {
+      source: "apps/learning-platform/modules/platform-client.js",
+      output: "plataforma/modules/platform-client.js"
+    },
+    {
+      source: "apps/learning-platform/modules/session.js",
+      output: "plataforma/modules/session.js"
+    },
+    {
+      source: "apps/learning-platform/modules/photo-registration.js",
+      output: "plataforma/modules/registration.js"
+    },
+    {
+      source: "apps/learning-platform/modules/course-content",
+      output: "plataforma/modules/study"
+    },
+    {
+      source: "apps/learning-platform/modules/status-report",
+      output: "plataforma/modules/status-report"
+    },
+    {
+      source: "apps/learning-platform/azure-ai-vision-face-ui",
+      output: "plataforma/azure-ai-vision-face-ui"
+    }
   ]);
   assert.deepEqual(platformApplication.publicEntries, [
     {
@@ -555,7 +626,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
     /shadowRoot\.adoptedStyleSheets\s*=\s*\[\.\.\.shadowRoot\.adoptedStyleSheets,\s*styleSheet\]/,
     "The shared Face startup seam must adopt its stylesheet inside the closed root"
   );
-  for (const entryName of ["login", "cadastro"]) {
+  for (const entryName of ["login", "photo-registration"]) {
     const entryHtml = fs.readFileSync(path.join(platformRoot, entryName, "index.html"), "utf8");
     const entrySource = fs.readFileSync(path.join(platformRoot, entryName, "main.js"), "utf8");
     const entrySourceGraph = `${entrySource}\n${faceStartupSource}`;
@@ -613,7 +684,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
     "The reviewed Face loading copy must remain vendor-owned and unchanged"
   );
 
-  for (const entryName of ["login", "cadastro"]) {
+  for (const entryName of ["login", "photo-registration"]) {
     const styleSource = fs.readFileSync(
       path.join(platformRoot, entryName, "style.css"),
       "utf8"

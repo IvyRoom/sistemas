@@ -42,13 +42,13 @@ points. The deployment contract requires every listed route to return HTTP
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/referrals-management/referral-form/index.html](apps/referrals-management/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
-| Platform device warning | [apps/learning-platform/aviso-dispositivo/index.html](apps/learning-platform/aviso-dispositivo/index.html) | [`/plataforma/aviso-dispositivo/`](https://machadogestao.com/plataforma/aviso-dispositivo/) |
-| Platform browser warning | [apps/learning-platform/aviso-navegador/index.html](apps/learning-platform/aviso-navegador/index.html) | [`/plataforma/aviso-navegador/`](https://machadogestao.com/plataforma/aviso-navegador/) |
-| Platform initial notices | [apps/learning-platform/avisos-iniciais/index.html](apps/learning-platform/avisos-iniciais/index.html) | [`/plataforma/avisos-iniciais/`](https://machadogestao.com/plataforma/avisos-iniciais/) |
-| Platform registration | [apps/learning-platform/cadastro/index.html](apps/learning-platform/cadastro/index.html) | [`/plataforma/cadastro/`](https://machadogestao.com/plataforma/cadastro/) |
-| Platform study page | [apps/learning-platform/estudo/index.html](apps/learning-platform/estudo/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
+| Platform device warning | [apps/learning-platform/device-warning/index.html](apps/learning-platform/device-warning/index.html) | [`/plataforma/aviso-dispositivo/`](https://machadogestao.com/plataforma/aviso-dispositivo/) |
+| Platform browser warning | [apps/learning-platform/browser-warning/index.html](apps/learning-platform/browser-warning/index.html) | [`/plataforma/aviso-navegador/`](https://machadogestao.com/plataforma/aviso-navegador/) |
+| Platform initial notices | [apps/learning-platform/initial-notices/index.html](apps/learning-platform/initial-notices/index.html) | [`/plataforma/avisos-iniciais/`](https://machadogestao.com/plataforma/avisos-iniciais/) |
+| Platform photo registration | [apps/learning-platform/photo-registration/index.html](apps/learning-platform/photo-registration/index.html) | [`/plataforma/cadastro/`](https://machadogestao.com/plataforma/cadastro/) |
+| Platform course content | [apps/learning-platform/course-content/index.html](apps/learning-platform/course-content/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
 | Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
-| Platform status report | [apps/learning-platform/statusreport/index.html](apps/learning-platform/statusreport/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
+| Platform status report | [apps/learning-platform/status-report/index.html](apps/learning-platform/status-report/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply device, browser, query-parameter, authentication, or

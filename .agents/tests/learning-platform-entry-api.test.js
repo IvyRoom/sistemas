@@ -14,13 +14,13 @@ const {
 } = require("./helpers/learning-platform-harness.js");
 
 const SCRIPT_PATHS = {
-  browser: "apps/learning-platform/aviso-navegador/main.js",
-  device: "apps/learning-platform/aviso-dispositivo/main.js",
+  browser: "apps/learning-platform/browser-warning/main.js",
+  device: "apps/learning-platform/device-warning/main.js",
   login: "apps/learning-platform/login/main.js",
-  notices: "apps/learning-platform/avisos-iniciais/main.js",
-  register: "apps/learning-platform/cadastro/main.js",
-  report: "apps/learning-platform/statusreport/main.js",
-  study: "apps/learning-platform/estudo/main.js"
+  notices: "apps/learning-platform/initial-notices/main.js",
+  register: "apps/learning-platform/photo-registration/main.js",
+  report: "apps/learning-platform/status-report/main.js",
+  study: "apps/learning-platform/course-content/main.js"
 };
 
 const MODULE_PATHS = {
@@ -29,12 +29,12 @@ const MODULE_PATHS = {
   login: "apps/learning-platform/modules/login.js",
   notices: "apps/learning-platform/modules/initial-notices.js",
   platformClient: "apps/learning-platform/modules/platform-client.js",
-  register: "apps/learning-platform/modules/registration.js",
+  register: "apps/learning-platform/modules/photo-registration.js",
   session: "apps/learning-platform/modules/session.js",
   statusReport: "apps/learning-platform/modules/status-report/application.js",
-  study: "apps/learning-platform/modules/study/application.js",
-  studyDom: "apps/learning-platform/modules/study/dom.js",
-  studyProgress: "apps/learning-platform/modules/study/progress.js"
+  study: "apps/learning-platform/modules/course-content/application.js",
+  studyDom: "apps/learning-platform/modules/course-content/dom.js",
+  studyProgress: "apps/learning-platform/modules/course-content/progress.js"
 };
 
 function discoverModulePaths(directoryName) {
@@ -49,7 +49,7 @@ function discoverModulePaths(directoryName) {
 }
 
 const STATUS_REPORT_MODULE_PATHS = discoverModulePaths("status-report");
-const STUDY_MODULE_PATHS = discoverModulePaths("study");
+const STUDY_MODULE_PATHS = discoverModulePaths("course-content");
 
 const PATHS = {
   browser: "/plataforma/aviso-navegador",

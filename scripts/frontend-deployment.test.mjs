@@ -38,18 +38,20 @@ const maintainedNonPlatformApplicationIds = [
   "certificate-validation",
   "conecta-referral-form"
 ];
-const learningPlatformEntrySuffixes = [
-  "aviso-dispositivo",
-  "aviso-navegador",
-  "avisos-iniciais",
-  "cadastro",
-  "estudo",
-  "login",
-  "statusreport"
+const learningPlatformEntries = [
+  { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
+  { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
+  { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
+  { sourceDirectory: "photo-registration", publicSuffix: "cadastro" },
+  { sourceDirectory: "course-content", publicSuffix: "estudo" },
+  { sourceDirectory: "login", publicSuffix: "login" },
+  { sourceDirectory: "status-report", publicSuffix: "statusreport" }
 ];
 const retiredLearningPlatformPaths = [
   "/plataforma_v2/",
-  ...learningPlatformEntrySuffixes.map((suffix) => `/plataforma_v2/${suffix}/`)
+  ...learningPlatformEntries.map(
+    ({ publicSuffix }) => `/plataforma_v2/${publicSuffix}/`
+  )
 ];
 
 const mappedTextExtensions = new Set([
@@ -193,7 +195,82 @@ test("deployment inventory exhaustively separates maintained frontends from the 
 
   const [learningPlatform] = learningPlatformApplications;
   assert.deepEqual(learningPlatform.mappings, [
-    { source: "apps/learning-platform", output: "plataforma" }
+    {
+      source: "apps/learning-platform/device-warning",
+      output: "plataforma/aviso-dispositivo"
+    },
+    {
+      source: "apps/learning-platform/browser-warning",
+      output: "plataforma/aviso-navegador"
+    },
+    {
+      source: "apps/learning-platform/initial-notices",
+      output: "plataforma/avisos-iniciais"
+    },
+    {
+      source: "apps/learning-platform/photo-registration",
+      output: "plataforma/cadastro"
+    },
+    {
+      source: "apps/learning-platform/course-content",
+      output: "plataforma/estudo"
+    },
+    {
+      source: "apps/learning-platform/login",
+      output: "plataforma/login"
+    },
+    {
+      source: "apps/learning-platform/status-report",
+      output: "plataforma/statusreport"
+    },
+    {
+      source: "apps/learning-platform/modules/error-adapter.js",
+      output: "plataforma/modules/error-adapter.js"
+    },
+    {
+      source: "apps/learning-platform/modules/error-presentation.js",
+      output: "plataforma/modules/error-presentation.js"
+    },
+    {
+      source: "apps/learning-platform/modules/face-startup.js",
+      output: "plataforma/modules/face-startup.js"
+    },
+    {
+      source: "apps/learning-platform/modules/initial-notices.js",
+      output: "plataforma/modules/initial-notices.js"
+    },
+    {
+      source: "apps/learning-platform/modules/lifecycle.js",
+      output: "plataforma/modules/lifecycle.js"
+    },
+    {
+      source: "apps/learning-platform/modules/login.js",
+      output: "plataforma/modules/login.js"
+    },
+    {
+      source: "apps/learning-platform/modules/platform-client.js",
+      output: "plataforma/modules/platform-client.js"
+    },
+    {
+      source: "apps/learning-platform/modules/session.js",
+      output: "plataforma/modules/session.js"
+    },
+    {
+      source: "apps/learning-platform/modules/photo-registration.js",
+      output: "plataforma/modules/registration.js"
+    },
+    {
+      source: "apps/learning-platform/modules/course-content",
+      output: "plataforma/modules/study"
+    },
+    {
+      source: "apps/learning-platform/modules/status-report",
+      output: "plataforma/modules/status-report"
+    },
+    {
+      source: "apps/learning-platform/azure-ai-vision-face-ui",
+      output: "plataforma/azure-ai-vision-face-ui"
+    }
   ]);
   assert.deepEqual(learningPlatform.publicEntries, [
     {
@@ -521,11 +598,14 @@ test("source preview serves only manifest-mapped routes and files", async () => 
       assert.deepEqual(response.body, marketingHtml, path);
     }
 
-    for (const suffix of learningPlatformEntrySuffixes) {
-      const path = `/plataforma/${suffix}/`;
+    for (const { sourceDirectory, publicSuffix } of learningPlatformEntries) {
+      const path = `/plataforma/${publicSuffix}/`;
       const response = await requestPreview(server.baseUrl, path);
       const source = await readFile(
-        new URL(`../apps/learning-platform/${suffix}/index.html`, import.meta.url)
+        new URL(
+          `../apps/learning-platform/${sourceDirectory}/index.html`,
+          import.meta.url
+        )
       );
 
       assert.equal(response.status, 200, path);
@@ -1638,12 +1718,12 @@ test("certificate validation normalizes only its slashless public route before a
 test("generated certificates print the canonical validation URL", async () => {
   const [entrySource, certificateRendererSource] = await Promise.all([
     readFile(
-      new URL("../apps/learning-platform/estudo/main.js", import.meta.url),
+      new URL("../apps/learning-platform/course-content/main.js", import.meta.url),
       "utf8"
     ),
     readFile(
       new URL(
-        "../apps/learning-platform/modules/study/certificate-renderer.js",
+        "../apps/learning-platform/modules/course-content/certificate-renderer.js",
         import.meta.url
       ),
       "utf8"
