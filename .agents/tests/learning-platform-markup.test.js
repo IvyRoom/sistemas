@@ -239,6 +239,17 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
       "Campo-Comentários": "textarea",
       "Botão-Download-Certificado-Impresso": "div",
       "Faixa-Inferior": "div"
+    },
+    "status-report": {
+      "Seção_Principal": "main",
+      "Faixa_Superior": "header",
+      "Título_Status_Report": "h1",
+      "Última_Atualização": "p",
+      "Logo_Machado": "img",
+      "Aviso_Carregando_Informações": "div",
+      "Container_Externo_Conteúdo": "section",
+      "Manchete": "h2",
+      "Texto_Rodapé": "footer"
     }
   };
 
@@ -315,4 +326,16 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
   for (const tag of registrationHtml.match(/<a\b[^>]*target="_blank"[^>]*>/g) ?? []) {
     assert.match(tag, /rel="noopener noreferrer"/);
   }
+
+  const reportHtml = readEntry("status-report", "index.html");
+  assert.match(openingTag(reportHtml, "Seção_Principal"), /aria-busy="true"/);
+  assert.match(openingTag(reportHtml, "Aviso_Carregando_Informações"), /role="status"/);
+  assert.match(
+    moduleSource("status-report"),
+    /<section class="Gráficos_Controle_Resultados" aria-labelledby=/
+  );
+  assert.match(
+    moduleSource("status-report"),
+    /<h3 class="Títulos_Gráficos_Controle_Resultados"/
+  );
 });
