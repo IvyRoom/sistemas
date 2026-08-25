@@ -230,15 +230,20 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
       "Texto-Rodapé": "footer"
     },
     "course-content": {
-      "Botão-Sair": "div",
-      "Container-Módulo-1": "div",
-      "Símbolo-Check-Tópico-1": "div",
-      "Formação-Botão-Desempenho-e-Certificado": "div",
+      "Container-Seções": "main",
+      "Seção-Navegação": "nav",
+      "Botão-Sair": "button",
+      "Formação-Nome": "h1",
+      "Container-Módulo-1": "button",
+      "Símbolo-Check-Tópico-1": "span",
+      "Formação-Botão-Desempenho-e-Certificado": "button",
+      "Seção-Conteúdo": "section",
+      "Nome-Tópico": "h2",
       "Container-Interno-Shaka-Player": "video",
       "Botão-Download-1": "a",
       "Campo-Comentários": "textarea",
-      "Botão-Download-Certificado-Impresso": "div",
-      "Faixa-Inferior": "div"
+      "Botão-Download-Certificado-Impresso": "button",
+      "Faixa-Inferior": "footer"
     },
     "status-report": {
       "Seção_Principal": "main",
@@ -264,10 +269,17 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
   assert.equal((studyHtml.match(/<input\b[^>]*\btype="radio"/g) ?? []).length, 593);
   assert.equal((studyHtml.match(/<input\b[^>]*\btype="checkbox"/g) ?? []).length, 225);
   assert.equal((studyHtml.match(/<label\b/g) ?? []).length, 818);
+  assert.equal((studyHtml.match(/<button\b/g) ?? []).length, 184);
+  assert.equal((studyHtml.match(/<fieldset\b/g) ?? []).length, 201);
+  assert.equal((studyHtml.match(/<legend\b/g) ?? []).length, 201);
   assert.equal(
-    (studyHtml.match(/<div class="Opção">\s*<input\b[^>]*>\s*<label>/g) ?? []).length,
+    (studyHtml.match(/<button\b[^>]*class="Container-Tópico-Fechado"[^>]*disabled>/g) ?? []).length,
+    171
+  );
+  assert.equal(
+    (studyHtml.match(/<label class="Opção">\s*<input\b[^>]*>\s*<span>/g) ?? []).length,
     798,
-    "Assessment choices currently retain their sibling-label seam"
+    "Assessment choices must keep the input directly wrapped by its visible label"
   );
 });
 
@@ -338,4 +350,24 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
     moduleSource("status-report"),
     /<h3 class="Títulos_Gráficos_Controle_Resultados"/
   );
+
+  const studyHtml = readEntry("course-content", "index.html");
+  const studyStyle = readEntry("course-content", "style.css");
+  const studySource = moduleSource("course-content");
+  assert.match(studyHtml, /<html lang="pt-BR">/);
+  assert.equal((studyHtml.match(/aria-hidden="true" focusable="false"/g) ?? []).length, 20);
+  assert.equal((studyHtml.match(/class="Símbolo-Check-Fechado"[^>]*aria-hidden="true"/g) ?? []).length, 171);
+  assert.match(openingTag(studyHtml, "Campo-Comentários"), /aria-labelledby="Manchete-Comentários"/);
+  assert.match(openingTag(studyHtml, "Campo-Comentários"), /aria-describedby="Explicação-Comentários Campo-Comentários-Contador-Caracteres"/);
+  assert.match(studyStyle, /:focus-visible/);
+  assert.match(studyStyle, /prefers-reduced-motion/);
+  assert.doesNotMatch(studyStyle, /user-select:\s*none/);
+  assert.match(studySource, /<button type="button" id="Botão-Completar-e-Continuar">/);
+  assert.match(studySource, /downloadLink\.setAttribute\('aria-label'/);
+  assert.match(studySource, /nextTopic\.disabled = false/);
+  assert.match(studySource, /'aria-valuenow'/);
+  assert.match(studySource, /'aria-expanded'/);
+  assert.match(studySource, /'aria-current'/);
+  assert.match(studySource, /topicHeading\.focus\(\)/);
+  assert.match(studySource, /dom\.assessmentReview\.focus\(\)/);
 });

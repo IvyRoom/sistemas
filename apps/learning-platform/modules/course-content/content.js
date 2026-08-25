@@ -16,14 +16,14 @@ export function createStudyContent({ configureDownloads, document, dom, loadMedi
         configureDownloads({ moduleName: state.openModule, videoName });
 
         if (selectedTopic.className === "Container-Tópico-Aberto") {
-            dom.footer.innerHTML = '<div id="Botão-Completar-e-Continuar">Completar e Continuar →</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Completar-e-Continuar">Completar e Continuar →</button>';
             dom.footer.onclick = event => {
                 if (event.target.closest('#Botão-Completar-e-Continuar')) {
                     progress.completeTopic(selectedTopic);
                 }
             };
         } else {
-            dom.footer.innerHTML = '<div id="Aviso-Tópico-Concluído">Tópico Concluído</div>';
+            dom.footer.innerHTML = '<p id="Aviso-Tópico-Concluído">Tópico Concluído</p>';
         }
     }
 

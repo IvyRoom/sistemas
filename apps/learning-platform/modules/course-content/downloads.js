@@ -233,6 +233,16 @@ export function createDownloadConfigurator(document) {
 
         else { downloadContainer1.style.display = "none"; downloadContainer2.style.display = "none"; downloadContainer3.style.display = "none"; downloadContainer4.style.display = "none"; }
 
+        [
+            [downloadContainer1, downloadName1, downloadButton1],
+            [downloadContainer2, downloadName2, downloadButton2],
+            [downloadContainer3, downloadName3, downloadButton3],
+            [downloadContainer4, downloadName4, downloadButton4]
+        ].forEach(([container, fileName, downloadLink]) => {
+            if (container.style.display === "flex") {
+                downloadLink.setAttribute('aria-label', `Fazer download de ${fileName.innerHTML}`);
+            }
+        });
 
     };
 }

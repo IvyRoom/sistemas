@@ -3,7 +3,8 @@ export function createStudyPerformance({ certificate, document, dom, navigation,
         navigation.closeModules();
         dom.playerElement.pause();
         document.getElementById('Seção-Navegação').scrollTop = 0;
-        document.getElementById("Nome-Tópico").innerHTML = "<b>Desempenho e Certificado</b>";
+        const topicHeading = document.getElementById("Nome-Tópico");
+        topicHeading.innerHTML = "<b>Desempenho e Certificado</b>";
 
         dom.content.style.display = "none";
         dom.assessments.style.display = "none";
@@ -26,6 +27,7 @@ export function createStudyPerformance({ certificate, document, dom, navigation,
         certificate.updateEligibility();
         certificate.bindDownload();
         dom.footer.style.display = "none";
+        topicHeading.focus();
     }
 
     function gradeColor(grade) {

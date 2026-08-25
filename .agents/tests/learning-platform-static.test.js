@@ -397,7 +397,6 @@ function compatibilityShapeRecords() {
     )
   );
 }
-
 function sourceForOutput(records, output) {
   const record = records.find((candidate) => candidate.output === output);
   assert.ok(record, `Mapped output must resolve to a tracked source: ${output}`);
@@ -406,7 +405,7 @@ function sourceForOutput(records, output) {
 
 function htmlDataNodes() {
   return Array.from(
-    studyHtml.matchAll(/<div\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
+    studyHtml.matchAll(/<button\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
     ([, attributes, rawIndex]) => ({
       index: Number(rawIndex),
       name: attributes.match(/\bname="([^"]+)"/)?.[1]
@@ -1008,10 +1007,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20693440,
-      digest: "6035b003a2c781fc5632eebf4dd02bfdc03559dab1be2715fe15ef04562b2689"
+      bytes: 20720148,
+      digest: "f3a10f08fcf1dfcf3fbd55d99a2f3c7618f5237c52e3958293d5d41f67e3db73"
     },
-    "The current manifest must produce the exact centralized-origin platform target"
+    "The current manifest must produce the exact centralized-origin modernized platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -1020,10 +1019,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20693440,
-      digest: "6a4ac5f79c6e26d5882bb48a3e707e4e7820da7983c47efd3cabadfd9f9a0a26"
+      bytes: 20720148,
+      digest: "54f77fb2415d4dcb4296ae01291000daad5f6e5c2af660791c7e0d698f809881"
     },
-    "The current manifest must produce the exact prefix-omitted centralized-origin target"
+    "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
   );
   const javaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
@@ -1032,10 +1031,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 440984,
-      digest: "dbc04f14f6f88ea7bb3e7c8d81049e4ac6a678d84d588b7721bd1223d724fd4a"
+      bytes: 446095,
+      digest: "752461991babf3c811d0191cea12be8c16d7dfe8b3fa64918a1524631e9d944a"
     },
-    "The platform JavaScript files must retain their current exact identity"
+    "The platform JavaScript files must retain their exact modernized identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -1044,8 +1043,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(nonJavaScriptRecords),
     {
       files: 146,
-      bytes: 20252456,
-      digest: "47fac3283dd961c7e2bffff0d029cc468e2f66c6e80bc4c36088e1916db3cd1f"
+      bytes: 20274053,
+      digest: "99a8ccead99c4bba7ac395469e3dc9e8a906e78cd6162fa4eb1c86f120d539bf"
     },
     "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
   );
@@ -1078,10 +1077,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 9990876,
-      digest: "3b3ac0a4fcea4a82ba6e668fe33ab8f2a8853014f32ae6883c3e8651e0ab9233"
+      bytes: 10009388,
+      digest: "d7e95bc01a5bd37e113501a3877b48fc998e61d16c05c0ae8fd38fb1fd3dc821"
     },
-    "The Study entry subtree must retain its current mapped identity"
+    "The Study entry subtree must retain its modernized mapped identity"
   );
   const backendConsumerApplicationStats = Object.fromEntries(
     backendConsumerApplicationIds.map((applicationId) => [
@@ -1463,10 +1462,10 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27298025,
-      digest: "91ee00d6a05618203c27979094b6916386bb15eb4ea85cadad853bb0c53d1e0c"
+      bytes: 27324733,
+      digest: "2891414770f8fa77993cf1c2a506cdc6b893cf91becf986210d37c02d8c68e13"
     },
-    "The current manifest must produce the exact centralized-origin frontend target"
+    "The current manifest must produce the exact centralized-origin modernized frontend target"
   );
   assert.deepEqual(
     treeStats(sharedRuntimeRecords()),
