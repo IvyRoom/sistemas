@@ -799,8 +799,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20733156,
-      digest: "7767fd56270ffaf0335c84eab0d4e5677dcd92d7812b28a7736b0e640f11c0cd"
+      bytes: 20733452,
+      digest: "fca572d4a1491f31066bb992268d81613b963b1956bc3871514e86b478854307"
     },
     "The current manifest must produce the exact modernized platform target"
   );
@@ -811,8 +811,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20733156,
-      digest: "d3809648e055d56e43464e8cee5ae0648972e6bb869221f48e12d71b6b17e901"
+      bytes: 20733452,
+      digest: "135e524a5843c1e1768d9301edba440a558ac72d83f5a20246666946a72f82a1"
     },
     "The current manifest must produce the exact prefix-omitted modernized target"
   );
@@ -1168,8 +1168,8 @@ test("[ARTIFACT-01] current frontend artifact identity remains exact", () => {
     treeStats(records),
     {
       files: 257,
-      bytes: 27338191,
-      digest: "eab165d5ea729055a1ac6504bf613c15da4b622ee7d5ef85f18e25272af84f6e"
+      bytes: 27338487,
+      digest: "73041cd21cfb5c3b63488a0d473e5cf9705fe31ca2975923245e6128fdaeb00d"
     },
     "The current manifest must produce the exact modernized frontend target"
   );

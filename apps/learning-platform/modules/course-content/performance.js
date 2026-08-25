@@ -1,5 +1,5 @@
 export function createStudyPerformance({ certificate, document, dom, navigation, state }) {
-    function open() {
+    function open({ focusHeading = true } = {}) {
         navigation.closeModules();
         dom.playerElement.pause();
         document.getElementById('Seção-Navegação').scrollTop = 0;
@@ -27,7 +27,7 @@ export function createStudyPerformance({ certificate, document, dom, navigation,
         certificate.updateEligibility();
         certificate.bindDownload();
         dom.footer.style.display = "none";
-        topicHeading.focus();
+        if (focusHeading) topicHeading.focus();
     }
 
     function gradeColor(grade) {

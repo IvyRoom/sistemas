@@ -158,7 +158,9 @@ navigation, storage, request, Face, media, and timing seams. All copy in the
 seven entries is deliberately non-selectable, including dynamically inserted
 content and application-styled copy inside the Face component's closed Shadow
 DOM. Keyboard focus has visible `:focus-visible` treatment, invalid fields and
-newly presented study content receive deliberate focus, and animated or
+content presented by user-initiated in-page study transitions receive deliberate
+focus, while initial study hydration retains the browser's natural document
+focus and does not paint the topic-heading focus indicator. Animated or
 transitioned entries honor `prefers-reduced-motion`. Feedback cards retain
 20-pixel separation and keep each five-choice scale on one row; the certificate
 download control remains horizontally centered. Existing visual identity and
@@ -1216,9 +1218,9 @@ has these identities:
 
 | Current post-modernization scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 257 | 27,338,191 | `eab165d5ea729055a1ac6504bf613c15da4b622ee7d5ef85f18e25272af84f6e` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,733,156 | `7767fd56270ffaf0335c84eab0d4e5677dcd92d7812b28a7736b0e640f11c0cd` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,733,156 | `d3809648e055d56e43464e8cee5ae0648972e6bb869221f48e12d71b6b17e901` |
+| Complete generated `dist/` artifact | 257 | 27,338,487 | `73041cd21cfb5c3b63488a0d473e5cf9705fe31ca2975923245e6128fdaeb00d` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,733,452 | `fca572d4a1491f31066bb992268d81613b963b1956bc3871514e86b478854307` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,733,452 | `135e524a5843c1e1768d9301edba440a558ac72d83f5a20246666946a72f82a1` |
 | Platform non-JavaScript files, retaining full output paths | 146 | 20,287,051 | `4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a` |
 
 Markup, CSS, and entry-JavaScript changes account for the current byte and

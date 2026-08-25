@@ -86,7 +86,7 @@ export function createStudyNavigation({ document, dom, state }) {
         }
     }
 
-    function selectTopic(selectedTopic) {
+    function selectTopic(selectedTopic, { focusHeading = true } = {}) {
         for (let index = 0; index < dom.completedTopics.length; index += 1) {
             dom.completedTopics[index].style.backgroundColor = "";
             dom.completedTopics[index].querySelector('.Tópico-Nome').style.fontWeight = "400";
@@ -104,7 +104,7 @@ export function createStudyNavigation({ document, dom, state }) {
         const topicHeading = document.getElementById("Nome-Tópico");
         topicHeading.innerHTML =
             "<b>" + selectedTopic.querySelector('.Tópico-Nome').innerHTML + "</b>";
-        topicHeading.focus();
+        if (focusHeading) topicHeading.focus();
     }
 
     function openInitialTopic(closedTopics, openTopic, openPerformance) {
@@ -115,9 +115,9 @@ export function createStudyNavigation({ document, dom, state }) {
                     10
                 ) - 1
             );
-            openTopic.call(closedTopics[state.completedTopics]);
+            openTopic.call(closedTopics[state.completedTopics], { focusHeading: false });
         } else {
-            openPerformance();
+            openPerformance({ focusHeading: false });
         }
     }
 
