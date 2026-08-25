@@ -1207,6 +1207,14 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
     assertOnlyErrorCode(failure.alerts, expectedAlert);
     assertMachineValueHidden(failure, machineValue);
     assert.equal(failure.element("Botão-Cadastrar-Foto-Referência").disabled, false);
+    assert.equal(
+      failure.document.activeElement,
+      failure.element("Botão-Escolher-Arquivo")
+    );
+    assert.equal(
+      failure.element("Formulário-Foto-Referência").getAttribute("aria-busy"),
+      "false"
+    );
   }
 });
 

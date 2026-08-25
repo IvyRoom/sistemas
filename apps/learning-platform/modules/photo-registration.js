@@ -68,9 +68,11 @@ export function createRegistrationApplication({
         submitButton.disabled = true;
         submitButton.style.display = 'none';
         registeringNotice.style.display = 'block';
+        referencePhotoForm.setAttribute('aria-busy', 'true');
         event.preventDefault();
 
-        const referencePhoto = document.getElementById('Botão-Escolher-Arquivo').files[0];
+        const referencePhotoInput = document.getElementById('Botão-Escolher-Arquivo');
+        const referencePhoto = referencePhotoInput.files[0];
 
         client.postMultipart('/CadastroFoto_e_FaceID', [
             ['IndexVerificado', verifiedIndex],
@@ -132,6 +134,8 @@ export function createRegistrationApplication({
             submitButton.disabled = false;
             submitButton.style.display = 'block';
             registeringNotice.style.display = 'none';
+            referencePhotoForm.setAttribute('aria-busy', 'false');
+            referencePhotoInput.focus();
 
             const failure = normalizeLearningPlatformError(
                 err,

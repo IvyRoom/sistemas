@@ -220,10 +220,14 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
       "Texto-Rodapé": "footer"
     },
     "photo-registration": {
+      "Seção-Cadastro-Foto-Referência": "main",
+      "Logo-Machado": "img",
+      "Manchete-Formulário-Foto-Referência": "h1",
       "Formulário-Foto-Referência": "form",
       "Botão-Escolher-Arquivo": "input",
       "Botão-Cadastrar-Foto-Referência": "button",
-      "Container-Auxiliar-FaceID": "div"
+      "Container-Auxiliar-FaceID": "div",
+      "Texto-Rodapé": "footer"
     },
     "course-content": {
       "Botão-Sair": "div",
@@ -260,10 +264,13 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
   assert.match(readEntry("initial-notices", "style.css"), /:focus-visible/);
   assert.match(readEntry("login", "style.css"), /:focus-visible/);
   assert.match(readEntry("login", "style.css"), /prefers-reduced-motion/);
+  assert.match(readEntry("photo-registration", "style.css"), /:focus-visible/);
+  assert.match(readEntry("photo-registration", "style.css"), /prefers-reduced-motion/);
   assert.match(moduleSource("initial-notices"), /invalidFields\[0\]\.focus\(\)/);
   assert.match(moduleSource("login"), /email\.focus\(\)/);
+  assert.match(moduleSource("photo-registration"), /referencePhotoInput\.focus\(\)/);
   assert.doesNotMatch(readEntry("initial-notices", "style.css"), /\.Avisos-Iniciais\s*\{[^}]*user-select:/);
-  assert.match(readEntry("photo-registration", "style.css"), /\.Instruções-Upload-Foto\{[^}]*user-select:\s*none;/);
+  assert.doesNotMatch(readEntry("photo-registration", "style.css"), /\.Instruções-Upload-Foto\s*\{[^}]*user-select:/);
   assert.doesNotMatch(readEntry("login", "style.css"), /#Manchete-Formulário-Login\s*\{[^}]*user-select:/);
 
   const noticesHtml = readEntry("initial-notices", "index.html");
@@ -297,5 +304,15 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
     "Aviso-FaceID-Reprovado"
   ]) {
     assert.match(openingTag(loginHtml, id), /role="alert"/);
+  }
+
+  const registrationHtml = readEntry("photo-registration", "index.html");
+  const fileInput = openingTag(registrationHtml, "Botão-Escolher-Arquivo");
+  assert.match(fileInput, /accept="\.jpg"/);
+  assert.match(fileInput, /aria-label="Foto de referência"/);
+  assert.match(fileInput, /aria-describedby="Registration-Instructions"/);
+  assert.match(openingTag(registrationHtml, "Aviso-Cadastrando"), /role="status"/);
+  for (const tag of registrationHtml.match(/<a\b[^>]*target="_blank"[^>]*>/g) ?? []) {
+    assert.match(tag, /rel="noopener noreferrer"/);
   }
 });
