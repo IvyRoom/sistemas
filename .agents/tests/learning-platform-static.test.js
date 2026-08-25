@@ -50,10 +50,11 @@ const retiredRegistrationPaths = [
   "/plataforma/cadastro/",
   "/plataforma/cadastro/index.html"
 ];
-const compatibilityModuleOutputPairs = [
+const retiredModuleOutputPairs = [
   {
-    current: "plataforma/modules/photo-registration.js",
-    compatibility: "plataforma/modules/registration.js"
+    canonical: "plataforma/modules/photo-registration.js",
+    retired: "plataforma/modules/registration.js",
+    source: "apps/learning-platform/modules/photo-registration.js"
   },
   ...[
     "application.js",
@@ -71,13 +72,88 @@ const compatibilityModuleOutputPairs = [
     "session-timer.js",
     "state.js"
   ].map((fileName) => ({
-    current: `plataforma/modules/course-content/${fileName}`,
-    compatibility: `plataforma/modules/study/${fileName}`
+    canonical: `plataforma/modules/course-content/${fileName}`,
+    retired: `plataforma/modules/study/${fileName}`,
+    source: `apps/learning-platform/modules/course-content/${fileName}`
   }))
 ];
-const compatibilityModulePaths = compatibilityModuleOutputPairs.map(
-  ({ compatibility }) => `/${compatibility}`
+const retiredModulePaths = retiredModuleOutputPairs.map(
+  ({ retired }) => `/${retired}`
 );
+const platformEntryMappings = currentPlatformEntries.map(
+  ({ publicSuffix, sourceDirectory }) => ({
+    source: `apps/learning-platform/${sourceDirectory}`,
+    output: `plataforma/${publicSuffix}`
+  })
+);
+const faceMapping = {
+  source: "apps/learning-platform/azure-ai-vision-face-ui",
+  output: "plataforma/azure-ai-vision-face-ui"
+};
+const phaseAPlatformMappings = [
+  ...platformEntryMappings,
+  {
+    source: "apps/learning-platform/modules/error-adapter.js",
+    output: "plataforma/modules/error-adapter.js"
+  },
+  {
+    source: "apps/learning-platform/modules/error-presentation.js",
+    output: "plataforma/modules/error-presentation.js"
+  },
+  {
+    source: "apps/learning-platform/modules/face-startup.js",
+    output: "plataforma/modules/face-startup.js"
+  },
+  {
+    source: "apps/learning-platform/modules/initial-notices.js",
+    output: "plataforma/modules/initial-notices.js"
+  },
+  {
+    source: "apps/learning-platform/modules/lifecycle.js",
+    output: "plataforma/modules/lifecycle.js"
+  },
+  {
+    source: "apps/learning-platform/modules/login.js",
+    output: "plataforma/modules/login.js"
+  },
+  {
+    source: "apps/learning-platform/modules/platform-client.js",
+    output: "plataforma/modules/platform-client.js"
+  },
+  {
+    source: "apps/learning-platform/modules/session.js",
+    output: "plataforma/modules/session.js"
+  },
+  {
+    source: "apps/learning-platform/modules/photo-registration.js",
+    output: "plataforma/modules/photo-registration.js"
+  },
+  {
+    source: "apps/learning-platform/modules/photo-registration.js",
+    output: "plataforma/modules/registration.js"
+  },
+  {
+    source: "apps/learning-platform/modules/course-content",
+    output: "plataforma/modules/course-content"
+  },
+  {
+    source: "apps/learning-platform/modules/course-content",
+    output: "plataforma/modules/study"
+  },
+  {
+    source: "apps/learning-platform/modules/status-report",
+    output: "plataforma/modules/status-report"
+  },
+  faceMapping
+];
+const finalPlatformMappings = [
+  ...platformEntryMappings,
+  {
+    source: "apps/learning-platform/modules",
+    output: "plataforma/modules"
+  },
+  faceMapping
+];
 const entrySourcePaths = currentPlatformEntries.map(
   ({ sourceDirectory }) => `${sourceDirectory}/main.js`
 );
@@ -243,11 +319,18 @@ function platformRecords() {
   return mappedFiles([platformApplication]);
 }
 
-function withoutCompatibility(records) {
-  const compatibilityOutputs = new Set(
-    compatibilityModuleOutputPairs.map(({ compatibility }) => compatibility)
+function phaseAPlatformRecords() {
+  return mappedFiles([{ ...platformApplication, mappings: phaseAPlatformMappings }]);
+}
+
+function phaseARecords() {
+  return mappedFiles(
+    manifest.applications.map((application) =>
+      application.id === "learning-platform"
+        ? { ...application, mappings: phaseAPlatformMappings }
+        : application
+    )
   );
-  return records.filter(({ output }) => !compatibilityOutputs.has(output));
 }
 
 function sourceForOutput(records, output) {
@@ -330,94 +413,9 @@ function sourceDerivedSensitiveLiterals() {
   };
 }
 
-test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entries", () => {
+test("[ROUTE-01] manifest retains seven entries and one canonical module mapping", () => {
   assert.ok(platformApplication, "The learning-platform manifest entry must exist");
-  assert.deepEqual(platformApplication.mappings, [
-    {
-      source: "apps/learning-platform/device-warning",
-      output: "plataforma/aviso-dispositivo"
-    },
-    {
-      source: "apps/learning-platform/browser-warning",
-      output: "plataforma/aviso-navegador"
-    },
-    {
-      source: "apps/learning-platform/initial-notices",
-      output: "plataforma/avisos-iniciais"
-    },
-    {
-      source: "apps/learning-platform/photo-registration",
-      output: "plataforma/cadastro-foto"
-    },
-    {
-      source: "apps/learning-platform/course-content",
-      output: "plataforma/estudo"
-    },
-    {
-      source: "apps/learning-platform/login",
-      output: "plataforma/login"
-    },
-    {
-      source: "apps/learning-platform/status-report",
-      output: "plataforma/statusreport"
-    },
-    {
-      source: "apps/learning-platform/modules/error-adapter.js",
-      output: "plataforma/modules/error-adapter.js"
-    },
-    {
-      source: "apps/learning-platform/modules/error-presentation.js",
-      output: "plataforma/modules/error-presentation.js"
-    },
-    {
-      source: "apps/learning-platform/modules/face-startup.js",
-      output: "plataforma/modules/face-startup.js"
-    },
-    {
-      source: "apps/learning-platform/modules/initial-notices.js",
-      output: "plataforma/modules/initial-notices.js"
-    },
-    {
-      source: "apps/learning-platform/modules/lifecycle.js",
-      output: "plataforma/modules/lifecycle.js"
-    },
-    {
-      source: "apps/learning-platform/modules/login.js",
-      output: "plataforma/modules/login.js"
-    },
-    {
-      source: "apps/learning-platform/modules/platform-client.js",
-      output: "plataforma/modules/platform-client.js"
-    },
-    {
-      source: "apps/learning-platform/modules/session.js",
-      output: "plataforma/modules/session.js"
-    },
-    {
-      source: "apps/learning-platform/modules/photo-registration.js",
-      output: "plataforma/modules/photo-registration.js"
-    },
-    {
-      source: "apps/learning-platform/modules/photo-registration.js",
-      output: "plataforma/modules/registration.js"
-    },
-    {
-      source: "apps/learning-platform/modules/course-content",
-      output: "plataforma/modules/course-content"
-    },
-    {
-      source: "apps/learning-platform/modules/course-content",
-      output: "plataforma/modules/study"
-    },
-    {
-      source: "apps/learning-platform/modules/status-report",
-      output: "plataforma/modules/status-report"
-    },
-    {
-      source: "apps/learning-platform/azure-ai-vision-face-ui",
-      output: "plataforma/azure-ai-vision-face-ui"
-    }
-  ]);
+  assert.deepEqual(platformApplication.mappings, finalPlatformMappings);
   assert.deepEqual(platformApplication.publicEntries, [
     {
       path: "/plataforma/aviso-dispositivo/",
@@ -468,17 +466,16 @@ test("[ROUTE-01] manifest retains exactly seven canonical learning-platform entr
     "The former learning-platform output subtree must not be emitted"
   );
   assert.equal(
-    compatibilityModuleOutputPairs.length,
+    retiredModuleOutputPairs.length,
     15,
-    "The compatibility deployment must enumerate exactly 15 legacy module aliases"
+    "The retirement contract must enumerate exactly 15 legacy module outputs"
   );
-  for (const { compatibility, current } of compatibilityModuleOutputPairs) {
-    const expectedSource = `apps/learning-platform/${current.slice("plataforma/".length)}`;
-    assert.equal(sourceForOutput(records, current), expectedSource, `${current}:current source`);
+  for (const { canonical, retired, source } of retiredModuleOutputPairs) {
+    assert.equal(sourceForOutput(records, canonical), source, `${canonical}:canonical source`);
     assert.equal(
-      sourceForOutput(records, compatibility),
-      expectedSource,
-      `${compatibility}:compatibility source`
+      records.some(({ output }) => output === retired),
+      false,
+      `${retired}:retired output`
     );
   }
 
@@ -543,15 +540,15 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
     "The retired registration subtree must not be emitted"
   );
   assert.deepEqual(
-    compatibilityModulePaths.filter((modulePath) => manifest.notFoundPaths.includes(modulePath)),
-    [],
-    "Phase A compatibility module URLs must not be declared as not-found"
+    retiredModulePaths.filter((modulePath) => manifest.notFoundPaths.includes(modulePath)),
+    retiredModulePaths,
+    "All 15 retired module URLs must be explicit not-found contracts"
   );
   assert.ok(
-    compatibilityModulePaths.every((modulePath) =>
-      outputPaths.has(modulePath.replace(/^\//, ""))
+    retiredModulePaths.every((modulePath) =>
+      !outputPaths.has(modulePath.replace(/^\//, ""))
     ),
-    "Phase A must emit all 15 compatibility module URLs"
+    "The retired module URLs must not be emitted"
   );
   assert.equal(
     fs.existsSync(path.join(platformRoot, "index.html")),
@@ -857,7 +854,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
 
 test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact", () => {
   const records = platformRecords();
-  const finalRecords = withoutCompatibility(records);
+  const baselineRecords = phaseAPlatformRecords();
   const outputPaths = records.map(({ output }) => output);
   const extensionCounts = Object.fromEntries(
     Array.from(
@@ -869,13 +866,17 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     ).sort(([left], [right]) => compareText(left, right))
   );
 
-  assert.deepEqual(treeStats(records), {
-    files: 197,
-    bytes: 20760016,
-    digest: "ad69a58a20b537cd016b813052c5fd07954869b3f44b1d1f92f5f4aa4cb2deec"
-  });
   assert.deepEqual(
-    treeStats(records.map((record) => ({
+    treeStats(baselineRecords),
+    {
+      files: 197,
+      bytes: 20760016,
+      digest: "ad69a58a20b537cd016b813052c5fd07954869b3f44b1d1f92f5f4aa4cb2deec"
+    },
+    "The independently reconstructed phase-A platform baseline must remain exact"
+  );
+  assert.deepEqual(
+    treeStats(baselineRecords.map((record) => ({
       ...record,
       output: record.output.slice("plataforma/".length)
     }))),
@@ -884,19 +885,19 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
       bytes: 20760016,
       digest: "de2b9ca63f5449a4fc0291aca7774d1abf9b475fd17a07adf50733d45812798a"
     },
-    "The phase-A prefix-omitted platform-root diagnostic digest must remain exact"
+    "The historical phase-A prefix-omitted platform-root digest must remain exact"
   );
   assert.deepEqual(
-    treeStats(finalRecords),
+    treeStats(records),
     {
       files: 182,
       bytes: 20693467,
       digest: "25f18cb7306246bb5a4b63efc8046365c50da381c3e10d33e55cf3f1021dd605"
     },
-    "Removing compatibility aliases must produce the exact final platform target"
+    "The current manifest must produce the exact phase-B platform target"
   );
   assert.deepEqual(
-    treeStats(finalRecords.map((record) => ({
+    treeStats(records.map((record) => ({
       ...record,
       output: record.output.slice("plataforma/".length)
     }))),
@@ -905,7 +906,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
       bytes: 20693467,
       digest: "21ea67296d7fc40555033f4fbe181937b2f3b2a5c869aa38e2b2eab00e67ebcb"
     },
-    "Removing compatibility aliases must produce the exact prefix-omitted final target"
+    "The current manifest must produce the exact prefix-omitted phase-B target"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -967,7 +968,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     html: 7,
     ico: 5,
     jpg: 1,
-    js: 51,
+    js: 36,
     json: 75,
     png: 11,
     svg: 5,
@@ -1253,38 +1254,77 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] phase-A and final frontend artifact identities remain exact", () => {
+test("[ARTIFACT-01] phase B removes only the exact phase-A compatibility outputs", () => {
   const records = mappedFiles();
-  assert.deepEqual(treeStats(records), {
-    files: 272,
-    bytes: 27365051,
-    digest: "e394735cbde354c093331e95806739dd85951146b23a6973f09fd4a66d158454"
-  });
+  const baselineRecords = phaseARecords();
   assert.deepEqual(
-    treeStats(withoutCompatibility(records)),
+    treeStats(baselineRecords),
+    {
+      files: 272,
+      bytes: 27365051,
+      digest: "e394735cbde354c093331e95806739dd85951146b23a6973f09fd4a66d158454"
+    },
+    "The independently reconstructed phase-A frontend baseline must remain exact"
+  );
+  assert.deepEqual(
+    treeStats(records),
     {
       files: 257,
       bytes: 27298502,
       digest: "166506b93b3477a175851a089360631894b0a67e9fa3fc9bdab4bd8b5b185561"
     },
-    "Removing compatibility aliases must produce the exact final frontend target"
+    "The current manifest must produce the exact phase-B frontend target"
   );
+
+  const baselineByOutput = new Map(baselineRecords.map((record) => [record.output, record]));
+  const currentByOutput = new Map(records.map((record) => [record.output, record]));
+  const removedOutputs = [...baselineByOutput.keys()]
+    .filter((output) => !currentByOutput.has(output))
+    .sort(compareText);
+  const addedOutputs = [...currentByOutput.keys()]
+    .filter((output) => !baselineByOutput.has(output))
+    .sort(compareText);
+  assert.deepEqual(
+    removedOutputs,
+    retiredModuleOutputPairs.map(({ retired }) => retired).sort(compareText),
+    "Exactly the 15 named compatibility outputs must disappear"
+  );
+  assert.deepEqual(addedOutputs, [], "Phase B must add no output path");
+  assert.equal(
+    removedOutputs.reduce(
+      (bytes, output) =>
+        bytes + fs.statSync(localPath(baselineByOutput.get(output).source)).size,
+      0
+    ),
+    66549,
+    "The 15 retired compatibility outputs must contain exactly 66,549 bytes"
+  );
+
+  const commonOutputs = [...currentByOutput.keys()]
+    .filter((output) => baselineByOutput.has(output))
+    .sort(compareText);
+  assert.equal(commonOutputs.length, 257, "All 257 phase-B outputs must exist in phase A");
+  for (const output of commonOutputs) {
+    const baseline = baselineByOutput.get(output);
+    const current = currentByOutput.get(output);
+    assert.equal(current.source, baseline.source, `${output}:source path`);
+    assert.ok(
+      fs.readFileSync(localPath(current.source)).equals(
+        fs.readFileSync(localPath(baseline.source))
+      ),
+      `${output}:source bytes`
+    );
+  }
 });
 
 test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform downloads", () => {
   const records = platformRecords();
-  const finalRecords = withoutCompatibility(records);
   assert.equal(platformApplication.publicEntries.length, 7);
   assert.deepEqual(platformApplication.publicDownloads, []);
   assert.equal(
     records.length - platformApplication.publicEntries.length,
-    190,
-    "Phase A must contain 190 implicitly emitted runtime/support files"
-  );
-  assert.equal(
-    finalRecords.length - platformApplication.publicEntries.length,
     175,
-    "Removing compatibility aliases must restore 175 implicit support files"
+    "Phase B must contain exactly 175 implicit support files"
   );
   assert.equal(
     records.filter(({ output }) => output.startsWith("plataforma/estudo/files/")).length,
