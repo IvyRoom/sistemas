@@ -1026,6 +1026,8 @@ test("[API-01] login posts untrimmed credentials and preserves active and inacti
   await inactive.flush(20);
   assert.equal(inactive.sessionStorage.getItem("IndexVerificado"), "undefined");
   assert.equal(inactive.element("Aviso-Login-Expirado").style.display, "block");
+  assert.equal(inactive.document.activeElement, inactive.element("E-mail"));
+  assert.equal(inactive.element("Formulário-Login").getAttribute("aria-busy"), "false");
   assert.equal(
     inactive.element("Aviso-Login-Expirado").innerHTML.endsWith("01/01/2000"),
     true
@@ -1056,10 +1058,13 @@ test("[API-01] login preserves invalid-credential, workbook, generic, and unexpe
     if (fixture.expectedInline) {
       assert.equal(harness.alerts.length, 0);
       assert.equal(harness.element("Aviso-Email-ou-Senha-Inválidos").style.display, "block");
+      assert.equal(harness.element("E-mail").getAttribute("aria-invalid"), "true");
+      assert.equal(harness.element("Senha").getAttribute("aria-invalid"), "true");
     } else {
       assertOnlyErrorCode(harness.alerts, fixture.expectedAlert);
     }
     assert.equal(harness.element("Entrar").disabled, false);
+    assert.equal(harness.document.activeElement, harness.element("E-mail"));
   }
 
   const networkFailure = createLearningPlatformHarness({
@@ -1486,6 +1491,7 @@ test("[API-02] Face decision, SDK rejection, and result error branches remain si
     assert.equal(resultRequests.length, scenario.faceRejects ? 0 : 1, scenario.label);
     if (scenario.label === "decision") {
       assert.equal(harness.element("Aviso-FaceID-Reprovado").style.display, "block");
+      assert.equal(harness.document.activeElement, harness.element("E-mail"));
       assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), null);
     } else {
       assertOnlyErrorCode(harness.alerts, scenario.expectedAlert);

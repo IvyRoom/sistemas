@@ -207,11 +207,17 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
       "Texto-Rodapé": "footer"
     },
     login: {
+      "Seção-Login": "main",
+      "Logo-Machado": "img",
+      "Manchete-Formulário-Login": "h1",
+      "Cabeçalho-E-mail": "label",
+      "Cabeçalho-Senha": "label",
       "Formulário-Login": "form",
       "E-mail": "input",
       "Senha": "input",
       "Entrar": "button",
-      "Container-Auxiliar-FaceID": "div"
+      "Container-Auxiliar-FaceID": "div",
+      "Texto-Rodapé": "footer"
     },
     "photo-registration": {
       "Formulário-Foto-Referência": "form",
@@ -251,16 +257,14 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
 });
 
 test("[A11Y-01] focus, selection, and motion expectations advance entry by entry", () => {
-  const allCss = Object.keys(entries)
-    .map((entryName) => readEntry(entryName, "style.css"))
-    .join("\n");
-
   assert.match(readEntry("initial-notices", "style.css"), /:focus-visible/);
-  assert.doesNotMatch(allCss, /prefers-reduced-motion/);
+  assert.match(readEntry("login", "style.css"), /:focus-visible/);
+  assert.match(readEntry("login", "style.css"), /prefers-reduced-motion/);
   assert.match(moduleSource("initial-notices"), /invalidFields\[0\]\.focus\(\)/);
+  assert.match(moduleSource("login"), /email\.focus\(\)/);
   assert.doesNotMatch(readEntry("initial-notices", "style.css"), /\.Avisos-Iniciais\s*\{[^}]*user-select:/);
   assert.match(readEntry("photo-registration", "style.css"), /\.Instruções-Upload-Foto\{[^}]*user-select:\s*none;/);
-  assert.match(readEntry("login", "style.css"), /#Manchete-Formulário-Login\{[^}]*user-select:\s*none;/);
+  assert.doesNotMatch(readEntry("login", "style.css"), /#Manchete-Formulário-Login\s*\{[^}]*user-select:/);
 
   const noticesHtml = readEntry("initial-notices", "index.html");
   for (const [suffix, inputId] of [
@@ -279,5 +283,19 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
       openingTag(noticesHtml, `Alerta-Palavra-Passe-${suffix}`),
       /role="alert"/
     );
+  }
+
+  const loginHtml = readEntry("login", "index.html");
+  assert.match(openingTag(loginHtml, "Cabeçalho-E-mail"), /for="E-mail"/);
+  assert.match(openingTag(loginHtml, "Cabeçalho-Senha"), /for="Senha"/);
+  assert.match(openingTag(loginHtml, "E-mail"), /autocomplete="username"/);
+  assert.match(openingTag(loginHtml, "Senha"), /autocomplete="current-password"/);
+  assert.match(openingTag(loginHtml, "Aviso-Inicializando"), /role="status"/);
+  for (const id of [
+    "Aviso-Email-ou-Senha-Inválidos",
+    "Aviso-Login-Expirado",
+    "Aviso-FaceID-Reprovado"
+  ]) {
+    assert.match(openingTag(loginHtml, id), /role="alert"/);
   }
 });
