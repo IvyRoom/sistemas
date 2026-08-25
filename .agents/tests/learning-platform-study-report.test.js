@@ -531,6 +531,15 @@ test("[FLOW-02] saved progress opens the exact next module boundary and keeps pe
   );
   assert.equal(early.topics[0].getAttribute("aria-current"), "false");
   assert.equal(early.harness.document.activeElement.id, "Nome-Tópico");
+
+  const completed = await runRefresh("13");
+  completed.topics[0].dispatch("click");
+  assert.equal(completed.topics[0].style.backgroundColor, "#4a0816");
+  assert.equal(completed.topics[0].querySelector(".Tópico-Nome").style.fontWeight, "500");
+  completed.harness.element("Formação-Botão-Desempenho-e-Certificado").dispatch("click");
+  assert.equal(completed.topics[0].style.backgroundColor, "#4a0816");
+  assert.equal(completed.topics[0].querySelector(".Tópico-Nome").style.fontWeight, "500");
+  assert.equal(completed.topics[0].getAttribute("aria-current"), "false");
 });
 
 test("[FLOW-02] saved progress leaves only completed/open topics interactive and module headers toggle", async () => {

@@ -93,6 +93,7 @@ export function createStatusReportApplication({
                     document.body.style.cursor = 'default';
                 })
                 .catch(error => {
+                    reportContainer.setAttribute('aria-busy', 'false');
                     document.body.style.cursor = 'default';
 
                     const failure = normalizeLearningPlatformError(

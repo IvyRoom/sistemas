@@ -124,8 +124,6 @@ export function createStudyNavigation({ document, dom, state }) {
     function closeModules() {
         const moduleControls = document.querySelectorAll("[id^='Container-Módulo-']");
         for (let index = 0; index < dom.completedTopics.length; index += 1) {
-            dom.completedTopics[index].style.backgroundColor = "";
-            dom.completedTopics[index].querySelector('.Tópico-Nome').style.fontWeight = "400";
             dom.completedTopics[index].setAttribute('aria-current', 'false');
         }
         for (let index = 0; index < dom.openTopics.length; index += 1) {

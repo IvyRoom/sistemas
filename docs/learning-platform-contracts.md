@@ -1224,13 +1224,13 @@ source-derived identities are:
 
 | Current centralized-origin post-modernization scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,324,733 | `2891414770f8fa77993cf1c2a506cdc6b893cf91becf986210d37c02d8c68e13` |
+| Complete generated `dist/` artifact | 258 | 27,337,076 | `8cda84b9977318e70a192050540acd1970da58ad386e1233cc0ad1518773fa11` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,720,148 | `f3a10f08fcf1dfcf3fbd55d99a2f3c7618f5237c52e3958293d5d41f67e3db73` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,720,148 | `54f77fb2415d4dcb4296ae01291000daad5f6e5c2af660791c7e0d698f809881` |
-| Platform JavaScript, retaining full output paths | 36 | 446,095 | `752461991babf3c811d0191cea12be8c16d7dfe8b3fa64918a1524631e9d944a` |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,274,053 | `99a8ccead99c4bba7ac395469e3dc9e8a906e78cd6162fa4eb1c86f120d539bf` |
-| Study entry subtree, retaining full output paths | 41 | 10,009,388 | `d7e95bc01a5bd37e113501a3877b48fc998e61d16c05c0ae8fd38fb1fd3dc821` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,732,491 | `63e0857d57f17a05028594ec363c7d234234601b041633f02ce47c69d877f5af` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,732,491 | `ca8cd13f2b5106447e7569cb56a5122faf6608cd48a0246a1d8b90003637ed12` |
+| Platform JavaScript, retaining full output paths | 36 | 446,004 | `093058de6a005290431769e691f2ca4cde409ea631cb6529467f66940fd0099d` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,286,487 | `17ab9f214909b97b5a4918e37024f2a1d2d6f098d08d94b20d172bd7ff38054c` |
+| Study entry subtree, retaining full output paths | 41 | 10,021,780 | `b86de0ce08198b3e0a7611aa537c04b9dd6354cb100f9a625c722fb8320ca036` |
 | Four public API applications, retaining full output paths | 20 | 736,448 | `1a2e16ce19f831ad36c4ffcfa9611122194d956ee70c929ea264cfd632a8aed1` |
 | All non-platform applications, retaining full output paths | 75 | 6,604,504 | `12e1bdf1e23f3dbbc7657cefde9a3a69425e7e7241ea023b20e789b4701a0110` |
 
