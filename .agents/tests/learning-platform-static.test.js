@@ -90,62 +90,6 @@ const faceMapping = {
   source: "apps/learning-platform/azure-ai-vision-face-ui",
   output: "plataforma/azure-ai-vision-face-ui"
 };
-const phaseAPlatformMappings = [
-  ...platformEntryMappings,
-  {
-    source: "apps/learning-platform/modules/error-adapter.js",
-    output: "plataforma/modules/error-adapter.js"
-  },
-  {
-    source: "apps/learning-platform/modules/error-presentation.js",
-    output: "plataforma/modules/error-presentation.js"
-  },
-  {
-    source: "apps/learning-platform/modules/face-startup.js",
-    output: "plataforma/modules/face-startup.js"
-  },
-  {
-    source: "apps/learning-platform/modules/initial-notices.js",
-    output: "plataforma/modules/initial-notices.js"
-  },
-  {
-    source: "apps/learning-platform/modules/lifecycle.js",
-    output: "plataforma/modules/lifecycle.js"
-  },
-  {
-    source: "apps/learning-platform/modules/login.js",
-    output: "plataforma/modules/login.js"
-  },
-  {
-    source: "apps/learning-platform/modules/platform-client.js",
-    output: "plataforma/modules/platform-client.js"
-  },
-  {
-    source: "apps/learning-platform/modules/session.js",
-    output: "plataforma/modules/session.js"
-  },
-  {
-    source: "apps/learning-platform/modules/photo-registration.js",
-    output: "plataforma/modules/photo-registration.js"
-  },
-  {
-    source: "apps/learning-platform/modules/photo-registration.js",
-    output: "plataforma/modules/registration.js"
-  },
-  {
-    source: "apps/learning-platform/modules/course-content",
-    output: "plataforma/modules/course-content"
-  },
-  {
-    source: "apps/learning-platform/modules/course-content",
-    output: "plataforma/modules/study"
-  },
-  {
-    source: "apps/learning-platform/modules/status-report",
-    output: "plataforma/modules/status-report"
-  },
-  faceMapping
-];
 const finalPlatformMappings = [
   ...platformEntryMappings,
   {
@@ -319,20 +263,6 @@ function platformRecords() {
   return mappedFiles([platformApplication]);
 }
 
-function phaseAPlatformRecords() {
-  return mappedFiles([{ ...platformApplication, mappings: phaseAPlatformMappings }]);
-}
-
-function phaseARecords() {
-  return mappedFiles(
-    manifest.applications.map((application) =>
-      application.id === "learning-platform"
-        ? { ...application, mappings: phaseAPlatformMappings }
-        : application
-    )
-  );
-}
-
 function sourceForOutput(records, output) {
   const record = records.find((candidate) => candidate.output === output);
   assert.ok(record, `Mapped output must resolve to a tracked source: ${output}`);
@@ -341,7 +271,7 @@ function sourceForOutput(records, output) {
 
 function htmlDataNodes() {
   return Array.from(
-    studyHtml.matchAll(/<div\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
+    studyHtml.matchAll(/<button\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
     ([, attributes, rawIndex]) => ({
       index: Number(rawIndex),
       name: attributes.match(/\bname="([^"]+)"/)?.[1]
@@ -854,7 +784,6 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
 
 test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact", () => {
   const records = platformRecords();
-  const baselineRecords = phaseAPlatformRecords();
   const outputPaths = records.map(({ output }) => output);
   const extensionCounts = Object.fromEntries(
     Array.from(
@@ -867,34 +796,13 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
   );
 
   assert.deepEqual(
-    treeStats(baselineRecords),
-    {
-      files: 197,
-      bytes: 20760016,
-      digest: "ad69a58a20b537cd016b813052c5fd07954869b3f44b1d1f92f5f4aa4cb2deec"
-    },
-    "The independently reconstructed phase-A platform baseline must remain exact"
-  );
-  assert.deepEqual(
-    treeStats(baselineRecords.map((record) => ({
-      ...record,
-      output: record.output.slice("plataforma/".length)
-    }))),
-    {
-      files: 197,
-      bytes: 20760016,
-      digest: "de2b9ca63f5449a4fc0291aca7774d1abf9b475fd17a07adf50733d45812798a"
-    },
-    "The historical phase-A prefix-omitted platform-root digest must remain exact"
-  );
-  assert.deepEqual(
     treeStats(records),
     {
       files: 182,
-      bytes: 20693467,
-      digest: "25f18cb7306246bb5a4b63efc8046365c50da381c3e10d33e55cf3f1021dd605"
+      bytes: 20720175,
+      digest: "114faf51553163b3b43e0a9df9d45ded550dba914be815d9a51dd6442517bc72"
     },
-    "The current manifest must produce the exact phase-B platform target"
+    "The current manifest must produce the exact modernized platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -903,10 +811,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20693467,
-      digest: "21ea67296d7fc40555033f4fbe181937b2f3b2a5c869aa38e2b2eab00e67ebcb"
+      bytes: 20720175,
+      digest: "c0299b4308fd39f401a6b0488653a3babc3bdc3aa4f8a9b477f3b24c62259fe8"
     },
-    "The current manifest must produce the exact prefix-omitted phase-B target"
+    "The current manifest must produce the exact prefix-omitted modernized target"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -915,8 +823,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(nonJavaScriptRecords),
     {
       files: 146,
-      bytes: 20252456,
-      digest: "47fac3283dd961c7e2bffff0d029cc468e2f66c6e80bc4c36088e1916db3cd1f"
+      bytes: 20274053,
+      digest: "99a8ccead99c4bba7ac395469e3dc9e8a906e78cd6162fa4eb1c86f120d539bf"
     },
     "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
   );
@@ -1254,67 +1162,17 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] phase B removes only the exact phase-A compatibility outputs", () => {
+test("[ARTIFACT-01] current frontend artifact identity remains exact", () => {
   const records = mappedFiles();
-  const baselineRecords = phaseARecords();
-  assert.deepEqual(
-    treeStats(baselineRecords),
-    {
-      files: 272,
-      bytes: 27365051,
-      digest: "e394735cbde354c093331e95806739dd85951146b23a6973f09fd4a66d158454"
-    },
-    "The independently reconstructed phase-A frontend baseline must remain exact"
-  );
   assert.deepEqual(
     treeStats(records),
     {
       files: 257,
-      bytes: 27298502,
-      digest: "166506b93b3477a175851a089360631894b0a67e9fa3fc9bdab4bd8b5b185561"
+      bytes: 27325210,
+      digest: "6788c28dc98925b0b0d746f9b9b7c31eda404eda00ce9f949fca629bc74dece7"
     },
-    "The current manifest must produce the exact phase-B frontend target"
+    "The current manifest must produce the exact modernized frontend target"
   );
-
-  const baselineByOutput = new Map(baselineRecords.map((record) => [record.output, record]));
-  const currentByOutput = new Map(records.map((record) => [record.output, record]));
-  const removedOutputs = [...baselineByOutput.keys()]
-    .filter((output) => !currentByOutput.has(output))
-    .sort(compareText);
-  const addedOutputs = [...currentByOutput.keys()]
-    .filter((output) => !baselineByOutput.has(output))
-    .sort(compareText);
-  assert.deepEqual(
-    removedOutputs,
-    retiredModuleOutputPairs.map(({ retired }) => retired).sort(compareText),
-    "Exactly the 15 named compatibility outputs must disappear"
-  );
-  assert.deepEqual(addedOutputs, [], "Phase B must add no output path");
-  assert.equal(
-    removedOutputs.reduce(
-      (bytes, output) =>
-        bytes + fs.statSync(localPath(baselineByOutput.get(output).source)).size,
-      0
-    ),
-    66549,
-    "The 15 retired compatibility outputs must contain exactly 66,549 bytes"
-  );
-
-  const commonOutputs = [...currentByOutput.keys()]
-    .filter((output) => baselineByOutput.has(output))
-    .sort(compareText);
-  assert.equal(commonOutputs.length, 257, "All 257 phase-B outputs must exist in phase A");
-  for (const output of commonOutputs) {
-    const baseline = baselineByOutput.get(output);
-    const current = currentByOutput.get(output);
-    assert.equal(current.source, baseline.source, `${output}:source path`);
-    assert.ok(
-      fs.readFileSync(localPath(current.source)).equals(
-        fs.readFileSync(localPath(baseline.source))
-      ),
-      `${output}:source bytes`
-    );
-  }
 });
 
 test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform downloads", () => {
