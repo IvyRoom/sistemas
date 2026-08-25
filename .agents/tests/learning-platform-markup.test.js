@@ -190,6 +190,11 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
       "Logo-Machado": "img",
       "Aviso": "h1"
     },
+    "browser-warning": {
+      "Sessão-Principal": "main",
+      "Logo-Machado": "img",
+      "Aviso": "h1"
+    },
     "initial-notices": {
       "Formulário": "form",
       "Palavra-Passe-Credenciais": "input",
