@@ -185,6 +185,11 @@ test("[MARKUP-02] current application selector producers retain their exact DOM 
 
 test("[MARKUP-03] current event targets and generated-control seams remain explicit", () => {
   const targetContracts = {
+    "device-warning": {
+      "Sessão-Principal": "main",
+      "Logo-Machado": "img",
+      "Aviso": "h1"
+    },
     "initial-notices": {
       "Formulário": "form",
       "Palavra-Passe-Credenciais": "input",
