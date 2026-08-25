@@ -474,6 +474,9 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
   const chartMarkup = { innerHTML: "" };
   chartsModule.appendStatusReportCharts(chartMarkup, chartInformation);
   assert.equal((chartMarkup.innerHTML.match(/class="Gr\u00e1ficos_Controle_Resultados"/g) ?? []).length, 12);
+  assert.equal((chartMarkup.innerHTML.match(/<section\b/g) ?? []).length, 12);
+  assert.equal((chartMarkup.innerHTML.match(/<h3\b/g) ?? []).length, 12);
+  assert.equal((chartMarkup.innerHTML.match(/role="list"/g) ?? []).length, 12);
 
   const originalRows = [
     reportRow("Progress Winner", 10, 0.1, "IGNORED-CERT-A"),
@@ -531,6 +534,7 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
     "query:mrm"
   ]);
   assert.deepEqual(captureOrder.slice(11), [
+    "dom:Seção_Principal",
     "dom:Título_Status_Report",
     "dom:Última_Atualização",
     "dom:Aviso_Carregando_Informações",
@@ -770,6 +774,16 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     assert.deepEqual(
       labels.slice(0, 3).map((label) => label.style.display === "none"),
       hidden
+    );
+    assert.equal(
+      dom.realizedContainers[0]
+        .querySelectorAll(".Realizados")[0]
+        .getAttribute("aria-label"),
+      "Fixture A: realizado 3; meta 171; meta não atingida."
+    );
+    assert.equal(
+      harness.element("Seção_Principal").getAttribute("aria-busy"),
+      "false"
     );
   }
 

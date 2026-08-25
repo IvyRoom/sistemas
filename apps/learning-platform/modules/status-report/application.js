@@ -38,6 +38,7 @@ export function createStatusReportApplication({
         URLSearchParamsConstructor
     );
 
+    const reportContainer = document.getElementById('Seção_Principal');
     const reportTitle = document.getElementById('Título_Status_Report');
     const lastUpdateLabel = document.getElementById('Última_Atualização');
     const loadingNotice = document.getElementById('Aviso_Carregando_Informações');
@@ -88,6 +89,7 @@ export function createStatusReportApplication({
 
                     contentContainer.style.display = 'block';
                     loadingNotice.style.display = 'none';
+                    reportContainer.setAttribute('aria-busy', 'false');
                     document.body.style.cursor = 'default';
                 })
                 .catch(error => {

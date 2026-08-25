@@ -1,43 +1,47 @@
-*{
+* {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI';
+    font-family: 'Segoe UI', sans-serif;
 }
 
-#Seção_Principal{
+#Seção_Principal {
     width: 100%;
-    overflow-x: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
-#Faixa_Superior{
+#Faixa_Superior {
     background: linear-gradient(135deg, #4a0816, #000000);
-    height: 100px;
-    display: inline-flex;
+    min-height: 100px;
+    display: flex;
     justify-content: space-between;
     width: 100%;
     align-items: center;
-    padding-left: 40px;
-    padding-right: 40px;
+    gap: 24px;
+    padding: 20px 40px;
 }
 
-#Título_Status_Report{
+#Título_Status_Report {
     color: #dedede;
     font-size: 26px;
     font-weight: 500;
+    line-height: 1.25;
 }
 
-#Logo_Machado{
+#Logo_Machado {
     height: 38px;
+    max-width: 40%;
     user-select: none;
 }
 
-#Última_Atualização{
+#Última_Atualização {
     color: #dedede;
     font-size: 16px;
+    margin-top: 6px;
 }
 
-#Aviso_Carregando_Informações{
+#Aviso_Carregando_Informações {
     height: calc(100vh - 140px);
     width: 100%;
     background: linear-gradient(135deg, #fff, #dcdcdc);
@@ -52,22 +56,26 @@
     font-size: 16px;
     width: 100%;
     padding-top: 20px;
-    overflow-x: hidden;
     display: none;
 }
 
-#Manchete{
+#Manchete {
     margin-bottom: 20px;
     text-align: center;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
-.Gráficos_Controle_Resultados{
+.Gráficos_Controle_Resultados {
     position: relative;
     background: linear-gradient(135deg, #fff, #dcdcdc);
     text-align: center;
     border: 1px solid #2d2d2d;
     border-radius: 20px;
-    width: 1024px;
+    width: min(calc(100% - 32px), 1024px);
     padding-top: 30px;
     padding-left: 30px;
     padding-right: 30px;
@@ -75,6 +83,7 @@
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 20px;
+    overflow-x: auto;
 }
 
 .Faixas_Superiores_Gráficos_Controle_Resultados{
@@ -241,13 +250,26 @@
     font-size: 13px;
 }
 
-#Texto_Rodapé{
+#Texto_Rodapé {
     background: linear-gradient(135deg, #4a0816, #000000);
-    height: 40px;
+    min-height: 40px;
     color: #fff;
     font-size: 12px;
-    user-select: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 8px 24px;
+}
+
+@media (max-width: 1200px) {
+    #Faixa_Superior {
+        align-items: flex-start;
+        flex-direction: column-reverse;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    #Logo_Machado {
+        max-width: 100%;
+    }
 }
