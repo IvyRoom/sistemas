@@ -520,6 +520,7 @@ test("[FLOW-02] saved progress opens the exact next module boundary and keeps pe
     assert.equal(topics[completed + 1].disabled, true);
     assert.equal(dom.moduleTopicContainers[moduleIndex].style.display, "block");
     assert.equal(dom.moduleHeaders[moduleIndex].getAttribute("aria-expanded"), "true");
+    assert.equal(harness.document.activeElement, null);
     assert.equal(harness.alerts.length, 0);
   }
 
@@ -533,7 +534,9 @@ test("[FLOW-02] saved progress opens the exact next module boundary and keeps pe
   assert.equal(early.harness.document.activeElement.id, "Nome-Tópico");
 
   const completed = await runRefresh("13");
+  assert.equal(completed.harness.document.activeElement, null);
   completed.topics[0].dispatch("click");
+  assert.equal(completed.harness.document.activeElement.id, "Nome-Tópico");
   assert.equal(completed.topics[0].style.backgroundColor, "#4a0816");
   assert.equal(completed.topics[0].querySelector(".Tópico-Nome").style.fontWeight, "500");
   completed.harness.element("Formação-Botão-Desempenho-e-Certificado").dispatch("click");
@@ -624,6 +627,7 @@ test("[FLOW-02] refresh preserves malformed negative, fractional, NaN, overflow,
     nanRun.harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
     "block"
   );
+  assert.equal(nanRun.harness.document.activeElement, null);
 
   const completeRun = await runRefresh("171");
   assert.equal(completeRun.harness.alerts.length, 0);
@@ -631,6 +635,7 @@ test("[FLOW-02] refresh preserves malformed negative, fractional, NaN, overflow,
     completeRun.harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
     "block"
   );
+  assert.equal(completeRun.harness.document.activeElement, null);
 });
 
 test("[ERROR-01] protected refresh 401 remains the current generic Erro_000 outcome", async () => {

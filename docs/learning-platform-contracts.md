@@ -158,7 +158,9 @@ navigation, storage, request, Face, media, and timing seams. All copy in the
 seven entries is deliberately non-selectable, including dynamically inserted
 content and application-styled copy inside the Face component's closed Shadow
 DOM. Keyboard focus has visible `:focus-visible` treatment, invalid fields and
-newly presented study content receive deliberate focus, and animated or
+content presented by user-initiated in-page study transitions receive deliberate
+focus, while initial study hydration retains the browser's natural document
+focus and does not paint the topic-heading focus indicator. Animated or
 transitioned entries honor `prefers-reduced-motion`. Feedback cards retain
 20-pixel separation and keep each five-choice scale on one row; the certificate
 download control remains horizontally centered. Existing visual identity and
@@ -1228,11 +1230,11 @@ source-derived identities are:
 
 | Current centralized-origin post-modernization scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,337,714 | `88f505d0079a34737527eb5b1db5208b54539fec61f5905b32a5fd8509b4a2d8` |
+| Complete generated `dist/` artifact | 258 | 27,338,010 | `cf070ef23c295f60ea42b5127503763918f1b78a6a012a6c8973c93fa4d6a5d5` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,733,129 | `e22d61b924e5d794d5b3bff938718575c12ec571a53c9c96f7420611b0101b54` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,733,129 | `d6eff5a155aac44b219fcade23e9fd8ea5a4b60c480d5a34e78253b6c26e3800` |
-| Platform JavaScript, retaining full output paths | 36 | 446,078 | `d7f07e0e5c1dc2b29221ac6e85112f4ff190d889fd66a9159976e3a084473b70` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,733,425 | `da0237fc0b01c165824413a9d6bde4caea4c53189506d7a6121e70be4ac1de7a` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,733,425 | `e752189e25b613e31e9b71c0fc5ed0ee5102ef4bdefefc7e421cc84454c87bdb` |
+| Platform JavaScript, retaining full output paths | 36 | 446,374 | `8a609b7842fe4c5190508f9ca28f5cd20588077cc7ada837688c90b7cf90e7f9` |
 | Platform non-JavaScript files, retaining full output paths | 146 | 20,287,051 | `4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a` |
 | Study entry subtree, retaining full output paths | 41 | 10,022,020 | `26da442362557c4fcca35f64401938de1dc6b50510c12a1a9ff12656646be148` |
 | Four public API applications, retaining full output paths | 20 | 736,448 | `1a2e16ce19f831ad36c4ffcfa9611122194d956ee70c929ea264cfd632a8aed1` |

@@ -409,6 +409,11 @@ test("[A11Y-01] focus, non-selectable copy, and motion expectations advance entr
   assert.match(studySource, /'aria-valuenow'/);
   assert.match(studySource, /'aria-expanded'/);
   assert.match(studySource, /'aria-current'/);
-  assert.match(studySource, /topicHeading\.focus\(\)/);
+  assert.equal(
+    (studySource.match(/if \(focusHeading\) topicHeading\.focus\(\);/g) ?? []).length,
+    2
+  );
+  assert.match(studySource, /openTopic\.call\([^;]+\{ focusHeading: false \}\)/);
+  assert.match(studySource, /openPerformance\(\{ focusHeading: false \}\)/);
   assert.match(studySource, /dom\.assessmentReview\.focus\(\)/);
 });

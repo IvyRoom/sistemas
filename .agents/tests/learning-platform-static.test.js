@@ -1007,8 +1007,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20733129,
-      digest: "e22d61b924e5d794d5b3bff938718575c12ec571a53c9c96f7420611b0101b54"
+      bytes: 20733425,
+      digest: "da0237fc0b01c165824413a9d6bde4caea4c53189506d7a6121e70be4ac1de7a"
     },
     "The current manifest must produce the exact centralized-origin modernized platform target"
   );
@@ -1019,8 +1019,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20733129,
-      digest: "d6eff5a155aac44b219fcade23e9fd8ea5a4b60c480d5a34e78253b6c26e3800"
+      bytes: 20733425,
+      digest: "e752189e25b613e31e9b71c0fc5ed0ee5102ef4bdefefc7e421cc84454c87bdb"
     },
     "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
   );
@@ -1031,8 +1031,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 446078,
-      digest: "d7f07e0e5c1dc2b29221ac6e85112f4ff190d889fd66a9159976e3a084473b70"
+      bytes: 446374,
+      digest: "8a609b7842fe4c5190508f9ca28f5cd20588077cc7ada837688c90b7cf90e7f9"
     },
     "The platform JavaScript files must retain their exact modernized identity"
   );
@@ -1462,8 +1462,8 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27337714,
-      digest: "88f505d0079a34737527eb5b1db5208b54539fec61f5905b32a5fd8509b4a2d8"
+      bytes: 27338010,
+      digest: "cf070ef23c295f60ea42b5127503763918f1b78a6a012a6c8973c93fa4d6a5d5"
     },
     "The current manifest must produce the exact centralized-origin modernized frontend target"
   );
