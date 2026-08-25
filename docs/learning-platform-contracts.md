@@ -1212,10 +1212,10 @@ has these identities:
 
 | Current post-modernization scope and digest framing | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 257 | 27,325,210 | `6788c28dc98925b0b0d746f9b9b7c31eda404eda00ce9f949fca629bc74dece7` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,720,175 | `114faf51553163b3b43e0a9df9d45ded550dba914be815d9a51dd6442517bc72` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,720,175 | `c0299b4308fd39f401a6b0488653a3babc3bdc3aa4f8a9b477f3b24c62259fe8` |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,274,053 | `99a8ccead99c4bba7ac395469e3dc9e8a906e78cd6162fa4eb1c86f120d539bf` |
+| Complete generated `dist/` artifact | 257 | 27,337,553 | `123e506acd2b2ef743741d5a348e2884bb2a89a38c0254171f88083c65627479` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,732,518 | `ce9f2bec106c40be701f03b72451d18cc08b3615820fc5f7a855b07bcaf4b940` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,732,518 | `b786f15951c183575c2c0f307d96cea5fada5f56726d2ab5c93690851733721c` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,286,487 | `17ab9f214909b97b5a4918e37024f2a1d2d6f098d08d94b20d172bd7ff38054c` |
 
 Markup, CSS, and entry-JavaScript changes account for the current byte and
 digest differences while leaving file counts and paths unchanged. The binary,

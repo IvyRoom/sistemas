@@ -799,8 +799,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20720175,
-      digest: "114faf51553163b3b43e0a9df9d45ded550dba914be815d9a51dd6442517bc72"
+      bytes: 20732518,
+      digest: "ce9f2bec106c40be701f03b72451d18cc08b3615820fc5f7a855b07bcaf4b940"
     },
     "The current manifest must produce the exact modernized platform target"
   );
@@ -811,8 +811,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20720175,
-      digest: "c0299b4308fd39f401a6b0488653a3babc3bdc3aa4f8a9b477f3b24c62259fe8"
+      bytes: 20732518,
+      digest: "b786f15951c183575c2c0f307d96cea5fada5f56726d2ab5c93690851733721c"
     },
     "The current manifest must produce the exact prefix-omitted modernized target"
   );
@@ -823,8 +823,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(nonJavaScriptRecords),
     {
       files: 146,
-      bytes: 20274053,
-      digest: "99a8ccead99c4bba7ac395469e3dc9e8a906e78cd6162fa4eb1c86f120d539bf"
+      bytes: 20286487,
+      digest: "17ab9f214909b97b5a4918e37024f2a1d2d6f098d08d94b20d172bd7ff38054c"
     },
     "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
   );
@@ -1168,8 +1168,8 @@ test("[ARTIFACT-01] current frontend artifact identity remains exact", () => {
     treeStats(records),
     {
       files: 257,
-      bytes: 27325210,
-      digest: "6788c28dc98925b0b0d746f9b9b7c31eda404eda00ce9f949fca629bc74dece7"
+      bytes: 27337553,
+      digest: "123e506acd2b2ef743741d5a348e2884bb2a89a38c0254171f88083c65627479"
     },
     "The current manifest must produce the exact modernized frontend target"
   );

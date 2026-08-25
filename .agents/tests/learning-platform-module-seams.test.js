@@ -675,6 +675,10 @@ test("[API-05] status-report application preserves JSON/status and failure order
 
     assert.deepEqual(responseOrder, ["json", "ok", "status"]);
     assert.deepEqual(harness.alerts, [message]);
+    assert.equal(
+      harness.element("Seção_Principal").getAttribute("aria-busy"),
+      "false"
+    );
     assert.equal(harness.document.body.style.cursor, "default");
     if (backendError.includes(".")) assertMachineValueHidden(harness, backendError);
     harness.hostGuard.assertUnused();
@@ -723,6 +727,10 @@ test("[API-05] status-report application preserves JSON/status and failure order
   assert.deepEqual(malformed.alerts, [
     "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
   ]);
+  assert.equal(
+    malformed.element("Seção_Principal").getAttribute("aria-busy"),
+    "false"
+  );
   assert.equal(malformed.document.body.style.cursor, "default");
   malformed.hostGuard.assertUnused();
 });

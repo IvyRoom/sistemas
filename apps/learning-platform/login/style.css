@@ -153,7 +153,7 @@ azure-ai-vision-face-ui {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    :where(#face-liveness-loading) .loading-dot {
+    :where(#face-liveness-loading) :is(.loading-dot, .cancel-button) {
         animation: none !important;
         transition: none !important;
     }

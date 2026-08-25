@@ -281,14 +281,23 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
     798,
     "Assessment choices must keep the input directly wrapped by its visible label"
   );
+  const describedAssessmentGroups = Array.from(
+    studyHtml.matchAll(
+      /<fieldset class="Containers-Questões" aria-describedby="(question-prompt-(\d+))">[\s\S]*?<legend class="Títulos">Questão \2<\/legend>[\s\S]*?<div class="Perguntas" id="\1">/g
+    )
+  );
+  assert.equal(describedAssessmentGroups.length, 197);
+  assert.equal(new Set(describedAssessmentGroups.map((match) => match[1])).size, 197);
 });
 
 test("[A11Y-01] focus, selection, and motion expectations advance entry by entry", () => {
   assert.match(readEntry("initial-notices", "style.css"), /:focus-visible/);
   assert.match(readEntry("login", "style.css"), /:focus-visible/);
   assert.match(readEntry("login", "style.css"), /prefers-reduced-motion/);
+  assert.match(readEntry("login", "style.css"), /:is\(\.loading-dot, \.cancel-button\)/);
   assert.match(readEntry("photo-registration", "style.css"), /:focus-visible/);
   assert.match(readEntry("photo-registration", "style.css"), /prefers-reduced-motion/);
+  assert.match(readEntry("photo-registration", "style.css"), /:is\(\.loading-dot, \.cancel-button\)/);
   assert.match(moduleSource("initial-notices"), /invalidFields\[0\]\.focus\(\)/);
   assert.match(moduleSource("login"), /email\.focus\(\)/);
   assert.match(moduleSource("photo-registration"), /referencePhotoInput\.focus\(\)/);
