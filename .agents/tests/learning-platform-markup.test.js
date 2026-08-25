@@ -82,6 +82,19 @@ function openingTag(html, id) {
   )?.[0];
 }
 
+function cssRule(css, selector) {
+  const rule = Array.from(css.matchAll(/([^{}]+)\{([^{}]*)\}/g)).find(([, rawSelectors]) =>
+    rawSelectors
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split(",")
+      .map((value) => value.trim())
+      .includes(selector)
+  );
+
+  assert.ok(rule, `Missing CSS rule for ${selector}`);
+  return rule[2];
+}
+
 function tagName(html, id) {
   return openingTag(html, id)?.match(/^<([a-z][a-z0-9-]*)/i)?.[1].toLowerCase();
 }
@@ -290,7 +303,7 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
   assert.equal(new Set(describedAssessmentGroups.map((match) => match[1])).size, 197);
 });
 
-test("[A11Y-01] focus, selection, and motion expectations advance entry by entry", () => {
+test("[A11Y-01] focus, non-selectable copy, and motion expectations advance entry by entry", () => {
   assert.match(readEntry("initial-notices", "style.css"), /:focus-visible/);
   assert.match(readEntry("login", "style.css"), /:focus-visible/);
   assert.match(readEntry("login", "style.css"), /prefers-reduced-motion/);
@@ -301,9 +314,18 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
   assert.match(moduleSource("initial-notices"), /invalidFields\[0\]\.focus\(\)/);
   assert.match(moduleSource("login"), /email\.focus\(\)/);
   assert.match(moduleSource("photo-registration"), /referencePhotoInput\.focus\(\)/);
-  assert.doesNotMatch(readEntry("initial-notices", "style.css"), /\.Avisos-Iniciais\s*\{[^}]*user-select:/);
-  assert.doesNotMatch(readEntry("photo-registration", "style.css"), /\.Instruções-Upload-Foto\s*\{[^}]*user-select:/);
-  assert.doesNotMatch(readEntry("login", "style.css"), /#Manchete-Formulário-Login\s*\{[^}]*user-select:/);
+  for (const entryName of Object.keys(entries)) {
+    const style = readEntry(entryName, "style.css");
+    const globalRule = cssRule(style, "*");
+
+    assert.match(globalRule, /-webkit-user-select:\s*none\s*;/, entryName);
+    assert.match(globalRule, /(?:^|\s)user-select:\s*none\s*;/, entryName);
+    assert.doesNotMatch(
+      style,
+      /(?:-webkit-)?user-select:\s*(?:all|auto|contain|text)\b/,
+      `${entryName} must not override the non-selectable-copy policy`
+    );
+  }
 
   const noticesHtml = readEntry("initial-notices", "index.html");
   for (const [suffix, inputId] of [
@@ -370,7 +392,17 @@ test("[A11Y-01] focus, selection, and motion expectations advance entry by entry
   assert.match(openingTag(studyHtml, "Campo-Comentários"), /aria-describedby="Explicação-Comentários Campo-Comentários-Contador-Caracteres"/);
   assert.match(studyStyle, /:focus-visible/);
   assert.match(studyStyle, /prefers-reduced-motion/);
-  assert.doesNotMatch(studyStyle, /user-select:\s*none/);
+  assert.match(cssRule(studyStyle, "#Container-Tamanho-Módulo"), /margin-top:\s*20px\s*;/);
+  assert.match(cssRule(studyStyle, "#Container-Qualidade-Conteúdo"), /margin-top:\s*20px\s*;/);
+  assert.match(cssRule(studyStyle, "#Container-Qualidade-Plataforma"), /margin-top:\s*20px\s*;/);
+  assert.match(cssRule(studyStyle, "#Container-Qualidade-Materiais-Impressos"), /margin-top:\s*20px\s*;/);
+  assert.match(cssRule(studyStyle, "#Container-Comentários"), /margin-top:\s*20px\s*;/);
+  assert.doesNotMatch(cssRule(studyStyle, "#Manchete-Tamanho-Módulo"), /margin-top:/);
+  assert.match(cssRule(studyStyle, "#Containter-Alternativas-Tamanho-Módulo"), /flex-wrap:\s*nowrap\s*;/);
+  const certificateDownloadRule = cssRule(studyStyle, "#Botão-Download-Certificado-Impresso");
+  assert.match(certificateDownloadRule, /display:\s*block\s*;/);
+  assert.match(certificateDownloadRule, /margin-left:\s*auto\s*;/);
+  assert.match(certificateDownloadRule, /margin-right:\s*auto\s*;/);
   assert.match(studySource, /<button type="button" id="Botão-Completar-e-Continuar">/);
   assert.match(studySource, /downloadLink\.setAttribute\('aria-label'/);
   assert.match(studySource, /nextTopic\.disabled = false/);

@@ -673,7 +673,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
   ).source;
   assert.ok(
     faceStartupSource.includes(
-      "#spinnerCheck #circle,\\n#spinnerCheck #tick {\\n    stroke: #4a0816 !important;\\n}"
+      ":host,\\n* {\\n    -webkit-user-select: none;\\n    user-select: none;\\n}\\n\\n#spinnerCheck #circle,\\n#spinnerCheck #tick {\\n    stroke: #4a0816 !important;\\n}"
     ),
     "The shared Face startup seam must retain the reviewed completion color"
   );
@@ -799,8 +799,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20732518,
-      digest: "ce9f2bec106c40be701f03b72451d18cc08b3615820fc5f7a855b07bcaf4b940"
+      bytes: 20733156,
+      digest: "7767fd56270ffaf0335c84eab0d4e5677dcd92d7812b28a7736b0e640f11c0cd"
     },
     "The current manifest must produce the exact modernized platform target"
   );
@@ -811,8 +811,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20732518,
-      digest: "b786f15951c183575c2c0f307d96cea5fada5f56726d2ab5c93690851733721c"
+      bytes: 20733156,
+      digest: "d3809648e055d56e43464e8cee5ae0648972e6bb869221f48e12d71b6b17e901"
     },
     "The current manifest must produce the exact prefix-omitted modernized target"
   );
@@ -823,8 +823,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(nonJavaScriptRecords),
     {
       files: 146,
-      bytes: 20286487,
-      digest: "17ab9f214909b97b5a4918e37024f2a1d2d6f098d08d94b20d172bd7ff38054c"
+      bytes: 20287051,
+      digest: "4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a"
     },
     "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
   );
@@ -1168,8 +1168,8 @@ test("[ARTIFACT-01] current frontend artifact identity remains exact", () => {
     treeStats(records),
     {
       files: 257,
-      bytes: 27337553,
-      digest: "123e506acd2b2ef743741d5a348e2884bb2a89a38c0254171f88083c65627479"
+      bytes: 27338191,
+      digest: "eab165d5ea729055a1ac6504bf613c15da4b622ee7d5ef85f18e25272af84f6e"
     },
     "The current manifest must produce the exact modernized frontend target"
   );
