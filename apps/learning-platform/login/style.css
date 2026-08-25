@@ -1,57 +1,62 @@
-*{
+* {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI';
+    font-family: 'Segoe UI', sans-serif;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// Seção-Login ///////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
-#Seção-Login{
+#Seção-Login {
     background: linear-gradient(135deg, #4a0816, #000000);
     text-align: center;
     padding-top: 40px;
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
-#Logo-Machado{
+#Logo-Machado {
     height: 40px;
+    max-width: calc(100% - 48px);
     user-select: none;
     vertical-align: bottom;
 }
 
-#Container-Externo-Formulário-Login{
-    min-height: 500px; 
+#Container-Externo-Formulário-Login {
+    min-height: 500px;
     height: calc(100vh - 120px);
     align-content: center;
+    padding: 24px;
 }
 
-#Container-Interno-Formulário-Login{
-    width: 400px;
+#Container-Interno-Formulário-Login {
+    width: min(100%, 400px);
     margin-left: auto;
     margin-right: auto;
 }
 
-#Manchete-Formulário-Login{
+#Manchete-Formulário-Login {
     font-size: 30px;
+    font-weight: 400;
+    line-height: 1.25;
     margin-bottom: 20px;
-    user-select: none;
     color: #fff;
 }
 
-#Formulário-Login{
-    text-align: left;  
+#Formulário-Login {
+    text-align: left;
 }
 
-#Cabeçalho-E-mail{
+#Cabeçalho-E-mail {
+    display: block;
     font-size: 18px;
     margin-bottom: 5px;
-    user-select: none;
     color: #fff;
 }
 
-#E-mail{
+#E-mail {
     width: 100%;
     height: 32px;
     background-color: #fff;
@@ -62,14 +67,14 @@
     border-width: 0px;
 }
 
-#Cabeçalho-Senha{
+#Cabeçalho-Senha {
+    display: block;
     font-size: 18px;
     margin-bottom: 5px;
-    user-select: none;
     color: #fff;
 }
 
-#Senha{
+#Senha {
     width: 100%;
     height: 32px;
     background-color: #fff;
@@ -81,7 +86,7 @@
     border-width: 0px;
 }
 
-#Entrar{
+#Entrar {
     background-color: #4a0816;
     color: #fff;
     font-size: 17px;
@@ -99,26 +104,36 @@
     cursor: pointer;
 }
 
-#Aviso-Inicializando, #Aviso-Email-ou-Senha-Inválidos, #Aviso-Login-Expirado, #Aviso-FaceID-Reprovado{
+#E-mail:focus-visible,
+#Senha:focus-visible,
+#Entrar:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+}
+
+#Aviso-Inicializando,
+#Aviso-Email-ou-Senha-Inválidos,
+#Aviso-Login-Expirado,
+#Aviso-FaceID-Reprovado {
     color: #fff;
-    width: max-content;
-    white-space: nowrap;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
     margin-top: 30px;
-    user-select: none;
     display: none;
     text-align: center;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
 }
 
-#Texto-Rodapé{
-    height: 40px;
+#Texto-Rodapé {
+    min-height: 40px;
     color: #fff;
     font-size: 12px;
-    user-select: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 8px 24px;
 }
 
 html body #face-liveness-loading {
@@ -135,4 +150,11 @@ html body #face-liveness-loading {
 
 azure-ai-vision-face-ui {
     accent-color: #4a0816;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :where(#face-liveness-loading) .loading-dot {
+        animation: none !important;
+        transition: none !important;
+    }
 }
