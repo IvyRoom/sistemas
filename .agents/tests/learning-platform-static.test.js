@@ -881,7 +881,7 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
   ).source;
   assert.ok(
     faceStartupSource.includes(
-      "#spinnerCheck #circle,\\n#spinnerCheck #tick {\\n    stroke: #4a0816 !important;\\n}"
+      ":host,\\n* {\\n    -webkit-user-select: none;\\n    user-select: none;\\n}\\n\\n#spinnerCheck #circle,\\n#spinnerCheck #tick {\\n    stroke: #4a0816 !important;\\n}"
     ),
     "The shared Face startup seam must retain the reviewed completion color"
   );
@@ -1007,8 +1007,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20732491,
-      digest: "63e0857d57f17a05028594ec363c7d234234601b041633f02ce47c69d877f5af"
+      bytes: 20733129,
+      digest: "e22d61b924e5d794d5b3bff938718575c12ec571a53c9c96f7420611b0101b54"
     },
     "The current manifest must produce the exact centralized-origin modernized platform target"
   );
@@ -1019,8 +1019,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20732491,
-      digest: "ca8cd13f2b5106447e7569cb56a5122faf6608cd48a0246a1d8b90003637ed12"
+      bytes: 20733129,
+      digest: "d6eff5a155aac44b219fcade23e9fd8ea5a4b60c480d5a34e78253b6c26e3800"
     },
     "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
   );
@@ -1031,8 +1031,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 446004,
-      digest: "093058de6a005290431769e691f2ca4cde409ea631cb6529467f66940fd0099d"
+      bytes: 446078,
+      digest: "d7f07e0e5c1dc2b29221ac6e85112f4ff190d889fd66a9159976e3a084473b70"
     },
     "The platform JavaScript files must retain their exact modernized identity"
   );
@@ -1043,8 +1043,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(nonJavaScriptRecords),
     {
       files: 146,
-      bytes: 20286487,
-      digest: "17ab9f214909b97b5a4918e37024f2a1d2d6f098d08d94b20d172bd7ff38054c"
+      bytes: 20287051,
+      digest: "4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a"
     },
     "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
   );
@@ -1077,8 +1077,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 10021780,
-      digest: "b86de0ce08198b3e0a7611aa537c04b9dd6354cb100f9a625c722fb8320ca036"
+      bytes: 10022020,
+      digest: "26da442362557c4fcca35f64401938de1dc6b50510c12a1a9ff12656646be148"
     },
     "The Study entry subtree must retain its modernized mapped identity"
   );
@@ -1462,8 +1462,8 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27337076,
-      digest: "8cda84b9977318e70a192050540acd1970da58ad386e1233cc0ad1518773fa11"
+      bytes: 27337714,
+      digest: "88f505d0079a34737527eb5b1db5208b54539fec61f5905b32a5fd8509b4a2d8"
     },
     "The current manifest must produce the exact centralized-origin modernized frontend target"
   );

@@ -3,6 +3,8 @@
     margin: 0;
     box-sizing: border-box;
     font-family: 'Segoe UI', sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 button,
@@ -762,8 +764,15 @@ button {
     align-items: center;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    margin-top: 20px;
     width: 100%;
+}
+
+#Container-Tamanho-Módulo,
+#Container-Qualidade-Conteúdo,
+#Container-Qualidade-Plataforma,
+#Container-Qualidade-Materiais-Impressos,
+#Container-Comentários {
+    margin-top: 20px;
 }
 
 #Container-Tamanho-Módulo,
@@ -788,7 +797,7 @@ button {
 
 #Containter-Alternativas-Tamanho-Módulo,#Containter-Alternativas-Qualidade-Conteúdo,#Containter-Alternativas-Qualidade-Plataforma,#Containter-Alternativas-Qualidade-Materiais-Impressos{
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     border: 1px solid #d4d4d4;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -1046,6 +1055,7 @@ button {
 }
 
 #Botão-Download-Certificado-Impresso{
+    display: block;
     background-color: #4a0816;
     padding-top: 10px;
     padding-bottom: 10px;

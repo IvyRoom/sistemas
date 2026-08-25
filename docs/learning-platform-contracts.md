@@ -154,12 +154,15 @@ generated continuation actions as native buttons. Runtime state keeps
 
 The modernization preserves the exact Brazilian-Portuguese visible copy and
 the application-owned IDs, classes, selector relationships, event targets,
-navigation, storage, request, Face, media, and timing seams. Instructional and
-status copy remains selectable; keyboard focus has visible `:focus-visible`
-treatment, invalid fields and newly presented study content receive deliberate
-focus, and animated or transitioned entries honor `prefers-reduced-motion`.
-Existing visual identity and all source/deployed path relationships remain
-unchanged.
+navigation, storage, request, Face, media, and timing seams. All copy in the
+seven entries is deliberately non-selectable, including dynamically inserted
+content and application-styled copy inside the Face component's closed Shadow
+DOM. Keyboard focus has visible `:focus-visible` treatment, invalid fields and
+newly presented study content receive deliberate focus, and animated or
+transitioned entries honor `prefers-reduced-motion`. Feedback cards retain
+20-pixel separation and keep each five-choice scale on one row; the certificate
+download control remains horizontally centered. Existing visual identity and
+all source/deployed path relationships remain unchanged.
 
 Browser verification covers the source and generated previews with production
 networking blocked before application scripts execute and with local inert
@@ -963,9 +966,10 @@ completion progress circle and final check are SVG strokes hard-coded inside
 the same closed Shadow DOM. Before mounting the Face element, the shared startup
 seam wraps that instance's first `attachShadow` call, preserves the vendor's
 `{ mode: "closed" }` option, and adopts an application-owned constructed
-stylesheet that applies `#4a0816` to `#spinnerCheck #circle` and
-`#spinnerCheck #tick`. These rules do not replace localized copy or edit any
-vendor asset; the complete vendored Face subtree remains byte-identical.
+stylesheet that makes the host and its internal copy non-selectable and applies
+`#4a0816` to `#spinnerCheck #circle` and `#spinnerCheck #tick`. These rules do
+not replace localized copy or edit any vendor asset; the complete vendored Face
+subtree remains byte-identical.
 
 These presentation rules live outside the vendored subtree, so replacing the
 SDK cannot overwrite them. Their runtime effect still depends on the SDK
@@ -1224,13 +1228,13 @@ source-derived identities are:
 
 | Current centralized-origin post-modernization scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,337,076 | `8cda84b9977318e70a192050540acd1970da58ad386e1233cc0ad1518773fa11` |
+| Complete generated `dist/` artifact | 258 | 27,337,714 | `88f505d0079a34737527eb5b1db5208b54539fec61f5905b32a5fd8509b4a2d8` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,732,491 | `63e0857d57f17a05028594ec363c7d234234601b041633f02ce47c69d877f5af` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,732,491 | `ca8cd13f2b5106447e7569cb56a5122faf6608cd48a0246a1d8b90003637ed12` |
-| Platform JavaScript, retaining full output paths | 36 | 446,004 | `093058de6a005290431769e691f2ca4cde409ea631cb6529467f66940fd0099d` |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,286,487 | `17ab9f214909b97b5a4918e37024f2a1d2d6f098d08d94b20d172bd7ff38054c` |
-| Study entry subtree, retaining full output paths | 41 | 10,021,780 | `b86de0ce08198b3e0a7611aa537c04b9dd6354cb100f9a625c722fb8320ca036` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,733,129 | `e22d61b924e5d794d5b3bff938718575c12ec571a53c9c96f7420611b0101b54` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,733,129 | `d6eff5a155aac44b219fcade23e9fd8ea5a4b60c480d5a34e78253b6c26e3800` |
+| Platform JavaScript, retaining full output paths | 36 | 446,078 | `d7f07e0e5c1dc2b29221ac6e85112f4ff190d889fd66a9159976e3a084473b70` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,051 | `4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a` |
+| Study entry subtree, retaining full output paths | 41 | 10,022,020 | `26da442362557c4fcca35f64401938de1dc6b50510c12a1a9ff12656646be148` |
 | Four public API applications, retaining full output paths | 20 | 736,448 | `1a2e16ce19f831ad36c4ffcfa9611122194d956ee70c929ea264cfd632a8aed1` |
 | All non-platform applications, retaining full output paths | 75 | 6,604,504 | `12e1bdf1e23f3dbbc7657cefde9a3a69425e7e7241ea023b20e789b4701a0110` |
 
@@ -1604,8 +1608,8 @@ identify the current oracle.
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
-| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport/host-color overrides remain exact without loading production Face. |
-| ASSET-01 | File identity and isolation | The exact current 182-file platform set and its post-modernization JavaScript and Study subscopes match their byte totals and digests; all current paths are NFC, 34 contain non-ASCII, and the non-JavaScript, binary, public-application, Face, download, and certificate scoped digests remain exact. Historical identities remain documentation-only comparisons. |
+| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport, host-color, and closed-root non-selection overrides remain exact without loading production Face. |
+| ASSET-01 | File identity and isolation | The exact current 182-file platform set and its post-modernization JavaScript and Study subscopes match their byte totals and digests; all current paths are NFC, 34 contain non-ASCII, and the non-JavaScript, binary, public-application, Face, download, and certificate scoped digests remain exact. Historical phase-A and phase-B/pre-markup identities remain documentation-only comparisons. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
@@ -1623,8 +1627,9 @@ by execution seam rather than by future source location:
   Face asset/presentation, download, video/DRM, and artifact contracts;
 - `.agents/tests/learning-platform-markup.test.js` locks the seven documents'
   visible copy, unique IDs, selector and event-target inventory, native-control
-  relationships, accessible labels/status, focus movement, selectable copy, and
-  reduced-motion seams;
+  relationships, accessible labels/status, focus movement, the application-wide
+  non-selectable-copy policy, feedback layout, centered certificate control,
+  and reduced-motion seams;
 - `.agents/tests/learning-platform-errors.test.js` covers the exact frozen named
   vocabulary, operation ownership, retired-alias rejection, local semantic
   normalization, presentation catalog, and source confinement;

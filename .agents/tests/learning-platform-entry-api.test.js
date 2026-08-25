@@ -69,7 +69,7 @@ const FIXTURE_FACE_TOKEN = opaqueValue("face-token");
 const FIXTURE_HANDLE = opaqueValue("row-handle");
 const FIXTURE_PLATFORM_BASE = FIXTURE_ORIGIN + "/plataforma_v2";
 const FIXTURE_RESULT_PATH = `/plataforma_v2/FaceID_resultado/${FIXTURE_FACE_SESSION}`;
-const EXPECTED_FACE_SHADOW_STYLES = "#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
+const EXPECTED_FACE_SHADOW_STYLES = ":host,\n* {\n    -webkit-user-select: none;\n    user-select: none;\n}\n\n#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
 
 function refreshData(overrides = {}) {
   const data = {
