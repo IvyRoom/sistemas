@@ -10,7 +10,7 @@ import {
     learningPlatformErrorPresentations
 } from './error-presentation.js';
 import { isMicrosoftEdge, redirectToDeviceWarning } from './lifecycle.js';
-import { createPlatformClient } from './platform-client.js';
+import { createPlatformClient, resolvePlatformBaseUrl } from './platform-client.js';
 import { createSessionStore } from './session.js';
 
 export function createRegistrationApplication({
@@ -26,7 +26,7 @@ export function createRegistrationApplication({
     alert
 }) {
     const session = createSessionStore(sessionStorage);
-    const backendBase = session.read('backendBase');
+    const backendBase = resolvePlatformBaseUrl(session.read('backendBase'));
     const verifiedIndex = session.read('verifiedIndex');
     const client = createPlatformClient({ baseUrl: backendBase, fetch, FormDataConstructor });
 

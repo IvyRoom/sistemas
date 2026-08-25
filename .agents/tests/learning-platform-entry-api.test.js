@@ -247,7 +247,7 @@ async function installStudyApplication(harness, overrides = {}) {
     ]);
   const dependencies = harness.dependencies();
   const session = sessionModule.createSessionStore(dependencies.sessionStorage);
-  const backendBase = session.read("backendBase");
+  const backendBase = clientModule.resolvePlatformBaseUrl(session.read("backendBase"));
   const dom = domModule.createStudyDom(dependencies.document);
   session.read("legacySessionSeconds");
   const client = clientModule.createPlatformClient({
@@ -307,6 +307,67 @@ function readApplicationSource(page) {
   if (page === "study") sourcePaths.push(...STUDY_MODULE_PATHS, MODULE_PATHS.lifecycle);
   return sourcePaths.map(readPlatformScript).join("\n");
 }
+
+test("[API-03] missing backend configuration uses the canonical role without replacing overrides", async () => {
+  const harness = createLearningPlatformHarness();
+  const [clientModule, sessionModule] = await Promise.all([
+    harness.loadModule(MODULE_PATHS.platformClient),
+    harness.loadModule(MODULE_PATHS.session)
+  ]);
+  const configuredBase = FIXTURE_ORIGIN + "/plataforma_v2";
+
+  assert.equal(clientModule.resolvePlatformBaseUrl(configuredBase), configuredBase);
+  assert.equal(clientModule.resolvePlatformBaseUrl(""), "");
+  assert.equal(
+    clientModule.resolvePlatformBaseUrl(null),
+    clientModule.DEFAULT_PLATFORM_BASE_URL
+  );
+  assert.equal(
+    clientModule.resolvePlatformBaseUrl(undefined),
+    clientModule.DEFAULT_PLATFORM_BASE_URL
+  );
+
+  const emptySession = sessionModule.createSessionStore(harness.sessionStorage);
+  let requestedTarget;
+  const fallbackClient = clientModule.createPlatformClient({
+    baseUrl: clientModule.resolvePlatformBaseUrl(emptySession.read("backendBase")),
+    async fetch(target) {
+      requestedTarget = String(target);
+      return {
+        ok: true,
+        status: 200,
+        async json() {
+          return {};
+        }
+      };
+    }
+  });
+  await fallbackClient.postJson("/refresh", { IndexVerificado: FIXTURE_HANDLE });
+  const requestedUrl = new URL(requestedTarget);
+  assert.equal(requestedUrl.protocol, "https:");
+  assert.equal(requestedUrl.pathname, "/plataforma_v2/refresh");
+  assert.equal(requestedTarget.includes("/null/refresh"), false);
+
+  const loginEntrySource = readPlatformScript(SCRIPT_PATHS.login);
+  const loginBackendRole = loginEntrySource.match(
+    /sessionStorage\.setItem\('URL_Base_Backend',\s*'([^']+)'\)/
+  );
+  assert.ok(loginBackendRole);
+  assert.equal(loginBackendRole[1], clientModule.DEFAULT_PLATFORM_BASE_URL);
+
+  const studyEntrySource = readPlatformScript(SCRIPT_PATHS.study);
+  assert.match(
+    studyEntrySource,
+    /resolvePlatformBaseUrl\(session\.read\('backendBase'\)\)/
+  );
+
+  const registrationModuleSource = readPlatformScript(MODULE_PATHS.register);
+  assert.match(
+    registrationModuleSource,
+    /resolvePlatformBaseUrl\(session\.read\('backendBase'\)\)/
+  );
+  harness.hostGuard.assertUnused();
+});
 
 test("[SAFETY-NETWORK] deny-all sentinel blocks fallback channels before scripts run", async () => {
   const harness = createLearningPlatformHarness({

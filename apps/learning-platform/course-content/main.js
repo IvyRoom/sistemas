@@ -1,5 +1,8 @@
 import { isMicrosoftEdge, redirectToDeviceWarning } from '../modules/lifecycle.js';
-import { createPlatformClient } from '../modules/platform-client.js';
+import {
+    createPlatformClient,
+    resolvePlatformBaseUrl
+} from '../modules/platform-client.js';
 import { createSessionStore } from '../modules/session.js';
 import { createStudyApplication } from '../modules/course-content/application.js';
 import { createCertificateRenderer } from '../modules/course-content/certificate-renderer.js';
@@ -23,7 +26,7 @@ async function loadSelectedMedia(player, { drmEnabled, moduleName, videoName }) 
 }
 
 const session = createSessionStore(window.sessionStorage);
-const backendBase = session.read('backendBase');
+const backendBase = resolvePlatformBaseUrl(session.read('backendBase'));
 let legacySessionSeconds;
 const studyDom = createStudyDom(window.document, () => {
     legacySessionSeconds = session.read('legacySessionSeconds');

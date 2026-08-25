@@ -3,6 +3,13 @@ import {
     normalizeLearningPlatformTransportError
 } from './error-adapter.js';
 
+export const DEFAULT_PLATFORM_BASE_URL =
+    'https://plataforma-backend-v3.azurewebsites.net/plataforma_v2';
+
+export function resolvePlatformBaseUrl(configuredBaseUrl) {
+    return configuredBaseUrl ?? DEFAULT_PLATFORM_BASE_URL;
+}
+
 async function parseJsonResponse(response) {
     let data;
     try {
