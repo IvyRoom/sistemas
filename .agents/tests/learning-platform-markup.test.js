@@ -196,11 +196,15 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
       "Aviso": "h1"
     },
     "initial-notices": {
+      "Seção": "main",
+      "Logo-Machado": "img",
+      "Manchete-Formulário": "h1",
       "Formulário": "form",
       "Palavra-Passe-Credenciais": "input",
       "Palavra-Passe-Direitos": "input",
       "Palavra-Passe-Janela": "input",
-      "Botão-Li-e-Concordo": "button"
+      "Botão-Li-e-Concordo": "button",
+      "Texto-Rodapé": "footer"
     },
     login: {
       "Formulário-Login": "form",
@@ -246,18 +250,34 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
   );
 });
 
-test("[A11Y-01] current focus, selection, and motion baseline is explicit before modernization", () => {
+test("[A11Y-01] focus, selection, and motion expectations advance entry by entry", () => {
   const allCss = Object.keys(entries)
     .map((entryName) => readEntry(entryName, "style.css"))
     .join("\n");
-  const applicationSource = Object.keys(moduleScopes)
-    .map((entryName) => moduleSource(entryName))
-    .join("\n");
 
-  assert.doesNotMatch(allCss, /:focus-visible/);
+  assert.match(readEntry("initial-notices", "style.css"), /:focus-visible/);
   assert.doesNotMatch(allCss, /prefers-reduced-motion/);
-  assert.doesNotMatch(applicationSource, /\.focus\(/);
-  assert.match(readEntry("initial-notices", "style.css"), /\.Avisos-Iniciais\{[^}]*user-select:\s*none;/);
+  assert.match(moduleSource("initial-notices"), /invalidFields\[0\]\.focus\(\)/);
+  assert.doesNotMatch(readEntry("initial-notices", "style.css"), /\.Avisos-Iniciais\s*\{[^}]*user-select:/);
   assert.match(readEntry("photo-registration", "style.css"), /\.Instruções-Upload-Foto\{[^}]*user-select:\s*none;/);
   assert.match(readEntry("login", "style.css"), /#Manchete-Formulário-Login\{[^}]*user-select:\s*none;/);
+
+  const noticesHtml = readEntry("initial-notices", "index.html");
+  for (const [suffix, inputId] of [
+    ["Credenciais", "Palavra-Passe-Credenciais"],
+    ["Direitos", "Palavra-Passe-Direitos"],
+    ["Janela", "Palavra-Passe-Janela"]
+  ]) {
+    assert.match(
+      noticesHtml,
+      new RegExp(`<label\\b[^>]*for="${inputId}"[^>]*>Palavra-Passe:<\\/label>`)
+    );
+    const inputTag = openingTag(noticesHtml, inputId);
+    assert.match(inputTag, new RegExp(`aria-describedby="Alerta-Palavra-Passe-${suffix}"`));
+    assert.match(inputTag, /aria-invalid="false"/);
+    assert.match(
+      openingTag(noticesHtml, `Alerta-Palavra-Passe-${suffix}`),
+      /role="alert"/
+    );
+  }
 });

@@ -609,7 +609,7 @@ function createStorage(initial = {}, timeline = []) {
   };
 }
 
-function createElementFactory({ faceStartImplementation, guard, timeline }) {
+function createElementFactory({ faceStartImplementation, focusElement, guard, timeline }) {
   let nextId = 0;
   return function createElement(id = `element-${++nextId}`, tagName = "div") {
     const normalizedTagName = String(tagName).toLowerCase();
@@ -658,6 +658,10 @@ function createElementFactory({ faceStartImplementation, guard, timeline }) {
           target: element,
           ...event
         }));
+      },
+      focus() {
+        focusElement(element);
+        timeline.push({ id: element.id, type: "focus" });
       },
       getAttribute(name) {
         if (name === "data-index" && this.dataIndex !== undefined) return String(this.dataIndex);
@@ -771,11 +775,19 @@ function createLearningPlatformHarness({
   const timers = new Map();
   let nextTimerId = 1;
   let currentNow = now;
+  let activeElement = null;
 
   const hostGuard = installHostNetworkGuard();
   const guard = createDenyAllNetworkGuard({ routes, timeline });
   const sessionStorage = createStorage(storage, timeline);
-  const createElement = createElementFactory({ faceStartImplementation, guard, timeline });
+  const createElement = createElementFactory({
+    faceStartImplementation,
+    focusElement(element) {
+      activeElement = element;
+    },
+    guard,
+    timeline
+  });
   const body = createElement("body", "body");
 
   function element(id) {
@@ -784,6 +796,9 @@ function createLearningPlatformHarness({
   }
 
   const document = {
+    get activeElement() {
+      return activeElement;
+    },
     body,
     createElement(tagName) {
       return createElement(undefined, tagName);
