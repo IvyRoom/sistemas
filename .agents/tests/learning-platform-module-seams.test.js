@@ -450,6 +450,14 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
     rejected.element("Alerta-Palavra-Passe-Credenciais").style.display,
     "block"
   );
+  assert.equal(
+    rejected.element("Palavra-Passe-Credenciais").getAttribute("aria-invalid"),
+    "true"
+  );
+  assert.equal(
+    rejected.document.activeElement,
+    rejected.element("Palavra-Passe-Credenciais")
+  );
   assert.equal(rejected.document.body.style.cursor, "default");
   rejected.element("Palavra-Passe-Credenciais").dispatch("change");
   for (const id of [
@@ -458,6 +466,13 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
     "Alerta-Palavra-Passe-Janela"
   ]) {
     assert.equal(rejected.element(id).style.display, "none");
+  }
+  for (const id of [
+    "Palavra-Passe-Credenciais",
+    "Palavra-Passe-Direitos",
+    "Palavra-Passe-Janela"
+  ]) {
+    assert.equal(rejected.element(id).getAttribute("aria-invalid"), "false");
   }
   assert.equal(rejected.element("Bot\u00e3o-Li-e-Concordo").style.display, "block");
 
