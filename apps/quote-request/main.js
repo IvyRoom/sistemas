@@ -1,7 +1,8 @@
+import { BACKEND_ORIGIN } from '../shared/backend-origin.js';
+
 "use strict";
 
-const PRODUCTION_API_URL = "https://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento";
-const LOCAL_API_URL = "http://localhost:3000/landingpage/solicitacaoorcamento";
+const SUBMIT_ENDPOINT = `${BACKEND_ORIGIN}/landingpage/solicitacaoorcamento`;
 const REQUEST_TIMEOUT_MS = 60000;
 const SUBMIT_LABEL = "SOLICITAR ORÇAMENTO";
 const SUBMITTING_LABEL = "Processando informações...";
@@ -130,14 +131,6 @@ function preferredScrollBehavior() {
     : "smooth";
 }
 
-function isLocalHostname(hostname) {
-  return ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
-}
-
-function submissionUrl() {
-  return isLocalHostname(window.location.hostname) ? LOCAL_API_URL : PRODUCTION_API_URL;
-}
-
 function setFieldValidity(input, message) {
   input.setCustomValidity(message);
   input.setAttribute("aria-invalid", String(message !== ""));
@@ -239,7 +232,7 @@ async function submitQuote(event) {
   setSubmitting(true);
 
   try {
-    const response = await fetch(submissionUrl(), {
+    const response = await fetch(SUBMIT_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(collectPayload()),

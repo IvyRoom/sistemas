@@ -6,7 +6,26 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(
+function loadBackendOrigin() {
+  const moduleSource = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'apps', 'shared', 'backend-origin.js'),
+    'utf8',
+  );
+  const executableModuleSource = moduleSource.replace(
+    'export const BACKEND_ORIGIN =',
+    'globalThis.BACKEND_ORIGIN =',
+  );
+  assert.notEqual(executableModuleSource, moduleSource, 'Missing BACKEND_ORIGIN export');
+  const context = vm.createContext({});
+  vm.runInContext(executableModuleSource, context, {
+    filename: 'apps/shared/backend-origin.js',
+  });
+  assert.equal(typeof context.BACKEND_ORIGIN, 'string');
+  return context.BACKEND_ORIGIN;
+}
+
+const BACKEND_ORIGIN = loadBackendOrigin();
+const applicationSource = fs.readFileSync(
   path.join(
     __dirname,
     '..',
@@ -18,6 +37,9 @@ const source = fs.readFileSync(
   ),
   'utf8',
 );
+const backendOriginImport = "import { BACKEND_ORIGIN } from '../../shared/backend-origin.js';";
+const source = applicationSource.replace(backendOriginImport, '');
+assert.notEqual(source, applicationSource, 'Missing exact shared backend-origin import');
 
 function createClassList() {
   const classes = new Set();
@@ -222,6 +244,7 @@ function createHarness({
 
   const sandbox = {
     AbortController,
+    BACKEND_ORIGIN,
     URLSearchParams,
     alert: window.alert,
     clearTimeout(timeoutId) {
@@ -460,7 +483,7 @@ test('production submission uses the exact endpoint and trimmed payload', async 
   const [{ options, url }] = harness.fetchCalls;
   assert.equal(
     url,
-    'https://plataforma-backend-v3.azurewebsites.net/conecta/processa-recomendacao',
+    `${BACKEND_ORIGIN}/conecta/processa-recomendacao`,
   );
   assert.equal(options.method, 'POST');
   assert.deepEqual({ ...options.headers }, { 'Content-Type': 'application/json' });
@@ -476,8 +499,14 @@ test('production submission uses the exact endpoint and trimmed payload', async 
   assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
 });
 
-test('localhost source previews post only to the localhost Conecta stub', async (t) => {
-  for (const hostname of ['localhost', '127.0.0.1']) {
+test('localhost, loopback, preview, and production pages use the same production endpoint', async (t) => {
+  for (const hostname of [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'feature-preview.azurestaticapps.net',
+    'machadogestao.com',
+  ]) {
     await t.test(hostname, async () => {
       const harness = createHarness({ hostname });
       harness.fillValidRecommendation();
@@ -487,7 +516,7 @@ test('localhost source previews post only to the localhost Conecta stub', async 
       assert.equal(harness.fetchCalls.length, 1);
       assert.equal(
         harness.fetchCalls[0].url,
-        'http://localhost:3000/conecta/processa-recomendacao',
+        `${BACKEND_ORIGIN}/conecta/processa-recomendacao`,
       );
     });
   }

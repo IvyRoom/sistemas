@@ -18,7 +18,6 @@ const entrySourcePaths = [
 ];
 
 const deprecatedInternalIdentifiers = new Map([
-  ["URL_Base_Backend", "backendBase"],
   ["MóduloAberto", "moduleName"],
   ["NomeVídeo", "videoName"],
   ["ContainerDownloadArquivo1", "downloadContainer1"],
@@ -70,9 +69,7 @@ const boundaryIdentifierAllowlist = new Set([
 ]);
 
 const compatibilityCommentLocations = new Set([
-  "login/main.js:4",
-  "modules/status-report/query.js:13",
-  "status-report/main.js:5"
+  "modules/status-report/query.js:13"
 ]);
 
 const approvedApplicationCommentRules = [

@@ -38,6 +38,24 @@ const maintainedNonPlatformApplicationIds = [
   "certificate-validation",
   "conecta-referral-form"
 ];
+const backendConsumerModuleEntries = [
+  {
+    source: "apps/quote-request/index.html",
+    script: '<script type="module" src="./main.js?v=4"></script>'
+  },
+  {
+    source: "apps/client-intake/index.html",
+    script: '<script type="module" src="./main.js"></script>'
+  },
+  {
+    source: "apps/certificate-validation/index.html",
+    script: '<script type="module" src="./main.js"></script>'
+  },
+  {
+    source: "apps/referrals-management/referral-form/index.html",
+    script: '<script type="module" src="./main.js"></script>'
+  }
+];
 const learningPlatformEntries = [
   { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
   { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
@@ -213,10 +231,28 @@ function runLocationNormalizer(inlineScript, { pathname, search = "", hash = "" 
   return replacement;
 }
 
-test("deployment inventory exhaustively separates maintained frontends from the learning platform", async () => {
+test("deployment inventory separates shared infrastructure, maintained frontends, and the learning platform", async () => {
   const manifest = await readDeploymentManifest();
 
-  await validateDeploymentManifest(manifest);
+  const validation = await validateDeploymentManifest(manifest);
+
+  assert.deepEqual(manifest.sharedMappings, [
+    {
+      source: "apps/shared",
+      output: "shared"
+    }
+  ]);
+  assert.deepEqual(
+    validation.mappings.filter(({ applicationId }) => applicationId === null),
+    [
+      {
+        applicationId: null,
+        source: "apps/shared",
+        output: "shared",
+        sourceType: "directory"
+      }
+    ]
+  );
 
   const nonPlatformApplications = manifest.applications.filter(
     ({ id }) => id !== "learning-platform"
@@ -280,6 +316,11 @@ test("deployment inventory exhaustively separates maintained frontends from the 
       output: "plataforma/azure-ai-vision-face-ui"
     }
   ]);
+  assert.equal(
+    manifest.sharedMappings.length + learningPlatform.mappings.length,
+    10,
+    "The shared mapping and nine learning-platform mappings must remain distinct"
+  );
   assert.deepEqual(learningPlatform.publicEntries, [
     {
       path: "/plataforma/aviso-dispositivo/",
@@ -310,6 +351,14 @@ test("deployment inventory exhaustively separates maintained frontends from the 
       file: "plataforma/statusreport/index.html"
     }
   ]);
+});
+
+test("backend-consuming classic entries use native module bootstraps", async () => {
+  for (const { source, script } of backendConsumerModuleEntries) {
+    const html = await readFile(join(repositoryRoot, ...source.split("/")), "utf8");
+
+    assert.ok(html.includes(script), `${source} must load main.js as a native module`);
+  }
 });
 
 test("mapped text uses LF and binary assets opt out of text normalization", async () => {
@@ -369,7 +418,16 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.files.length, 257);
+  assert.equal(validation.mappings.length, 20);
+  assert.equal(validation.files.length, 258);
+  assert.deepEqual(
+    validation.files.find(({ output }) => output === "shared/backend-origin.js"),
+    {
+      applicationId: null,
+      source: "apps/shared/backend-origin.js",
+      output: "shared/backend-origin.js"
+    }
+  );
   assert.equal(learningPlatformModuleRetirementPairs.length, 15);
   for (const {
     canonicalPublicPath,
@@ -397,8 +455,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   ]);
   assert.equal(
     validation.files.filter(({ output }) => !publicContractFiles.has(output)).length,
-    242,
-    "The phase-B artifact must contain exactly 242 production support files"
+    243,
+    "The centralized-origin artifact must contain exactly 243 production support files"
   );
   assert.deepEqual(
     validation.mappings.filter(
@@ -586,8 +644,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    69,
-    "Phase B must validate exactly 69 canonical source-preview JavaScript imports"
+    77,
+    "The centralized-origin source graph must contain exactly 77 JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -602,8 +660,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
 });
 
-test("generated preview resolves exactly 69 phase-B JavaScript imports", async (context) => {
-  const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-phase-b-artifact-"));
+test("generated preview resolves exactly 77 centralized-origin JavaScript imports", async (context) => {
+  const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-origin-artifact-"));
   context.after(() => rm(artifactRoot, { force: true, recursive: true }));
   const validation = await validateDeploymentManifest(await readDeploymentManifest());
 
@@ -618,8 +676,12 @@ test("generated preview resolves exactly 69 phase-B JavaScript imports", async (
   const references = await assertLocalReferences(artifactRoot);
   assert.equal(
     references.javascriptReferences,
-    69,
-    "The generated phase-B module graph must contain exactly 69 resolvable imports"
+    77,
+    "The generated centralized-origin module graph must contain exactly 77 resolvable imports"
+  );
+  assert.deepEqual(
+    await readFile(join(artifactRoot, "shared", "backend-origin.js")),
+    await readFile(join(repositoryRoot, "apps", "shared", "backend-origin.js"))
   );
 });
 
@@ -639,6 +701,20 @@ test("source preview serves only manifest-mapped routes and files", async () => 
     const conectaHtml = await readFile(
       new URL("../apps/referrals-management/referral-form/index.html", import.meta.url)
     );
+    const backendOriginJavaScript = await readFile(
+      new URL("../apps/shared/backend-origin.js", import.meta.url)
+    );
+
+    for (const path of [
+      "/shared/backend-origin.js",
+      "/apps/shared/backend-origin.js"
+    ]) {
+      const response = await requestPreview(server.baseUrl, path);
+
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers["content-type"], "text/javascript; charset=utf-8", path);
+      assert.deepEqual(response.body, backendOriginJavaScript, path);
+    }
 
     for (const path of [
       "/solicitacao-orcamento/",
@@ -1347,6 +1423,18 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
     new URL("../apps/quote-request/main.js", import.meta.url),
     "utf8"
   );
+  const importDeclaration = "import { BACKEND_ORIGIN } from '../shared/backend-origin.js';";
+  assert.ok(source.startsWith(`${importDeclaration}\n`));
+  const executableSource = source.slice(importDeclaration.length);
+  const backendOriginSource = await readFile(
+    new URL("../apps/shared/backend-origin.js", import.meta.url),
+    "utf8"
+  );
+  const backendOriginMatch = backendOriginSource.match(
+    /^export const BACKEND_ORIGIN = ['"]([^'"]+)['"];$/m
+  );
+  assert.ok(backendOriginMatch);
+  const [, BACKEND_ORIGIN] = backendOriginMatch;
   const elements = new Map();
   const listeners = new Map();
   let alertMessage = null;
@@ -1435,8 +1523,9 @@ async function runQuoteSubmission({ presentationError = null, responseOk }) {
     }
   };
 
-  runInNewContext(source, {
+  runInNewContext(executableSource, {
     AbortController,
+    BACKEND_ORIGIN,
     alert(message) {
       alertMessage = message;
     },

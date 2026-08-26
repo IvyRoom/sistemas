@@ -67,6 +67,7 @@ function opaqueValue(kind) {
 const FIXTURE_FACE_SESSION = opaqueValue("face-session");
 const FIXTURE_FACE_TOKEN = opaqueValue("face-token");
 const FIXTURE_HANDLE = opaqueValue("row-handle");
+const FIXTURE_PLATFORM_BASE = FIXTURE_ORIGIN + "/plataforma_v2";
 const FIXTURE_RESULT_PATH = `/plataforma_v2/FaceID_resultado/${FIXTURE_FACE_SESSION}`;
 const EXPECTED_FACE_SHADOW_STYLES = "#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
 
@@ -169,7 +170,6 @@ function moduleDependencies(harness, overrides = {}) {
     alert(message) {
       harness.alerts.push(String(message));
     },
-    backendBase: FIXTURE_ORIGIN + "/plataforma_v2",
     clock: dependencies.Date,
     console: {
       log(...args) {
@@ -185,13 +185,19 @@ function moduleDependencies(harness, overrides = {}) {
 
 async function installLoginApplication(harness, overrides = {}) {
   const { createLoginApplication } = await harness.loadModule(MODULE_PATHS.login);
-  createLoginApplication(moduleDependencies(harness, overrides));
+  createLoginApplication(moduleDependencies(harness, {
+    backendBase: FIXTURE_PLATFORM_BASE,
+    ...overrides
+  }));
   harness.hostGuard.assertUnused();
 }
 
 async function installRegistrationApplication(harness, overrides = {}) {
   const { createRegistrationApplication } = await harness.loadModule(MODULE_PATHS.register);
-  createRegistrationApplication(moduleDependencies(harness, overrides));
+  createRegistrationApplication(moduleDependencies(harness, {
+    backendBase: FIXTURE_PLATFORM_BASE,
+    ...overrides
+  }));
   harness.hostGuard.assertUnused();
 }
 
@@ -224,7 +230,7 @@ async function installStatusReportApplication(harness) {
   ]);
   const dependencies = harness.dependencies();
   const platformClient = clientModule.createPlatformClient({
-    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+    baseUrl: FIXTURE_PLATFORM_BASE,
     fetch: dependencies.fetch,
     FormDataConstructor: dependencies.FormDataConstructor
   });
@@ -247,11 +253,10 @@ async function installStudyApplication(harness, overrides = {}) {
     ]);
   const dependencies = harness.dependencies();
   const session = sessionModule.createSessionStore(dependencies.sessionStorage);
-  const backendBase = session.read("backendBase");
   const dom = domModule.createStudyDom(dependencies.document);
   session.read("legacySessionSeconds");
   const client = clientModule.createPlatformClient({
-    baseUrl: backendBase,
+    baseUrl: FIXTURE_PLATFORM_BASE,
     fetch: dependencies.fetch,
     FormDataConstructor: dependencies.FormDataConstructor
   });
@@ -578,7 +583,6 @@ test("login and registration factories preserve initial capture and listener ord
     {
       install: installRegistrationApplication,
       expected: [
-        { key: "URL_Base_Backend", type: "storage-get" },
         { key: "IndexVerificado", type: "storage-get" },
         { id: "Formulário-Foto-Referência", type: "dom-get" },
         { id: "Botão-Cadastrar-Foto-Referência", type: "dom-get" },
@@ -589,8 +593,7 @@ test("login and registration factories preserve initial capture and listener ord
         { event: "submit", id: "Formulário-Foto-Referência", type: "element-listener" }
       ],
       storage: {
-        IndexVerificado: FIXTURE_HANDLE,
-        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2"
+        IndexVerificado: FIXTURE_HANDLE
       }
     }
   ];
@@ -640,6 +643,42 @@ test("login and registration factories preserve initial capture and listener ord
     assert.deepEqual(trace, scenario.expected);
     harness.hostGuard.assertUnused();
   }
+});
+
+test("registration starts directly without stored backend configuration and requests absolutely", async () => {
+  const requestTargets = [];
+  const harness = createLearningPlatformHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/CadastroFoto_e_FaceID",
+      response: { data: {}, status: 401 }
+    }],
+    storage: { IndexVerificado: FIXTURE_HANDLE }
+  });
+  harness.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
+  await installRegistrationApplication(harness, {
+    fetch(target, options) {
+      requestTargets.push(String(target));
+      return harness.guard.fetch(target, options);
+    }
+  });
+
+  submit(harness.element("Formulário-Foto-Referência"));
+  await harness.flush(20);
+
+  assert.deepEqual(requestTargets, [
+    FIXTURE_PLATFORM_BASE + "/CadastroFoto_e_FaceID"
+  ]);
+  assert.equal(new URL(requestTargets[0]).origin, FIXTURE_ORIGIN);
+  assert.deepEqual(
+    harness.timeline.filter(({ type }) => type === "storage-get"),
+    [{ key: "IndexVerificado", type: "storage-get" }]
+  );
+  assert.deepEqual(
+    harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] }),
+    { IndexVerificado: "<redacted>" }
+  );
+  assertNoQuery(harness);
 });
 
 test("[FACE-01] Face startup themes the closed shadow root without changing startup order", async () => {
@@ -727,7 +766,6 @@ test("[GATE-02] study installs resize after gates and refreshes after its immedi
       }],
       storage: {
         IndexVerificado: opaqueValue("row-handle"),
-        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
         Usuário_Logado: "Sim"
       }
     });
@@ -821,7 +859,7 @@ test("[GATE-02] status report checks width before installing its resize listener
   }
 });
 
-test("[STORE-01] exact eight key spellings, readers, writers, and value conventions remain represented", async () => {
+test("[STORE-01] exact seven key spellings, readers, writers, and value conventions remain represented", async () => {
   const harness = createLearningPlatformHarness();
   const { SESSION_KEYS } = await harness.loadModule(MODULE_PATHS.session);
   const sourcesByPage = Object.fromEntries(
@@ -845,12 +883,12 @@ test("[STORE-01] exact eight key spellings, readers, writers, and value conventi
   }
 
   const keyCalls = Object.values(callsByPage).flat();
+  assert.equal(Object.values(SESSION_KEYS).length, 7);
   assert.deepEqual(Object.values(SESSION_KEYS).sort(), [
     "Horário-Encerramento-Sessão",
     "IndexVerificado",
     "Origem_Aviso_Dispositivo",
     "TempoSessão_Segundos",
-    "URL_Base_Backend",
     "Usuário_Autorização_Cadastro",
     "Usuário_Foto_Cadastrada",
     "Usuário_Logado"
@@ -877,7 +915,6 @@ test("[STORE-01] exact eight key spellings, readers, writers, and value conventi
     IndexVerificado: ["register", "study"],
     Origem_Aviso_Dispositivo: ["login"],
     TempoSessão_Segundos: ["study"],
-    URL_Base_Backend: ["login", "register", "study"],
     Usuário_Autorização_Cadastro: ["login", "notices", "register"],
     Usuário_Foto_Cadastrada: [],
     Usuário_Logado: ["login", "study"]
@@ -887,7 +924,6 @@ test("[STORE-01] exact eight key spellings, readers, writers, and value conventi
     IndexVerificado: ["login"],
     Origem_Aviso_Dispositivo: ["device", "login", "notices", "register", "study"],
     TempoSessão_Segundos: [],
-    URL_Base_Backend: ["login"],
     Usuário_Autorização_Cadastro: ["login", "register"],
     Usuário_Foto_Cadastrada: ["login"],
     Usuário_Logado: ["login", "register", "study"]
@@ -931,7 +967,6 @@ test("[STORE-02] refresh preserves stored deadline and handle while logout chang
       IndexVerificado: FIXTURE_HANDLE,
       Origem_Aviso_Dispositivo: "Sim",
       TempoSessão_Segundos: "legacy-observation",
-      URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
       Usuário_Autorização_Cadastro: "Não",
       Usuário_Foto_Cadastrada: "Sim",
       Usuário_Logado: "Sim"
@@ -951,13 +986,12 @@ test("[STORE-02] refresh preserves stored deadline and handle while logout chang
   );
 
   harness.element("Botão-Sair").dispatch("click");
-  const snapshot = harness.sessionStorage.snapshot({ redact: ["IndexVerificado", "URL_Base_Backend"] });
+  const snapshot = harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
   assert.deepEqual(snapshot, {
     "Horário-Encerramento-Sessão": storedDeadline,
     IndexVerificado: "<redacted>",
     Origem_Aviso_Dispositivo: "Não",
     TempoSessão_Segundos: "legacy-observation",
-    URL_Base_Backend: "<redacted>",
     Usuário_Autorização_Cadastro: "Não",
     Usuário_Foto_Cadastrada: "Sim",
     Usuário_Logado: "Não"
@@ -1119,7 +1153,6 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
     ],
     storage: {
       IndexVerificado: FIXTURE_HANDLE,
-      URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
       Usuário_Autorização_Cadastro: "Sim"
     }
   });
@@ -1133,7 +1166,6 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
       "storage-get", "fetch", "storage-set", "append", "face-start", "navigate"
     ].includes(type)),
     [
-      { key: "URL_Base_Backend", type: "storage-get" },
       { key: "IndexVerificado", type: "storage-get" },
       { method: "POST", path: "/plataforma_v2/CadastroFoto_e_FaceID", type: "fetch" },
       { key: "Usuário_Autorização_Cadastro", type: "storage-set" },
@@ -1191,7 +1223,6 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
       }],
       storage: {
         IndexVerificado: opaqueValue("row-handle"),
-        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
         Usuário_Autorização_Cadastro: "Sim"
       }
     });
@@ -1252,7 +1283,6 @@ test("[FLOW-01] registration post-success Face failures keep authorization clear
       ],
       storage: {
         IndexVerificado: FIXTURE_HANDLE,
-        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
         Usuário_Autorização_Cadastro: "Sim"
       }
     });
@@ -1318,7 +1348,6 @@ test("[API-01] registration result consumer keeps decision, generic, header, and
       ],
       storage: {
         IndexVerificado: FIXTURE_HANDLE,
-        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
         Usuário_Autorização_Cadastro: "Sim"
       }
     });
@@ -1562,7 +1591,7 @@ test("[ERROR-02] named backend values preserve exact entry failure effects", asy
       navigation: [...harness.navigation],
       requests: harness.guard.requests,
       storage: harness.sessionStorage.snapshot({
-        redact: ["IndexVerificado", "URL_Base_Backend"]
+        redact: ["IndexVerificado"]
       }),
       timeline: harness.timeline.filter(({ type }) => [
         "append", "face-start", "fetch", "navigate", "storage-set"
@@ -1607,7 +1636,6 @@ test("[ERROR-02] named backend values preserve exact entry failure effects", asy
       }],
       storage: {
         IndexVerificado: FIXTURE_HANDLE,
-        URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
         Usuário_Autorização_Cadastro: "Sim"
       }
     });
@@ -1744,7 +1772,6 @@ test("[ERROR-02] named backend values preserve exact entry failure effects", asy
       }],
       storage: {
         IndexVerificado: "<redacted>",
-        URL_Base_Backend: "<redacted>",
         Usuário_Autorização_Cadastro: "Sim"
       },
       timeline: [
@@ -2018,7 +2045,6 @@ test("[API-03] refresh carries the stored handle and keeps the separate client d
     storage: {
       "Horário-Encerramento-Sessão": deadline,
       IndexVerificado: FIXTURE_HANDLE,
-      URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
       Usuário_Logado: "Sim"
     }
   });
@@ -2049,8 +2075,7 @@ async function runProgressUpdate(response) {
       method: "POST",
       path: "/plataforma_v2/updates",
       response
-    }],
-    storage: { URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2" }
+    }]
   });
   const [progressModule, clientModule] = await Promise.all([
     harness.loadModule(MODULE_PATHS.studyProgress),
@@ -2058,7 +2083,7 @@ async function runProgressUpdate(response) {
   ]);
   const dependencies = harness.dependencies();
   const client = clientModule.createPlatformClient({
-    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+    baseUrl: FIXTURE_PLATFORM_BASE,
     fetch: dependencies.fetch,
     FormDataConstructor: dependencies.FormDataConstructor
   });
@@ -2156,8 +2181,7 @@ test("[ERROR-01] protected synthetic 401 responses remain generic Erro_000 outco
       response: { data: {}, status: 401 }
     }],
     storage: {
-      IndexVerificado: FIXTURE_HANDLE,
-      URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2"
+      IndexVerificado: FIXTURE_HANDLE
     }
   });
   registration.element("Botão-Escolher-Arquivo").files = [{ name: "invented-reference.jpg" }];
@@ -2181,7 +2205,6 @@ test("[ERROR-01] protected synthetic 401 responses remain generic Erro_000 outco
     }],
     storage: {
       IndexVerificado: FIXTURE_HANDLE,
-      URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
       Usuário_Logado: "Sim"
     }
   });
@@ -2277,7 +2300,6 @@ test("[FLOW-01] registration clears authorization before local Face resolution",
     ],
     storage: {
       IndexVerificado: opaqueValue("row-handle"),
-      URL_Base_Backend: FIXTURE_ORIGIN + "/plataforma_v2",
       Usuário_Autorização_Cadastro: "Sim"
     }
   });
@@ -2291,7 +2313,6 @@ test("[FLOW-01] registration clears authorization before local Face resolution",
       "storage-get", "fetch", "storage-set", "append", "face-start"
     ].includes(type)),
     [
-      { key: "URL_Base_Backend", type: "storage-get" },
       { key: "IndexVerificado", type: "storage-get" },
       { method: "POST", path: "/plataforma_v2/CadastroFoto_e_FaceID", type: "fetch" },
       { key: "Usuário_Autorização_Cadastro", type: "storage-set" },

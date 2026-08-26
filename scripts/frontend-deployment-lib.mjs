@@ -132,8 +132,7 @@ function gitTrackedFiles(source) {
     .filter(Boolean);
 }
 
-async function inspectMapping(applicationId, mapping, mappingIndex) {
-  const label = `applications.${applicationId}.mappings[${mappingIndex}]`;
+async function inspectMapping(applicationId, mapping, label) {
   invariant(isPlainObject(mapping), `${label} must be an object.`);
   assertSafeRelativePath(mapping.source, `${label}.source`);
   assertSafeRelativePath(mapping.output, `${label}.output`);
@@ -196,6 +195,18 @@ export async function validateDeploymentManifest(manifest) {
   const applicationIds = new Set();
   const mappings = [];
 
+  invariant(
+    Array.isArray(manifest.sharedMappings) && manifest.sharedMappings.length > 0,
+    "Deployment manifest sharedMappings must contain at least one source-to-output mapping."
+  );
+  for (const [mappingIndex, mapping] of manifest.sharedMappings.entries()) {
+    mappings.push(await inspectMapping(
+      null,
+      mapping,
+      `sharedMappings[${mappingIndex}]`
+    ));
+  }
+
   for (const [applicationIndex, application] of manifest.applications.entries()) {
     const applicationLabel = `applications[${applicationIndex}]`;
     invariant(isPlainObject(application), `${applicationLabel} must be an object.`);
@@ -214,7 +225,11 @@ export async function validateDeploymentManifest(manifest) {
     );
 
     for (const [mappingIndex, mapping] of application.mappings.entries()) {
-      mappings.push(await inspectMapping(application.id, mapping, mappingIndex));
+      mappings.push(await inspectMapping(
+        application.id,
+        mapping,
+        `${applicationLabel}.mappings[${mappingIndex}]`
+      ));
     }
 
     invariant(Array.isArray(application.publicEntries), `${applicationLabel}.publicEntries must be an array.`);

@@ -23,10 +23,10 @@ export function createRegistrationApplication({
     createFaceElement,
     createFaceStyleSheet,
     navigate,
-    alert
+    alert,
+    backendBase
 }) {
     const session = createSessionStore(sessionStorage);
-    const backendBase = session.read('backendBase');
     const verifiedIndex = session.read('verifiedIndex');
     const client = createPlatformClient({ baseUrl: backendBase, fetch, FormDataConstructor });
 

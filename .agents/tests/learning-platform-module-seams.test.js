@@ -308,6 +308,67 @@ test("[GATE-02] all seven entry assets retain their exact bootstrap loading mode
   }
 });
 
+test("[API-01] Registration accepts an explicit synthetic platform base", async () => {
+  const [registrationModule, sessionModule] = await loadModules([
+    "photo-registration.js",
+    "session.js"
+  ]);
+  const requestTargets = [];
+  const harness = createLearningPlatformHarness({
+    routes: [{
+      handler: async () => new Promise(() => {}),
+      method: "POST",
+      path: "/plataforma_v2/CadastroFoto_e_FaceID"
+    }],
+    storage: {
+      [sessionModule.SESSION_KEYS.verifiedIndex]: "fixture-registration-handle"
+    }
+  });
+  const dependencies = harness.dependencies({
+    fetch(target, options) {
+      requestTargets.push(String(target));
+      return harness.guard.fetch(target, options);
+    }
+  });
+  harness.element("Botão-Escolher-Arquivo").files = [{ name: "fixture-photo.jpg" }];
+
+  registrationModule.createRegistrationApplication({
+    ...dependencies,
+    backendBase: FIXTURE_ORIGIN + "/plataforma_v2"
+  });
+  harness.element("Formulário-Foto-Referência").dispatch("submit", {
+    preventDefault() {}
+  });
+
+  assert.deepEqual(requestTargets, [
+    FIXTURE_ORIGIN + "/plataforma_v2/CadastroFoto_e_FaceID"
+  ]);
+  assert.deepEqual(
+    harness.timeline
+      .filter(({ type }) => type === "storage-get" || type === "fetch")
+      .map(({ key, method, path, type }) => ({ key, method, path, type })),
+    [
+      {
+        key: sessionModule.SESSION_KEYS.verifiedIndex,
+        method: undefined,
+        path: undefined,
+        type: "storage-get"
+      },
+      {
+        key: undefined,
+        method: "POST",
+        path: "/plataforma_v2/CadastroFoto_e_FaceID",
+        type: "fetch"
+      }
+    ]
+  );
+  assert.deepEqual(harness.guard.requests[0].formFields, [
+    ["IndexVerificado", "<redacted>"],
+    ["file", "<file:fixture-photo.jpg>"]
+  ]);
+  harness.hostGuard.assertUnused();
+});
+
 test("[FLOW-01] initial-notices module preserves gate, listener, submit, and reset order", async () => {
   const [noticesModule, lifecycleModule, sessionModule] = await loadModules([
     "initial-notices.js",
