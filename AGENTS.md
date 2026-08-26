@@ -155,8 +155,10 @@ match its existing style.
   Report source and generated results separately.
 - Browser checks must cover viewport landing, focus, selection or copy behavior,
   reduced motion, and console output at relevant desktop and mobile widths.
-  Never submit production data or let a local preview post to the production
-  backend; maintained forms use the local backend on port `3000`.
+  Runtime code always selects the production backend origin, including on local,
+  source, generated, and pull-request preview hosts. Install production-network
+  denial before application scripts execute, and use synthetic origins with
+  stubbed or injected transports for request verification.
 - Stop every preview or stub server when verification finishes.
 
 Run the complete local suite:

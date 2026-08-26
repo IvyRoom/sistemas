@@ -7,6 +7,11 @@ const test = require("node:test");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
 const contractPath = path.join(repositoryRoot, "docs", "learning-platform-contracts.md");
+const originContractPath = path.join(
+  repositoryRoot,
+  "docs",
+  "frontend-backend-origin-contract.md"
+);
 const contractSource = fs.readFileSync(contractPath, "utf8");
 
 function learningPlatformTestPaths() {
@@ -87,7 +92,7 @@ test("[TRACEABILITY] every behavior-baseline acceptance ID has a named test", ()
   const ids = acceptanceIds();
   const testTitles = namedTestTitles();
 
-  assert.equal(ids.length, 29, "The acceptance matrix must retain all 29 stable IDs");
+  assert.equal(ids.length, 30, "The acceptance matrix must retain all 30 stable IDs");
   for (const id of ids) {
     assert.ok(
       testTitles.some((title) => title.startsWith(`[${id}]`)),
@@ -100,7 +105,8 @@ test("[SAFETY-REDACTION] tests and traceability prose contain no sensitive sourc
   const auditablePaths = [
     ...learningPlatformTestPaths(),
     ...learningPlatformSupportPaths(),
-    contractPath
+    contractPath,
+    originContractPath
   ];
   const auditableSource = auditablePaths
     .map((filePath) => fs.readFileSync(filePath, "utf8"))
