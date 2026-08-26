@@ -86,6 +86,11 @@ repository separately.
   compatibility specification and behavior-baseline matrix for
   `apps/learning-platform/`. Preserve its stable contract descriptions across
   source moves; update snapshot-specific anchors as evidence moves.
+- `docs/project-roadmap.html` is the authoritative status and scope map for the
+  coordinated frontend and backend best-practices program. Update the relevant
+  card when a concern starts or completes, preserve the headline, topics, then
+  rationale order, and cite the card in future task handoffs instead of copying
+  the roadmap.
 - Automated tests are authoritative for behavior. Keep prose concise; do not
   duplicate route history or detailed behavior already enforced there.
 
