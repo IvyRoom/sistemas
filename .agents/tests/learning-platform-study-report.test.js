@@ -283,7 +283,6 @@ function createStudyHarness({
         ? { "Horário-Encerramento-Sessão": "2000003600000" }
         : {}),
       IndexVerificado: syntheticHandle,
-      URL_Base_Backend: `${FIXTURE_ORIGIN}/plataforma_v2`,
       Usuário_Logado: "Sim",
       ...storage
     }
@@ -292,9 +291,16 @@ function createStudyHarness({
   const topics = installTopics ? installClosedTopics(harness) : undefined;
   const dependencies = harness.dependencies();
   const session = createSessionStore(dependencies.sessionStorage);
+  const requestTargets = [];
   const client = createPlatformClient({
-    baseUrl: session.read("backendBase"),
-    fetch: dependencies.fetch,
+    baseUrl: `${FIXTURE_ORIGIN}/plataforma_v2`,
+    fetch(target, options) {
+      requestTargets.push(String(target));
+      const targetUrl = new URL(String(target));
+      assert.equal(targetUrl.origin, FIXTURE_ORIGIN);
+      assert.doesNotMatch(targetUrl.pathname, /^\/null(?:\/|$)/);
+      return dependencies.fetch(target, options);
+    },
     FormDataConstructor: dependencies.FormDataConstructor
   });
   const dom = createStudyDom(dependencies.document);
@@ -350,6 +356,7 @@ function createStudyHarness({
     dom: domFixtures,
     harness,
     player,
+    requestTargets,
     setPdfConstructor(value) { PdfConstructor = value; },
     shaka: shaka.observations,
     topics
@@ -444,7 +451,6 @@ async function runRefresh(
   const initialStorage = {
     "Horário-Encerramento-Sessão": "2000003600000",
     IndexVerificado: syntheticHandle,
-    URL_Base_Backend: `${FIXTURE_ORIGIN}/plataforma_v2`,
     Usuário_Logado: "Sim",
     ...storage
   };
@@ -459,6 +465,24 @@ async function runRefresh(
   await result.harness.flush(20);
   return result;
 }
+
+test("[API-03] direct Study startup injects an absolute synthetic platform base", async () => {
+  const { harness, requestTargets } = createStudyHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/refresh",
+      response: { data: fixtureRefreshData("0"), status: 200 }
+    }]
+  });
+
+  assert.equal(Object.hasOwn(harness.sessionStorage.snapshot(), "URL_Base_Backend"), false);
+  harness.dispatchWindow("load");
+  await harness.flush(20);
+
+  assert.deepEqual(requestTargets, [`${FIXTURE_ORIGIN}/plataforma_v2/refresh`]);
+  assert.equal(requestTargets.some((target) => /(?:^|\/)null(?:\/|$)/.test(target)), false);
+  harness.hostGuard.assertUnused();
+});
 
 test("[FLOW-02] study keeps 171 contiguous nodes and the ten frozen module boundaries", () => {
   const topicRecords = Array.from(
@@ -558,7 +582,6 @@ test("[API-03] refresh retains named platform-data and generic failure mappings"
       }],
       storage: {
         IndexVerificado: "synthetic-row-capability",
-        URL_Base_Backend: `${FIXTURE_ORIGIN}/plataforma_v2`,
         Usuário_Logado: "Sim"
       }
     });
@@ -839,7 +862,6 @@ test("[ERROR-02] named study writes preserve rollback and request effects", asyn
   const redactedStorage = {
     "Horário-Encerramento-Sessão": "2000003600000",
     IndexVerificado: "<redacted>",
-    URL_Base_Backend: "<redacted>",
     Usuário_Logado: "Sim"
   };
 
@@ -853,7 +875,7 @@ test("[ERROR-02] named study writes preserve rollback and request effects", asyn
       navigation: [...harness.navigation],
       requests: harness.guard.requests,
       storage: harness.sessionStorage.snapshot({
-        redact: ["IndexVerificado", "URL_Base_Backend"]
+        redact: ["IndexVerificado"]
       }),
       timeline: harness.timeline.filter(({ type }) => [
         "fetch", "navigate", "storage-set"
@@ -1366,7 +1388,7 @@ test("[FLOW-06] logout and timer expiry only flip the logged flag and navigate w
   harness.element("Botão-Sair").dispatch("click");
   const afterLogout = harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
   assert.equal(afterLogout.Usuário_Logado, "Não");
-  for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão", "URL_Base_Backend"]) {
+  for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão"]) {
     assert.equal(afterLogout[key], preservedBefore[key]);
   }
   assert.equal(harness.navigation.at(-1), "/plataforma/login");
@@ -1382,7 +1404,7 @@ test("[FLOW-06] logout and timer expiry only flip the logged flag and navigate w
   interval.callback();
   const afterExpiry = expiryRun.harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
   assert.equal(afterExpiry.Usuário_Logado, "Não");
-  for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão", "URL_Base_Backend"]) {
+  for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão"]) {
     assert.equal(afterExpiry[key], preservedBeforeExpiry[key]);
   }
   assert.equal(expiryRun.harness.navigation.at(-1), "/plataforma/login");

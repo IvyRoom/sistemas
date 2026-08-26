@@ -6,6 +6,7 @@ import { createCertificateRenderer } from '../modules/course-content/certificate
 import { createStudyDom } from '../modules/course-content/dom.js';
 import { createDownloadConfigurator } from '../modules/course-content/downloads.js';
 import { createStudyPlayer } from '../modules/course-content/player.js';
+import { BACKEND_ORIGIN } from '../../shared/backend-origin.js';
 
 function isDrmEnabled(fullName) {
     let drmEnabled;
@@ -23,7 +24,7 @@ async function loadSelectedMedia(player, { drmEnabled, moduleName, videoName }) 
 }
 
 const session = createSessionStore(window.sessionStorage);
-const backendBase = session.read('backendBase');
+const backendBase = `${BACKEND_ORIGIN}/plataforma_v2`;
 let legacySessionSeconds;
 const studyDom = createStudyDom(window.document, () => {
     legacySessionSeconds = session.read('legacySessionSeconds');

@@ -8,6 +8,7 @@ const path = require("node:path");
 const test = require("node:test");
 
 const repositoryRoot = path.join(__dirname, "..", "..");
+const applicationsRoot = path.join(repositoryRoot, "apps");
 const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
 const studyRoot = path.join(platformRoot, "course-content");
 const faceRoot = path.join(platformRoot, "azure-ai-vision-face-ui");
@@ -23,10 +24,43 @@ const faceSource = fs.readFileSync(
   path.join(faceRoot, "FaceLivenessDetector.js"),
   "utf8"
 );
+const sharedBackendOriginSource = fs.readFileSync(
+  path.join(applicationsRoot, "shared", "backend-origin.js"),
+  "utf8"
+);
+
+function backendOriginFromSharedModule() {
+  const declarations = Array.from(
+    sharedBackendOriginSource.matchAll(
+      /^export const BACKEND_ORIGIN = (["'])([^"'\r\n]+)\1;\r?$/gm
+    )
+  );
+  assert.equal(declarations.length, 1, "The shared module must export one canonical origin");
+  return declarations[0][2];
+}
+
+const productionBackendOrigin = backendOriginFromSharedModule();
 
 const platformApplication = manifest.applications.find(
   (application) => application.id === "learning-platform"
 );
+const sharedMappings = [{ source: "apps/shared", output: "shared" }];
+const backendConsumerApplicationIds = [
+  "quote-request",
+  "client-intake",
+  "certificate-validation",
+  "conecta-referral-form"
+];
+const backendOriginConsumers = [
+  "apps/certificate-validation/main.js",
+  "apps/client-intake/main.js",
+  "apps/learning-platform/course-content/main.js",
+  "apps/learning-platform/login/main.js",
+  "apps/learning-platform/photo-registration/main.js",
+  "apps/learning-platform/status-report/main.js",
+  "apps/quote-request/main.js",
+  "apps/referrals-management/referral-form/main.js"
+];
 const currentPlatformEntries = [
   { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
   { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
@@ -222,30 +256,43 @@ function regularFilesRecursively(directory) {
     });
 }
 
-function mappedFiles(applications = manifest.applications) {
+function mappedFilesFromMappings(mappings) {
   const records = [];
 
-  for (const application of applications) {
-    for (const mapping of application.mappings) {
-      const sourcePath = localPath(mapping.source);
-      const sourceStats = fs.statSync(sourcePath);
-      const trackedFiles = gitTrackedFiles(mapping.source);
+  for (const mapping of mappings) {
+    const sourcePath = localPath(mapping.source);
+    const sourceStats = fs.statSync(sourcePath);
+    const trackedFiles = gitTrackedFiles(mapping.source);
 
-      for (const trackedFile of trackedFiles) {
-        const suffix = sourceStats.isFile()
-          ? ""
-          : trackedFile.slice(mapping.source.length + 1);
-        records.push({
-          output: sourceStats.isFile()
-            ? mapping.output
-            : path.posix.join(mapping.output, suffix),
-          source: trackedFile
-        });
-      }
+    for (const trackedFile of trackedFiles) {
+      const suffix = sourceStats.isFile()
+        ? ""
+        : trackedFile.slice(mapping.source.length + 1);
+      records.push({
+        output: sourceStats.isFile()
+          ? mapping.output
+          : path.posix.join(mapping.output, suffix),
+        source: trackedFile
+      });
     }
   }
 
   return records.sort((left, right) => compareText(left.output, right.output));
+}
+
+function mappedFiles(applications = manifest.applications) {
+  return mappedFilesFromMappings(
+    applications.flatMap((application) => application.mappings)
+  );
+}
+
+function sharedRuntimeRecords() {
+  return mappedFilesFromMappings(manifest.sharedMappings);
+}
+
+function deploymentRecords() {
+  return [...mappedFiles(), ...sharedRuntimeRecords()]
+    .sort((left, right) => compareText(left.output, right.output));
 }
 
 function treeStats(records) {
@@ -274,6 +321,28 @@ function digestStrings(values) {
     .createHash("sha256")
     .update([...values].sort(compareText).join("\n"), "utf8")
     .digest("hex");
+}
+
+function applicationJavaScriptSources() {
+  return regularFilesRecursively(applicationsRoot)
+    .filter((filePath) => path.extname(filePath).toLowerCase() === ".js")
+    .map((filePath) => ({
+      relativePath: path.relative(repositoryRoot, filePath).split(path.sep).join("/"),
+      source: fs.readFileSync(filePath, "utf8")
+    }))
+    .sort((left, right) => compareText(left.relativePath, right.relativePath));
+}
+
+function moduleImportEdges(sources) {
+  const edges = [];
+  const importPattern = /\bimport\s+(?:[^"'();]+?\s+from\s+)?["']([^"']+)["']/g;
+
+  for (const { relativePath, source } of sources) {
+    for (const match of source.matchAll(importPattern)) {
+      edges.push(`${relativePath} -> ${match[1]}`);
+    }
+  }
+  return edges.sort(compareText);
 }
 
 function countBufferOccurrences(source, target) {
@@ -319,11 +388,7 @@ function platformRecords() {
   return mappedFiles([platformApplication]);
 }
 
-function phaseAPlatformRecords() {
-  return mappedFiles([{ ...platformApplication, mappings: phaseAPlatformMappings }]);
-}
-
-function phaseARecords() {
+function compatibilityShapeRecords() {
   return mappedFiles(
     manifest.applications.map((application) =>
       application.id === "learning-platform"
@@ -398,23 +463,97 @@ function sourceDerivedSensitiveLiterals() {
   );
   assert.ok(playReady, "The PlayReady role must remain statically discoverable");
 
-  const loginSource = pageSources.find(
-    ({ relativePath }) => relativePath === "login/main.js"
-  ).source;
-  const backendBase = loginSource.match(
-    /sessionStorage\.setItem\('URL_Base_Backend',\s*'([^']+)'\)/
-  );
-  assert.ok(backendBase, "The backend role must remain statically discoverable");
-
   return {
-    backendBase: backendBase[1],
+    backendBase: productionBackendOrigin,
     participantNames,
     playReadyUrl: playReady[1]
   };
 }
 
-test("[ROUTE-01] manifest retains seven entries and one canonical module mapping", () => {
+test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () => {
+  const javaScriptSources = applicationJavaScriptSources();
+  const combinedJavaScript = javaScriptSources.map(({ source }) => source).join("\n");
+  const allApplicationFiles = regularFilesRecursively(applicationsRoot);
+  const sharedImportPattern = /^\s*import\s+\{\s*BACKEND_ORIGIN\s*\}\s+from\s+["'][^"']*shared\/backend-origin\.js["'];\s*$/m;
+  const consumers = javaScriptSources
+    .filter(({ source }) => source.includes("shared/backend-origin.js"))
+    .map(({ relativePath }) => relativePath);
+
+  assert.deepEqual(consumers, backendOriginConsumers);
+  assert.equal(consumers.length, 8);
+  for (const { relativePath, source } of javaScriptSources) {
+    if (!consumers.includes(relativePath)) continue;
+    assert.match(source, sharedImportPattern, `${relativePath}:exact shared import`);
+  }
+  assert.equal(
+    consumers.some((relativePath) => relativePath.startsWith("apps/marketing-site/")),
+    false,
+    "The Marketing Site must not import the Machado backend origin"
+  );
+  assert.equal(
+    javaScriptSources.reduce(
+      (count, { source }) => count + source.split(productionBackendOrigin).length - 1,
+      0
+    ),
+    1,
+    "The production backend origin literal must occur in one executable source"
+  );
+  assert.doesNotMatch(
+    combinedJavaScript,
+    /https?:\/\/(?:localhost|127(?:\.\d{1,3}){3}|\[::1\])(?=[:/"'])/i,
+    "Executable frontend source must not contain a localhost backend URL"
+  );
+  assert.doesNotMatch(
+    combinedJavaScript,
+    /(?:window\.|document\.)?location\.hostname/,
+    "Runtime frontend source must not select a backend from its hostname"
+  );
+  assert.equal(
+    allApplicationFiles.reduce(
+      (count, filePath) => count + countBufferOccurrences(
+        fs.readFileSync(filePath),
+        Buffer.from("URL_Base_Backend", "utf8")
+      ),
+      0
+    ),
+    0,
+    "The retired backend-base storage key must be absent beneath apps"
+  );
+  assert.equal(combinedJavaScript.includes("/null/"), false);
+
+  const importEdges = moduleImportEdges(javaScriptSources);
+  assert.deepEqual(
+    {
+      count: importEdges.length,
+      digest: digestStrings(importEdges)
+    },
+    {
+      count: 77,
+      digest: "406ac11f31b15a9b98646fad28fefd87f3471f09858a87a9b935cd1f14ada2e9"
+    },
+    "The centralized-origin source graph must retain its exact import aggregate"
+  );
+});
+
+test("[ROUTE-01] manifest retains seven entries and a separate shared runtime mapping", () => {
   assert.ok(platformApplication, "The learning-platform manifest entry must exist");
+  assert.deepEqual(manifest.sharedMappings, sharedMappings);
+  assert.equal(
+    manifest.applications.some((application) =>
+      application.mappings.some(({ source }) => source === "apps/shared")
+    ),
+    false,
+    "Shared runtime infrastructure must not be classified as an application"
+  );
+  assert.equal(platformApplication.mappings.length + manifest.sharedMappings.length, 10);
+  assert.equal(
+    manifest.sharedMappings.length + manifest.applications.reduce(
+      (count, application) => count + application.mappings.length,
+      0
+    ),
+    20,
+    "The complete deployment graph must contain 20 mappings"
+  );
   assert.deepEqual(platformApplication.mappings, finalPlatformMappings);
   assert.deepEqual(platformApplication.publicEntries, [
     {
@@ -854,7 +993,6 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
 
 test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact", () => {
   const records = platformRecords();
-  const baselineRecords = phaseAPlatformRecords();
   const outputPaths = records.map(({ output }) => output);
   const extensionCounts = Object.fromEntries(
     Array.from(
@@ -867,34 +1005,13 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
   );
 
   assert.deepEqual(
-    treeStats(baselineRecords),
-    {
-      files: 197,
-      bytes: 20760016,
-      digest: "ad69a58a20b537cd016b813052c5fd07954869b3f44b1d1f92f5f4aa4cb2deec"
-    },
-    "The independently reconstructed phase-A platform baseline must remain exact"
-  );
-  assert.deepEqual(
-    treeStats(baselineRecords.map((record) => ({
-      ...record,
-      output: record.output.slice("plataforma/".length)
-    }))),
-    {
-      files: 197,
-      bytes: 20760016,
-      digest: "de2b9ca63f5449a4fc0291aca7774d1abf9b475fd17a07adf50733d45812798a"
-    },
-    "The historical phase-A prefix-omitted platform-root digest must remain exact"
-  );
-  assert.deepEqual(
     treeStats(records),
     {
       files: 182,
-      bytes: 20693467,
-      digest: "25f18cb7306246bb5a4b63efc8046365c50da381c3e10d33e55cf3f1021dd605"
+      bytes: 20693440,
+      digest: "6035b003a2c781fc5632eebf4dd02bfdc03559dab1be2715fe15ef04562b2689"
     },
-    "The current manifest must produce the exact phase-B platform target"
+    "The current manifest must produce the exact centralized-origin platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -903,10 +1020,22 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20693467,
-      digest: "21ea67296d7fc40555033f4fbe181937b2f3b2a5c869aa38e2b2eab00e67ebcb"
+      bytes: 20693440,
+      digest: "6a4ac5f79c6e26d5882bb48a3e707e4e7820da7983c47efd3cabadfd9f9a0a26"
     },
-    "The current manifest must produce the exact prefix-omitted phase-B target"
+    "The current manifest must produce the exact prefix-omitted centralized-origin target"
+  );
+  const javaScriptRecords = records.filter(
+    ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
+  );
+  assert.deepEqual(
+    treeStats(javaScriptRecords),
+    {
+      files: 36,
+      bytes: 440984,
+      digest: "dbc04f14f6f88ea7bb3e7c8d81049e4ac6a678d84d588b7721bd1223d724fd4a"
+    },
+    "The platform JavaScript files must retain their current exact identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -942,6 +1071,62 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     },
     "The complete platform binary set must retain exact paths and bytes after alignment"
   );
+  const studyRecords = records.filter(({ output }) =>
+    output.startsWith("plataforma/estudo/")
+  );
+  assert.deepEqual(
+    treeStats(studyRecords),
+    {
+      files: 41,
+      bytes: 9990876,
+      digest: "3b3ac0a4fcea4a82ba6e668fe33ab8f2a8853014f32ae6883c3e8651e0ab9233"
+    },
+    "The Study entry subtree must retain its current mapped identity"
+  );
+  const backendConsumerApplicationStats = Object.fromEntries(
+    backendConsumerApplicationIds.map((applicationId) => [
+      applicationId,
+      treeStats(mappedFiles(
+        manifest.applications.filter(({ id }) => id === applicationId)
+      ))
+    ])
+  );
+  assert.deepEqual(backendConsumerApplicationStats, {
+    "quote-request": {
+      files: 4,
+      bytes: 46303,
+      digest: "60014497998c75ec8ff4b34286265008d1d8b52f3007b5e1492caad8314d77a9"
+    },
+    "client-intake": {
+      files: 5,
+      bytes: 164968,
+      digest: "05e6f0bc5d5b75372c623b86d02efcd7f985b31a90738270b0d3b0a765010fe0"
+    },
+    "certificate-validation": {
+      files: 5,
+      bytes: 131335,
+      digest: "f29860ea813106ddb1c9181aa9dec83414baa1207f3601248a540239d2cf119d"
+    },
+    "conecta-referral-form": {
+      files: 6,
+      bytes: 393842,
+      digest: "47b7b73c6aa53d9af15b01041f2841588d8404bb015990a59a540863dcf77520"
+    }
+  });
+  const backendConsumerApplicationRecords = mappedFiles(
+    manifest.applications.filter(({ id }) =>
+      backendConsumerApplicationIds.includes(id)
+    )
+  );
+  assert.deepEqual(
+    treeStats(backendConsumerApplicationRecords),
+    {
+      files: 20,
+      bytes: 736448,
+      digest: "1a2e16ce19f831ad36c4ffcfa9611122194d956ee70c929ea264cfd632a8aed1"
+    },
+    "The four API-bearing public applications must retain their exact aggregate identity"
+  );
   const unrelatedRecords = mappedFiles(
     manifest.applications.filter(({ id }) => id !== "learning-platform")
   );
@@ -949,10 +1134,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(unrelatedRecords),
     {
       files: 75,
-      bytes: 6605035,
-      digest: "c83305484393d44eecbdab18325f582e87fc253ed50a782985256f90f2f651f2"
+      bytes: 6604504,
+      digest: "12e1bdf1e23f3dbbc7657cefde9a3a69425e7e7241ea023b20e789b4701a0110"
     },
-    "Unrelated frontend applications must remain byte-identical"
+    "Non-platform applications must retain their current exact identity"
   );
   assert.ok(
     outputPaths.every((file) => file === file.normalize("NFC")),
@@ -1254,29 +1439,46 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] phase B removes only the exact phase-A compatibility outputs", () => {
-  const records = mappedFiles();
-  const baselineRecords = phaseARecords();
-  assert.deepEqual(
-    treeStats(baselineRecords),
-    {
-      files: 272,
-      bytes: 27365051,
-      digest: "e394735cbde354c093331e95806739dd85951146b23a6973f09fd4a66d158454"
-    },
-    "The independently reconstructed phase-A frontend baseline must remain exact"
+test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact", () => {
+  const historicalPhaseB = {
+    files: 257,
+    bytes: 27298502,
+    digest: "166506b93b3477a175851a089360631894b0a67e9fa3fc9bdab4bd8b5b185561"
+  };
+  const applicationRecords = mappedFiles();
+  const records = deploymentRecords();
+  const compatibilityRecords = compatibilityShapeRecords();
+  const applicationStats = treeStats(applicationRecords);
+  assert.equal(
+    applicationStats.files,
+    historicalPhaseB.files,
+    "The application mappings must retain the historical phase-B path count"
+  );
+  assert.notDeepEqual(
+    applicationStats,
+    historicalPhaseB,
+    "The historical phase-B identity must not be presented as the current artifact"
   );
   assert.deepEqual(
     treeStats(records),
     {
-      files: 257,
-      bytes: 27298502,
-      digest: "166506b93b3477a175851a089360631894b0a67e9fa3fc9bdab4bd8b5b185561"
+      files: 258,
+      bytes: 27298025,
+      digest: "91ee00d6a05618203c27979094b6916386bb15eb4ea85cadad853bb0c53d1e0c"
     },
-    "The current manifest must produce the exact phase-B frontend target"
+    "The current manifest must produce the exact centralized-origin frontend target"
+  );
+  assert.deepEqual(
+    treeStats(sharedRuntimeRecords()),
+    {
+      files: 1,
+      bytes: 81,
+      digest: "c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d"
+    },
+    "The shared runtime mapping must retain its exact separate identity"
   );
 
-  const baselineByOutput = new Map(baselineRecords.map((record) => [record.output, record]));
+  const baselineByOutput = new Map(compatibilityRecords.map((record) => [record.output, record]));
   const currentByOutput = new Map(records.map((record) => [record.output, record]));
   const removedOutputs = [...baselineByOutput.keys()]
     .filter((output) => !currentByOutput.has(output))
@@ -1289,21 +1491,20 @@ test("[ARTIFACT-01] phase B removes only the exact phase-A compatibility outputs
     retiredModuleOutputPairs.map(({ retired }) => retired).sort(compareText),
     "Exactly the 15 named compatibility outputs must disappear"
   );
-  assert.deepEqual(addedOutputs, [], "Phase B must add no output path");
-  assert.equal(
-    removedOutputs.reduce(
-      (bytes, output) =>
-        bytes + fs.statSync(localPath(baselineByOutput.get(output).source)).size,
-      0
-    ),
-    66549,
-    "The 15 retired compatibility outputs must contain exactly 66,549 bytes"
+  assert.deepEqual(
+    addedOutputs,
+    ["shared/backend-origin.js"],
+    "The separate shared origin module must be the sole new output path"
   );
 
   const commonOutputs = [...currentByOutput.keys()]
     .filter((output) => baselineByOutput.has(output))
     .sort(compareText);
-  assert.equal(commonOutputs.length, 257, "All 257 phase-B outputs must exist in phase A");
+  assert.equal(
+    commonOutputs.length,
+    257,
+    "All historical phase-B application paths must remain in the current graph"
+  );
   for (const output of commonOutputs) {
     const baseline = baselineByOutput.get(output);
     const current = currentByOutput.get(output);
@@ -1319,17 +1520,33 @@ test("[ARTIFACT-01] phase B removes only the exact phase-A compatibility outputs
 
 test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform downloads", () => {
   const records = platformRecords();
+  const completeRecords = deploymentRecords();
+  const publicEntryCount = manifest.applications.reduce(
+    (count, application) => count + application.publicEntries.length,
+    0
+  );
+  const publicDownloadCount = manifest.applications.reduce(
+    (count, application) => count + application.publicDownloads.length,
+    0
+  );
   assert.equal(platformApplication.publicEntries.length, 7);
   assert.deepEqual(platformApplication.publicDownloads, []);
   assert.equal(
     records.length - platformApplication.publicEntries.length,
     175,
-    "Phase B must contain exactly 175 implicit support files"
+    "The platform must contain exactly 175 implicit support files"
   );
   assert.equal(
     records.filter(({ output }) => output.startsWith("plataforma/estudo/files/")).length,
     33,
     "All 33 study downloads must remain implicit rather than publicDownloads entries"
+  );
+  assert.equal(publicEntryCount, 12);
+  assert.equal(publicDownloadCount, 3);
+  assert.equal(
+    completeRecords.length - publicEntryCount - publicDownloadCount,
+    243,
+    "The complete centralized-origin artifact must contain 243 support files"
   );
 });
 

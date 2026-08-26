@@ -3,7 +3,6 @@ export const SESSION_KEYS = Object.freeze({
     verifiedIndex: 'IndexVerificado',
     deviceWarningOrigin: 'Origem_Aviso_Dispositivo',
     legacySessionSeconds: 'TempoSessão_Segundos',
-    backendBase: 'URL_Base_Backend',
     registrationAuthorization: 'Usuário_Autorização_Cadastro',
     registeredPhoto: 'Usuário_Foto_Cadastrada',
     loggedIn: 'Usuário_Logado'

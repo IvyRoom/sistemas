@@ -70,7 +70,7 @@ test('project roadmap data has one valid card contract for every concern', () =>
   assert.equal(cards.length, 87);
   assert.deepEqual(
     cards.filter(({ status }) => status === 'next').map(({ id }) => id),
-    ['publish-program-contracts'],
+    ['centralize-backend-origin'],
   );
   assert.deepEqual(
     cards.filter(({ status }) => status === 'ongoing').map(({ id }) => id),
@@ -98,6 +98,11 @@ test('project roadmap data has one valid card contract for every concern', () =>
   requiredConcerns.forEach((id) => {
     assert.ok(cardIds.has(id), `missing major roadmap concern: ${id}`);
   });
+
+  const cardsById = new Map(cards.map((card) => [card.id, card]));
+  assert.equal(cardsById.get('publish-program-contracts').status, 'complete');
+  assert.equal(cardsById.get('centralize-backend-origin').status, 'next');
+  assert.equal(cardsById.get('replace-markup-pr').status, 'queued');
 });
 
 test('card renderer preserves headline, topics, then rationale order', () => {

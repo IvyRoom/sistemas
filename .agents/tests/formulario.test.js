@@ -2,7 +2,8 @@
 
 // Behavioral harness for apps/client-intake/main.js. Run with:
 // node --test .agents/tests/formulario.test.js
-// The production script is evaluated unchanged against a small, deterministic DOM.
+// The production script is evaluated with its exact shared-origin import bound
+// against a small, deterministic DOM.
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -10,10 +11,32 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(
+function loadBackendOrigin() {
+  const moduleSource = fs.readFileSync(
+    path.join(__dirname, '..', '..', 'apps', 'shared', 'backend-origin.js'),
+    'utf8',
+  );
+  const executableModuleSource = moduleSource.replace(
+    'export const BACKEND_ORIGIN =',
+    'globalThis.BACKEND_ORIGIN =',
+  );
+  assert.notEqual(executableModuleSource, moduleSource, 'Missing BACKEND_ORIGIN export');
+  const context = vm.createContext({});
+  vm.runInContext(executableModuleSource, context, {
+    filename: 'apps/shared/backend-origin.js',
+  });
+  assert.equal(typeof context.BACKEND_ORIGIN, 'string');
+  return context.BACKEND_ORIGIN;
+}
+
+const BACKEND_ORIGIN = loadBackendOrigin();
+const applicationSource = fs.readFileSync(
   path.join(__dirname, '..', '..', 'apps', 'client-intake', 'main.js'),
   'utf8',
 );
+const backendOriginImport = "import { BACKEND_ORIGIN } from '../shared/backend-origin.js';";
+const source = applicationSource.replace(backendOriginImport, '');
+assert.notEqual(source, applicationSource, 'Missing exact shared backend-origin import');
 
 const ADDRESS_SUFFIXES = [
   'postal-code',
@@ -365,6 +388,7 @@ function createHarness({
 
   const sandbox = {
     AbortController,
+    BACKEND_ORIGIN,
     HTMLElement: FakeElement,
     HTMLInputElement: FakeElement,
     clearTimeout(timeoutId) {
@@ -554,18 +578,24 @@ test('device gate redirects at 1024 and leaves the 1025 form available', () => {
   assert.equal(aboveBoundary.window.location.href, '/plataforma/aviso-dispositivo/');
 });
 
-test('local previews and production select their exact isolated submit endpoints', async () => {
-  const expectations = [
-    ['localhost', 'http://localhost:3000/clientes/processa-formulario'],
-    ['127.0.0.1', 'http://localhost:3000/clientes/processa-formulario'],
-    ['machadogestao.com', 'https://plataforma-backend-v3.azurewebsites.net/clientes/processa-formulario'],
+test('localhost, loopback, preview, and production pages use the same production endpoint', async () => {
+  const hostnames = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'feature-preview.azurestaticapps.net',
+    'machadogestao.com',
   ];
 
-  for (const [hostname, endpoint] of expectations) {
+  for (const hostname of hostnames) {
     const harness = createHarness({ hostname });
     await vm.runInContext('submitForm()', harness.context);
     assert.equal(harness.fetchCalls.length, 1, hostname);
-    assert.equal(harness.fetchCalls[0].url, endpoint, hostname);
+    assert.equal(
+      harness.fetchCalls[0].url,
+      `${BACKEND_ORIGIN}/clientes/processa-formulario`,
+      hostname,
+    );
   }
 });
 

@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "canonicalOrigin": "https://machadogestao.com",
+  "sharedMappings": [
+    {
+      "source": "apps/shared",
+      "output": "shared"
+    }
+  ],
   "applications": [
     {
       "id": "marketing-site",

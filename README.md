@@ -6,7 +6,8 @@ frontends live in their own path-based source directories. GitHub Actions
 generates an allowlisted `dist/` tree from those sources, and Azure Static Web
 Apps publishes only that tree. There is no application-wide router; public
 paths are independent from source locations and remain defined by the
-deployment manifest.
+deployment manifest. Shared runtime infrastructure lives in `apps/shared/` and
+is mapped separately from maintained application identities.
 
 ## Program roadmap
 
@@ -154,7 +155,8 @@ README, while live-site links are canonical absolute URLs.
 The [Azure Static Web Apps workflow](.github/workflows/azure-static-web-apps-red-cliff-0b4173b0f.yml)
 deploys production from `main`. The machine-readable
 [frontend deployment manifest](frontend-deployment.json) maps stable
-application identities and current source locations to public `dist/` paths.
+application identities plus shared runtime infrastructure from current source
+locations to public `dist/` paths.
 The dependency-free scripts in [`scripts/`](scripts/) recreate only the ignored
 repository-local `dist/` directory, copy mapped tracked files, and validate the
 route contract, references, file set, bytes, repeatability, and expected `404`

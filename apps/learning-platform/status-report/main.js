@@ -1,8 +1,9 @@
 import { redirectToDeviceWarning } from '../modules/lifecycle.js';
 import { createPlatformClient } from '../modules/platform-client.js';
 import { createStatusReportApplication } from '../modules/status-report/application.js';
+import { BACKEND_ORIGIN } from '../../shared/backend-origin.js';
 
-const backendBase = "https://plataforma-backend-v3.azurewebsites.net/plataforma_v2"; //https://plataforma-backend-v3.azurewebsites.net/plataforma_v2 //http://localhost:3000/plataforma_v2
+const backendBase = `${BACKEND_ORIGIN}/plataforma_v2`;
 
 const navigate = target => { window.location.href = target; };
 

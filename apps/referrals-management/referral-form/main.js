@@ -1,8 +1,8 @@
+import { BACKEND_ORIGIN } from '../../shared/backend-origin.js';
+
 'use strict';
 
-const SUBMIT_ENDPOINT = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000/conecta/processa-recomendacao'
-  : 'https://plataforma-backend-v3.azurewebsites.net/conecta/processa-recomendacao';
+const SUBMIT_ENDPOINT = `${BACKEND_ORIGIN}/conecta/processa-recomendacao`;
 const SUBMIT_TIMEOUT_MS = 60000;
 const RETURNING_VISITOR_KEY = 'conecta-returning-visitor';
 const COPY_FEEDBACK_MS = 2000;

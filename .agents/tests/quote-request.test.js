@@ -6,10 +6,32 @@ const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 
-const source = fs.readFileSync(
+function loadBackendOrigin() {
+  const moduleSource = fs.readFileSync(
+    path.join(__dirname, "..", "..", "apps", "shared", "backend-origin.js"),
+    "utf8"
+  );
+  const executableModuleSource = moduleSource.replace(
+    "export const BACKEND_ORIGIN =",
+    "globalThis.BACKEND_ORIGIN ="
+  );
+  assert.notEqual(executableModuleSource, moduleSource, "Missing BACKEND_ORIGIN export");
+  const context = vm.createContext({});
+  vm.runInContext(executableModuleSource, context, {
+    filename: "apps/shared/backend-origin.js"
+  });
+  assert.equal(typeof context.BACKEND_ORIGIN, "string");
+  return context.BACKEND_ORIGIN;
+}
+
+const BACKEND_ORIGIN = loadBackendOrigin();
+const applicationSource = fs.readFileSync(
   path.join(__dirname, "..", "..", "apps", "quote-request", "main.js"),
   "utf8"
 );
+const backendOriginImport = "import { BACKEND_ORIGIN } from '../shared/backend-origin.js';";
+const source = applicationSource.replace(backendOriginImport, "");
+assert.notEqual(source, applicationSource, "Missing exact shared backend-origin import");
 
 const REQUIRED_FIELD_IDS = [
   "full-name",
@@ -142,6 +164,7 @@ function createHarness({
 
   const sandbox = {
     AbortController,
+    BACKEND_ORIGIN,
     alert(message) {
       alerts.push(message);
     },
@@ -228,14 +251,13 @@ test("pure masks and validators cover mobile input and current CNPJ formats", ()
   const {
     collapseSpaces,
     isCompletePhone,
-    isLocalHostname,
     isValidCnpj,
     maskCnpj,
     maskPhone,
     normalizeEmail,
     toTitleCase
   } = vm.runInContext(
-    "({ collapseSpaces, isCompletePhone, isLocalHostname, isValidCnpj, maskCnpj, maskPhone, normalizeEmail, toTitleCase })",
+    "({ collapseSpaces, isCompletePhone, isValidCnpj, maskCnpj, maskPhone, normalizeEmail, toTitleCase })",
     harness.context
   );
 
@@ -282,10 +304,6 @@ test("pure masks and validators cover mobile input and current CNPJ formats", ()
   assert.equal(toTitleCase("mariana McDonald"), "Mariana McDonald");
   assert.equal(normalizeEmail(" LUCAS@EXAMPLE.COM "), "lucas@example.com");
   assert.equal(normalizeEmail(" LUCAS @EXAMPLE.COM "), "lucas @example.com");
-  assert.equal(isLocalHostname("localhost"), true);
-  assert.equal(isLocalHostname("127.0.0.1"), true);
-  assert.equal(isLocalHostname("[::1]"), true);
-  assert.equal(isLocalHostname("machadogestao.com"), false);
 });
 
 test("valid production submission sends the exact normalized payload and presents success", async () => {
@@ -309,7 +327,7 @@ test("valid production submission sends the exact normalized payload and present
   const [{ options, url }] = harness.fetchCalls;
   assert.equal(
     url,
-    "https://plataforma-backend-v3.azurewebsites.net/landingpage/solicitacaoorcamento"
+    `${BACKEND_ORIGIN}/landingpage/solicitacaoorcamento`
   );
   assert.equal(options.method, "POST");
   assert.deepEqual({ ...options.headers }, { "Content-Type": "application/json" });
@@ -338,8 +356,14 @@ test("valid production submission sends the exact normalized payload and present
   assert.deepEqual(harness.clearedTimeouts, [harness.timeoutCalls[0].timeoutId]);
 });
 
-test("local source previews never post quote data to production", async () => {
-  for (const hostname of ["localhost", "127.0.0.1", "[::1]"]) {
+test("localhost, loopback, preview, and production pages use the same production endpoint", async () => {
+  for (const hostname of [
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+    "feature-preview.azurestaticapps.net",
+    "machadogestao.com"
+  ]) {
     const harness = createHarness({ hostname });
     harness.fillValidForm();
     const event = harness.submitEvent();
@@ -350,7 +374,7 @@ test("local source previews never post quote data to production", async () => {
     assert.equal(harness.fetchCalls.length, 1, hostname);
     assert.equal(
       harness.fetchCalls[0].url,
-      "http://localhost:3000/landingpage/solicitacaoorcamento",
+      `${BACKEND_ORIGIN}/landingpage/solicitacaoorcamento`,
       hostname
     );
   }
