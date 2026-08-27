@@ -24,11 +24,11 @@ integrations. The current production hostname redirects to the canonical
 origin while preserving the path and query string, but that behavior does not
 make the Azure hostname canonical.
 
-Path spellings are part of the contract. The directory routes below are written
-with a trailing slash; preserve existing working references rather than
-normalizing them during unrelated work. The quote request and Conecta referral
-forms normalize their slashless spellings before loading external assets while
-preserving the query string and fragment.
+Path spellings are part of the contract. The page and download paths inventoried
+below are the canonical destinations; use those exact spellings in links,
+bookmarks, QR codes, metadata, and integrations. Production accepts the current
+page entries' slashless compatibility spellings only as described below. That
+behavior does not authorize aliases for retired or unknown paths.
 
 ## Frontend structure and public routes
 
@@ -50,6 +50,31 @@ points. The deployment contract requires every listed route to return HTTP
 | Platform course content | [apps/learning-platform/course-content/index.html](apps/learning-platform/course-content/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
 | Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
 | Platform status report | [apps/learning-platform/status-report/index.html](apps/learning-platform/status-report/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
+
+### Canonical navigation behavior
+
+The marketing entry is canonical at `/`; each of the other eleven page entries
+is canonical at its exact trailing-slash path in the table. Direct entry and
+refresh at a canonical URL return HTTP `200` without redirect and rerun that
+page's normal boot, device, browser, query, authentication, and session logic.
+The query string remains part of the URL and may be application input. A
+fragment remains browser-only and does not create hash-routing behavior.
+
+Production also serves the slashless counterpart of each current directory
+entry with HTTP `200`, no `Location` header, and the same entry bytes. Browser
+handling then differs by application group:
+
+| Entry group | Browser-visible slashless behavior | Browser-history effect |
+| --- | --- | --- |
+| Quote request, client intake, Conecta referral, and certificate validation | A parser-blocking inline script calls `location.replace` to change only the current slashless path to its trailing-slash canonical path and preserve the exact query string and fragment. | The correction replaces the current entry, so Back skips the slashless spelling and returns to the preceding document. Refresh and Forward retain the canonical URL. |
+| Seven learning-platform entries | There is no route normalizer. The slashless path, query string, and fragment remain visible and survive refresh when existing page-lifecycle logic does not navigate away. | The route layer adds no normalization entry. Ordinary `window.location.href` navigation adds one document-history entry. Existing warning-page `history.back()` behavior is a separate application contract. |
+
+Slashless spellings are compatibility inputs, not authoring destinations; new
+or updated links must use the canonical paths. This compatibility applies only
+to the eleven current non-root directory entries. It does not make explicit
+`index.html` spellings public contracts, create an SPA fallback, or alter any
+of the 58 explicit `404` paths. The three downloads use their exact file paths
+and are not subject to directory-slash normalization.
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply device, browser, query-parameter, authentication, or

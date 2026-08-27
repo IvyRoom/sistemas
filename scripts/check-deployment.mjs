@@ -23,6 +23,7 @@ console.log(
     `${result.supportingFiles} supporting files`,
     `${result.encodedAccentedPaths} URL-encoded accented paths`,
     `${result.conectaQueryRoutes} encoded Conecta query route`,
+    `${result.slashCompatibilityPairs} slashless/trailing-slash query pairs`,
     `${result.notFoundPaths} expected 404 paths`
   ].join(", ")
 );
