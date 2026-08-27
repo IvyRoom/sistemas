@@ -9,14 +9,6 @@ paths are independent from source locations and remain defined by the
 deployment manifest. Shared runtime infrastructure lives in `apps/shared/` and
 is mapped separately from maintained application identities.
 
-## Program roadmap
-
-[`docs/project-roadmap.html`](docs/project-roadmap.html) is the local,
-version-controlled source of truth for the coordinated frontend and backend
-best-practices program. Open it directly in a browser for the detailed card
-view or its compact overview. Future task handoffs should cite that file and
-the relevant card instead of copying the full roadmap into the handoff.
-
 ## URL contract
 
 The canonical public origin is [https://machadogestao.com](https://machadogestao.com/).
