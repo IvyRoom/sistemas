@@ -273,6 +273,7 @@ test("[MARKUP-03] current event targets and generated-control seams remain expli
 
   for (const [entryName, contracts] of Object.entries(targetContracts)) {
     const html = readEntry(entryName, "index.html");
+    assert.match(html, /<html lang="pt-BR">/, `${entryName} document language`);
     for (const [id, expectedTag] of Object.entries(contracts)) {
       assert.equal(tagName(html, id), expectedTag, `${entryName}#${id}`);
     }
