@@ -79,6 +79,7 @@ export function createLoginApplication({
         submitButton.disabled = true;
         submitButton.style.display = 'none';
         initializingNotice.style.display = 'block';
+        loginForm.setAttribute('aria-busy', 'true');
         event.preventDefault();
 
         const userLogin = email.value;
@@ -204,6 +205,8 @@ export function createLoginApplication({
             );
             if (failure.kind === learningPlatformErrorKinds.INVALID_CREDENTIALS) {
                 invalidCredentialsNotice.style.display = 'block';
+                email.setAttribute('aria-invalid', 'true');
+                password.setAttribute('aria-invalid', 'true');
             }
             else if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE) {
                 alert(learningPlatformErrorMessage(
@@ -223,8 +226,12 @@ export function createLoginApplication({
         submitButton.disabled = false;
         submitButton.style.display = 'block';
         initializingNotice.style.display = 'none';
+        loginForm.setAttribute('aria-busy', 'false');
+        email.setAttribute('aria-invalid', 'false');
+        password.setAttribute('aria-invalid', 'false');
         email.value = '';
         password.value = '';
+        email.focus();
     }
 
     email.addEventListener('input', resetNotices);
@@ -234,5 +241,7 @@ export function createLoginApplication({
         invalidCredentialsNotice.style.display = 'none';
         expiredLoginNotice.style.display = 'none';
         rejectedFaceNotice.style.display = 'none';
+        email.setAttribute('aria-invalid', 'false');
+        password.setAttribute('aria-invalid', 'false');
     }
 }

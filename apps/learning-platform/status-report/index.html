@@ -1,46 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Machado | Método Gerencial para Empresas</title>
     <link rel="icon" href="/plataforma/statusreport/img/FAVICON.ico">
-    <link async rel="stylesheet" href="/plataforma/statusreport/style.css">
+    <link rel="stylesheet" href="/plataforma/statusreport/style.css">
 </head>
 
 <body>
 
-    <div id="Seção_Principal">
+    <main id="Seção_Principal" aria-busy="true">
 
-        <div id="Faixa_Superior">
+        <header id="Faixa_Superior">
 
             <div id="Container_Título_Status_Report_e_Última_Atualização">
                 
-                <div id="Título_Status_Report"></div>
+                <h1 id="Título_Status_Report"></h1>
 
-                <div id="Última_Atualização"></div>
+                <p id="Última_Atualização"></p>
             
             </div>
 
-            <img id="Logo_Machado" src="/plataforma/statusreport/img/LOGO_MACHADO.png" draggable="false"></img>
+            <img id="Logo_Machado" src="/plataforma/statusreport/img/LOGO_MACHADO.png" alt="Machado" draggable="false">
 
-        </div>
+        </header>
 
-        <div id="Aviso_Carregando_Informações">Aguarde. Carregando informações...</div>
+        <div id="Aviso_Carregando_Informações" role="status" aria-live="polite">Aguarde. Carregando informações...</div>
 
-        <div id="Container_Externo_Conteúdo">
+        <section id="Container_Externo_Conteúdo" aria-labelledby="Manchete">
 
-            <div id="Manchete">Veja abaixo os Indicadores de progresso na Formação:</div>
+            <h2 id="Manchete">Veja abaixo os Indicadores de progresso na Formação:</h2>
 
             <div id="Container_Gráficos_Controle_Resultados"></div>
 
-        </div>
+        </section>
         
-        <div id="Texto_Rodapé">Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</div>
+        <footer id="Texto_Rodapé">Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</footer>
     
-    </div>
+    </main>
 
     <script async type="module" src="/plataforma/statusreport/main.js"></script>
 

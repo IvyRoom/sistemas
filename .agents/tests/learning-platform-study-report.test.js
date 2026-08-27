@@ -170,6 +170,7 @@ function createTopic(harness, {
   const topic = harness.element(`fixture-topic-${dataIndex}`);
   const topicName = harness.element(`fixture-topic-name-${dataIndex}`);
   topic.className = className;
+  topic.disabled = className === "Container-Tópico-Fechado";
   topic.setAttribute("data-index", dataIndex);
   topic.setAttribute("name", name);
   topic.parentElement = { id: `Container-Externo-Tópicos-Módulo-${module}` };
@@ -486,7 +487,7 @@ test("[API-03] direct Study startup injects an absolute synthetic platform base"
 
 test("[FLOW-02] study keeps 171 contiguous nodes and the ten frozen module boundaries", () => {
   const topicRecords = Array.from(
-    studyHtml.matchAll(/<div\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
+    studyHtml.matchAll(/<button\b([^>]*\bdata-index="(\d+)"[^>]*)>/g),
     ([, attributes, index]) => ({
       index: Number(index),
       name: attributes.match(/\bname="([^"]+)"/)?.[1]
@@ -514,7 +515,12 @@ test("[FLOW-02] saved progress opens the exact next module boundary and keeps pe
     const { dom, harness, topics } = await runRefresh(String(completed));
     assert.equal(topics.filter((topic) => topic.className === "Container-Tópico-Concluído").length, completed);
     assert.equal(topics[completed].className, "Container-Tópico-Aberto");
+    assert.equal(topics.slice(0, completed).every((topic) => topic.disabled === false), true);
+    assert.equal(topics[completed].disabled, false);
+    assert.equal(topics[completed + 1].disabled, true);
     assert.equal(dom.moduleTopicContainers[moduleIndex].style.display, "block");
+    assert.equal(dom.moduleHeaders[moduleIndex].getAttribute("aria-expanded"), "true");
+    assert.equal(harness.document.activeElement, null);
     assert.equal(harness.alerts.length, 0);
   }
 
@@ -524,6 +530,19 @@ test("[FLOW-02] saved progress opens the exact next module boundary and keeps pe
     early.harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
     "block"
   );
+  assert.equal(early.topics[0].getAttribute("aria-current"), "false");
+  assert.equal(early.harness.document.activeElement.id, "Nome-Tópico");
+
+  const completed = await runRefresh("13");
+  assert.equal(completed.harness.document.activeElement, null);
+  completed.topics[0].dispatch("click");
+  assert.equal(completed.harness.document.activeElement.id, "Nome-Tópico");
+  assert.equal(completed.topics[0].style.backgroundColor, "#4a0816");
+  assert.equal(completed.topics[0].querySelector(".Tópico-Nome").style.fontWeight, "500");
+  completed.harness.element("Formação-Botão-Desempenho-e-Certificado").dispatch("click");
+  assert.equal(completed.topics[0].style.backgroundColor, "#4a0816");
+  assert.equal(completed.topics[0].querySelector(".Tópico-Nome").style.fontWeight, "500");
+  assert.equal(completed.topics[0].getAttribute("aria-current"), "false");
 });
 
 test("[FLOW-02] saved progress leaves only completed/open topics interactive and module headers toggle", async () => {
@@ -536,10 +555,13 @@ test("[FLOW-02] saved progress leaves only completed/open topics interactive and
   assert.equal(dom.moduleHeaders[0].dispatch("click").length, 1);
   assert.equal(dom.moduleTopicContainers[0].style.display, "block");
   assert.equal(dom.moduleTopicContainers[1].style.display, "none");
+  assert.equal(dom.moduleHeaders[0].getAttribute("aria-expanded"), "true");
+  assert.equal(dom.moduleHeaders[1].getAttribute("aria-expanded"), "false");
   assert.equal(controller.state.openModule, "Módulo 1");
 
   dom.moduleHeaders[0].dispatch("click");
   assert.equal(dom.moduleTopicContainers[0].style.display, "none");
+  assert.equal(dom.moduleHeaders[0].getAttribute("aria-expanded"), "false");
   await harness.flush(20);
 });
 
@@ -605,6 +627,7 @@ test("[FLOW-02] refresh preserves malformed negative, fractional, NaN, overflow,
     nanRun.harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
     "block"
   );
+  assert.equal(nanRun.harness.document.activeElement, null);
 
   const completeRun = await runRefresh("171");
   assert.equal(completeRun.harness.alerts.length, 0);
@@ -612,6 +635,7 @@ test("[FLOW-02] refresh preserves malformed negative, fractional, NaN, overflow,
     completeRun.harness.element("Container-Externo-Desempenho-e-Certificado").style.display,
     "block"
   );
+  assert.equal(completeRun.harness.document.activeElement, null);
 });
 
 test("[ERROR-01] protected refresh 401 remains the current generic Erro_000 outcome", async () => {
@@ -681,6 +705,7 @@ test("[API-03] content update keeps exact ordinary fields and rolls back only lo
   assert.equal(request.body.NotaTeste, "n/a");
   assert.equal(controller.state.completedTopics, 4);
   assert.match(harness.element("Faixa-Inferior").innerHTML, /Completar e Continuar/);
+  assert.equal(harness.document.activeElement.id, "Botão-Completar-e-Continuar");
   assert.match(harness.alerts[0], /^Erro_008:/);
 });
 
@@ -705,8 +730,10 @@ test("[FLOW-03] successful content completion advances and rewires the exact nex
   assertProtectedHandleExpectations(harness, 1);
   assert.equal(topic.className, "Container-Tópico-Concluído");
   assert.equal(next.className, "Container-Tópico-Aberto");
+  assert.equal(next.disabled, false);
   assert.equal(next.querySelector(".Tópico-Nome").style.fontWeight, "500");
   assert.match(harness.element("Nome-Tópico").innerHTML, /Conteúdo sintético/);
+  assert.equal(harness.document.activeElement.id, "Nome-Tópico");
   assert.equal(nextOpenCalls, 1);
   assert.equal(controller.state.completedTopics, 5);
 });
@@ -748,21 +775,20 @@ test("[FLOW-04] assessment mutates controls globally and submits the client-comp
   harness.selectorResults.set(`input[query-id="${incorrectAnswerId}"]:checked`, incorrect);
   harness.selectorResults.set(`input[query-id="${correctAnswerId}"]`, correct);
   harness.selectorResults.set(`input[query-id="${correctAnswerId}"]:not(:checked)`, correct.slice(2));
-  harness.selectorResults.set(
-    '[data-index="13"]',
-    createTopic(harness, {
-      className: "Container-Tópico-Fechado",
-      dataIndex: 13,
-      name: "FEEDBACK MÓDULO 1",
-      visibleName: "Feedback: Módulo 1"
-    })
-  );
+  const nextAssessmentTopic = createTopic(harness, {
+    className: "Container-Tópico-Fechado",
+    dataIndex: 13,
+    name: "FEEDBACK MÓDULO 1",
+    visibleName: "Feedback: Módulo 1"
+  });
+  harness.selectorResults.set('[data-index="13"]', nextAssessmentTopic);
 
   controller.openTopic.call(topic);
   assert.equal(outsideModule.checked, false);
   assert.equal(outsideModule.disabled, false);
 
   harness.element("Faixa-Inferior").onclick(eventFor("Botão-Enviar-Respostas"));
+  assert.equal(harness.document.activeElement.id, "Botão-Confirmar-Envio-Respostas");
   harness.element("Faixa-Inferior").onclick(eventFor("Botão-Confirmar-Envio-Respostas"));
   await harness.flush(20);
 
@@ -786,9 +812,11 @@ test("[FLOW-04] assessment mutates controls globally and submits the client-comp
   assert.ok(allAnswers.every((input) => input.disabled));
   assert.equal(controller.state.moduleGrades[1], 0.25);
   assert.equal(controller.state.accumulatedGrade, 0.025);
+  assert.equal(nextAssessmentTopic.disabled, false);
   assert.equal(harness.element("Nota").innerHTML, "25.0%");
   assert.equal(harness.element("Percentil").innerHTML, "0.0%");
   assert.match(harness.element("Faixa-Inferior").innerHTML, /Botão-Continuar/);
+  assert.equal(harness.document.activeElement.id, "Container-Externo-Aviso-Revisão");
   assert.equal(correct[0].parentElement.style.backgroundColor, "#94fd7f");
   assert.equal(correct[2].parentElement.style.backgroundColor, "#d3ffcb");
   assert.equal(incorrect[0].parentElement.style.backgroundColor, "#fd7f7f");
@@ -931,7 +959,7 @@ test("[ERROR-02] named study writes preserve rollback and request effects", asyn
       expected: {
         alert: "Erro_008: falha ao atualizar a base de dados de controle da plataforma.\nTente novamente.",
         completedTopics: 4,
-        footer: '<div id="Botão-Completar-e-Continuar">Completar e Continuar →</div>',
+        footer: '<button type="button" id="Botão-Completar-e-Continuar">Completar e Continuar →</button>',
         path: "/plataforma_v2/updates",
         requestBody: {
           TipoAtualização: "NúmeroTópicosConcluídos",
@@ -948,7 +976,7 @@ test("[ERROR-02] named study writes preserve rollback and request effects", asyn
       expected: {
         alert: "Erro_009: falha ao atualizar a base de dados de controle da plataforma.\nTente novamente.",
         completedTopics: 50,
-        footer: '<div id="Botão-Enviar-Feedback">Enviar Feedback</div>',
+        footer: '<button type="button" id="Botão-Enviar-Feedback">Enviar Feedback</button>',
         path: "/plataforma_v2/processa-feedback",
         requestBody: {
           IndexVerificado: "<redacted>",
@@ -1296,6 +1324,7 @@ test("[FLOW-06] performance view keeps exact chart scale, colors, percentages, a
     "block"
   );
   assert.equal(harness.element("Faixa-Inferior").style.display, "none");
+  assert.equal(harness.document.activeElement.id, "Nome-Tópico");
 
   const expected = [
     ["0px", "rgb(164,16,52)", "0.0%"],

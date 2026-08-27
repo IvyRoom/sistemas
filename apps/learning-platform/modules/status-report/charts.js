@@ -30,19 +30,19 @@ export function appendStatusReportCharts(chartsContainer, chartInformation) {
     for (let i = 0; i < chartInformation.length; i++) {
         chartsContainer.innerHTML += `
 
-            <div class="Gráficos_Controle_Resultados">
+            <section class="Gráficos_Controle_Resultados" aria-labelledby="Status-Report-Chart-Title-${i}">
 
-                <div class="Faixas_Superiores_Gráficos_Controle_Resultados">
+                <header class="Faixas_Superiores_Gráficos_Controle_Resultados">
 
                     <div class="Containers_Títulos_e_Racionais_Cálculo">
 
-                        <div class="Títulos_Gráficos_Controle_Resultados"> ${chartInformation[i].title}</div>
+                        <h3 class="Títulos_Gráficos_Controle_Resultados" id="Status-Report-Chart-Title-${i}"> ${chartInformation[i].title}</h3>
 
-                        <div class="Racionais_Cálculo_Gráficos_Controle_Resultados">${chartInformation[i].rationale}</div>
+                        <p class="Racionais_Cálculo_Gráficos_Controle_Resultados">${chartInformation[i].rationale}</p>
 
                     </div>
 
-                    <div class="Containers_Melhores_e_Setas">
+                    <div class="Containers_Melhores_e_Setas" aria-hidden="true">
 
                         <div class="Melhores">Melhor:</div>
 
@@ -50,21 +50,21 @@ export function appendStatusReportCharts(chartsContainer, chartInformation) {
 
                     </div>
 
+                </header>
+
+                <div class="Containers_Realizados" role="list" aria-label="Resultados por participante">
+
+                    ${'<div class="Realizados" role="listitem"></div>'.repeat(15)}
+
                 </div>
 
-                <div class="Containers_Realizados">
-
-                    ${'<div class="Realizados"></div>'.repeat(15)}
-
-                </div>
-
-                <div class="Containers_Metas">
+                <div class="Containers_Metas" aria-hidden="true">
 
                     ${'<div class="Metas"></div> <div class="Rótulos_Metas"></div> <div class="Linhas_Conectoras_Metas"></div>'.repeat(14) + '<div class="Metas"></div> <div class="Rótulos_Metas"></div>'}
 
                 </div>
 
-                <div class="Containers_Entidades">
+                <div class="Containers_Entidades" aria-hidden="true">
 
                     ${'<div class="Entidades"></div>'.repeat(15)}
 
@@ -98,7 +98,7 @@ export function appendStatusReportCharts(chartsContainer, chartInformation) {
 
                 </div>
 
-            </div>
+            </section>
 
         `;
     }
@@ -142,12 +142,28 @@ export function renderStatusReportRows({
     document.querySelectorAll('.Containers_Realizados').forEach((container, chartIndex) => {
         container.querySelectorAll('.Realizados').forEach((div, rowIndex) => {
             if (sortedRows[chartIndex][rowIndex]) {
-                if (chartIndex === 0) div.innerHTML = `${sortedRows[chartIndex][rowIndex][chartIndex + 1]}`;
-                else div.innerHTML = `${(sortedRows[chartIndex][rowIndex][chartIndex + 1] * 100).toFixed(1)}%`;
+                const row = sortedRows[chartIndex][rowIndex];
+                const resultValue = row[chartIndex + 1];
+                const targetValue = targets[chartIndex][lastModule - 1];
+                const resultLabel = chartIndex === 0
+                    ? `${resultValue}`
+                    : `${(resultValue * 100).toFixed(1)}%`;
+                const targetLabel = chartIndex === 0
+                    ? `${targetValue}`
+                    : `${(targetValue * 100).toFixed(1)}%`;
+                const targetOutcome = resultValue >= targetValue
+                    ? 'meta atingida'
+                    : 'meta não atingida';
 
-                div.style.height = `${100 * sortedRows[chartIndex][rowIndex][chartIndex + 1] / (Math.max(targets[chartIndex][lastModule - 1], ...sortedRows[chartIndex].map(row => row[chartIndex + 1])))}%`;
+                div.innerHTML = resultLabel;
+                div.setAttribute(
+                    'aria-label',
+                    `${row[0]}: realizado ${resultLabel}; meta ${targetLabel}; ${targetOutcome}.`
+                );
 
-                if (sortedRows[chartIndex][rowIndex][chartIndex + 1] >= targets[chartIndex][lastModule - 1]) div.style.backgroundColor = '#095f3d';
+                div.style.height = `${100 * resultValue / (Math.max(targetValue, ...sortedRows[chartIndex].map(row => row[chartIndex + 1])))}%`;
+
+                if (resultValue >= targetValue) div.style.backgroundColor = '#095f3d';
                 else div.style.backgroundColor = '#4a0816';
             }
 

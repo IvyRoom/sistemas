@@ -450,6 +450,14 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
     rejected.element("Alerta-Palavra-Passe-Credenciais").style.display,
     "block"
   );
+  assert.equal(
+    rejected.element("Palavra-Passe-Credenciais").getAttribute("aria-invalid"),
+    "true"
+  );
+  assert.equal(
+    rejected.document.activeElement,
+    rejected.element("Palavra-Passe-Credenciais")
+  );
   assert.equal(rejected.document.body.style.cursor, "default");
   rejected.element("Palavra-Passe-Credenciais").dispatch("change");
   for (const id of [
@@ -458,6 +466,13 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
     "Alerta-Palavra-Passe-Janela"
   ]) {
     assert.equal(rejected.element(id).style.display, "none");
+  }
+  for (const id of [
+    "Palavra-Passe-Credenciais",
+    "Palavra-Passe-Direitos",
+    "Palavra-Passe-Janela"
+  ]) {
+    assert.equal(rejected.element(id).getAttribute("aria-invalid"), "false");
   }
   assert.equal(rejected.element("Bot\u00e3o-Li-e-Concordo").style.display, "block");
 
@@ -520,6 +535,9 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
   const chartMarkup = { innerHTML: "" };
   chartsModule.appendStatusReportCharts(chartMarkup, chartInformation);
   assert.equal((chartMarkup.innerHTML.match(/class="Gr\u00e1ficos_Controle_Resultados"/g) ?? []).length, 12);
+  assert.equal((chartMarkup.innerHTML.match(/<section\b/g) ?? []).length, 12);
+  assert.equal((chartMarkup.innerHTML.match(/<h3\b/g) ?? []).length, 12);
+  assert.equal((chartMarkup.innerHTML.match(/role="list"/g) ?? []).length, 12);
 
   const originalRows = [
     reportRow("Progress Winner", 10, 0.1, "IGNORED-CERT-A"),
@@ -577,6 +595,7 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
     "query:mrm"
   ]);
   assert.deepEqual(captureOrder.slice(11), [
+    "dom:Seção_Principal",
     "dom:Título_Status_Report",
     "dom:Última_Atualização",
     "dom:Aviso_Carregando_Informações",
@@ -717,6 +736,10 @@ test("[API-05] status-report application preserves JSON/status and failure order
 
     assert.deepEqual(responseOrder, ["json", "ok", "status"]);
     assert.deepEqual(harness.alerts, [message]);
+    assert.equal(
+      harness.element("Seção_Principal").getAttribute("aria-busy"),
+      "false"
+    );
     assert.equal(harness.document.body.style.cursor, "default");
     if (backendError.includes(".")) assertMachineValueHidden(harness, backendError);
     harness.hostGuard.assertUnused();
@@ -765,6 +788,10 @@ test("[API-05] status-report application preserves JSON/status and failure order
   assert.deepEqual(malformed.alerts, [
     "Erro_000: falha de comunicação com o servidor.\nVerifique sua conexão com a internet e tente novamente."
   ]);
+  assert.equal(
+    malformed.element("Seção_Principal").getAttribute("aria-busy"),
+    "false"
+  );
   assert.equal(malformed.document.body.style.cursor, "default");
   malformed.hostGuard.assertUnused();
 });
@@ -816,6 +843,16 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     assert.deepEqual(
       labels.slice(0, 3).map((label) => label.style.display === "none"),
       hidden
+    );
+    assert.equal(
+      dom.realizedContainers[0]
+        .querySelectorAll(".Realizados")[0]
+        .getAttribute("aria-label"),
+      "Fixture A: realizado 3; meta 171; meta não atingida."
+    );
+    assert.equal(
+      harness.element("Seção_Principal").getAttribute("aria-busy"),
+      "false"
     );
   }
 

@@ -37,14 +37,14 @@ export function createStudyFeedback({
         };
 
         if (selectedTopic.className === "Container-Tópico-Aberto") {
-            dom.footer.innerHTML = '<div id="Botão-Enviar-Feedback">Enviar Feedback</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Enviar-Feedback">Enviar Feedback</button>';
             dom.footer.onclick = event => {
                 if (event.target.closest('#Botão-Enviar-Feedback')) {
                     submit(selectedTopic);
                 }
             };
         } else {
-            dom.footer.innerHTML = '<div id="Aviso-Feedback-Concluído">Feedback Concluído</div>';
+            dom.footer.innerHTML = '<p id="Aviso-Feedback-Concluído">Feedback Concluído</p>';
         }
     }
 
@@ -95,6 +95,7 @@ export function createStudyFeedback({
                     '[data-index="' + (parseInt(selectedTopic.getAttribute('data-index'), 10) + 1) + '"]'
                 );
                 nextTopic.className = "Container-Tópico-Aberto";
+                nextTopic.disabled = false;
                 nextTopic.querySelector('.Símbolo-Check-Fechado').classList.replace(
                     "Símbolo-Check-Fechado",
                     "Símbolo-Check-Aberto"
@@ -106,7 +107,8 @@ export function createStudyFeedback({
                 openPerformance();
             }
         }).catch(error => {
-            dom.footer.innerHTML = '<div id="Botão-Enviar-Feedback">Enviar Feedback</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Enviar-Feedback">Enviar Feedback</button>';
+            document.getElementById('Botão-Enviar-Feedback').focus();
             document.body.style.cursor = 'default';
             state.completedTopics -= 1;
 

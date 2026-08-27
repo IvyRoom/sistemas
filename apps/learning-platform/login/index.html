@@ -1,48 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Machado | Método Gerencial para Empresas</title>
     <link rel="icon" href="/plataforma/login/img/FAVICON.ico">
-    <link async rel="stylesheet" href="/plataforma/login/style.css">
+    <link rel="stylesheet" href="/plataforma/login/style.css">
     <base href="/plataforma/azure-ai-vision-face-ui/">
 </head>
 
 <body>
 
-    <!-- Seção-Login -->
-    <section id="Seção-Login">
+    <main id="Seção-Login">
 
-        <img id="Logo-Machado" src="/plataforma/login/img/LOGO_MACHADO.png" draggable="false"></img>
+        <img id="Logo-Machado" src="/plataforma/login/img/LOGO_MACHADO.png" alt="Machado" draggable="false">
 
         <div id="Container-Externo-Formulário-Login">
 
             <div id="Container-Interno-Formulário-Login">
 
-                <div id="Manchete-Formulário-Login">Seja bem-vindo!</div>
+                <h1 id="Manchete-Formulário-Login">Seja bem-vindo!</h1>
 
-                <form id="Formulário-Login">
-    
-                    <div id="Cabeçalho-E-mail">E-mail</div>
+                <form id="Formulário-Login" aria-busy="false">
+
+                    <label id="Cabeçalho-E-mail" for="E-mail">E-mail</label>
                 
-                    <input id="E-mail" type="text" required></input>
-    
-                    <div id="Cabeçalho-Senha">Senha</div>
-                    
-                    <input id="Senha" type="password" pattern="[0-9]*" required></input>
+                    <input id="E-mail" type="text" autocomplete="username" aria-describedby="Aviso-Email-ou-Senha-Inválidos Aviso-Login-Expirado Aviso-FaceID-Reprovado" aria-invalid="false" required>
+
+                    <label id="Cabeçalho-Senha" for="Senha">Senha</label>
+
+                    <input id="Senha" type="password" pattern="[0-9]*" autocomplete="current-password" aria-describedby="Aviso-Email-ou-Senha-Inválidos Aviso-Login-Expirado Aviso-FaceID-Reprovado" aria-invalid="false" required>
 
                     <button id="Entrar" type="submit">Entrar</button>
 
-                    <div id="Aviso-Inicializando">Inicializando FaceID... Não atualize a página.</div>
+                    <div id="Aviso-Inicializando" role="status" aria-live="polite">Inicializando FaceID... Não atualize a página.</div>
 
-                    <div id="Aviso-Email-ou-Senha-Inválidos">⮾ E-mail ou senha inválidos.</div>
+                    <div id="Aviso-Email-ou-Senha-Inválidos" role="alert">⮾ E-mail ou senha inválidos.</div>
 
-                    <div id="Aviso-Login-Expirado"></div>
+                    <div id="Aviso-Login-Expirado" role="alert"></div>
 
-                    <div id="Aviso-FaceID-Reprovado"></div>                    
+                    <div id="Aviso-FaceID-Reprovado" role="alert"></div>
 
                 </form>
 
@@ -50,9 +48,9 @@
 
         </div>
 
-        <div id="Texto-Rodapé">Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</div>
+        <footer id="Texto-Rodapé">Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</footer>
     
-    </section>
+    </main>
 
     <div id="Container-Auxiliar-FaceID"></div>
  

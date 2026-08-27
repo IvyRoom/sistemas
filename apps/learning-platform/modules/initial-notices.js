@@ -42,15 +42,22 @@ export function createInitialNoticesApplication({
             document.body.style.cursor = 'wait';
             event.preventDefault();
             agreementButton.style.display = 'none';
+            const invalidFields = [];
 
             if (credentialsPassword.value !== requiredAcknowledgements.credentials) {
                 document.getElementById('Alerta-Palavra-Passe-Credenciais').style.display = 'block';
+                credentialsPassword.setAttribute('aria-invalid', 'true');
+                invalidFields.push(credentialsPassword);
             }
             if (rightsPassword.value !== requiredAcknowledgements.rights) {
                 document.getElementById('Alerta-Palavra-Passe-Direitos').style.display = 'block';
+                rightsPassword.setAttribute('aria-invalid', 'true');
+                invalidFields.push(rightsPassword);
             }
             if (windowPassword.value !== requiredAcknowledgements.window) {
                 document.getElementById('Alerta-Palavra-Passe-Janela').style.display = 'block';
+                windowPassword.setAttribute('aria-invalid', 'true');
+                invalidFields.push(windowPassword);
             }
 
             if (
@@ -61,6 +68,7 @@ export function createInitialNoticesApplication({
                 navigate('/plataforma/cadastro-foto');
             } else {
                 document.body.style.cursor = 'default';
+                invalidFields[0].focus();
             }
         });
 
@@ -68,6 +76,9 @@ export function createInitialNoticesApplication({
             credentialsAlert.style.display = 'none';
             rightsAlert.style.display = 'none';
             windowAlert.style.display = 'none';
+            credentialsPassword.setAttribute('aria-invalid', 'false');
+            rightsPassword.setAttribute('aria-invalid', 'false');
+            windowPassword.setAttribute('aria-invalid', 'false');
             agreementButton.style.display = 'block';
         }
 

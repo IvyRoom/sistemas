@@ -45,9 +45,11 @@ export function createStudyApplication({
     let certificate;
     let performanceView;
 
-    function openTopic() {
+    function openTopic(options) {
         const selectedTopic = this;
-        navigation.selectTopic(selectedTopic);
+        navigation.selectTopic(selectedTopic, {
+            focusHeading: options?.focusHeading !== false
+        });
         const topicName = selectedTopic.querySelector('.Tópico-Nome').innerHTML;
 
         if (!topicName.includes("Teste:") && !topicName.includes("Feedback:")) {
@@ -60,8 +62,10 @@ export function createStudyApplication({
         dom.footer.style.display = "flex";
     }
 
-    function openPerformance() {
-        performanceView.open();
+    function openPerformance(options) {
+        performanceView.open({
+            focusHeading: options?.focusHeading !== false
+        });
     }
 
     const progress = createStudyProgress({

@@ -36,12 +36,14 @@ export function createStudyAssessment({ alert, client, document, dom, navigation
                 input.parentElement.style.backgroundColor = '#ffffff';
             });
 
-            dom.footer.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Enviar-Respostas">Enviar Respostas</button>';
             dom.footer.onclick = event => {
                 if (event.target.closest('#Botão-Enviar-Respostas')) {
-                    dom.footer.innerHTML = '<div id="Botão-Confirmar-Envio-Respostas">Confirmar Envio</div><div id="Botão-Voltar-Respostas">Voltar</div>';
+                    dom.footer.innerHTML = '<button type="button" id="Botão-Confirmar-Envio-Respostas">Confirmar Envio</button><button type="button" id="Botão-Voltar-Respostas">Voltar</button>';
+                    document.getElementById('Botão-Confirmar-Envio-Respostas').focus();
                 } else if (event.target.closest('#Botão-Voltar-Respostas')) {
-                    dom.footer.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';
+                    dom.footer.innerHTML = '<button type="button" id="Botão-Enviar-Respostas">Enviar Respostas</button>';
+                    document.getElementById('Botão-Enviar-Respostas').focus();
                 } else if (event.target.closest('#Botão-Confirmar-Envio-Respostas')) {
                     submit(selectedTopic, moduleNumber, allAnswers);
                 } else if (event.target.closest('#Botão-Continuar')) {
@@ -60,7 +62,7 @@ export function createStudyAssessment({ alert, client, document, dom, navigation
                 input.disabled = true;
                 input.parentElement.style.backgroundColor = '#ffffff';
             });
-            dom.footer.innerHTML = '<div id="Aviso-Teste-Concluído">Teste Concluído</div>';
+            dom.footer.innerHTML = '<p id="Aviso-Teste-Concluído">Teste Concluído</p>';
         }
     }
 
@@ -101,6 +103,7 @@ export function createStudyAssessment({ alert, client, document, dom, navigation
                 '[data-index="' + (parseInt(selectedTopic.getAttribute('data-index'), 10) + 1) + '"]'
             );
             nextTopic.className = "Container-Tópico-Aberto";
+            nextTopic.disabled = false;
             nextTopic.querySelector('.Símbolo-Check-Fechado').classList.replace(
                 "Símbolo-Check-Fechado",
                 "Símbolo-Check-Aberto"
@@ -129,12 +132,14 @@ export function createStudyAssessment({ alert, client, document, dom, navigation
                 .forEach(input => { input.parentElement.style.backgroundColor = '#fd7f7f'; });
 
             dom.assessments.scrollTop = 0;
-            dom.footer.innerHTML = '<div id="Botão-Continuar">Continuar →</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Continuar">Continuar →</button>';
+            dom.assessmentReview.focus();
             state.moduleGrades[moduleNumber] = score;
             state.accumulatedGrade = state.moduleGrades.reduce((total, value) => total + value, 0) /
                 (state.moduleGrades.length - 1);
         }).catch(error => {
-            dom.footer.innerHTML = '<div id="Botão-Enviar-Respostas">Enviar Respostas</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Enviar-Respostas">Enviar Respostas</button>';
+            document.getElementById('Botão-Enviar-Respostas').focus();
             document.body.style.cursor = 'default';
             state.completedTopics -= 1;
 

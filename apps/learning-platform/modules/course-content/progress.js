@@ -35,6 +35,7 @@ export function createStudyProgress({ alert, client, document, dom, navigation, 
                 '[data-index="' + (parseInt(selectedTopic.getAttribute('data-index'), 10) + 1) + '"]'
             );
             nextTopic.className = "Container-Tópico-Aberto";
+            nextTopic.disabled = false;
             nextTopic.querySelector('.Símbolo-Check-Fechado').classList.replace(
                 "Símbolo-Check-Fechado",
                 "Símbolo-Check-Aberto"
@@ -42,7 +43,8 @@ export function createStudyProgress({ alert, client, document, dom, navigation, 
             openTopic.call(nextTopic);
             nextTopic.addEventListener('click', openTopic);
         }).catch(error => {
-            dom.footer.innerHTML = '<div id="Botão-Completar-e-Continuar">Completar e Continuar →</div>';
+            dom.footer.innerHTML = '<button type="button" id="Botão-Completar-e-Continuar">Completar e Continuar →</button>';
+            document.getElementById('Botão-Completar-e-Continuar').focus();
             document.body.style.cursor = 'default';
             state.completedTopics -= 1;
 

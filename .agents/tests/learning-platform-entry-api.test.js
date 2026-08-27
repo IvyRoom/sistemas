@@ -69,7 +69,7 @@ const FIXTURE_FACE_TOKEN = opaqueValue("face-token");
 const FIXTURE_HANDLE = opaqueValue("row-handle");
 const FIXTURE_PLATFORM_BASE = FIXTURE_ORIGIN + "/plataforma_v2";
 const FIXTURE_RESULT_PATH = `/plataforma_v2/FaceID_resultado/${FIXTURE_FACE_SESSION}`;
-const EXPECTED_FACE_SHADOW_STYLES = "#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
+const EXPECTED_FACE_SHADOW_STYLES = ":host,\n* {\n    -webkit-user-select: none;\n    user-select: none;\n}\n\n#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
 
 function refreshData(overrides = {}) {
   const data = {
@@ -1060,6 +1060,8 @@ test("[API-01] login posts untrimmed credentials and preserves active and inacti
   await inactive.flush(20);
   assert.equal(inactive.sessionStorage.getItem("IndexVerificado"), "undefined");
   assert.equal(inactive.element("Aviso-Login-Expirado").style.display, "block");
+  assert.equal(inactive.document.activeElement, inactive.element("E-mail"));
+  assert.equal(inactive.element("Formulário-Login").getAttribute("aria-busy"), "false");
   assert.equal(
     inactive.element("Aviso-Login-Expirado").innerHTML.endsWith("01/01/2000"),
     true
@@ -1090,10 +1092,13 @@ test("[API-01] login preserves invalid-credential, workbook, generic, and unexpe
     if (fixture.expectedInline) {
       assert.equal(harness.alerts.length, 0);
       assert.equal(harness.element("Aviso-Email-ou-Senha-Inválidos").style.display, "block");
+      assert.equal(harness.element("E-mail").getAttribute("aria-invalid"), "true");
+      assert.equal(harness.element("Senha").getAttribute("aria-invalid"), "true");
     } else {
       assertOnlyErrorCode(harness.alerts, fixture.expectedAlert);
     }
     assert.equal(harness.element("Entrar").disabled, false);
+    assert.equal(harness.document.activeElement, harness.element("E-mail"));
   }
 
   const networkFailure = createLearningPlatformHarness({
@@ -1233,6 +1238,14 @@ test("[API-01] Face registration sends ordered multipart fields and maps known f
     assertOnlyErrorCode(failure.alerts, expectedAlert);
     assertMachineValueHidden(failure, machineValue);
     assert.equal(failure.element("Botão-Cadastrar-Foto-Referência").disabled, false);
+    assert.equal(
+      failure.document.activeElement,
+      failure.element("Botão-Escolher-Arquivo")
+    );
+    assert.equal(
+      failure.element("Formulário-Foto-Referência").getAttribute("aria-busy"),
+      "false"
+    );
   }
 });
 
@@ -1515,6 +1528,7 @@ test("[API-02] Face decision, SDK rejection, and result error branches remain si
     assert.equal(resultRequests.length, scenario.faceRejects ? 0 : 1, scenario.label);
     if (scenario.label === "decision") {
       assert.equal(harness.element("Aviso-FaceID-Reprovado").style.display, "block");
+      assert.equal(harness.document.activeElement, harness.element("E-mail"));
       assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), null);
     } else {
       assertOnlyErrorCode(harness.alerts, scenario.expectedAlert);

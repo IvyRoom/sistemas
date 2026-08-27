@@ -2,7 +2,20 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI';
+    font-family: 'Segoe UI', sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button {
+    appearance: none;
+    border: 0;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -15,6 +28,7 @@
 
 #Container-Seções{
     display: none;
+    min-width: 0;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +38,11 @@
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
 #Seção-Navegação{
-    width: 420px;
+    flex: 0 0 min(420px, 40vw);
+    width: min(420px, 40vw);
+    max-width: 420px;
     height: 100vh;
+    height: 100dvh;
     background: linear-gradient(135deg, #4a0816, #000000);
     text-align: center;
     overflow-y: auto;
@@ -35,13 +52,14 @@
 }
 
 #Botão-Sair{
+    display: block;
+    background: transparent;
     text-align: left;
     margin-left: 25px;
     margin-top: 10px;
     cursor: pointer;
     color: #dedede;
     width: 55px;
-    user-select: none;
 }
 
 #Logo-Machado{
@@ -50,7 +68,6 @@
     margin-top: 20px;
     margin-left: auto;
     margin-right: auto;
-    user-select: none;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -62,13 +79,12 @@
     color: #dedede;
     margin-top: 20px;
     margin-bottom: 10px;
-    user-select: none;
 }
 
 #Formação-Container-Símbolo-Status-e-Prazo-Acesso{
     display: flex;
     align-items: center;
-    width: 370px;
+    width: min(370px, calc(100% - 50px));
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
@@ -83,19 +99,17 @@
     border-radius: 5px;
     margin-top: 2px;
     margin-left: 5px;
-    user-select: none;
 }
 
 #Formação-Prazo-Acesso{
     margin-left: 8px;
     color: #dedede;
-    user-select: none;    
 }
 
 #Formação-Container-Régua-Avanço{
     height: 4px;
     border-radius: 2px;
-    width: 370px;
+    width: min(370px, calc(100% - 50px));
     background-color: #dedede;
     margin-top: 10px;
     margin-left: auto;
@@ -110,13 +124,12 @@
 }
 
 #Formação-Percentual-Concluído{
-    width: 370px;
+    width: min(370px, calc(100% - 50px));
     text-align: left;
     margin-top: 10px;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 20px;
-    user-select: none;
     color: #dedede;
 }
 
@@ -128,7 +141,8 @@
 
 .Container-Módulo{
     display: flex;
-    width: 370px;
+    width: min(370px, calc(100% - 50px));
+    background: transparent;
     margin-top: 12px;
     margin-left: auto;
     margin-right: auto;
@@ -136,7 +150,6 @@
     justify-content: space-between;
     padding-bottom: 10px;
     cursor: pointer;
-    user-select: none;
 }
 
 .Container-Anel-Avanço-e-Nome{
@@ -208,7 +221,11 @@
     text-align: left;
     display: flex;
     align-items: center;
-    user-select: none;
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    padding: 0;
 }
 
 .Container-Tópico-Concluído:hover {
@@ -331,12 +348,11 @@
     color: #dedede;
     padding-top: 10px;
     padding-bottom: 10px;
-    width: 320px;
+    width: min(320px, calc(100% - 50px));
     margin-top: 20px;
     margin-left: auto;
     margin-right: auto;
     border-radius: 10px;
-    user-select: none;
     cursor: pointer;
     box-shadow: 0px 0px 5px rgba(255, 255, 255, 0.5);
 }
@@ -352,8 +368,11 @@
 /////////////////////////////////////////////////////////////////////////////////////////*/
 
 #Seção-Conteúdo{
-    width: calc(100vw - 400px);
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
     height: 100vh;
+    height: 100dvh;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -364,6 +383,7 @@
     display: flex;
     justify-content: space-between;
     background: linear-gradient(135deg, #4a0816, #000000);
+    min-width: 0;
 }
 
 #Faixa-Superior{
@@ -371,13 +391,14 @@
     width: 100%;
     height: 40px;
     align-items: center;  
+    min-width: 0;
 }
 
 #Nome-Tópico{
     margin-left: 20px;
     font-size: 16px;
     color: #fff;
-    user-select: none;
+    line-height: 1.25;
 }
 
 #Container-Usuário{
@@ -388,7 +409,6 @@
     font-size: 12px;
     width: fit-content;
     white-space: nowrap;
-    user-select: none;
     text-align: right;
     padding-right: 10px;
 }
@@ -408,6 +428,7 @@
 
 #Container-Externo-Conteúdo{
     height: calc(100vh - 40px - 50px);
+    height: calc(100dvh - 40px - 50px);
     justify-content: center;
     overflow-y: auto;
     background: linear-gradient(135deg, #dedede, #ffffff);
@@ -415,7 +436,7 @@
 }
 
 #Container-Interno-Conteúdo{
-    width: 80%;
+    width: min(80%, 1200px);
     display: block;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -444,6 +465,8 @@
     background-color: #ebebeb;
     border: 1px solid #d4d4d4;
     border-radius: 5px;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 #Container-Download-Arquivo-1{
@@ -454,7 +477,6 @@
     color: #4a0816;
     font-size: 16px;
     font-weight: 500;
-    user-select: none;
 }
 
 #Botão-Download-1,#Botão-Download-2,#Botão-Download-3,#Botão-Download-4{
@@ -465,7 +487,6 @@
     font-weight: 500;
     font-size: 14px;
     text-decoration: none;
-    user-select: none;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -477,6 +498,7 @@
 #Container-Externo-Testes{
     display: none;
     height: calc(100vh - 40px - 50px);
+    height: calc(100dvh - 40px - 50px);
     justify-content: center;
     align-items: center;
     overflow-y: auto;
@@ -484,7 +506,7 @@
 }
 
 #Container-Interno-Testes{
-    width: 600px;
+    width: min(600px, calc(100% - 40px));
     margin-left: auto;
     margin-right: auto;
     padding-top: 40px;
@@ -505,7 +527,6 @@
     font-size: 20px;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    user-select: none;
 }
 
 #Orientações-Teste{
@@ -515,7 +536,6 @@
     color: #fff;
     align-items: center;
     font-weight: 400;
-    user-select: none;
     border-radius: 0px 0px 10px 10px;
     margin-bottom: 40px;
 }
@@ -535,7 +555,6 @@
     font-size: 20px;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    user-select: none;
 }
 
 #Aviso-Revisão{
@@ -546,7 +565,6 @@
     text-align: center;
     font-weight: 400;
     border-radius: 0px 0px 10px 10px;
-    user-select: none;
 }
 
 #Container-Externo-Nota-e-Percentil{
@@ -575,21 +593,18 @@
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
     text-align: center;
-    user-select: none;
 }
 
 #Nota{
     border: 1px solid #d4d4d4;
     font-size: 70px;
     font-weight: 700;
-    user-select: none;
 }
 
 #Percentil{
     border: 1px solid #d4d4d4;
     font-size: 70px;
     font-weight: 700;
-    user-select: none;
 }
 
 .Explicação-Nota-e-Percentil{
@@ -602,7 +617,6 @@
     font-weight: 500;
     border-radius: 0px 0px 10px 10px;
     border: 1px solid #d4d4d4;
-    user-select: none;
     height: 120px;
 }
 
@@ -621,7 +635,6 @@
     align-items: center;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    user-select: none;
 }
 
 #Legenda-Respostas-1{
@@ -629,7 +642,6 @@
     padding: 20px;
     background-color: #94fd7f;
     border: 1px solid #d4d4d4;
-    user-select: none;
 }
 
 #Legenda-Respostas-2 {
@@ -637,7 +649,6 @@
     padding: 20px;
     background-color: #d3ffcb;
     border: 1px solid #d4d4d4;
-    user-select: none;
 }
 
 #Legenda-Respostas-3 {
@@ -645,7 +656,6 @@
     padding: 20px;
     background-color: #fd7f7f;
     border: 1px solid #d4d4d4;
-    user-select: none;
 }
 
 /*/////////////////////////////// Containers-Questões-Módulos //////////////////////////////*/
@@ -655,7 +665,10 @@
 }
 
 .Containers-Questões{
+    border: 0;
     margin-bottom: 40px;
+    min-inline-size: 0;
+    padding: 0;
 }
 
 .Títulos{
@@ -667,7 +680,7 @@
     align-items: center;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    user-select: none;
+    width: 100%;
 }
 
 .Avisos-Questões-Checkbox {
@@ -677,7 +690,6 @@
     color: #4a0816;
     align-items: center;
     font-weight: 500;
-    user-select: none;
 }
 
 .Perguntas{
@@ -687,17 +699,17 @@
     color: #343434;
     align-items: center;
     font-weight: 500;
-    user-select: none;
 }
 
 .Opção {
     display: block;
     padding: 20px;
     border: 1px solid #d4d4d4;
-    user-select: none;
+    cursor: pointer;
 }
 
-.Opção input[type="radio"] {
+.Opção input[type="radio"],
+.Opção input[type="checkbox"] {
     margin-right: 5px;
 }
 
@@ -708,6 +720,7 @@
 #Container-Externo-Feedbacks{
     display: none;
     height: calc(100vh - 40px - 50px);
+    height: calc(100dvh - 40px - 50px);
     justify-content: center;
     align-items: center;
     overflow-y: auto;
@@ -716,7 +729,7 @@
 }
 
 #Container-Interno-Feedbacks{
-    width: 600px;
+    width: min(600px, calc(100% - 40px));
     margin-left: auto;
     margin-right: auto;
     padding-top: 40px;
@@ -731,7 +744,6 @@
     align-items: center;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    user-select: none;
 }
 
 #Explicação-Orientação-Feedbacks{
@@ -740,7 +752,6 @@
     background-color: #ecb6c3;
     color: #343434;
     font-weight: 400;
-    user-select: none;
     border-radius: 0px 0px 10px 10px;
 }
 
@@ -753,8 +764,24 @@
     align-items: center;
     font-weight: 500;
     border-radius: 10px 10px 0px 0px;
-    user-select: none;
+    width: 100%;
+}
+
+#Container-Tamanho-Módulo,
+#Container-Qualidade-Conteúdo,
+#Container-Qualidade-Plataforma,
+#Container-Qualidade-Materiais-Impressos,
+#Container-Comentários {
     margin-top: 20px;
+}
+
+#Container-Tamanho-Módulo,
+#Container-Qualidade-Conteúdo,
+#Container-Qualidade-Plataforma,
+#Container-Qualidade-Materiais-Impressos {
+    border: 0;
+    min-inline-size: 0;
+    padding: 0;
 }
 
 #Explicação-Qualidade-Conteúdo,#Explicação-Qualidade-Plataforma,#Explicação-Qualidade-Materiais-Impressos,#Explicação-Comentários{
@@ -766,11 +793,11 @@
     background-color: #d4d4d4;
     color: #343434;
     font-weight: 400;
-    user-select: none;
 }
 
 #Containter-Alternativas-Tamanho-Módulo,#Containter-Alternativas-Qualidade-Conteúdo,#Containter-Alternativas-Qualidade-Plataforma,#Containter-Alternativas-Qualidade-Materiais-Impressos{
     display: flex;
+    flex-wrap: nowrap;
     border: 1px solid #d4d4d4;
     padding-top: 20px;
     padding-bottom: 20px;
@@ -781,7 +808,6 @@
     display: flex;
     width: 120px;
     cursor: pointer;
-    user-select: none;
     align-items: center;
     flex-direction: column;
     text-align: center;
@@ -810,7 +836,7 @@
     width: 100%;
     height: 200px;
     padding: 10px;
-    resize: none;
+    resize: vertical;
     font-size: 15px;
     background-color: #f4f4f4;
     border-radius: 10px 10px 10px 10px;
@@ -830,18 +856,20 @@
 
 #Container-Externo-Desempenho-e-Certificado{
     height: calc(100vh - 40px);
+    height: calc(100dvh - 40px);
     overflow-y: auto;
     display: none;
     padding-top: 40px;
 }
 
 #Container-Externo-Gráficos-Desempenho{
-    width: 1100px;
+    width: min(1100px, calc(100% - 40px));
     border: 1px solid #343434;
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 20px;
     border-radius: 20px 20px 20px 20px;
+    overflow-x: auto;
 }
 
 #Manchete-Gráficos-Desempenho{
@@ -862,6 +890,7 @@
     padding-left: 30px;
     padding-right: 30px;
     padding-bottom: 30px;
+    min-width: 1040px;
 }
 
 #Container-Externo-Realizado-Gráficos-Desempenho{
@@ -993,7 +1022,7 @@
 /*////////////////////////////////////// Certificado ////////////////////////////////////*/
 
 #Container-Externo-Orientações-Certificado{
-    width: 1100px;
+    width: min(1100px, calc(100% - 40px));
     border: 1px solid #343434;
     margin-left: auto;
     margin-right: auto;
@@ -1026,6 +1055,7 @@
 }
 
 #Botão-Download-Certificado-Impresso{
+    display: block;
     background-color: #4a0816;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -1039,6 +1069,7 @@
     font-weight: 500;
     font-size: 14px;
     cursor: pointer;
+    border: 0;
 }
 
 /*/////////////////////////////////////////////////////////////////////////////////////////
@@ -1055,6 +1086,10 @@
     background: linear-gradient(0deg, #fff, #dedede);
 }
 
+#Faixa-Inferior button {
+    border: 0;
+}
+
 /*///////////////////////////////// Tópicos de Conteúdo ////////////////////////////////*/
 
 #Botão-Completar-e-Continuar{
@@ -1067,7 +1102,6 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    user-select: none;
     box-shadow: 0px 0px 5px rgba(74, 8, 22, 1);
 }
 
@@ -1086,7 +1120,6 @@
     border: 1px solid #ededed;
     font-size: 14px;
     font-weight: 500;
-    user-select: none;
 }
 
 /*/////////////////////////////////// Tópicos de Teste //////////////////////////////////*/
@@ -1101,7 +1134,6 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    user-select: none;
 }
 
 #Botão-Enviar-Respostas:hover{
@@ -1119,7 +1151,6 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    user-select: none;
 }
 
 #Botão-Confirmar-Envio-Respostas:hover {
@@ -1137,7 +1168,6 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    user-select: none;
 }
 
 #Botão-Voltar-Respostas:hover {
@@ -1154,7 +1184,6 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    user-select: none;
 }
 
 #Botão-Continuar:hover{
@@ -1172,7 +1201,6 @@
     border: 1px solid #ededed;
     font-size: 14px;
     font-weight: 500;
-    user-select: none;
 }
 
 /*/////////////////////////////////// Tópicos de Feedback //////////////////////////////////*/
@@ -1187,7 +1215,6 @@
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    user-select: none;
 }
 
 #Botão-Enviar-Feedback:hover{
@@ -1205,5 +1232,72 @@
     border: 1px solid #ededed;
     font-size: 14px;
     font-weight: 500;
-    user-select: none;
+}
+
+:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 5px #a41034;
+}
+
+.Opção:has(input:focus-visible) {
+    outline: 3px solid #4a0816;
+    outline-offset: -4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Módulo-Anel-Avanço-Progresso {
+        transition: none;
+    }
+
+    .Tempo-Sessão-Últimos-5min {
+        animation: none;
+    }
+}
+
+@media (max-width: 1180px) {
+    #Container-Interno-Conteúdo {
+        width: 90%;
+    }
+
+    #Container-Externo-Faixa-Superior-e-Container-Usuário {
+        align-items: flex-start;
+        flex-direction: column;
+        padding-bottom: 8px;
+    }
+
+    #Container-Usuário {
+        padding-left: 20px;
+        text-align: left;
+    }
+}
+
+@media (max-width: 1024px) {
+    #Container-Seções {
+        flex-direction: column;
+    }
+
+    #Seção-Navegação {
+        flex-basis: auto;
+        height: auto;
+        max-height: 45vh;
+        max-height: 45dvh;
+        max-width: none;
+        width: 100%;
+    }
+
+    #Seção-Conteúdo {
+        height: auto;
+        min-height: 55vh;
+        min-height: 55dvh;
+        width: 100%;
+    }
+
+    #Container-Externo-Conteúdo,
+    #Container-Externo-Testes,
+    #Container-Externo-Feedbacks,
+    #Container-Externo-Desempenho-e-Certificado {
+        height: auto;
+        min-height: calc(55dvh - 90px);
+    }
 }
