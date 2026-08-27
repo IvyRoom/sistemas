@@ -762,8 +762,18 @@ function createLearningPlatformHarness({
   now = 2_000_000_000_000,
   routes = [],
   storage = {},
-  userAgent = "FixtureBrowser",
-  userAgentData = { brands: [{ brand: "Microsoft Edge" }] }
+  userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 " +
+    "Safari/537.36 Edg/140.0.0.0",
+  userAgentData = {
+    brands: [
+      { brand: "Not/A)Brand" },
+      { brand: "Chromium" },
+      { brand: "Microsoft Edge" }
+    ],
+    mobile: false,
+    platform: "Windows"
+  }
 } = {}) {
   const timeline = [];
   const alerts = [];
@@ -799,6 +809,7 @@ function createLearningPlatformHarness({
     get activeElement() {
       return activeElement;
     },
+    adoptedStyleSheets: [],
     body,
     createElement(tagName) {
       return createElement(undefined, tagName);
@@ -861,7 +872,23 @@ function createLearningPlatformHarness({
     history,
     innerWidth,
     location,
-    navigator: { userAgent, ...(userAgentData === undefined ? {} : { userAgentData }) },
+    navigator: {
+      mediaDevices: {
+        getUserMedia() {
+          throw new Error("Synthetic camera access must not run during admission");
+        }
+      },
+      requestMediaKeySystemAccess() {
+        throw new Error("Synthetic EME access must not run during admission");
+      },
+      userAgent,
+      ...(userAgentData === undefined ? {} : { userAgentData })
+    },
+    isSecureContext: true,
+    JSON,
+    Promise,
+    URL,
+    URLSearchParams,
     open(target) {
       guard.block("window.open", target);
     },
@@ -916,6 +943,43 @@ function createLearningPlatformHarness({
     }
   }
 
+  class FixtureCSSStyleSheet {
+    replaceSync() {}
+  }
+
+  class FixtureElementInterface {
+    attachShadow() {
+      throw new Error("Synthetic Shadow DOM must not initialize during admission");
+    }
+  }
+
+  class FixtureFile {}
+
+  class FixtureHTMLCanvasElement {
+    getContext() {
+      throw new Error("Synthetic canvas must not initialize during admission");
+    }
+  }
+
+  class FixtureHTMLMediaElement {
+    play() {
+      throw new Error("Synthetic media must not initialize during admission");
+    }
+  }
+
+  class FixtureMediaSource {
+    static isTypeSupported() {
+      throw new Error("Synthetic codec checks must not run during admission");
+    }
+  }
+
+  class FixtureShadowRoot {}
+  Object.defineProperty(FixtureShadowRoot.prototype, "adoptedStyleSheets", {
+    configurable: true,
+    value: [],
+    writable: true
+  });
+
   class GuardedImage {
     set src(target) {
       guard.block("image resource", target);
@@ -960,12 +1024,32 @@ function createLearningPlatformHarness({
     window
   };
   window.fetch = guard.fetch;
+  window.BigInt = BigInt;
+  window.CSSStyleSheet = FixtureCSSStyleSheet;
+  window.Element = FixtureElementInterface;
+  window.File = FixtureFile;
   window.XMLHttpRequest = guard.XMLHttpRequest;
   window.WebSocket = guard.WebSocket;
   window.EventSource = guard.EventSource;
   window.Worker = GuardedWorker;
   window.Image = GuardedImage;
   window.FormData = FixtureFormData;
+  window.HTMLCanvasElement = FixtureHTMLCanvasElement;
+  window.HTMLMediaElement = FixtureHTMLMediaElement;
+  window.MediaSource = FixtureMediaSource;
+  window.ShadowRoot = FixtureShadowRoot;
+  window.WebAssembly = WebAssembly;
+  window.crypto = {
+    getRandomValues() {
+      throw new Error("Synthetic Web Crypto must not run during admission");
+    },
+    subtle: {}
+  };
+  window.customElements = {
+    define() {
+      throw new Error("Synthetic custom elements must not initialize during admission");
+    }
+  };
   window.Date = FixtureDate;
 
   const context = vm.createContext(sandbox);
@@ -1016,6 +1100,7 @@ function createLearningPlatformHarness({
       document,
       fetch: guard.fetch,
       history,
+      async loadFaceRuntime() {},
       location,
       navigate(target) {
         location.href = target;

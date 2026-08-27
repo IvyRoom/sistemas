@@ -13,16 +13,40 @@ function installFaceShadowPresentation(faceLivenessDetector, createStyleSheet) {
     };
 }
 
-export function createFaceStartup({ createElement, createStyleSheet, mount }) {
+export function createFaceStartup({ createElement, createStyleSheet, loadRuntime, mount }) {
+    let loadPromise;
+    let startPromise;
+
+    function ensureRuntime() {
+        if (!loadPromise) {
+            const currentLoad = Promise.resolve().then(loadRuntime);
+            loadPromise = currentLoad;
+            currentLoad.then(undefined, () => {
+                if (loadPromise === currentLoad) loadPromise = undefined;
+            });
+        }
+        return loadPromise;
+    }
+
     return {
         start(token) {
-            const faceLivenessDetector = createElement('azure-ai-vision-face-ui');
-            installFaceShadowPresentation(faceLivenessDetector, createStyleSheet);
-            faceLivenessDetector.locale = 'pt-BR';
-            faceLivenessDetector.fontSize = '18px';
-            faceLivenessDetector.buttonStyles = FACE_BUTTON_STYLES;
-            mount(faceLivenessDetector);
-            return faceLivenessDetector.start(token);
+            if (startPromise) return startPromise;
+
+            const currentStart = ensureRuntime().then(() => {
+                const faceLivenessDetector = createElement('azure-ai-vision-face-ui');
+                installFaceShadowPresentation(faceLivenessDetector, createStyleSheet);
+                faceLivenessDetector.locale = 'pt-BR';
+                faceLivenessDetector.fontSize = '18px';
+                faceLivenessDetector.buttonStyles = FACE_BUTTON_STYLES;
+                mount(faceLivenessDetector);
+                return faceLivenessDetector.start(token);
+            });
+            startPromise = currentStart;
+            currentStart.then(
+                () => { if (startPromise === currentStart) startPromise = undefined; },
+                () => { if (startPromise === currentStart) startPromise = undefined; }
+            );
+            return currentStart;
         }
     };
 }

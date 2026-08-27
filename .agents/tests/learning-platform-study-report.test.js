@@ -337,7 +337,6 @@ function createStudyHarness({
     configureDownloads: createDownloadConfigurator(dependencies.document),
     document: dependencies.document,
     dom,
-    isMicrosoftEdge: () => true,
     loadMedia: player.loadMedia,
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,

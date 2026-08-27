@@ -32,8 +32,9 @@ Face, the media store, EZDRM, email, or any customer-facing route.
 
 The document keeps six categories separate:
 
-- **Browser support contract** is the selected customer-support target for the
-  later browser-gate replacement. It is policy, not current runtime behavior.
+- **Browser support contract** is the selected customer-support target. Runtime
+  admission implements only its observable candidate boundary and is not
+  qualification evidence.
 - **Source-observed current behavior** is the compatibility baseline.
 - **Known risks and unresolved legacy behavior** must be preserved by a pure
   move/baseline unless a later task explicitly changes them.
@@ -118,7 +119,7 @@ version floor, or compatibility mode.
 | Complete authenticated learning journey | Windows 11 x64 on a physical local device; Microsoft Edge Stable or Microsoft Edge Extended Stable; exact current build must be qualified with Face, capture-resistant protected media, ordinary learning, report, and logout fixtures | Selected support target, pending the row-specific qualification below. Windows/Edge/PlayReady is selected because it is the only path with reported application-specific capture-resistance evidence, not because Edge branding or Microsoft documentation guarantees every capture result. Edge Beta is validation-only; Dev and Canary are unsupported. Chrome, Firefox, Safari, other Chromium derivatives, embedded WebViews, ARM64, macOS, Linux, Windows Server, Windows 10, and mobile operating systems are unsupported for this journey. Remote desktop and virtual machines are unverified. |
 | First-time Face registration | Same Windows 11 and Edge Stable or Extended Stable boundary, plus a trusted physical camera and every Face capability below | Selected support target, pending the registration-specific camera, upload, and Face qualification. Camera absence or denial is a recoverable camera failure, not proof of an unsupported browser. |
 | Public status report | Serviced Windows 11 x64 desktop; current Microsoft Edge Stable or Extended Stable, Google Chrome Stable, or Mozilla Firefox Release | A deliberately broader selected support target, pending public-row qualification, because this surface does not require session state, Face, Shaka, EME, PlayReady, or camera access. Edge Beta, Chrome Beta, and Firefox Beta are validation-only. |
-| Browser and device warning pages | Same public matrix as the status report | Selected support target pending qualification, so a compatibility explanation remains renderable without Face or DRM. The browser-warning diagnostic does not yet meet this target when `userAgentData` is absent; that current defect is preserved below and must be fixed only by the browser-gate replacement. |
+| Browser and device warning pages | Same public matrix as the status report | Selected support target pending qualification, so a compatibility explanation remains renderable without Face or DRM. The warning entries remain ungated, and the browser diagnostic handles absent or partial `userAgentData` without preventing the document from rendering. |
 
 Safari on macOS with FairPlay is a deferred, unimplemented, and unverified
 future candidate, not a selected support target. Safari without a configured
@@ -188,8 +189,8 @@ output protection, and hardware DRM, but does not promise that every Edge
 screenshot or recorder returns black pixels. The current source does not
 request a hardware-DRM key-system string or explicit robustness, security-
 level, output-protection, or HDCP policy, and it cannot reveal the policies
-issued by the remote license service. The present Edge gate and PlayReady
-server mapping are consequently implementation evidence, not proof of capture
+issued by the remote license service. The runtime Edge/Windows candidate
+classifier and PlayReady server mapping are consequently implementation evidence, not proof of capture
 resistance; the controlled application qualification is authoritative for the
 bounded claim above.
 
@@ -203,7 +204,7 @@ package README.
 
 ### Failure boundaries
 
-The later browser-gate replacement must preserve these distinct outcomes:
+The centralized browser-admission classifier preserves these distinct outcomes:
 
 1. **Unsupported environment:** a positively identified OS, device class,
    browser family, or channel matches an explicit unsupported designation
@@ -250,47 +251,53 @@ No failure after a capability was admitted may be retrospectively rewritten as
 
 `navigator.userAgentData` is optional input. Its absence is expected in some
 selected public browsers and must never throw, redirect by itself, or be used
-as proof that the browser is unsupported. The later implementation must:
+as proof that the browser is unsupported. The implementation therefore:
 
-- read `userAgentData` defensively when present and use a centralized,
+- reads `userAgentData` defensively when present and uses a centralized,
   testable fallback identification path when it is not;
-- keep policy identification separate from capability probes and from the
+- keeps policy identification separate from capability probes and from the
   recoverable runtime failures above;
-- allow the public status report and warning documents to proceed when their
+- allows the public status report and warning documents to proceed when their
   own capabilities pass, including a synthetic profile with no
   `userAgentData`;
-- classify a full-journey browser whose family cannot be established by either
+- classifies a full-journey browser whose family cannot be established by either
   identification path as unverified rather than unsupported, without throwing
   or initializing Face, camera, DRM, or production integrations first; and
-- avoid exact `userAgentData` brand equality as the sole supported-browser
+- avoids exact `userAgentData` brand equality as the sole supported-browser
   condition.
 
-This policy permits a defensive legacy `navigator.userAgent` fallback for
-family identification during the later replacement; it does not make that
-string a capability test or authorize the present sniffing to expand.
+This policy permits the defensive legacy `navigator.userAgent` fallback now
+used for family and platform identification; it does not make that string a
+capability test or support qualification.
 
-### Current gate versus selected policy
+### Runtime admission and qualification boundary
 
-The selected policy above is **not implemented by this task**. The temporary
-`LP-GATE-EDGE` runtime behavior remains unchanged: login, initial notices,
-photo registration, and study pass only when `userAgentData.brands` contains
-the exact brand `Microsoft Edge` or `userAgent` contains `Edg`. The public
-status report and both warning entries do not apply that gate. The current
-browser-warning diagnostic still dereferences `userAgentData.brands` without a
-guard, and login and registration still import the Face bundle before the
-temporary gate can complete.
+One centralized classifier now governs login, initial notices, photo
+registration, and study. It returns a structured `candidate`, `unsupported`, or
+`unverified` outcome with a stable reason code. Consistent Windows desktop and
+Edge family evidence plus the entry's mandatory API shapes produces only an
+eligible candidate. Explicit non-Windows, mobile, embedded, or non-Edge evidence
+is unsupported; insufficient or genuinely conflicting evidence is unverified.
+Ordinary Chromium base brands and tokens in Edge evidence are neutral. Both
+non-candidate outcomes retain the unchanged browser-warning navigation because
+changing that page's copy or route is outside this task.
 
-That string gate is not capture qualification. It does not establish Windows
-11, a serviced browser build, PlayReady availability, security or output
-policy, GPU/decoder behavior, display path, or capture result, and Edge on
-macOS can satisfy the current brand/string condition. The identity-based non-
-DRM exception separately bypasses protected playback after entry.
+The classifier and its user-agent inputs are spoofable. A candidate result does
+not prove Windows servicing state, physical x64 hardware, Edge channel or exact
+qualified build, PlayReady or hardware DRM availability, codec/license/output-
+protection compatibility, or capture resistance. It neither probes nor starts
+camera, Face, WebAssembly, media, DRM, licenses, codecs, or external services.
+Those later runtime and controlled-qualification results retain the distinct
+failure boundaries above. The identity-based non-DRM exception separately
+bypasses protected playback only after candidate entry.
 
-Those facts describe current source behavior, not the selected evergreen
-policy. The later **Replace browser sniffing** task must implement the policy
-and its failure boundaries without changing the separately frozen device-width,
-navigation, session, Face, DRM, media, report, API, or route contracts unless a
-newly authorized task changes them.
+Login and registration provide the vendored Face bundle through a literal lazy
+module loader. Unsupported and unverified profiles cannot call that loader;
+candidate profiles load it only when an admitted Face flow actually reaches
+component startup. The loader and each active startup are single-flight, while
+a settled login failure may still be retried. Status report and both warning
+entries remain outside browser admission, and the browser diagnostic reads
+absent or partial client hints defensively.
 
 ### Verification matrix and maintenance
 
@@ -610,8 +617,8 @@ selects or overrides the backend base.
 | `modules/platform-client.js` | Owns injected JSON GET/POST and ordered multipart POST mechanics. It normalizes fetch rejection and malformed JSON through the application error seam, still parses JSON before checking `ok`, and for parsed non-OK responses still throws exactly `{ status: response.status, error: data.error }`. It adds no retry, timeout, abort, dedupe, idempotency, or authorization header. |
 | `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, the exact named backend values, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
 | `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
-| `modules/lifecycle.js` | Owns the exact Edge signal and inclusive `<= 1024` device-warning decision. Entry factories retain listener installation and gate order. |
-| `modules/face-startup.js` | Constructs one injected Face custom element, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
+| `modules/lifecycle.js` | Owns the structured browser-admission outcomes, normalized Windows/Edge evidence, side-effect-free entry API-shape checks, and inclusive `<= 1024` device-warning decision. Entry factories retain listener installation and gate order. |
+| `modules/face-startup.js` | Loads the injected Face runtime lazily and single-flight, then constructs one custom element per active start, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
 | `modules/login.js`, `modules/photo-registration.js`, `modules/initial-notices.js` | Own their existing credential, upload, Face, notice, form-reset, gate, storage, request, and navigation branches. Production configuration stays at the existing entry edge and is injected without being copied into tests or documentation. |
 | `modules/status-report/query.js` | Parses the nine legacy query keys, including all current coercion and missing-value behavior. |
 | `modules/status-report/charts.js` | Constructs chart markup/targets, applies the module range, independently sorts each metric, and renders the existing 15-slot layout and label quirks. |
@@ -686,19 +693,19 @@ executed by behavior tests.
 
 ### Browser, viewport, resize, and back-navigation gates
 
-`LP-GATE-EDGE` applies on login, initial notices, registration, and study. A
-browser passes when either `navigator.userAgentData?.brands` contains a brand
-whose value is exactly `Microsoft Edge`, or the legacy user-agent string
-contains `Edg`. Failure navigates to the slashless browser-warning path. This is
-a string gate, not a capability check. Status report and both warning entries do
-not apply it. The browser-warning diagnostic script directly reads
-`navigator.userAgentData.brands` without optional chaining; where that API is
-absent the script throws after the warning HTML is already present.
+`GATE-01` applies one classifier on login, initial notices, registration, and
+study. Defensive client hints and the legacy user-agent fallback identify only
+a Windows/Edge candidate; per-entry mandatory API shapes are inspected without
+calling them. Stable reason codes distinguish explicit unsupported evidence,
+insufficient or conflicting unverified evidence, and the admitted candidate.
+Both non-candidate outcomes navigate to the slashless browser-warning path.
+Status report and both warning entries do not apply this gate. The browser-
+warning diagnostic reads both absent and partial client hints defensively.
 
 `LP-GATE-WIDTH` redirects active entries when `window.innerWidth <= 1024`:
 `1024` is rejected and `1025` is allowed. Login, notices, and registration
 install a resize listener before their `load` handler. Study installs its
-listener only after its Edge and logged-state gates and performs an immediate
+listener only after its admission and logged-state gates and performs an immediate
 width check before refreshing data. Status report parses query parameters at
 module evaluation, then applies width first inside its `load` handler and
 installs the listener only when initially wider than the boundary. The device
@@ -708,11 +715,11 @@ Gate order is stable:
 
 | Entry | Current order |
 | --- | --- |
-| Login | Edge → existing logged flag → registration/history rule → width |
-| Initial notices | reset device origin → Edge → registration authorization → width |
-| Registration | reset device origin → Edge → registration authorization → width |
-| Study | reset device origin → Edge → logged flag → width → refresh |
-| Status report | query parse during module evaluation → width in `load` → render/API; no Edge/session gate |
+| Login | browser candidate → existing logged flag → registration/history rule → width |
+| Initial notices | reset device origin → browser candidate → registration authorization → width |
+| Registration | reset device origin → browser candidate → registration authorization → width |
+| Study | reset device origin → browser candidate → logged flag → width → refresh |
+| Status report | query parse during module evaluation → width in `load` → render/API; no browser/session gate |
 | Device/browser warning | no incoming gate |
 
 Login, notices, registration, and status report retain async module scripts.
@@ -960,11 +967,14 @@ or rendered HTML.
 
 #### Login and initial notices
 
-`LP-STATE-LOGIN` begins by writing the production backend role and importing
-the Face component. The load gate then applies Edge, existing-login,
-registration-history, and width rules in that order. Submission disables and
-hides the button, shows the initialization message, and captures the untrimmed
-credentials. A matched response is stored before branch selection.
+`LP-STATE-LOGIN` begins by selecting the production backend role and computing
+the centralized browser-admission result without loading Face. The load gate
+then applies candidate admission, existing-login, registration-history, and
+width rules in that order. Non-candidate submission is inert. Candidate
+submission disables and hides the button, shows the initialization message,
+and captures the untrimmed credentials. A matched response is stored before
+branch selection. The lazy Face runtime loads only after an admitted flow has
+created a Face session and is ready to start the component.
 
 - Inactive login resets the form and displays the backend-projected access
   deadline. It is a successful HTTP response without a row handle.
@@ -1560,13 +1570,13 @@ source-derived identities are:
 
 | Current centralized-origin post-modernization scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,338,010 | `cf070ef23c295f60ea42b5127503763918f1b78a6a012a6c8973c93fa4d6a5d5` |
+| Complete generated `dist/` artifact | 258 | 27,355,138 | `e60a6f5f41769de833fb11bb68a693de4793a8c518888fc28558259a02681350` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,733,425 | `da0237fc0b01c165824413a9d6bde4caea4c53189506d7a6121e70be4ac1de7a` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,733,425 | `e752189e25b613e31e9b71c0fc5ed0ee5102ef4bdefefc7e421cc84454c87bdb` |
-| Platform JavaScript, retaining full output paths | 36 | 446,374 | `8a609b7842fe4c5190508f9ca28f5cd20588077cc7ada837688c90b7cf90e7f9` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,750,553 | `bef9b6c97b8750fb749b4b251d52bb23ea51065a95c3dd857dd2fbb9247e2cad` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,750,553 | `9047caca95a1a0de4e8c6722f4c17971ebf47f8618252ececb96628e195b5b60` |
+| Platform JavaScript, retaining full output paths | 36 | 463,502 | `997b5db099fdb54891f6214482c572b2b0527507b443b928d52f350ebc87301b` |
 | Platform non-JavaScript files, retaining full output paths | 146 | 20,287,051 | `4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a` |
-| Study entry subtree, retaining full output paths | 41 | 10,022,020 | `26da442362557c4fcca35f64401938de1dc6b50510c12a1a9ff12656646be148` |
+| Study entry subtree, retaining full output paths | 41 | 10,022,018 | `6d1168905923140744422ce35798015c5a276642d12e18808c1f09c08e57452e` |
 | Four public API applications, retaining full output paths | 20 | 736,448 | `1a2e16ce19f831ad36c4ffcfa9611122194d956ee70c929ea264cfd632a8aed1` |
 | All non-platform applications, retaining full output paths | 75 | 6,604,504 | `12e1bdf1e23f3dbbc7657cefde9a3a69425e7e7241ea023b20e789b4701a0110` |
 
@@ -1707,10 +1717,10 @@ future work, not permission to change compatibility behavior in the baseline.
   target omits it. Production serves both spellings with the same entry bytes
   and no HTTP redirect; because the platform has no normalizer, its slashless
   links leave noncanonical paths in bookmarks, refreshes, and browser history.
-- The Edge gate depends on mutable user-agent strings. The browser-warning
-  page also dereferences `navigator.userAgentData.brands` without the optional
-  guard used elsewhere, so browsers without that API can fail before rendering
-  its decision.
+- Browser admission still depends on spoofable client hints and user-agent
+  strings. Capability shapes improve failure classification but cannot prove
+  Windows servicing or architecture, the Edge channel/build, physical-device
+  status, PlayReady qualification, or capture resistance.
 - The `<= 1024` boundary is a hard redirect rather than a responsive state.
   Returning relies on one browser-history entry whose viewport is now
   `> 1024`; direct visits and repeated resize transitions have no alternate
@@ -1922,7 +1932,7 @@ identify the current oracle.
 | ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, including `/plataforma/cadastro-foto/` with exact case, every index is emitted under `dist/plataforma/`, and one directory mapping emits the complete canonical module tree within the exact nine learning-platform mappings. |
 | ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/` and all three former `/plataforma/cadastro` entry forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or `dist/plataforma_v2/` subtree exists. All 15 enumerated legacy module URLs are explicit 404s and have no emitted output, alias, or redirect. Internal source navigation remains slashless; production serves each current slashless entry with the same bytes and no HTTP redirect, while the manifest's trailing-slash spellings remain canonical. |
 | ROUTE-03 | Navigation/history | Login, initial notices, Face registration at `/plataforma/cadastro-foto`, study, warning pages, logout, and back navigation use the exact current targets and history operations. |
-| GATE-01 | Edge detection | Login/notices/registration/study accept when either current Edge signal matches and redirect when neither matches; status report does not gate; the browser-warning diagnostic throws when `userAgentData` is absent. |
+| GATE-01 | Browser admission | One centralized classifier gives login/notices/registration/study stable candidate, unsupported, or unverified results from consistent browser/platform evidence and side-effect-free entry API shapes. Usable Windows/Edge hints or fallback can produce only a candidate; missing or conflicting evidence stays unverified; explicit excluded families/platforms and missing mandatory APIs stay unsupported. Rejected and unverified profiles never load Face. Status report and both warning entries remain ungated, and browser diagnostics handle absent or partial `userAgentData`. |
 | GATE-02 | Width and resize | Initial and resize decisions cover 1023, 1024, and 1025 pixels, including each page's current ordering and the warning page's `history.back()` condition. |
 | STORE-01 | Key inventory | The exact seven accented/cased keys, all readers/writers, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented; no backend base is stored or read. |
 | STORE-02 | Lifetime/reset | No flow clears storage; logout changes only `Usuário_Logado`; refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. |
@@ -1998,7 +2008,7 @@ failure before any application script executes.
    source literals, tracked paths, and digest framing. This covers routes,
    assets, downloads, topic keys, names, casing, and Unicode without executing
    vendor code.
-2. Execute only the two unchanged classic warning scripts in the isolated VM.
+2. Execute only the two classic warning scripts in the isolated VM.
    Import real application `.js` modules through the Node.js 24 loader hook
    confined by real path to `apps/learning-platform/modules/`, then call their
    factories with synthetic `window`, `document`, `navigator`, `location`,
@@ -2014,10 +2024,11 @@ failure before any application script executes.
    single Face-result resolution/rejection with a synthetic promise. Use fake
    timers for the session deadline and documented backend retry schedule; do
    not wait in wall-clock time.
-5. Stub the Face custom element, Shaka Player/UI, video element, and jsPDF.
-   Assert construction/configuration/path resolution and lifecycle calls.
-   Behavior tests never import a production Face entry or execute the vendored
-   Face engine or either WASM file.
+5. Stub the injected lazy Face loader, Face custom element, Shaka Player/UI,
+   video element, and jsPDF. Assert loading, construction, configuration, path
+   resolution, single-flight behavior, and lifecycle calls. Behavior tests
+   never import a production Face entry or execute the vendored Face engine or
+   either WASM file.
 6. Use invented participant, workbook, company, assessment, and feedback data.
    Exercise HTML-sensitive values in a contained DOM to characterize sinks;
    never copy production names, workbook contents, report links, authorization

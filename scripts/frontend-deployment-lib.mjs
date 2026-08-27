@@ -632,17 +632,110 @@ export function extractCssReferences(css) {
   return references;
 }
 
-const javaScriptModuleRequestParser = [
-  'const { readFileSync } = require("node:fs");',
-  'const { SourceTextModule } = require("node:vm");',
-  'const sourceModule = new SourceTextModule(readFileSync(0, "utf8"));',
-  'process.stdout.write(JSON.stringify(sourceModule.dependencySpecifiers));'
-].join("\n");
+function parseJavaScriptModuleRequests() {
+  const { readFileSync } = require("node:fs");
+  const { SourceTextModule } = require("node:vm");
+  const source = readFileSync(0, "utf8");
+  const sourceModule = new SourceTextModule(source);
+  const dynamicDependencySpecifiers = [];
+
+  function canParse(candidate) {
+    try {
+      new SourceTextModule(candidate);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function skipTrivia(start) {
+    let index = start;
+    while (index < source.length) {
+      if (/\s/u.test(source[index])) {
+        index += 1;
+      } else if (source.startsWith("//", index)) {
+        const lineEnd = source.indexOf("\n", index + 2);
+        index = lineEnd === -1 ? source.length : lineEnd + 1;
+      } else if (source.startsWith("/*", index)) {
+        const commentEnd = source.indexOf("*/", index + 2);
+        index = commentEnd === -1 ? source.length : commentEnd + 2;
+      } else {
+        return index;
+      }
+    }
+    return index;
+  }
+
+  function readStringEnd(start) {
+    const quote = source[start];
+    let index = start + 1;
+    while (index < source.length) {
+      if (source[index] === "\\") {
+        index += 2;
+      } else if (source[index] === quote) {
+        return index + 1;
+      } else {
+        index += 1;
+      }
+    }
+    return index;
+  }
+
+  for (const importMatch of source.matchAll(/\bimport\b/gu)) {
+    const importStart = importMatch.index;
+    const openingParenthesis = skipTrivia(importStart + importMatch[0].length);
+    if (source[openingParenthesis] !== "(") {
+      continue;
+    }
+
+    const argumentStart = skipTrivia(openingParenthesis + 1);
+    if (source[argumentStart] !== "'" && source[argumentStart] !== '"') {
+      continue;
+    }
+
+    const argumentEnd = readStringEnd(argumentStart);
+    const literalSource = source.slice(argumentStart, argumentEnd);
+    const afterLiteral = skipTrivia(argumentEnd);
+    if (source[afterLiteral] !== ")" && source[afterLiteral] !== ",") {
+      continue;
+    }
+
+    const invalidCodeToken = [
+      source.slice(0, importStart),
+      "@",
+      source.slice(importStart + 1)
+    ].join("");
+    if (canParse(invalidCodeToken)) {
+      continue;
+    }
+
+    const identifierReplacement = "0".padEnd(importMatch[0].length, " ");
+    const replacedImport = [
+      source.slice(0, importStart),
+      identifierReplacement,
+      source.slice(importStart + importMatch[0].length)
+    ].join("");
+    if (!canParse(replacedImport)) {
+      continue;
+    }
+
+    // Both native parses constrain this evaluation to one real string-literal import.
+    const specifier = Function(`"use strict"; return (${literalSource});`)();
+    if (/^\.{1,2}\//.test(specifier)) dynamicDependencySpecifiers.push(specifier);
+  }
+
+  process.stdout.write(JSON.stringify({
+    dependencySpecifiers: sourceModule.dependencySpecifiers,
+    dynamicDependencySpecifiers
+  }));
+}
+
+const javaScriptModuleRequestParser = `(${parseJavaScriptModuleRequests.toString()})();`;
 
 export function extractJavaScriptImportReferences(javaScript) {
-  let serializedDependencySpecifiers;
+  let serializedModuleRequests;
   try {
-    serializedDependencySpecifiers = execFileSync(
+    serializedModuleRequests = execFileSync(
       process.execPath,
       [
         "--no-warnings",
@@ -661,20 +754,26 @@ export function extractJavaScriptImportReferences(javaScript) {
     throw new Error("Unable to parse JavaScript module dependencies.", { cause });
   }
 
-  let dependencySpecifiers;
+  let moduleRequests;
   try {
-    dependencySpecifiers = JSON.parse(serializedDependencySpecifiers);
+    moduleRequests = JSON.parse(serializedModuleRequests);
   } catch (cause) {
     throw new Error("Unable to read parsed JavaScript module dependencies.", { cause });
   }
 
   invariant(
-    Array.isArray(dependencySpecifiers)
-      && dependencySpecifiers.every((specifier) => typeof specifier === "string"),
+    isPlainObject(moduleRequests)
+      && Array.isArray(moduleRequests.dependencySpecifiers)
+      && Array.isArray(moduleRequests.dynamicDependencySpecifiers)
+      && [...moduleRequests.dependencySpecifiers, ...moduleRequests.dynamicDependencySpecifiers]
+        .every((specifier) => typeof specifier === "string"),
     "Parsed JavaScript module dependencies are invalid."
   );
 
-  return dependencySpecifiers.filter((specifier) => /^\.{1,2}\//.test(specifier));
+  return [
+    ...moduleRequests.dependencySpecifiers,
+    ...moduleRequests.dynamicDependencySpecifiers
+  ].filter((specifier) => /^\.{1,2}\//.test(specifier));
 }
 
 function localReferenceCandidates(value, baseUrl, { allowIndexFallback = true } = {}) {

@@ -1044,9 +1044,18 @@ test("HTML, CSS, and JavaScript reference extractors preserve local references",
       export { localElement };
       export { bareElement } from "bare-package";
       import packageName from "package-name";
-      import("./dynamic-module.js");
+      import /* lazy dependency */ ("./dynamic-module.js");
+      import(".\\u002fescaped-dynamic-module.js");
+      import("\\u002e/escaped-leading-dot-module.js");
+      import("..\\u002fescaped-parent-module.js");
+      import("package-name");
+      import(moduleName);
+      import("./computed-" + moduleName + ".js");
       import.meta.url;
       const text = "import './string-module.js'";
+      const dynamicText = 'import("./string-dynamic-module.js")';
+      // import("./line-comment-module.js");
+      /* import("../block-comment-module.js"); */
       const pattern = /import\\s+['\"]/;
     `),
     [
@@ -1054,7 +1063,11 @@ test("HTML, CSS, and JavaScript reference extractors preserve local references",
       "../shared/scroll-behavior.js?version=1#current",
       "./named.js",
       "./all.js",
-      "../namespace.js"
+      "../namespace.js",
+      "./dynamic-module.js",
+      "./escaped-dynamic-module.js",
+      "./escaped-leading-dot-module.js",
+      "../escaped-parent-module.js"
     ]
   );
 });
@@ -1065,8 +1078,36 @@ test("JavaScript dependency extraction ignores non-declaration property names", 
       const value = { import: './property.js', export: './property.js' };
       const importer = value.import;
       const exporter = value.export;
+      const loader = { import() {} };
+      loader.import('./property-call.js');
+      loader?.import('./optional-property-call.js');
+      class PrivateLoader {
+        #import() {}
+        load() { this.#import('./private-property-call.js'); }
+      }
     `),
     []
+  );
+});
+
+test("JavaScript dependency extraction scans template expressions but not template text", () => {
+  assert.deepEqual(
+    extractJavaScriptImportReferences(
+      'const description = `import("./template-text.js") ${import("../template-expression.js")}`;'
+    ),
+    ["../template-expression.js"]
+  );
+});
+
+test("JavaScript dependency extraction ignores regex literals across statement boundaries", () => {
+  assert.deepEqual(
+    extractJavaScriptImportReferences(String.raw`
+      if (condition) /import\(".\/control-flow-fake.js"\)/.test(text);
+      if (condition) {} /import\(".\/block-fake.js"\)/.test(text);
+      if (condition) /import(".\u002fencoded-control-flow-fake.js")/.test(text);
+      const ratio = {} / import("./real-dynamic-module.js") / 2;
+    `),
+    ["./real-dynamic-module.js"]
   );
 });
 
@@ -1109,7 +1150,7 @@ test("generated JavaScript imports require exact files without index fallback", 
   await Promise.all([
     writeFile(
       join(artifactRoot, "landing-page", "main.js"),
-      "import './modules/elements.js';\n"
+      "const loadElements = () => import('./modules/elements.js');\n"
     ),
     writeFile(join(moduleRoot, "elements.js"), "export const element = {};\n"),
     writeFile(
@@ -1125,7 +1166,7 @@ test("generated JavaScript imports require exact files without index fallback", 
 
   await writeFile(
     join(artifactRoot, "landing-page", "main.js"),
-    "import './modules/missing.js';\n"
+    "const loadMissing = () => import('./modules/missing.js');\n"
   );
   await mkdir(join(moduleRoot, "missing.js"));
   await writeFile(join(moduleRoot, "missing.js", "index.html"), "not a module\n");

@@ -9,7 +9,12 @@ import {
     learningPlatformErrorMessage,
     learningPlatformErrorPresentations
 } from './error-presentation.js';
-import { isMicrosoftEdge, redirectToDeviceWarning } from './lifecycle.js';
+import {
+    browserAdmissionEntries,
+    browserAdmissionOutcomes,
+    classifyBrowserAdmission,
+    redirectToDeviceWarning
+} from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
 
@@ -22,6 +27,7 @@ export function createRegistrationApplication({
     FormDataConstructor,
     createFaceElement,
     createFaceStyleSheet,
+    loadFaceRuntime,
     navigate,
     alert,
     backendBase
@@ -37,7 +43,14 @@ export function createRegistrationApplication({
     const faceStartup = createFaceStartup({
         createElement: createFaceElement,
         createStyleSheet: createFaceStyleSheet,
+        loadRuntime: loadFaceRuntime,
         mount: element => faceContainer.appendChild(element)
+    });
+    const browserAdmission = classifyBrowserAdmission({
+        document,
+        entry: browserAdmissionEntries.PHOTO_REGISTRATION,
+        navigator,
+        window
     });
 
     function redirectForWidth() {
@@ -49,7 +62,7 @@ export function createRegistrationApplication({
     window.addEventListener('load', function() {
         session.write('deviceWarningOrigin', 'Não');
 
-        if (isMicrosoftEdge(navigator) === false) {
+        if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
         }
         else {
@@ -63,7 +76,14 @@ export function createRegistrationApplication({
     });
 
     referencePhotoForm.addEventListener('submit', function(event) {
-        if (submitButton.disabled) return;
+        if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
+            event.preventDefault();
+            return;
+        }
+        if (submitButton.disabled) {
+            event.preventDefault();
+            return;
+        }
         document.body.style.cursor = 'wait';
         submitButton.disabled = true;
         submitButton.style.display = 'none';
