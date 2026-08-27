@@ -665,8 +665,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    77,
-    "The centralized-origin source graph must contain exactly 77 JavaScript imports"
+    76,
+    "The centralized-origin source graph must contain exactly 76 JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -681,7 +681,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
 });
 
-test("generated preview resolves exactly 77 centralized-origin JavaScript imports", async (context) => {
+test("generated preview resolves exactly 76 centralized-origin JavaScript imports", async (context) => {
   const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-origin-artifact-"));
   context.after(() => rm(artifactRoot, { force: true, recursive: true }));
   const validation = await validateDeploymentManifest(await readDeploymentManifest());
@@ -697,8 +697,8 @@ test("generated preview resolves exactly 77 centralized-origin JavaScript import
   const references = await assertLocalReferences(artifactRoot);
   assert.equal(
     references.javascriptReferences,
-    77,
-    "The generated centralized-origin module graph must contain exactly 77 resolvable imports"
+    76,
+    "The generated centralized-origin module graph must contain exactly 76 resolvable imports"
   );
   assert.deepEqual(
     await readFile(join(artifactRoot, "shared", "backend-origin.js")),

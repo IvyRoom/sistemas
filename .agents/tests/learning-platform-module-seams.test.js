@@ -369,7 +369,7 @@ test("[API-01] Registration accepts an explicit synthetic platform base", async 
   harness.hostGuard.assertUnused();
 });
 
-test("[FLOW-01] initial-notices module preserves gate, listener, submit, and reset order", async () => {
+test("[FLOW-01] initial-notices module preserves gate, submit, and reset order", async () => {
   const [noticesModule, sessionModule] = await loadModules([
     "initial-notices.js",
     "session.js"
@@ -402,7 +402,7 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
     authorized.timeline
       .filter(({ type }) => type === "window-listener")
       .map(({ event }) => event),
-    ["resize", "load"]
+    ["load"]
   );
   authorized.dispatchWindow("load");
   assert.deepEqual(
@@ -471,7 +471,12 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
 
   const narrow = installNotices({ innerWidth: 1024 });
   narrow.dispatchWindow("load");
-  assert.equal(narrow.navigation.at(-1), "/plataforma/aviso-dispositivo");
+  assert.deepEqual(narrow.navigation, []);
+  for (const width of [1023, 1024, 1025]) {
+    narrow.window.innerWidth = width;
+    narrow.dispatchWindow("resize");
+    assert.deepEqual(narrow.navigation, []);
+  }
 
   const unauthorized = installNotices({ authorization: "N\u00e3o" });
   unauthorized.dispatchWindow("load");
@@ -568,9 +573,7 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
   const capturedApplication = applicationModule.createStatusReportApplication({
     URLSearchParamsConstructor: CaptureSearchParams,
     document: captureDocument,
-    navigate() {},
     platformClient: {},
-    redirectToDeviceWarning() {},
     showAlert() {},
     window: captureWindow
   });
@@ -604,9 +607,8 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
 });
 
 test("[API-05] status-report application uses the injected public request seam", async () => {
-  const [applicationModule, lifecycleModule, clientModule] = await loadModules([
+  const [applicationModule, clientModule] = await loadModules([
     "status-report/application.js",
-    "lifecycle.js",
     "platform-client.js"
   ]);
   const rows = [
@@ -631,8 +633,7 @@ test("[API-05] status-report application uses the injected public request seam",
   });
   applicationModule.createStatusReportApplication({
     ...dependencies,
-    platformClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+    platformClient
   }).install();
 
   assert.equal(typeof harness.window.onload, "function");
@@ -646,7 +647,7 @@ test("[API-05] status-report application uses the injected public request seam",
     method: "POST",
     path: "/plataforma_v2/statusreport"
   }]);
-  assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
+  assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
   assert.equal(
     dom.entityContainers[0].querySelectorAll(".Entidades")[0].innerHTML,
     "Progress Winner"
@@ -666,9 +667,8 @@ test("[API-05] status-report application uses the injected public request seam",
 });
 
 test("[API-05] status-report application preserves JSON/status and failure ordering", async () => {
-  const [applicationModule, lifecycleModule, clientModule] = await loadModules([
+  const [applicationModule, clientModule] = await loadModules([
     "status-report/application.js",
-    "lifecycle.js",
     "platform-client.js"
   ]);
   const cases = [
@@ -720,8 +720,7 @@ test("[API-05] status-report application preserves JSON/status and failure order
     });
     applicationModule.createStatusReportApplication({
       ...dependencies,
-      platformClient,
-      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+      platformClient
     }).install();
 
     await harness.window.onload();
@@ -770,8 +769,7 @@ test("[API-05] status-report application preserves JSON/status and failure order
   });
   applicationModule.createStatusReportApplication({
     ...malformedDependencies,
-    platformClient: malformedClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+    platformClient: malformedClient
   }).install();
 
   await malformed.window.onload();
@@ -789,10 +787,9 @@ test("[API-05] status-report application preserves JSON/status and failure order
   malformed.hostGuard.assertUnused();
 });
 
-test("[REPORT-03] status rendering keeps exact consolidated label behavior and width gate order", async () => {
-  const [applicationModule, lifecycleModule, clientModule] = await loadModules([
+test("[REPORT-03] status rendering keeps exact consolidated label behavior at every width", async () => {
+  const [applicationModule, clientModule] = await loadModules([
     "status-report/application.js",
-    "lifecycle.js",
     "platform-client.js"
   ]);
 
@@ -826,8 +823,7 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     });
     applicationModule.createStatusReportApplication({
       ...dependencies,
-      platformClient,
-      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+      platformClient
     }).install();
     await harness.window.onload();
     await harness.flush(20);
@@ -849,24 +845,38 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     );
   }
 
-  const narrow = createLearningPlatformHarness({ innerWidth: 1024 });
-  narrow.window.location.search =
-    "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
-  installReportDom(narrow);
-  const narrowDependencies = narrow.dependencies();
-  const narrowClient = clientModule.createPlatformClient({
-    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
-    fetch: narrowDependencies.fetch,
-    FormDataConstructor: narrowDependencies.FormDataConstructor
-  });
-  applicationModule.createStatusReportApplication({
-    ...narrowDependencies,
-    platformClient: narrowClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
-  }).install();
-  await narrow.window.onload();
-  assert.deepEqual(narrow.navigation, ["/plataforma/aviso-dispositivo"]);
-  assert.equal(narrow.guard.requests.length, 0);
-  assert.equal((narrow.windowListeners.get("resize") ?? []).length, 0);
-  narrow.hostGuard.assertUnused();
+  for (const width of [1023, 1024, 1025]) {
+    const responsive = createLearningPlatformHarness({
+      innerWidth: width,
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/statusreport",
+        response: { data: { Dados_Extraídos_BD_Plataforma: [] } }
+      }]
+    });
+    responsive.window.location.search =
+      "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
+    installReportDom(responsive);
+    const responsiveDependencies = responsive.dependencies();
+    const responsiveClient = clientModule.createPlatformClient({
+      baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+      fetch: responsiveDependencies.fetch,
+      FormDataConstructor: responsiveDependencies.FormDataConstructor
+    });
+    applicationModule.createStatusReportApplication({
+      ...responsiveDependencies,
+      platformClient: responsiveClient
+    }).install();
+    await responsive.window.onload();
+    await responsive.flush(20);
+    assert.deepEqual(responsive.navigation, [], String(width));
+    assert.equal(responsive.guard.requests.length, 1, String(width));
+    assert.equal(
+      responsive.element("Container_Externo_Conteúdo").style.display,
+      "block",
+      String(width)
+    );
+    assert.equal((responsive.windowListeners.get("resize") ?? []).length, 0);
+    responsive.hostGuard.assertUnused();
+  }
 });

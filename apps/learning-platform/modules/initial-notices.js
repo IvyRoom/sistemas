@@ -1,8 +1,7 @@
 import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
-    classifyBrowserAdmission,
-    redirectToDeviceWarning
+    classifyBrowserAdmission
 } from './lifecycle.js';
 
 export function createInitialNoticesApplication({
@@ -20,10 +19,6 @@ export function createInitialNoticesApplication({
         window
     });
 
-    function handleDeviceWidth() {
-        redirectToDeviceWarning({ window, navigate });
-    }
-
     function handleLoad() {
         session.write('deviceWarningOrigin', 'Não');
 
@@ -32,14 +27,11 @@ export function createInitialNoticesApplication({
         } else {
             if (session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
-            } else {
-                handleDeviceWidth();
             }
         }
     }
 
     function install() {
-        window.addEventListener('resize', handleDeviceWidth);
         window.addEventListener('load', handleLoad);
 
         const credentialsPassword = document.getElementById('Palavra-Passe-Credenciais');

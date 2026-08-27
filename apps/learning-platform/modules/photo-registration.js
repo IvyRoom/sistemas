@@ -12,8 +12,7 @@ import {
 import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
-    classifyBrowserAdmission,
-    redirectToDeviceWarning
+    classifyBrowserAdmission
 } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -53,12 +52,6 @@ export function createRegistrationApplication({
         window
     });
 
-    function redirectForWidth() {
-        redirectToDeviceWarning({ window, navigate });
-    }
-
-    window.addEventListener('resize', redirectForWidth);
-
     window.addEventListener('load', function() {
         session.write('deviceWarningOrigin', 'Não');
 
@@ -68,9 +61,6 @@ export function createRegistrationApplication({
         else {
             if (session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
-            }
-            else {
-                redirectForWidth();
             }
         }
     });

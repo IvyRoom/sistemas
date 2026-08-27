@@ -2,8 +2,6 @@ import { BACKEND_ORIGIN } from '../shared/backend-origin.js';
 
 'use strict';
 
-const MIN_VIEWPORT_WIDTH = 1024;
-const DEVICE_WARNING_URL = '/plataforma/aviso-dispositivo/';
 const SUBMIT_ENDPOINT = `${BACKEND_ORIGIN}/clientes/processa-formulario`;
 const SUBMIT_TIMEOUT_MS = 60000;
 const MAX_PARTICIPANTS = 25;
@@ -36,12 +34,6 @@ const SUBMIT_ERROR_MESSAGES = {
   Erro_012: 'Erro_012: falha ao enviar a notificação por e-mail.\nTente novamente.',
   Erro_013: 'Erro_013: dados inválidos ou incompletos.\nRevise o preenchimento e tente novamente.',
 };
-
-function enforceDeviceGate() {
-  if (window.innerWidth <= MIN_VIEWPORT_WIDTH) {
-    window.location.href = DEVICE_WARNING_URL;
-  }
-}
 
 function onlyDigits(value) {
   return value.replace(/\D/g, '');
@@ -406,9 +398,6 @@ async function submitForm() {
     clearTimeout(timeout);
   }
 }
-
-enforceDeviceGate();
-window.addEventListener('resize', enforceDeviceGate);
 
 form.addEventListener('input', (event) => {
   const target = event.target;

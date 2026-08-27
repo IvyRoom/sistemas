@@ -10,8 +10,7 @@ import {
 import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
-    classifyBrowserAdmission,
-    redirectToDeviceWarning
+    classifyBrowserAdmission
 } from '../lifecycle.js';
 import { createStudyAssessment } from './assessment.js';
 import { createStudyCertificate } from './certificate.js';
@@ -155,10 +154,6 @@ export function createStudyApplication({
         } else if (session.read('loggedIn') !== 'Sim') {
             navigate('/plataforma/login');
         } else {
-            const handleDeviceWidth = () => redirectToDeviceWarning({ window, navigate });
-            handleDeviceWidth();
-            window.addEventListener('resize', handleDeviceWidth);
-
             state.verifiedIndex = session.read('verifiedIndex');
             client.postJson('/refresh', {
                 IndexVerificado: state.verifiedIndex

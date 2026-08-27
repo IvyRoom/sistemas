@@ -12,8 +12,7 @@ import {
 import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
-    classifyBrowserAdmission,
-    redirectToDeviceWarning
+    classifyBrowserAdmission
 } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -59,12 +58,6 @@ export function createLoginApplication({
         window
     });
 
-    function redirectForWidth() {
-        redirectToDeviceWarning({ window, navigate });
-    }
-
-    window.addEventListener('resize', redirectForWidth);
-
     window.addEventListener('load', function() {
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
@@ -79,9 +72,6 @@ export function createLoginApplication({
             ) {
                 session.write('deviceWarningOrigin', 'Não');
                 history.back();
-            }
-            else {
-                redirectForWidth();
             }
         }
     });

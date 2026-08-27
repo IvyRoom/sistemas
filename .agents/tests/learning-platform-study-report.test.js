@@ -56,14 +56,12 @@ let createStatusReportApplication;
 let createStudyApplication;
 let createStudyDom;
 let createStudyPlayer;
-let redirectToDeviceWarning;
 let studyModuleTopicCounts;
 
 test.before(async () => {
   const [
     sessionModule,
     clientModule,
-    lifecycleModule,
     applicationModule,
     domModule,
     downloadsModule,
@@ -74,7 +72,6 @@ test.before(async () => {
   ] = await Promise.all([
     loadPlatformModule("apps/learning-platform/modules/session.js"),
     loadPlatformModule("apps/learning-platform/modules/platform-client.js"),
-    loadPlatformModule("apps/learning-platform/modules/lifecycle.js"),
     loadPlatformModule("apps/learning-platform/modules/course-content/application.js"),
     loadPlatformModule("apps/learning-platform/modules/course-content/dom.js"),
     loadPlatformModule("apps/learning-platform/modules/course-content/downloads.js"),
@@ -86,7 +83,6 @@ test.before(async () => {
 
   ({ createSessionStore } = sessionModule);
   ({ createPlatformClient } = clientModule);
-  ({ redirectToDeviceWarning } = lifecycleModule);
   ({ createStudyApplication } = applicationModule);
   ({ createStudyDom } = domModule);
   ({ createDownloadConfigurator } = downloadsModule);
@@ -340,7 +336,6 @@ function createStudyHarness({
     loadMedia: player.loadMedia,
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
-    redirectToDeviceWarning,
     renderCertificate: createCertificateRenderer(() => PdfConstructor),
     session,
     timers: {
@@ -1608,8 +1603,13 @@ function reportRow(name, progress, moduleOne, certificateId) {
   ];
 }
 
-function createReportHarness({ query, response = { data: { Dados_Extraídos_BD_Plataforma: [] }, status: 200 } }) {
+function createReportHarness({
+  innerWidth = 1025,
+  query,
+  response = { data: { Dados_Extraídos_BD_Plataforma: [] }, status: 200 }
+}) {
   const harness = createLearningPlatformHarness({
+    innerWidth,
     routes: [{ method: "POST", path: "/plataforma_v2/statusreport", response }],
     userAgent: "Non-gated fixture browser",
     userAgentData: undefined
@@ -1625,9 +1625,7 @@ function createReportHarness({ query, response = { data: { Dados_Extraídos_BD_P
   createStatusReportApplication({
     URLSearchParamsConstructor: dependencies.URLSearchParamsConstructor,
     document: dependencies.document,
-    navigate: dependencies.navigate,
     platformClient,
-    redirectToDeviceWarning,
     showAlert: dependencies.showAlert,
     window: dependencies.window
   }).install();
@@ -1750,6 +1748,26 @@ test("[API-05] status report sends only its two public JSON bounds with no handl
   assert.equal(request.headers["Content-Type"], "application/json");
   assert.equal(Object.keys(request.headers).some((key) => key.toLowerCase() === "authorization"), false);
   assert.equal(Object.hasOwn(request.body, "IndexVerificado"), false);
+});
+
+test("[GATE-02] public report request and rendering are viewport-independent", async () => {
+  for (const innerWidth of [1023, 1024, 1025]) {
+    const { harness } = await loadReport({
+      innerWidth,
+      query: reportQuery()
+    });
+    assert.equal(harness.guard.requests.length, 1, String(innerWidth));
+    assert.equal(harness.navigation.length, 0, String(innerWidth));
+    assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
+    assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
+
+    for (const resizeWidth of [1025, 1024, 1023, 1024, 1025]) {
+      harness.window.innerWidth = resizeWidth;
+      harness.dispatchWindow("resize");
+      assert.equal(harness.guard.requests.length, 1, `${innerWidth}->${resizeWidth}`);
+      assert.equal(harness.navigation.length, 0, `${innerWidth}->${resizeWidth}`);
+    }
+  }
 });
 
 test("[REPORT-02] public rendering exposes all synthetic row metrics, independently sorts charts, caps at 15 slots, and ignores certificate IDs", async () => {

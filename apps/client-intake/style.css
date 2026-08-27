@@ -50,7 +50,6 @@ button {
   padding-top: var(--space-xl);
   background: var(--gradient-page);
   position: relative;
-  overflow: hidden;
 }
 
 .logo {
@@ -137,8 +136,8 @@ button {
 .section-description--important {
   background-color: var(--color-official-machado-wine);
   font-size: 16px;
-  padding-left: 140px;
-  padding-right: 140px;
+  padding-left: clamp(var(--space-sm), 14vw, 140px);
+  padding-right: clamp(var(--space-sm), 14vw, 140px);
 }
 
 .field {
@@ -158,7 +157,6 @@ button {
   color: var(--color-official-machado-wine);
   margin-top: var(--space-sm);
   margin-bottom: var(--space-xs);
-  white-space: nowrap;
 }
 
 .text-input,
