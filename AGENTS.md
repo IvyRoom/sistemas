@@ -86,11 +86,6 @@ repository separately.
   compatibility specification and behavior-baseline matrix for
   `apps/learning-platform/`. Preserve its stable contract descriptions across
   source moves; update snapshot-specific anchors as evidence moves.
-- `docs/project-roadmap.md` is the authoritative status and scope map for the
-  coordinated frontend and backend best-practices program. Keep exactly one
-  copy-ready Mermaid diagram, read topics from top to bottom and tasks from left
-  to right within each topic, and keep exactly one current/next task. Update the
-  same diagram and include it in roadmap handoffs as work advances.
 - Automated tests are authoritative for behavior. Keep prose concise; do not
   duplicate route history or detailed behavior already enforced there.
 

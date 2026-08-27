@@ -9,14 +9,6 @@ paths are independent from source locations and remain defined by the
 deployment manifest. Shared runtime infrastructure lives in `apps/shared/` and
 is mapped separately from maintained application identities.
 
-## Program roadmap
-
-[`docs/project-roadmap.md`](docs/project-roadmap.md) is the local,
-version-controlled source of truth for the coordinated frontend and backend
-best-practices program. It contains one copy-ready Mermaid diagram: read topics
-from top to bottom and tasks from left to right within each topic. Update that
-same diagram as work advances and include it in roadmap handoffs.
-
 ## URL contract
 
 The canonical public origin is [https://machadogestao.com](https://machadogestao.com/).
