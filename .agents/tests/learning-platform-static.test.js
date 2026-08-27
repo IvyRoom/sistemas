@@ -482,6 +482,7 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
 
   const support = contractSource.slice(supportStart, currentBehaviorStart);
   for (const heading of [
+    "### Content-protection objective",
     "### Support terms and selected matrix",
     "### Capability prerequisites",
     "### Failure boundaries",
@@ -492,6 +493,42 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
   ]) {
     assert.ok(support.includes(heading), `${heading}:required support-policy heading`);
   }
+
+  const protectionStart = support.indexOf("### Content-protection objective");
+  const supportTermsStart = support.indexOf("### Support terms and selected matrix");
+  assert.ok(
+    supportTermsStart > protectionStart,
+    "The content-protection objective must remain a distinct policy subsection"
+  );
+  const protection = support.slice(protectionStart, supportTermsStart);
+  const normalizedProtection = protection.replace(/\s+/g, " ");
+  for (const protectionTerm of [
+    "governing business requirement",
+    "not selected as a browser-brand preference",
+    "only currently selected protected-video path",
+    "exact operating-system and browser builds",
+    "DRM and CDM",
+    "hardware-security mode",
+    "display/output path",
+    "capture method",
+    "alone is not proof of capture resistance",
+    "no intelligible protected-video image",
+    "Record audio separately",
+    "capturable program audio does not change that video-image result",
+    "external camera",
+    "external capture hardware",
+    "compromised client"
+  ]) {
+    assert.ok(
+      normalizedProtection.includes(protectionTerm),
+      `${protectionTerm}:required content-protection boundary`
+    );
+  }
+  assert.match(
+    normalizedProtection,
+    /reports that prior application-[\s\S]*Edge and PlayReady blacked protected video[\s\S]*Chrome and Firefox recording tests left the video visible[\s\S]*not an unconditional Microsoft guarantee[\s\S]*formal qualification/,
+    "Reported Edge evidence must remain qualified rather than becoming a vendor guarantee"
+  );
 
   const policyRows = new Map(
     [
@@ -515,8 +552,8 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
 
   assert.match(
     policyRows.get("Complete authenticated learning journey"),
-    /Microsoft Edge Stable or Microsoft Edge Extended Stable[\s\S]*Chrome, Firefox, Safari[\s\S]*unsupported/,
-    "The complete journey must remain Edge-only and explicitly exclude other families"
+    /Microsoft Edge Stable or Microsoft Edge Extended Stable[\s\S]*capture-resistant protected media[\s\S]*application-specific capture-resistance evidence[\s\S]*Chrome, Firefox, Safari[\s\S]*unsupported/,
+    "The complete journey must retain its current capture-evidenced Edge target and exclusions"
   );
   assert.doesNotMatch(
     policyRows.get("Complete authenticated learning journey"),
@@ -538,6 +575,39 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
     /Same public matrix as the status report/,
     "Warning pages must remain aligned with the public-report matrix"
   );
+
+  const fairPlayPolicySource = support
+    .split(/\r?\n\r?\n/)
+    .find((paragraph) => paragraph.includes("Safari on macOS with FairPlay"));
+  assert.ok(fairPlayPolicySource, "The policy must classify the deferred FairPlay candidate");
+  const fairPlayPolicy = fairPlayPolicySource.replace(/\s+/g, " ");
+  for (const fairPlayTerm of [
+    "deferred",
+    "unimplemented",
+    "unverified",
+    "not a selected support target",
+    "does not establish that every macOS Safari",
+    "later separately authorized DRM task"
+  ]) {
+    assert.ok(fairPlayPolicy.includes(fairPlayTerm), `${fairPlayTerm}:FairPlay boundary`);
+  }
+
+  const bypassPolicySource = support
+    .split(/\r?\n\r?\n/)
+    .find((paragraph) => paragraph.includes("five-account non-DRM"));
+  assert.ok(bypassPolicySource, "The policy must record the current identity-based exposure");
+  const bypassPolicy = bypassPolicySource.replace(/\s+/g, " ");
+  for (const bypassTerm of [
+    "five-account non-DRM",
+    "identity-based",
+    "passes the separate entry gate",
+    "selects unprotected manifests regardless of the environment",
+    "acknowledged content-protection and capture-exposure risk",
+    "not a supported Safari/FairPlay path",
+    "does not reproduce participant identities or associate them with device information"
+  ]) {
+    assert.ok(bypassPolicy.includes(bypassTerm), `${bypassTerm}:non-DRM exposure boundary`);
+  }
 
   for (const policyTerm of [
     "Windows 11",
@@ -616,7 +686,8 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
     "`requestMediaKeySystemAccess()`",
     "PlayReady CDM",
     "EZDRM license service",
-    "HDCP"
+    "HDCP",
+    "capture-resistance qualification"
   ]);
   assertCapabilities("Public status report", [
     "native modules",
@@ -661,25 +732,77 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
     /`EnvironmentNotSupported`[\s\S]*lighting failure[\s\S]*`ClientVersionNotSupported`[\s\S]*neither value is an unsupported-browser verdict/,
     "Face SDK error names must not be mistaken for browser-support verdicts"
   );
+  assert.match(
+    support.slice(capabilityEnd, support.indexOf("### Environments without `userAgentData`")).replace(/\s+/g, " "),
+    /Lack of completed capture qualification alone[\s\S]*non-excluded candidate unverified for protected study[\s\S]*explicitly outside the current product boundary remains unsupported[\s\S]*known intelligible protected-video leak[\s\S]*unsupported for protected study/,
+    "Missing and failed capture qualification must retain distinct support outcomes"
+  );
 
   assert.match(
     support,
     /`navigator\.userAgentData` is optional input[\s\S]*must never throw[\s\S]*synthetic profile with no\s+`userAgentData`/,
     "The selected policy must handle absent userAgentData without treating it as failure"
   );
+  const currentGateStart = support.indexOf("### Current gate versus selected policy");
+  const verificationStart = support.indexOf("### Verification matrix and maintenance");
+  assert.ok(
+    verificationStart > currentGateStart,
+    "The current-gate description must remain bounded from future verification"
+  );
+  const currentGate = support.slice(currentGateStart, verificationStart);
+  const normalizedCurrentGate = currentGate.replace(/\s+/g, " ");
   assert.match(
-    support,
+    currentGate,
     /not implemented by this task[\s\S]*temporary\s+`LP-GATE-EDGE` runtime behavior remains unchanged/i,
     "The future policy must remain explicit and separate from the temporary gate"
   );
   assert.match(
-    support,
-    /every change[\s\S]*five business days[\s\S]*quarterly[\s\S]*out-of-cycle review/,
+    normalizedCurrentGate,
+    /string gate is not capture qualification[\s\S]*Edge on macOS can satisfy the current brand\/string condition/,
+    "The current Edge sniff must not be presented as OS or capture qualification"
+  );
+
+  const evidenceStart = support.indexOf("### Primary evidence");
+  assert.ok(
+    evidenceStart > verificationStart,
+    "The verification matrix must remain bounded from the evidence list"
+  );
+  const verification = support.slice(verificationStart, evidenceStart);
+  const normalizedVerification = verification.replace(/\s+/g, " ");
+  const protectedMediaVerification = verification
+    .split(/\r?\n/)
+    .find((line) => line.startsWith("| Edge Stable and Extended Stable, protected media |"));
+  assert.ok(protectedMediaVerification, "Protected media must retain a verification row");
+  for (const verificationTerm of [
+    "nonproduction MPD/license fixture",
+    "exact Windows, Edge and CDM builds",
+    "hardware-acceleration state",
+    "internal or supported HDCP external-display path",
+    "operating-system screenshot",
+    "browser screenshot",
+    "screen recording",
+    "third-party recorder",
+    "browser/window/screen sharing",
+    "inline playback and fullscreen when available",
+    "blocked or its protected-video region is black, blank, or omitted",
+    "no intelligible protected-video image",
+    "video and audio results separately",
+    "disclose any captured program audio"
+  ]) {
+    assert.ok(
+      protectedMediaVerification.includes(verificationTerm),
+      `${verificationTerm}:required capture-resistance verification`
+    );
+  }
+  assert.match(
+    normalizedVerification,
+    /every change[\s\S]*five business days[\s\S]*quarterly[\s\S]*out-of-cycle review[\s\S]*capture tool\/API change[\s\S]*graphics-driver change/,
     "The policy must define both verification and maintenance cadence"
   );
 
   for (const evidenceHost of [
     "learn.microsoft.com",
+    "developer.apple.com",
     "github.com/Azure-Samples",
     "github.com/shaka-project",
     "ezdrm.com",

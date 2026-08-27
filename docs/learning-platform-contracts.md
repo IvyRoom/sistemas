@@ -54,6 +54,38 @@ available vendor evidence; it does not infer that every Chromium browser is
 equivalent to Microsoft Edge. The policy is evergreen rather than a fixed
 minimum-version promise.
 
+### Content-protection objective
+
+Capture resistance for the company's course videos is the governing business
+requirement for protected study playback. Microsoft Edge is not selected as a
+browser-brand preference. The product owner reports that prior application-
+specific tests with Edge and PlayReady blacked protected video in the
+screenshot and screen-recording attempts exercised, while prior Chrome and
+Firefox recording tests left the video visible. This documentation-
+only task did not reproduce those tests, and the observation is not an
+unconditional Microsoft guarantee or a completed formal qualification.
+
+Windows 11 with Edge and PlayReady is therefore the only currently selected
+protected-video path, pending the controlled qualification below. A path may
+become supported only when its exact operating-system and browser builds, DRM
+and CDM, hardware-security mode, GPU/driver and decoder, license and output-
+protection policies, display/output path, and capture method pass the maintained
+capture-resistance matrix. User-agent admission, generic Shaka support, CDM
+availability, license acquisition, successful protected playback, or HDCP
+alone is not proof of capture resistance.
+
+For an in-scope capture method, a pass means that capture is blocked or the
+captured protected-video region is black, blank, or omitted with no intelligible
+protected-video image. Playback refusal is also acceptable for a deliberately
+disabled or unavailable negative profile, but not for the intended supported
+profile. This policy makes its support decision on protected-video imagery,
+which is the stated business requirement. Record audio separately: capturable
+program audio does not change that video-image result, but it remains a
+disclosed content-exposure result and must not be described as capture-
+protected. This is a deliberately bounded software-capture claim, not a
+promise against an external camera, external capture hardware, a compromised
+client, privileged or untested capture software, or future capture methods.
+
 ### Support terms and selected matrix
 
 - **Selected support target** means that the operating system, device class,
@@ -62,6 +94,10 @@ minimum-version promise.
 - **Qualified supported build** means a selected target whose exact browser
   build has a recorded passing row-specific verification. A passing user-agent
   string is never sufficient.
+- **Capture-resistant protected-media path** means an exact environment whose
+  protected video has passed every in-scope screenshot, software screen-
+  recording, and screen-sharing method in the maintained qualification record.
+  Working playback or DRM availability without that record is insufficient.
 - **Unsupported** means that the environment is explicitly designated outside
   a product boundary below or has a known incompatibility with a mandatory
   capability.
@@ -79,10 +115,26 @@ version floor, or compatibility mode.
 
 | User journey or surface | Selected browser and channel policy | Support decision |
 | --- | --- | --- |
-| Complete authenticated learning journey | Windows 11 x64 on a physical local device; Microsoft Edge Stable or Microsoft Edge Extended Stable; exact current build qualified with Face, protected media, ordinary learning, report, and logout fixtures | Selected support target, pending the row-specific qualification below. Edge Beta is validation-only; Dev and Canary are unsupported. Chrome, Firefox, Safari, other Chromium derivatives, embedded WebViews, ARM64, macOS, Linux, Windows Server, Windows 10, and mobile operating systems are unsupported for this journey. Remote desktop and virtual machines are unverified. |
+| Complete authenticated learning journey | Windows 11 x64 on a physical local device; Microsoft Edge Stable or Microsoft Edge Extended Stable; exact current build must be qualified with Face, capture-resistant protected media, ordinary learning, report, and logout fixtures | Selected support target, pending the row-specific qualification below. Windows/Edge/PlayReady is selected because it is the only path with reported application-specific capture-resistance evidence, not because Edge branding or Microsoft documentation guarantees every capture result. Edge Beta is validation-only; Dev and Canary are unsupported. Chrome, Firefox, Safari, other Chromium derivatives, embedded WebViews, ARM64, macOS, Linux, Windows Server, Windows 10, and mobile operating systems are unsupported for this journey. Remote desktop and virtual machines are unverified. |
 | First-time Face registration | Same Windows 11 and Edge Stable or Extended Stable boundary, plus a trusted physical camera and every Face capability below | Selected support target, pending the registration-specific camera, upload, and Face qualification. Camera absence or denial is a recoverable camera failure, not proof of an unsupported browser. |
 | Public status report | Serviced Windows 11 x64 desktop; current Microsoft Edge Stable or Extended Stable, Google Chrome Stable, or Mozilla Firefox Release | A deliberately broader selected support target, pending public-row qualification, because this surface does not require session state, Face, Shaka, EME, PlayReady, or camera access. Edge Beta, Chrome Beta, and Firefox Beta are validation-only. |
 | Browser and device warning pages | Same public matrix as the status report | Selected support target pending qualification, so a compatibility explanation remains renderable without Face or DRM. The browser-warning diagnostic does not yet meet this target when `userAgentData` is absent; that current defect is preserved below and must be fixed only by the browser-gate replacement. |
+
+Safari on macOS with FairPlay is a deferred, unimplemented, and unverified
+future candidate, not a selected support target. Safari without a configured
+and qualified FairPlay path remains unsupported for the complete journey.
+Apple's public FairPlay material does not establish that every macOS Safari
+screenshot, screen recorder, or screen-sharing path produces black video, so a
+later separately authorized DRM task must implement and qualify the exact path
+before this matrix may expand.
+
+The source-observed five-account non-DRM exception is identity-based rather
+than an operating-system or browser capability check. For any matching session
+that passes the separate entry gate and reaches study playback, it selects
+unprotected manifests regardless of the environment. It is an acknowledged
+content-protection and capture-exposure risk, not a supported Safari/FairPlay
+path. This task preserves the behavior and does not reproduce participant
+identities or associate them with device information.
 
 Current macOS and Linux desktop browsers, Chrome Extended Stable, Firefox ESR,
 and other Chromium-branded browsers are unverified for the public rows, not
@@ -118,7 +170,7 @@ govern that distinction.
 | Native-module and API-bearing entries | Native JavaScript modules and the repository's untranspiled syntax; promises and async functions; DOM, events, forms, timers, JSON, `URL`, and `URLSearchParams` where used; `fetch` for API-bearing entries; `sessionStorage` where used. The application has no transpilation or polyfill layer. The two warning entries instead retain their classic-script requirements below. |
 | Ordinary authenticated learning pages | Baseline capabilities plus working same-tab session state, Fetch responses, downloads, Blob/File behavior where invoked, and application navigation/history behavior. Registration upload additionally requires File input and `FormData`. A backend, download, or session failure remains an application or dependency failure. |
 | Face registration and Face login | A secure context; Custom Elements and Shadow DOM; WebAssembly with the vendored non-SIMD fallback accepted when SIMD is unavailable; Web Crypto, BigInt, and a usable graphics path; `mediaDevices.getUserMedia`; an available trusted physical camera; and explicit camera permission. Face-workflow startup also requires the application's constructable stylesheets (`CSSStyleSheet`, `replaceSync`, and `adoptedStyleSheets`). The vendored engine contains WebGL machinery, but Microsoft publishes no Face UI 1.5.0 GPU, WebGL version, resolution, or frame-rate minimum, so the exact physical-device fixture is authoritative. |
-| Protected study media | A secure context; Shaka Player 4.6.0 startup; DASH and Media Source Extensions; a positive `MediaSource.isTypeSupported()` result for every actual container and codec; Encrypted Media Extensions; a successful `requestMediaKeySystemAccess()` for the exact PlayReady configuration; an enabled PlayReady CDM; compatible encryption scheme, session type, robustness, and decoder; a reachable authorized EZDRM license service; and the content's required PlayReady security level, output-protection level, and HDCP path. The production MPDs were not fetched, so exact codec, profile, level, rendition, encryption, and output requirements remain unverified until controlled nonproduction fixtures provide them. |
+| Protected study media | A secure context; Shaka Player 4.6.0 startup; DASH and Media Source Extensions; a positive `MediaSource.isTypeSupported()` result for every actual container and codec; Encrypted Media Extensions; a successful `requestMediaKeySystemAccess()` for the exact PlayReady configuration; an enabled PlayReady CDM; compatible encryption scheme, session type, robustness, and decoder; a reachable authorized EZDRM license service; the content's required PlayReady security level, output-protection level, and HDCP path; and a passing capture-resistance qualification for the exact environment and defined capture methods. The production MPDs were not fetched, so exact codec, profile, level, rendition, encryption, output, and capture requirements remain unverified until controlled nonproduction fixtures provide them. |
 | Public status report | Baseline native modules, DOM, Fetch/JSON, and `URLSearchParams`. It does not require camera, Face, Shaka, MSE, EME, PlayReady, or authenticated session storage. |
 | Warning pages | DOM rendering and the small entry-specific classic-script capabilities. Device width and the frozen 1024-pixel rule are a separate contract. A missing browser-identification API must not prevent the warning document from rendering. |
 | Fullscreen | Shaka's UI may expose fullscreen when the Fullscreen API and the embedding policy allow it. Fullscreen absence or rejection limits that control but does not by itself make the browser unsupported, invalidate authentication, or prove that protected playback is unavailable. |
@@ -130,6 +182,16 @@ current configuration uses the legacy `com.microsoft.playready` key-system
 string, which Microsoft documents as deprecated. Changing that string, Shaka,
 DRM, codecs, licences, or media is outside this task; the controlled protected-
 media fixture must therefore exercise the exact current configuration.
+
+Microsoft documents secure PlayReady paths, security levels, license policy,
+output protection, and hardware DRM, but does not promise that every Edge
+screenshot or recorder returns black pixels. The current source does not
+request a hardware-DRM key-system string or explicit robustness, security-
+level, output-protection, or HDCP policy, and it cannot reveal the policies
+issued by the remote license service. The present Edge gate and PlayReady
+server mapping are consequently implementation evidence, not proof of capture
+resistance; the controlled application qualification is authoritative for the
+bounded claim above.
 
 The Azure Face UI package and release notes do not publish a browser-family,
 channel, OS, camera-resolution, or GPU support matrix for version 1.5.0.
@@ -165,7 +227,13 @@ The later browser-gate replacement must preserve these distinct outcomes:
    codec or decoder mismatch, license rejection, insufficient security/output
    protection, remote-session restriction, or HDCP failure belongs to the
    media path. A positive Shaka generic check does not collapse these cases
-   into browser support.
+   into browser support. Lack of completed capture qualification alone makes a
+   selected or otherwise non-excluded candidate unverified for protected study;
+   an environment explicitly outside the current product boundary remains
+   unsupported. A known intelligible protected-video leak in an in-scope
+   capture method makes that environment unsupported for protected study until
+   corrected and requalified; a transient license, media, or output failure on
+   an otherwise qualified path remains a protected-media failure.
 5. **External dependency failure:** Face assets or service, Shaka/jsPDF CDN,
    API, report, download, MPD, media, or EZDRM license endpoints can fail in a
    supported browser. Timeouts, TLS, CORS, authorization, entitlement, and
@@ -212,6 +280,12 @@ browser-warning diagnostic still dereferences `userAgentData.brands` without a
 guard, and login and registration still import the Face bundle before the
 temporary gate can complete.
 
+That string gate is not capture qualification. It does not establish Windows
+11, a serviced browser build, PlayReady availability, security or output
+policy, GPU/decoder behavior, display path, or capture result, and Edge on
+macOS can satisfy the current brand/string condition. The identity-based non-
+DRM exception separately bypasses protected playback after entry.
+
 Those facts describe current source behavior, not the selected evergreen
 policy. The later **Replace browser sniffing** task must implement the policy
 and its failure boundaries without changing the separately frozen device-width,
@@ -230,7 +304,7 @@ production licenses, or production media.
 | --- | --- |
 | Edge Stable and Extended Stable, complete journey | Synthetic baseline profiles plus a physical Windows 11 smoke covering login Face, first-time registration, notices, ordinary study navigation, exact nonproduction PlayReady media, report, and logout. Install interception before application scripts and stub every production integration. |
 | Edge Stable and Extended Stable, Face registration | Allow and deny camera in separate controlled fixtures; exercise non-SIMD WebAssembly fallback and usable graphics; distinguish camera, Face-service, and unsupported outcomes. |
-| Edge Stable and Extended Stable, protected media | Probe exact MSE codecs and EME PlayReady configuration, then use a nonproduction MPD/license fixture that records CDM, decoder, security/output-protection, and fullscreen outcomes. Generic Shaka support alone is a failure of the qualification. |
+| Edge Stable and Extended Stable, protected media | Probe exact MSE codecs and EME PlayReady configuration, then use a nonproduction MPD/license fixture. Record exact Windows, Edge and CDM builds; GPU, driver, decoder and hardware-acceleration state; license security/output policy; capture tool/API version; and internal or supported HDCP external-display path. Exercise an operating-system screenshot, browser screenshot when available, operating-system screen recording, a representative third-party recorder, and browser/window/screen sharing in inline playback and fullscreen when available. Exercise the intended hardware-accelerated profile and a disabled/unavailable negative profile, which may refuse playback but must not expose an intelligible protected-video image. Pass only when protected playback works on the intended profile and every in-scope capture is blocked or its protected-video region is black, blank, or omitted with no intelligible protected-video image. Record the video and audio results separately and disclose any captured program audio. Generic Shaka support, CDM availability, license acquisition, playback, or HDCP alone is a failure of the qualification. |
 | Edge, Chrome, and Firefox public matrix | Load status report and both warning entries with intercepted APIs; exercise valid, empty, malformed, and encoded query strings; include profiles with absent and partial `userAgentData`; prove no Face, camera, Shaka, EME, license, or authenticated-session dependency is initialized. |
 | Explicit unsupported and unverified profiles | Cover Windows/browser/channel exclusions, another Chromium brand, missing identification, missing camera permission, missing DRM, dependency timeout, and fullscreen rejection as separate expected categories. |
 
@@ -240,7 +314,8 @@ selected browser build within five business days and run Edge Beta validation
 before the next Stable promotion when practical. Review the policy and all
 primary sources quarterly, with an out-of-cycle review for a Windows or Edge
 servicing change, Face UI or Shaka change, PlayReady/EZDRM policy change,
-browser-channel change, security advisory, customer incident, or failed smoke.
+browser-channel change, capture tool/API change, GPU or graphics-driver change,
+security advisory, customer incident, or failed capture smoke.
 The **Last evidence review** date at the start of this section must advance
 only with that review; the decision date changes only if the selected policy
 changes.
@@ -267,12 +342,23 @@ triggers, not authorization in this task to upgrade either dependency.
   [`isBrowserSupported()` implementation](https://github.com/shaka-project/shaka-player/blob/v4.6.0/lib/player.js#L896-L939),
   [PlayReady configuration guidance](https://github.com/shaka-project/shaka-player/blob/v4.6.0/docs/tutorials/drm-config.md#L172-L204),
   and [maintained branches](https://github.com/shaka-project/shaka-player/blob/main/maintained-branches.md).
-- Microsoft PlayReady: [Edge DRM scope](https://learn.microsoft.com/en-us/legal/microsoft-edge/privacy#digital-rights-management-and-media-licenses),
+- Microsoft Edge and PlayReady: [Edge DRM scope](https://learn.microsoft.com/en-us/legal/microsoft-edge/privacy#digital-rights-management-and-media-licenses),
   [key-system strings](https://learn.microsoft.com/en-us/playready/overview/key-system-strings),
   [security levels](https://learn.microsoft.com/en-us/playready/overview/security-level),
-  and [output-protection levels](https://learn.microsoft.com/en-us/playready/overview/output-protection-levels).
+  [hardware DRM](https://learn.microsoft.com/en-us/windows/uwp/audio-video-camera/hardware-drm),
+  [license policies](https://learn.microsoft.com/en-us/playready/overview/license-and-policies),
+  [output-protection levels](https://learn.microsoft.com/en-us/playready/overview/output-protection-levels),
+  and [Edge screenshot-policy limitations](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-policies/disablescreenshots).
 - EZDRM: [PlayReady browser/platform scope](https://www.ezdrm.com/product-playready)
   and [controlled playback testing requirements](https://www.ezdrm.com/hubfs/Documentation/EZDRM-Testing-Playback-v2.2.pdf).
+- Deferred DRM candidates: Apple [FairPlay Streaming](https://developer.apple.com/streaming/fps/)
+  and [`UIScreen.isCaptured`](https://developer.apple.com/documentation/uikit/uiscreen/iscaptured),
+  whose explicit black-video statement is scoped to UIKit capture rather than
+  every macOS Safari path; Google [Widevine overview](https://developers.google.com/widevine/drm/overview),
+  which establishes browser playback availability rather than capture
+  suppression; and [Mozilla bug 1991580](https://bugzilla.mozilla.org/show_bug.cgi?id=1991580),
+  which is implementation evidence of visible Widevine video in a Firefox
+  recording rather than a normative support contract.
 - Public-browser evidence: [Chrome release channels](https://developer.chrome.com/docs/web-platform/chrome-release-channels/),
   [Chrome system requirements](https://support.google.com/chrome/a/answer/7100626?hl=en),
   [Firefox release calendar](https://wiki.mozilla.org/Release_Management/Calendar),
@@ -1742,8 +1828,12 @@ future work, not permission to change compatibility behavior in the baseline.
 - Shaka, Shaka UI, and jsPDF execute from public CDNs without Subresource
   Integrity metadata. Their availability and bytes are outside the artifact.
 - A hard-coded five-name allowlist chooses non-DRM media and embeds participant
-  personal data in source. The PlayReady setup also contains a hard-coded
-  credential-bearing EZDRM endpoint. Neither literal is reproduced here.
+  personal data in source. For a matching session that passes the separate
+  entry gate and reaches study, the identity rule chooses unprotected media
+  regardless of environment and creates an acknowledged capture/content-
+  exposure risk. The PlayReady setup also contains a hard-coded credential-
+  bearing EZDRM endpoint. Neither literal is reproduced here, and the accounts
+  are not associated here with device information.
 - Player load/autoplay failures are not caught, and the retained player has no
   explicit unload/destroy lifecycle. The remote MPD controls rendition details
   that this repository cannot validate offline.
