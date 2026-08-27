@@ -30,8 +30,10 @@ configuration or external integration was exercised. In particular, this
 characterization did not call the backend, Microsoft Graph or workbooks, Azure
 Face, the media store, EZDRM, email, or any customer-facing route.
 
-The document keeps five categories separate:
+The document keeps six categories separate:
 
+- **Browser support contract** is the selected customer-support target for the
+  later browser-gate replacement. It is policy, not current runtime behavior.
 - **Source-observed current behavior** is the compatibility baseline.
 - **Known risks and unresolved legacy behavior** must be preserved by a pure
   move/baseline unless a later task explicitly changes them.
@@ -42,6 +44,241 @@ The document keeps five categories separate:
   implemented here.
 - **Questions requiring implementation-time evidence** must not be converted
   into assertions without a safe synthetic or local observation.
+
+## Browser support contract
+
+Decision date: 2026-08-27. Last evidence review: 2026-08-27. This section
+resolves the browser-support question for the learning platform. It selects a
+customer environment from the intersection of application requirements and
+available vendor evidence; it does not infer that every Chromium browser is
+equivalent to Microsoft Edge. The policy is evergreen rather than a fixed
+minimum-version promise.
+
+### Support terms and selected matrix
+
+- **Selected support target** means that the operating system, device class,
+  browser family, and release channel match a row below. This documentation-
+  only task selects those rows but cannot qualify Face, camera, or DRM.
+- **Qualified supported build** means a selected target whose exact browser
+  build has a recorded passing row-specific verification. A passing user-agent
+  string is never sufficient.
+- **Unsupported** means that the environment is explicitly designated outside
+  a product boundary below or has a known incompatibility with a mandatory
+  capability.
+- **Unverified** means that the environment might work but lacks enough
+  application evidence for a support claim. Unverified is not a synonym for
+  unsupported and must remain distinguishable in diagnostics and test data. A
+  combination omitted from the supported rows is unverified unless this
+  section explicitly designates it unsupported.
+
+The selected operating system is a physical, locally used, x64 Windows 11
+desktop whose Windows release still receives Microsoft servicing. A qualified
+supported browser build is the latest fully patched build of its named
+channel. The policy does not promise arbitrary older builds, a fixed major-
+version floor, or compatibility mode.
+
+| User journey or surface | Selected browser and channel policy | Support decision |
+| --- | --- | --- |
+| Complete authenticated learning journey | Windows 11 x64 on a physical local device; Microsoft Edge Stable or Microsoft Edge Extended Stable; exact current build qualified with Face, protected media, ordinary learning, report, and logout fixtures | Selected support target, pending the row-specific qualification below. Edge Beta is validation-only; Dev and Canary are unsupported. Chrome, Firefox, Safari, other Chromium derivatives, embedded WebViews, ARM64, macOS, Linux, Windows Server, Windows 10, and mobile operating systems are unsupported for this journey. Remote desktop and virtual machines are unverified. |
+| First-time Face registration | Same Windows 11 and Edge Stable or Extended Stable boundary, plus a trusted physical camera and every Face capability below | Selected support target, pending the registration-specific camera, upload, and Face qualification. Camera absence or denial is a recoverable camera failure, not proof of an unsupported browser. |
+| Public status report | Serviced Windows 11 x64 desktop; current Microsoft Edge Stable or Extended Stable, Google Chrome Stable, or Mozilla Firefox Release | A deliberately broader selected support target, pending public-row qualification, because this surface does not require session state, Face, Shaka, EME, PlayReady, or camera access. Edge Beta, Chrome Beta, and Firefox Beta are validation-only. |
+| Browser and device warning pages | Same public matrix as the status report | Selected support target pending qualification, so a compatibility explanation remains renderable without Face or DRM. The browser-warning diagnostic does not yet meet this target when `userAgentData` is absent; that current defect is preserved below and must be fixed only by the browser-gate replacement. |
+
+Current macOS and Linux desktop browsers, Chrome Extended Stable, Firefox ESR,
+and other Chromium-branded browsers are unverified for the public rows, not
+claimed supported. All mobile browsers, end-of-servicing operating-system
+releases, Internet Explorer, Edge IE mode, compatibility modes, and browser
+Dev, Canary, or Nightly channels are unsupported. Other Chromium-branded
+browsers are unsupported for the complete journey. Remote desktop and virtual-
+machine execution are unverified because PlayReady availability, hardware
+security, output protection, graphics, and camera behavior can differ from a
+physical local device.
+
+Extended Stable support applies only while Microsoft services that channel.
+Beta builds are exercised to find upcoming regressions but never become a
+customer-support promise. When a selected Stable, Extended Stable, or Release
+channel advances, the exact patched build replaces the prior build after its
+row-specific qualification is recorded; the prior qualified build is retained
+for at most the five-business-day qualification window as an operational
+fallback, not advertised as a second support floor. A missed window is a
+support-policy incident requiring an explicit recorded exception; it does not
+silently broaden support to older versions.
+
+### Capability prerequisites
+
+The matrix is a policy boundary; journey readiness and failure handling must
+also use capability evidence. A generic browser-family match cannot establish
+these entry-specific prerequisites. A transient permission, device, policy,
+network, entitlement, or service failure can make a journey unavailable while
+the qualified browser build remains supported; the failure boundaries below
+govern that distinction.
+
+| Capability group | Required evidence |
+| --- | --- |
+| Native-module and API-bearing entries | Native JavaScript modules and the repository's untranspiled syntax; promises and async functions; DOM, events, forms, timers, JSON, `URL`, and `URLSearchParams` where used; `fetch` for API-bearing entries; `sessionStorage` where used. The application has no transpilation or polyfill layer. The two warning entries instead retain their classic-script requirements below. |
+| Ordinary authenticated learning pages | Baseline capabilities plus working same-tab session state, Fetch responses, downloads, Blob/File behavior where invoked, and application navigation/history behavior. Registration upload additionally requires File input and `FormData`. A backend, download, or session failure remains an application or dependency failure. |
+| Face registration and Face login | A secure context; Custom Elements and Shadow DOM; WebAssembly with the vendored non-SIMD fallback accepted when SIMD is unavailable; Web Crypto, BigInt, and a usable graphics path; `mediaDevices.getUserMedia`; an available trusted physical camera; and explicit camera permission. Face-workflow startup also requires the application's constructable stylesheets (`CSSStyleSheet`, `replaceSync`, and `adoptedStyleSheets`). The vendored engine contains WebGL machinery, but Microsoft publishes no Face UI 1.5.0 GPU, WebGL version, resolution, or frame-rate minimum, so the exact physical-device fixture is authoritative. |
+| Protected study media | A secure context; Shaka Player 4.6.0 startup; DASH and Media Source Extensions; a positive `MediaSource.isTypeSupported()` result for every actual container and codec; Encrypted Media Extensions; a successful `requestMediaKeySystemAccess()` for the exact PlayReady configuration; an enabled PlayReady CDM; compatible encryption scheme, session type, robustness, and decoder; a reachable authorized EZDRM license service; and the content's required PlayReady security level, output-protection level, and HDCP path. The production MPDs were not fetched, so exact codec, profile, level, rendition, encryption, and output requirements remain unverified until controlled nonproduction fixtures provide them. |
+| Public status report | Baseline native modules, DOM, Fetch/JSON, and `URLSearchParams`. It does not require camera, Face, Shaka, MSE, EME, PlayReady, or authenticated session storage. |
+| Warning pages | DOM rendering and the small entry-specific classic-script capabilities. Device width and the frozen 1024-pixel rule are a separate contract. A missing browser-identification API must not prevent the warning document from rendering. |
+| Fullscreen | Shaka's UI may expose fullscreen when the Fullscreen API and the embedding policy allow it. Fullscreen absence or rejection limits that control but does not by itself make the browser unsupported, invalidate authentication, or prove that protected playback is unavailable. |
+
+Shaka's `isBrowserSupported()` is only a generic API-floor check. It does not
+request this application's PlayReady key system, inspect its MPD codecs, obtain
+a license, validate a decoder or output-protection path, or exercise Face. The
+current configuration uses the legacy `com.microsoft.playready` key-system
+string, which Microsoft documents as deprecated. Changing that string, Shaka,
+DRM, codecs, licences, or media is outside this task; the controlled protected-
+media fixture must therefore exercise the exact current configuration.
+
+The Azure Face UI package and release notes do not publish a browser-family,
+channel, OS, camera-resolution, or GPU support matrix for version 1.5.0.
+Microsoft's liveness guidance instead places responsibility on the application
+to use a trusted modern browser/device and physical camera. The Windows/Edge
+selection above is consequently this application's conservative, evidence-
+backed target pending controlled qualification, not a claim made by the
+package README.
+
+### Failure boundaries
+
+The later browser-gate replacement must preserve these distinct outcomes:
+
+1. **Unsupported environment:** a positively identified OS, device class,
+   browser family, or channel matches an explicit unsupported designation
+   above, or its browser/OS implementation is known to be incapable of exposing
+   a mandatory platform API. This is the only category that may be labelled
+   unsupported. A transient denial or unavailable device/service is not such
+   an implementation-level incompatibility.
+2. **Unverified environment:** the combination is absent from the supported
+   rows without an explicit unsupported designation, or identification or
+   application evidence is insufficient for a support claim. Record it
+   separately; do not silently promote it to supported or misreport it as a
+   camera, DRM, or dependency failure.
+3. **Camera unavailable or permission denied:** the browser can still be a
+   supported browser. Camera absence, operating-system privacy settings,
+   `NotAllowedError`, device startup failure, capture interruption, and the Face
+   component's camera-specific errors belong to a recoverable Face path. The
+   Face component documents `EnvironmentNotSupported` as a liveness-mode
+   lighting failure and `ClientVersionNotSupported` as a client-version
+   failure; neither value is an unsupported-browser verdict.
+4. **Protected media unavailable:** an EME/PlayReady denial, disabled CDM,
+   codec or decoder mismatch, license rejection, insufficient security/output
+   protection, remote-session restriction, or HDCP failure belongs to the
+   media path. A positive Shaka generic check does not collapse these cases
+   into browser support.
+5. **External dependency failure:** Face assets or service, Shaka/jsPDF CDN,
+   API, report, download, MPD, media, or EZDRM license endpoints can fail in a
+   supported browser. Timeouts, TLS, CORS, authorization, entitlement, and
+   server failures remain dependency or application failures.
+6. **Other recoverable runtime failure:** session expiry, malformed data,
+   storage denial, fullscreen rejection, graphics initialization, and ordinary
+   application exceptions retain their own error boundaries. The separate
+   device-width gate and its 1024-pixel boundary remain out of scope.
+
+No failure after a capability was admitted may be retrospectively rewritten as
+"unsupported browser" merely because a convenient user-agent check exists.
+
+### Environments without `userAgentData`
+
+`navigator.userAgentData` is optional input. Its absence is expected in some
+selected public browsers and must never throw, redirect by itself, or be used
+as proof that the browser is unsupported. The later implementation must:
+
+- read `userAgentData` defensively when present and use a centralized,
+  testable fallback identification path when it is not;
+- keep policy identification separate from capability probes and from the
+  recoverable runtime failures above;
+- allow the public status report and warning documents to proceed when their
+  own capabilities pass, including a synthetic profile with no
+  `userAgentData`;
+- classify a full-journey browser whose family cannot be established by either
+  identification path as unverified rather than unsupported, without throwing
+  or initializing Face, camera, DRM, or production integrations first; and
+- avoid exact `userAgentData` brand equality as the sole supported-browser
+  condition.
+
+This policy permits a defensive legacy `navigator.userAgent` fallback for
+family identification during the later replacement; it does not make that
+string a capability test or authorize the present sniffing to expand.
+
+### Current gate versus selected policy
+
+The selected policy above is **not implemented by this task**. The temporary
+`LP-GATE-EDGE` runtime behavior remains unchanged: login, initial notices,
+photo registration, and study pass only when `userAgentData.brands` contains
+the exact brand `Microsoft Edge` or `userAgent` contains `Edg`. The public
+status report and both warning entries do not apply that gate. The current
+browser-warning diagnostic still dereferences `userAgentData.brands` without a
+guard, and login and registration still import the Face bundle before the
+temporary gate can complete.
+
+Those facts describe current source behavior, not the selected evergreen
+policy. The later **Replace browser sniffing** task must implement the policy
+and its failure boundaries without changing the separately frozen device-width,
+navigation, session, Face, DRM, media, report, API, or route contracts unless a
+newly authorized task changes them.
+
+### Verification matrix and maintenance
+
+For every qualification, record the date, exact Windows build, browser family,
+channel and full build, physical device/graphics details, camera model when
+Face is exercised, capability-probe results, fixture version, and outcome. Do
+not use production credentials, customer data, production Face sessions,
+production licenses, or production media.
+
+| Verification row | Required controlled evidence |
+| --- | --- |
+| Edge Stable and Extended Stable, complete journey | Synthetic baseline profiles plus a physical Windows 11 smoke covering login Face, first-time registration, notices, ordinary study navigation, exact nonproduction PlayReady media, report, and logout. Install interception before application scripts and stub every production integration. |
+| Edge Stable and Extended Stable, Face registration | Allow and deny camera in separate controlled fixtures; exercise non-SIMD WebAssembly fallback and usable graphics; distinguish camera, Face-service, and unsupported outcomes. |
+| Edge Stable and Extended Stable, protected media | Probe exact MSE codecs and EME PlayReady configuration, then use a nonproduction MPD/license fixture that records CDM, decoder, security/output-protection, and fullscreen outcomes. Generic Shaka support alone is a failure of the qualification. |
+| Edge, Chrome, and Firefox public matrix | Load status report and both warning entries with intercepted APIs; exercise valid, empty, malformed, and encoded query strings; include profiles with absent and partial `userAgentData`; prove no Face, camera, Shaka, EME, license, or authenticated-session dependency is initialized. |
+| Explicit unsupported and unverified profiles | Cover Windows/browser/channel exclusions, another Chromium brand, missing identification, missing camera permission, missing DRM, dependency timeout, and fullscreen rejection as separate expected categories. |
+
+Run the repository's static capability profiles on every change to the
+learning-platform entry or lifecycle seams. Qualify each newly promoted
+selected browser build within five business days and run Edge Beta validation
+before the next Stable promotion when practical. Review the policy and all
+primary sources quarterly, with an out-of-cycle review for a Windows or Edge
+servicing change, Face UI or Shaka change, PlayReady/EZDRM policy change,
+browser-channel change, security advisory, customer incident, or failed smoke.
+The **Last evidence review** date at the start of this section must advance
+only with that review; the decision date changes only if the selected policy
+changes.
+
+Shaka 4.6.0 is no longer a maintained Shaka branch, while Microsoft advises
+keeping the Face client current. Those are maintenance risks and review
+triggers, not authorization in this task to upgrade either dependency.
+
+### Primary evidence
+
+- Microsoft Edge: [release channels](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-channels),
+  [support lifecycle](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-support-lifecycle),
+  and [supported operating systems](https://learn.microsoft.com/en-us/deployedge/microsoft-edge-supported-operating-systems).
+- Microsoft Windows: [Windows 11 lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/windows-11-home-and-pro).
+- Azure Face: [Face UI 1.5.0 package README](https://github.com/Azure-Samples/azure-ai-vision-sdk/blob/1.5.0/samples/web/README.md),
+  [1.5.0 release](https://github.com/Azure-Samples/azure-ai-vision-sdk/releases/tag/1.5.0),
+  [liveness tutorial](https://learn.microsoft.com/en-us/azure/ai-services/face/tutorials/liveness),
+  [shared responsibility](https://learn.microsoft.com/en-us/azure/ai-services/face/liveness-detection-shared-responsibility),
+  [SDK version policy](https://learn.microsoft.com/en-us/azure/ai-services/face/sdk/understand-the-liveness-sdk-versions),
+  and [liveness error categories](https://orange-forest-0ea70d510.5.azurestaticapps.net/enums/LivenessError.html).
+- Camera security and permission: [Media Capture and Streams](https://www.w3.org/TR/mediacapture-streams/#dom-mediadevices-getusermedia)
+  and [Microsoft Windows and Edge camera privacy](https://support.microsoft.com/en-us/windows/privacy-windows-camera-microphone-and-privacy).
+- Shaka Player 4.6.0: [platform and DRM matrix](https://github.com/shaka-project/shaka-player/blob/v4.6.0/README.md#L168-L211),
+  [`isBrowserSupported()` implementation](https://github.com/shaka-project/shaka-player/blob/v4.6.0/lib/player.js#L896-L939),
+  [PlayReady configuration guidance](https://github.com/shaka-project/shaka-player/blob/v4.6.0/docs/tutorials/drm-config.md#L172-L204),
+  and [maintained branches](https://github.com/shaka-project/shaka-player/blob/main/maintained-branches.md).
+- Microsoft PlayReady: [Edge DRM scope](https://learn.microsoft.com/en-us/legal/microsoft-edge/privacy#digital-rights-management-and-media-licenses),
+  [key-system strings](https://learn.microsoft.com/en-us/playready/overview/key-system-strings),
+  [security levels](https://learn.microsoft.com/en-us/playready/overview/security-level),
+  and [output-protection levels](https://learn.microsoft.com/en-us/playready/overview/output-protection-levels).
+- EZDRM: [PlayReady browser/platform scope](https://www.ezdrm.com/product-playready)
+  and [controlled playback testing requirements](https://www.ezdrm.com/hubfs/Documentation/EZDRM-Testing-Playback-v2.2.pdf).
+- Public-browser evidence: [Chrome release channels](https://developer.chrome.com/docs/web-platform/chrome-release-channels/),
+  [Chrome system requirements](https://support.google.com/chrome/a/answer/7100626?hl=en),
+  [Firefox release calendar](https://wiki.mozilla.org/Release_Management/Calendar),
+  and [Firefox system requirements](https://www.mozilla.org/en-US/firefox/system-requirements/).
+- Web standards: [Encrypted Media Extensions](https://www.w3.org/TR/encrypted-media/)
+  and [Media Source Extensions](https://www.w3.org/TR/media-source-2/).
 
 ## Source-observed current behavior
 
@@ -1551,37 +1788,35 @@ are current behavior above, not future work.
 The source snapshot cannot answer the following safely. The later task that
 changes the relevant seam must collect evidence without contacting production:
 
-1. Which user-agent shapes and browser versions must remain supported when the
-   Edge gate is replaced, including environments without `userAgentData`?
-2. When the browser/device gate is separately redesigned, should the frozen
+1. When the browser/device gate is separately redesigned, should the frozen
    1024-pixel rule remain inclusive, and what explicit destination replaces
    `history.back()` when no valid predecessor exists?
-3. What authoritative expiry, revocation, rotation, and logout semantics will
+2. What authoritative expiry, revocation, rotation, and logout semantics will
    replace the current tab-local authorization-handle lifetime?
-4. Which backend operations are idempotent today under transport retry, and
+3. Which backend operations are idempotent today under transport retry, and
    where must request identifiers or reconciliation be introduced?
-5. Which partial Face-registration states exist in representative nonproduction
+4. Which partial Face-registration states exist in representative nonproduction
    data, and which one is authoritative when photo, workbook flag, and Face
    session disagree?
-6. What are the intended assessment attempt, timing, answer-authority, score,
+5. What are the intended assessment attempt, timing, answer-authority, score,
    dedupe, and resumption rules? Current source supplies no time limit.
-7. Should the Module 3 feedback name be corrected or must migrated historical
+6. Should the Module 3 feedback name be corrected or must migrated historical
    records first be reconciled from module 2?
-8. Which workbook formulas, row-order assumptions, and update/append outcomes
+7. Which workbook formulas, row-order assumptions, and update/append outcomes
    must be preserved during sequential migration, including feedback partial
    success?
-9. Which server-side report definition binds company, workbook, rows, labels,
+8. Which server-side report definition binds company, workbook, rows, labels,
     modules, report type, participant name, expiration, and revocation while
     retaining accepted forwarding behavior?
-10. What exact codecs, renditions, bitrates, segment templates, and DRM behavior
+9. What exact codecs, renditions, bitrates, segment templates, and DRM behavior
     do representative nonproduction MPDs expose? No media manifest was fetched
     for this characterization.
-11. Which of the 33 downloads, two unreachable copies, Face locales, duplicated
+10. Which of the 33 downloads, two unreachable copies, Face locales, duplicated
     image, and certificate inputs are intentional long-term public assets?
-12. What privacy-preserving replacement should govern the five-person non-DRM
+11. What privacy-preserving replacement should govern the five-person non-DRM
     branch, and when can the credential-bearing PlayReady configuration be
     rotated and removed from source?
-13. Which CDN dependency bytes and browser cache/offline behavior must be
+12. Which CDN dependency bytes and browser cache/offline behavior must be
     pinned, vendored, or integrity-checked in the transformed target?
 
 ## Behavior-baseline acceptance matrix
