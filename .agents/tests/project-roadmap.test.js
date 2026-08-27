@@ -67,10 +67,10 @@ test('project roadmap data has one valid card contract for every concern', () =>
     });
   });
 
-  assert.equal(cards.length, 87);
+  assert.equal(cards.length, 88);
   assert.deepEqual(
     cards.filter(({ status }) => status === 'next').map(({ id }) => id),
-    ['centralize-backend-origin'],
+    ['replace-markup-pr'],
   );
   assert.deepEqual(
     cards.filter(({ status }) => status === 'ongoing').map(({ id }) => id),
@@ -80,6 +80,7 @@ test('project roadmap data has one valid card contract for every concern', () =>
   const requiredConcerns = [
     'centralize-backend-origin',
     'replace-markup-pr',
+    'align-client-intake-api-route',
     'classify-api-exposure',
     'define-input-boundaries',
     'add-abuse-controls',
@@ -101,8 +102,9 @@ test('project roadmap data has one valid card contract for every concern', () =>
 
   const cardsById = new Map(cards.map((card) => [card.id, card]));
   assert.equal(cardsById.get('publish-program-contracts').status, 'complete');
-  assert.equal(cardsById.get('centralize-backend-origin').status, 'next');
-  assert.equal(cardsById.get('replace-markup-pr').status, 'queued');
+  assert.equal(cardsById.get('centralize-backend-origin').status, 'complete');
+  assert.equal(cardsById.get('replace-markup-pr').status, 'next');
+  assert.equal(cardsById.get('align-client-intake-api-route').status, 'queued');
 });
 
 test('card renderer preserves headline, topics, then rationale order', () => {
