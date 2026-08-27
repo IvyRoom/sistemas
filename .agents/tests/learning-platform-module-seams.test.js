@@ -370,9 +370,8 @@ test("[API-01] Registration accepts an explicit synthetic platform base", async 
 });
 
 test("[FLOW-01] initial-notices module preserves gate, listener, submit, and reset order", async () => {
-  const [noticesModule, lifecycleModule, sessionModule] = await loadModules([
+  const [noticesModule, sessionModule] = await loadModules([
     "initial-notices.js",
-    "lifecycle.js",
     "session.js"
   ]);
   const requiredAcknowledgements = {
@@ -387,17 +386,11 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
       storage: {
         [sessionModule.SESSION_KEYS.registrationAuthorization]:
           options.authorization ?? "Sim"
-      },
-      userAgent: options.userAgent ?? "FixtureBrowser",
-      userAgentData: options.userAgentData ?? {
-        brands: [{ brand: "Microsoft Edge" }]
       }
     });
     const dependencies = harness.dependencies();
     noticesModule.createInitialNoticesApplication({
       ...dependencies,
-      isMicrosoftEdge: lifecycleModule.isMicrosoftEdge,
-      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning,
       requiredAcknowledgements,
       session: sessionModule.createSessionStore(harness.sessionStorage)
     }).install();

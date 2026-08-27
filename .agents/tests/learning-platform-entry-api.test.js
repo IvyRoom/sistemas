@@ -70,6 +70,11 @@ const FIXTURE_HANDLE = opaqueValue("row-handle");
 const FIXTURE_PLATFORM_BASE = FIXTURE_ORIGIN + "/plataforma_v2";
 const FIXTURE_RESULT_PATH = `/plataforma_v2/FaceID_resultado/${FIXTURE_FACE_SESSION}`;
 const EXPECTED_FACE_SHADOW_STYLES = ":host,\n* {\n    -webkit-user-select: none;\n    user-select: none;\n}\n\n#spinnerCheck #circle,\n#spinnerCheck #tick {\n    stroke: #4a0816 !important;\n}";
+const WINDOWS_EDGE_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 " +
+  "Safari/537.36 Edg/140.0.0.0";
+const WINDOWS_CHROME_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 
 function refreshData(overrides = {}) {
   const data = {
@@ -202,16 +207,13 @@ async function installRegistrationApplication(harness, overrides = {}) {
 }
 
 async function installInitialNoticesApplication(harness) {
-  const [noticesModule, lifecycleModule, sessionModule] = await Promise.all([
+  const [noticesModule, sessionModule] = await Promise.all([
     harness.loadModule(MODULE_PATHS.notices),
-    harness.loadModule(MODULE_PATHS.lifecycle),
     harness.loadModule(MODULE_PATHS.session)
   ]);
   const dependencies = harness.dependencies();
   noticesModule.createInitialNoticesApplication({
     ...dependencies,
-    isMicrosoftEdge: lifecycleModule.isMicrosoftEdge,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning,
     requiredAcknowledgements: {
       credentials: "credenciais",
       rights: "direitos",
@@ -243,11 +245,10 @@ async function installStatusReportApplication(harness) {
 }
 
 async function installStudyApplication(harness, overrides = {}) {
-  const [applicationModule, domModule, lifecycleModule, clientModule, sessionModule] =
+  const [applicationModule, domModule, clientModule, sessionModule] =
     await Promise.all([
       harness.loadModule(MODULE_PATHS.study),
       harness.loadModule(MODULE_PATHS.studyDom),
-      harness.loadModule(MODULE_PATHS.lifecycle),
       harness.loadModule(MODULE_PATHS.platformClient),
       harness.loadModule(MODULE_PATHS.session)
     ]);
@@ -270,11 +271,9 @@ async function installStudyApplication(harness, overrides = {}) {
     configureDownloads() {},
     document: dependencies.document,
     dom,
-    isMicrosoftEdge: lifecycleModule.isMicrosoftEdge,
     async loadMedia() {},
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning,
     renderCertificate() {},
     session,
     timers: {
@@ -468,56 +467,338 @@ test("[ROUTE-03] exact slashless destinations and history behavior remain fixed"
   assert.equal(login.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Não");
 });
 
-test("[GATE-01] Edge signals gate four entries while report remains ungated", async () => {
-  const guardedPages = ["login", "notices", "register", "study"];
-  for (const page of guardedPages) {
-    const rejected = createLearningPlatformHarness({
-      storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Sim" },
-      userAgent: "FixtureBrowser",
-      userAgentData: { brands: [{ brand: "Not Edge" }] }
-    });
-    await installEntryApplication(rejected, page);
-    await Promise.all(rejected.dispatchWindow("load"));
-    assert.deepEqual(rejected.navigation, [PATHS.browser], page);
+test("[GATE-01] centralized admission returns stable candidate, unsupported, and unverified results", async () => {
+  const moduleHarness = createLearningPlatformHarness();
+  const lifecycle = await moduleHarness.loadModule(MODULE_PATHS.lifecycle);
+  assert.deepEqual(lifecycle.browserAdmissionOutcomes, {
+    CANDIDATE: "candidate",
+    UNSUPPORTED: "unsupported",
+    UNVERIFIED: "unverified"
+  });
 
-    const modernSignal = createLearningPlatformHarness({
-      storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Não" },
-      userAgent: "FixtureBrowser"
+  function classify({
+    entry = lifecycle.browserAdmissionEntries.LOGIN,
+    mutate,
+    userAgent = WINDOWS_EDGE_USER_AGENT,
+    userAgentData
+  }) {
+    const harness = createLearningPlatformHarness({
+      userAgent,
+      userAgentData: userAgentData ?? {}
     });
-    await installEntryApplication(modernSignal, page);
-    await Promise.all(modernSignal.dispatchWindow("load"));
-    assert.equal(modernSignal.navigation.includes(PATHS.browser), false, page);
-
-    const legacySignal = createLearningPlatformHarness({
-      storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Não" },
-      userAgent: "FixtureBrowser Edg/fixture",
-      userAgentData: { brands: [{ brand: "Not Edge" }] }
+    if (userAgentData === null) delete harness.window.navigator.userAgentData;
+    if (mutate) mutate(harness);
+    const result = lifecycle.classifyBrowserAdmission({
+      document: harness.document,
+      entry,
+      navigator: harness.window.navigator,
+      window: harness.window
     });
-    await installEntryApplication(legacySignal, page);
-    await Promise.all(legacySignal.dispatchWindow("load"));
-    assert.equal(legacySignal.navigation.includes(PATHS.browser), false, page);
-
-    const absentModernSignal = createLearningPlatformHarness({
-      storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Não" },
-      userAgent: "FixtureBrowser Edg/fixture"
-    });
-    delete absentModernSignal.window.navigator.userAgentData;
-    await installEntryApplication(absentModernSignal, page);
-    await Promise.all(absentModernSignal.dispatchWindow("load"));
-    assert.equal(absentModernSignal.navigation.includes(PATHS.browser), false, page);
+    harness.hostGuard.assertUnused();
+    return result;
   }
 
-  const reportSource = readPlatformScript(SCRIPT_PATHS.report);
-  assert.equal(/userAgent(?:Data)?/.test(reportSource), false);
+  const cases = [
+    {
+      label: "Edge client hints with ordinary Chromium base brand",
+      profile: {
+        userAgent: "FixtureBrowser",
+        userAgentData: {
+          brands: [{ brand: "Chromium" }, { brand: "Microsoft Edge" }],
+          mobile: false,
+          platform: "Windows"
+        }
+      },
+      expected: ["candidate", "windows-edge-candidate"]
+    },
+    {
+      label: "usable Windows Edge fallback without client hints",
+      profile: { userAgentData: null },
+      expected: ["candidate", "windows-edge-candidate"]
+    },
+    {
+      label: "partial client hints completed by fallback",
+      profile: {
+        userAgentData: { brands: [{ brand: "Chromium" }], mobile: false }
+      },
+      expected: ["candidate", "windows-edge-candidate"]
+    },
+    {
+      label: "missing hints and insufficient fallback",
+      profile: { userAgent: "FixtureBrowser", userAgentData: null },
+      expected: ["unverified", "insufficient-browser-evidence"]
+    },
+    {
+      label: "conflicting platform evidence",
+      profile: {
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) " +
+          "AppleWebKit/537.36 Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0",
+        userAgentData: {
+          brands: [{ brand: "Microsoft Edge" }],
+          mobile: false,
+          platform: "Windows"
+        }
+      },
+      expected: ["unverified", "conflicting-platform-evidence"]
+    },
+    {
+      label: "conflicting browser-family evidence",
+      profile: {
+        userAgentData: {
+          brands: [{ brand: "Google Chrome" }],
+          mobile: false,
+          platform: "Windows"
+        }
+      },
+      expected: ["unverified", "conflicting-browser-evidence"]
+    },
+    {
+      label: "conflicting browser families within fallback evidence",
+      profile: {
+        userAgent: WINDOWS_EDGE_USER_AGENT + " OPR/120.0.0.0",
+        userAgentData: null
+      },
+      expected: ["unverified", "conflicting-browser-evidence"]
+    },
+    {
+      label: "conflicting desktop platforms within fallback evidence",
+      profile: {
+        userAgent: WINDOWS_EDGE_USER_AGENT + " Macintosh",
+        userAgentData: null
+      },
+      expected: ["unverified", "conflicting-platform-evidence"]
+    },
+    {
+      label: "conflicting desktop and mobile fallback evidence",
+      profile: {
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) EdgiOS/140.0.0.0",
+        userAgentData: null
+      },
+      expected: ["unverified", "conflicting-platform-evidence"]
+    },
+    {
+      label: "Chrome",
+      profile: {
+        userAgent: WINDOWS_CHROME_USER_AGENT,
+        userAgentData: {
+          brands: [{ brand: "Chromium" }, { brand: "Google Chrome" }],
+          mobile: false,
+          platform: "Windows"
+        }
+      },
+      expected: ["unsupported", "unsupported-browser-family"]
+    },
+    {
+      label: "Firefox",
+      profile: {
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) " +
+          "Gecko/20100101 Firefox/140.0",
+        userAgentData: null
+      },
+      expected: ["unsupported", "unsupported-browser-family"]
+    },
+    {
+      label: "Safari on macOS",
+      profile: {
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) " +
+          "AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15",
+        userAgentData: null
+      },
+      expected: ["unsupported", "unsupported-platform"]
+    },
+    {
+      label: "another Chromium family",
+      profile: {
+        userAgent: WINDOWS_CHROME_USER_AGENT + " OPR/120.0.0.0",
+        userAgentData: null
+      },
+      expected: ["unsupported", "unsupported-browser-family"]
+    },
+    {
+      label: "embedded Edge WebView",
+      profile: {
+        userAgent: WINDOWS_EDGE_USER_AGENT + " WebView/140.0.0.0",
+        userAgentData: {
+          brands: [{ brand: "Chromium" }, { brand: "Microsoft Edge" }],
+          mobile: false,
+          platform: "Windows"
+        }
+      },
+      expected: ["unsupported", "unsupported-embedded-browser"]
+    },
+    {
+      label: "embedded Edge WebView API with ordinary Edge identity",
+      profile: {
+        mutate(harness) {
+          harness.window.chrome = {
+            webview: {
+              postMessage() {
+                throw new Error("Synthetic WebView messaging must not run during admission");
+              }
+            }
+          };
+        }
+      },
+      expected: ["unsupported", "unsupported-embedded-browser"]
+    },
+    {
+      label: "mobile Edge",
+      profile: {
+        userAgent: "Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 " +
+          "Chrome/140.0.0.0 Mobile Safari/537.36 EdgA/140.0.0.0",
+        userAgentData: {
+          brands: [{ brand: "Chromium" }, { brand: "Microsoft Edge" }],
+          mobile: true,
+          platform: "Android"
+        }
+      },
+      expected: ["unsupported", "unsupported-mobile-environment"]
+    }
+  ];
+
+  for (const { expected, label, profile } of cases) {
+    const result = classify(profile);
+    assert.deepEqual([result.outcome, result.reasonCode], expected, label);
+    assert.equal("supported" in result, false, label);
+    assert.equal(Object.isFrozen(result), true, label);
+  }
+
+  const missingFace = classify({
+    mutate(harness) {
+      delete harness.window.navigator.mediaDevices;
+    }
+  });
+  assert.deepEqual(
+    [missingFace.outcome, missingFace.reasonCode, missingFace.missingCapabilities],
+    ["unsupported", "missing-mandatory-api", ["camera-api"]]
+  );
+
+  const missingOrdinaryLearning = classify({
+    entry: lifecycle.browserAdmissionEntries.STUDY,
+    mutate(harness) {
+      delete harness.window.fetch;
+    }
+  });
+  assert.equal(missingOrdinaryLearning.outcome, "unsupported");
+  assert.equal(missingOrdinaryLearning.reasonCode, "missing-mandatory-api");
+  assert.deepEqual(missingOrdinaryLearning.missingCapabilities, ["fetch"]);
 });
 
-test("[GATE-01] browser-warning diagnostic preserves missing-userAgentData failure", () => {
-  const diagnostic = createLearningPlatformHarness();
-  delete diagnostic.window.navigator.userAgentData;
-  assert.throws(
-    () => diagnostic.loadScript(SCRIPT_PATHS.browser),
-    (error) => error && error.name === "TypeError"
+test("[GATE-01] four guarded entries redirect non-candidates while candidate ordering remains intact", async () => {
+  const guardedPages = ["login", "notices", "register", "study"];
+  const profiles = [
+    {
+      label: "unsupported",
+      userAgent: WINDOWS_CHROME_USER_AGENT,
+      userAgentData: {
+        brands: [{ brand: "Google Chrome" }],
+        mobile: false,
+        platform: "Windows"
+      }
+    },
+    {
+      label: "unverified",
+      userAgent: "FixtureBrowser",
+      userAgentData: {}
+    }
+  ];
+
+  for (const page of guardedPages) {
+    for (const profile of profiles) {
+      const harness = createLearningPlatformHarness({
+        ...profile,
+        storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Sim" }
+      });
+      await installEntryApplication(harness, page);
+      await Promise.all(harness.dispatchWindow("load"));
+      assert.deepEqual(harness.navigation, [PATHS.browser], `${page}:${profile.label}`);
+      assert.equal(harness.timeline.some(({ type }) => type === "fetch"), false);
+    }
+
+    const candidate = createLearningPlatformHarness({
+      storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Não" }
+    });
+    await installEntryApplication(candidate, page);
+    await Promise.all(candidate.dispatchWindow("load"));
+    assert.equal(candidate.navigation.includes(PATHS.browser), false, page);
+  }
+});
+
+test("[GATE-01] rejected and unverified Face entries cannot load Face or submit", async () => {
+  for (const install of [installLoginApplication, installRegistrationApplication]) {
+    for (const profile of [
+      {
+        userAgent: WINDOWS_CHROME_USER_AGENT,
+        userAgentData: {
+          brands: [{ brand: "Google Chrome" }],
+          mobile: false,
+          platform: "Windows"
+        }
+      },
+      { userAgent: "FixtureBrowser", userAgentData: {} }
+    ]) {
+      let loaderCalls = 0;
+      const harness = createLearningPlatformHarness({
+        ...profile,
+        storage: { IndexVerificado: FIXTURE_HANDLE }
+      });
+      await install(harness, {
+        async loadFaceRuntime() {
+          loaderCalls += 1;
+        }
+      });
+      harness.dispatchWindow("load");
+      submit(harness.element(
+        install === installLoginApplication ? "Formulário-Login" : "Formulário-Foto-Referência"
+      ));
+      await harness.flush();
+      assert.equal(loaderCalls, 0);
+      assert.equal(harness.timeline.some(({ type }) => type === "fetch"), false);
+      assert.equal(harness.timeline.some(({ type }) => type === "face-start"), false);
+    }
+  }
+});
+
+test("[GATE-01] public report and warning entries remain available without browser admission", async () => {
+  const report = createLearningPlatformHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/statusreport",
+      response: { data: { Dados_Extraídos_BD_Plataforma: [] } }
+    }],
+    userAgent: WINDOWS_CHROME_USER_AGENT,
+    userAgentData: {}
+  });
+  report.window.location.search =
+    "?ne=Invented&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
+  report.selectorResults.set(
+    ".Gráficos_Controle_Resultados",
+    Array.from({ length: 12 }, (_, index) => report.element(`public-report-${index}`))
   );
+  await installStatusReportApplication(report);
+  await report.window.onload();
+  await report.flush();
+  assert.equal(report.guard.requests.length, 1);
+  assert.equal(report.navigation.includes(PATHS.browser), false);
+  assert.equal(/userAgent(?:Data)?|classifyBrowserAdmission/.test(
+    readPlatformScript(SCRIPT_PATHS.report)
+  ), false);
+
+  for (const userAgentData of [null, {}, { brands: undefined }]) {
+    const browserWarning = createLearningPlatformHarness({ userAgentData: userAgentData ?? {} });
+    if (userAgentData === null) delete browserWarning.window.navigator.userAgentData;
+    assert.doesNotThrow(() => browserWarning.loadScript(SCRIPT_PATHS.browser));
+    assert.equal(browserWarning.consoleCalls.length, 2);
+    assert.deepEqual(browserWarning.navigation, []);
+  }
+
+  const deviceWarning = createLearningPlatformHarness({
+    userAgent: "FixtureBrowser",
+    userAgentData: {}
+  });
+  assert.doesNotThrow(() => deviceWarning.loadScript(SCRIPT_PATHS.device));
+  assert.equal(deviceWarning.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Sim");
+  assert.deepEqual(deviceWarning.navigation, []);
 });
 
 test("[GATE-02] login, notices, and registration keep inclusive width boundary and listener order", async () => {
@@ -724,6 +1005,9 @@ test("[FACE-01] Face startup themes the closed shadow root without changing star
         }
       };
     },
+    async loadRuntime() {
+      events.push({ type: "load-runtime" });
+    },
     mount(element) {
       assert.equal(element, faceElement);
       assert.notEqual(element.attachShadow, nativeAttachShadow);
@@ -738,6 +1022,7 @@ test("[FACE-01] Face startup themes the closed shadow root without changing star
   assert.deepEqual(
     events.map(({ type }) => type),
     [
+      "load-runtime",
       "create",
       "set-locale",
       "set-font-size",
@@ -752,6 +1037,100 @@ test("[FACE-01] Face startup themes the closed shadow root without changing star
   assert.deepEqual(events.find(({ type }) => type === "attach-shadow").options, {
     mode: "closed"
   });
+  harness.hostGuard.assertUnused();
+});
+
+test("[FACE-01] deferred Face loading and startup are single-flight but allow later retries", async () => {
+  const harness = createLearningPlatformHarness();
+  const { createFaceStartup } = await harness.loadModule(MODULE_PATHS.faceStartup);
+  let resolveRuntime;
+  const pendingRuntime = new Promise((resolve) => {
+    resolveRuntime = resolve;
+  });
+  let loaderCalls = 0;
+  let createCalls = 0;
+  let startCalls = 0;
+  const faceStartup = createFaceStartup({
+    createElement() {
+      createCalls += 1;
+      return {
+        attachShadow() {
+          return { adoptedStyleSheets: [] };
+        },
+        start() {
+          startCalls += 1;
+          return Promise.resolve("synthetic-face-result");
+        }
+      };
+    },
+    createStyleSheet() {
+      return { replaceSync() {} };
+    },
+    loadRuntime() {
+      loaderCalls += 1;
+      return pendingRuntime;
+    },
+    mount() {}
+  });
+
+  const firstStart = faceStartup.start("first-token");
+  const concurrentStart = faceStartup.start("second-token");
+  assert.equal(firstStart, concurrentStart);
+  await Promise.resolve();
+  assert.deepEqual([loaderCalls, createCalls, startCalls], [1, 0, 0]);
+
+  resolveRuntime();
+  assert.equal(await firstStart, "synthetic-face-result");
+  assert.deepEqual([loaderCalls, createCalls, startCalls], [1, 1, 1]);
+
+  assert.equal(await faceStartup.start("retry-token"), "synthetic-face-result");
+  assert.deepEqual([loaderCalls, createCalls, startCalls], [1, 2, 2]);
+  harness.hostGuard.assertUnused();
+});
+
+test("[FACE-01] a rejected Face loader resets without creating or starting the component", async () => {
+  const harness = createLearningPlatformHarness();
+  const { createFaceStartup } = await harness.loadModule(MODULE_PATHS.faceStartup);
+  const transientFailure = new Error("synthetic loader failure");
+  let rejectFirstLoad;
+  const firstLoad = new Promise((_resolve, reject) => {
+    rejectFirstLoad = reject;
+  });
+  let loaderCalls = 0;
+  let createCalls = 0;
+  let startCalls = 0;
+  const faceStartup = createFaceStartup({
+    createElement() {
+      createCalls += 1;
+      return {
+        attachShadow() {
+          return { adoptedStyleSheets: [] };
+        },
+        start() {
+          startCalls += 1;
+          return Promise.resolve("synthetic-face-result");
+        }
+      };
+    },
+    createStyleSheet() {
+      return { replaceSync() {} };
+    },
+    loadRuntime() {
+      loaderCalls += 1;
+      return loaderCalls === 1 ? firstLoad : Promise.resolve();
+    },
+    mount() {}
+  });
+
+  const firstStart = faceStartup.start("first-token");
+  assert.equal(faceStartup.start("concurrent-token"), firstStart);
+  await Promise.resolve();
+  rejectFirstLoad(transientFailure);
+  await assert.rejects(firstStart, (error) => error === transientFailure);
+  assert.deepEqual([loaderCalls, createCalls, startCalls], [1, 0, 0]);
+
+  assert.equal(await faceStartup.start("retry-token"), "synthetic-face-result");
+  assert.deepEqual([loaderCalls, createCalls, startCalls], [2, 1, 1]);
   harness.hostGuard.assertUnused();
 });
 

@@ -1,4 +1,3 @@
-import "../azure-ai-vision-face-ui/FaceLivenessDetector.js";
 import { createRegistrationApplication } from "../modules/photo-registration.js";
 import { BACKEND_ORIGIN } from "../../shared/backend-origin.js";
 
@@ -8,11 +7,12 @@ createRegistrationApplication({
     window,
     document,
     navigator: window.navigator,
-    sessionStorage,
-    fetch,
-    FormDataConstructor: FormData,
+    sessionStorage: window.sessionStorage,
+    fetch: window.fetch,
+    FormDataConstructor: window.FormData,
     createFaceElement: tagName => document.createElement(tagName),
-    createFaceStyleSheet: () => new CSSStyleSheet(),
+    createFaceStyleSheet: () => new window.CSSStyleSheet(),
+    loadFaceRuntime: () => import("../azure-ai-vision-face-ui/FaceLivenessDetector.js"),
     navigate(target) {
         window.location.href = target;
     },

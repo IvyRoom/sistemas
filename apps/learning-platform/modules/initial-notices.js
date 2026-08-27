@@ -1,13 +1,25 @@
+import {
+    browserAdmissionEntries,
+    browserAdmissionOutcomes,
+    classifyBrowserAdmission,
+    redirectToDeviceWarning
+} from './lifecycle.js';
+
 export function createInitialNoticesApplication({
     document,
-    isMicrosoftEdge,
     navigate,
     navigator,
-    redirectToDeviceWarning,
     requiredAcknowledgements,
     session,
     window
 }) {
+    const browserAdmission = classifyBrowserAdmission({
+        document,
+        entry: browserAdmissionEntries.INITIAL_NOTICES,
+        navigator,
+        window
+    });
+
     function handleDeviceWidth() {
         redirectToDeviceWarning({ window, navigate });
     }
@@ -15,7 +27,7 @@ export function createInitialNoticesApplication({
     function handleLoad() {
         session.write('deviceWarningOrigin', 'Não');
 
-        if (isMicrosoftEdge(navigator) === false) {
+        if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
         } else {
             if (session.read('registrationAuthorization') !== 'Sim') {
@@ -39,6 +51,10 @@ export function createInitialNoticesApplication({
         const agreementButton = document.getElementById('Botão-Li-e-Concordo');
 
         document.getElementById('Formulário').addEventListener('submit', function (event) {
+            if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
+                event.preventDefault();
+                return;
+            }
             document.body.style.cursor = 'wait';
             event.preventDefault();
             agreementButton.style.display = 'none';

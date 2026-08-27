@@ -336,10 +336,14 @@ function applicationJavaScriptSources() {
 function moduleImportEdges(sources) {
   const edges = [];
   const importPattern = /\bimport\s+(?:[^"'();]+?\s+from\s+)?["']([^"']+)["']/g;
+  const dynamicImportPattern = /\bimport\s*\(\s*(["'])([^"']+)\1\s*\)/g;
 
   for (const { relativePath, source } of sources) {
     for (const match of source.matchAll(importPattern)) {
       edges.push(`${relativePath} -> ${match[1]}`);
+    }
+    for (const match of source.matchAll(dynamicImportPattern)) {
+      edges.push(`${relativePath} -> ${match[2]}`);
     }
   }
   return edges.sort(compareText);
@@ -469,7 +473,7 @@ function sourceDerivedSensitiveLiterals() {
   };
 }
 
-test("[BROWSER-SUPPORT] selected policy is complete and distinct from the temporary Edge gate", () => {
+test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualification boundary", () => {
   const supportStart = contractSource.indexOf("## Browser support contract");
   const currentBehaviorStart = contractSource.indexOf(
     "## Source-observed current behavior"
@@ -487,7 +491,7 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
     "### Capability prerequisites",
     "### Failure boundaries",
     "### Environments without `userAgentData`",
-    "### Current gate versus selected policy",
+    "### Runtime admission and qualification boundary",
     "### Verification matrix and maintenance",
     "### Primary evidence"
   ]) {
@@ -743,23 +747,23 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
     /`navigator\.userAgentData` is optional input[\s\S]*must never throw[\s\S]*synthetic profile with no\s+`userAgentData`/,
     "The selected policy must handle absent userAgentData without treating it as failure"
   );
-  const currentGateStart = support.indexOf("### Current gate versus selected policy");
+  const currentGateStart = support.indexOf("### Runtime admission and qualification boundary");
   const verificationStart = support.indexOf("### Verification matrix and maintenance");
   assert.ok(
     verificationStart > currentGateStart,
-    "The current-gate description must remain bounded from future verification"
+    "The runtime-admission description must remain bounded from future verification"
   );
   const currentGate = support.slice(currentGateStart, verificationStart);
   const normalizedCurrentGate = currentGate.replace(/\s+/g, " ");
   assert.match(
     currentGate,
-    /not implemented by this task[\s\S]*temporary\s+`LP-GATE-EDGE` runtime behavior remains unchanged/i,
-    "The future policy must remain explicit and separate from the temporary gate"
+    /centralized[\s\S]*candidate[\s\S]*unsupported[\s\S]*unverified/i,
+    "Runtime admission must retain three explicit centralized outcomes"
   );
   assert.match(
     normalizedCurrentGate,
-    /string gate is not capture qualification[\s\S]*Edge on macOS can satisfy the current brand\/string condition/,
-    "The current Edge sniff must not be presented as OS or capture qualification"
+    /spoofable[\s\S]*does not prove[\s\S]*Windows servicing[\s\S]*PlayReady[\s\S]*capture resistance/,
+    "Runtime admission must not be presented as OS, DRM, or capture qualification"
   );
 
   const evidenceStart = support.indexOf("### Primary evidence");
@@ -823,16 +827,59 @@ test("[BROWSER-SUPPORT] selected policy is complete and distinct from the tempor
     path.join(platformRoot, "modules", "lifecycle.js"),
     "utf8"
   );
-  assert.match(
+  for (const seam of [
+    "browserAdmissionEntries",
+    "browserAdmissionOutcomes",
+    "browserAdmissionReasons",
+    "classifyBrowserAdmission",
+    "conflicting-browser-evidence",
+    "conflicting-platform-evidence",
+    "insufficient-browser-evidence",
+    "missing-mandatory-api",
+    "windows-edge-candidate"
+  ]) {
+    assert.ok(lifecycleSource.includes(seam), `${seam}:central admission seam`);
+  }
+  assert.equal(lifecycleSource.includes("isMicrosoftEdge"), false);
+  assert.equal(lifecycleSource.includes("userAgent.includes('Edg')"), false);
+  assert.doesNotMatch(
     lifecycleSource,
-    /navigator\.userAgentData\?\.brands\?\.some\(brand => brand\.brand === 'Microsoft Edge'\)/,
-    "The current exact-brand branch must remain unchanged until implementation"
+    /getUserMedia\s*\(|requestMediaKeySystemAccess\s*\(|isTypeSupported\s*\(|WebAssembly\.validate\s*\(/,
+    "Admission must inspect API shapes without starting camera, EME, codec, or Wasm work"
   );
-  assert.match(
-    lifecycleSource,
-    /navigator\.userAgent\.includes\('Edg'\)/,
-    "The current legacy user-agent fallback must remain unchanged until implementation"
-  );
+
+  const userAgentReaders = pageSources
+    .filter(({ source }) => /userAgent(?:Data)?/.test(source))
+    .map(({ relativePath }) => relativePath);
+  assert.deepEqual(userAgentReaders, ["browser-warning/main.js", "modules/lifecycle.js"]);
+  const guardedFactories = new Map([
+    ["modules/login.js", "LOGIN"],
+    ["modules/initial-notices.js", "INITIAL_NOTICES"],
+    ["modules/photo-registration.js", "PHOTO_REGISTRATION"],
+    ["modules/course-content/application.js", "STUDY"]
+  ]);
+  for (const [relativePath, entry] of guardedFactories) {
+    const source = pageSources.find((candidate) => candidate.relativePath === relativePath).source;
+    assert.match(source, /classifyBrowserAdmission\s*\(\s*\{/);
+    assert.ok(source.includes(`browserAdmissionEntries.${entry}`));
+    assert.match(
+      source,
+      /browserAdmission\.outcome\s*!==\s*browserAdmissionOutcomes\.CANDIDATE/
+    );
+  }
+  for (const publicEntry of ["status-report/main.js", "browser-warning/main.js", "device-warning/main.js"]) {
+    const source = pageSources.find((candidate) => candidate.relativePath === publicEntry).source;
+    assert.equal(source.includes("classifyBrowserAdmission"), false, publicEntry);
+  }
+  for (const entryMain of ["login/main.js", "photo-registration/main.js"]) {
+    const source = pageSources.find((candidate) => candidate.relativePath === entryMain).source;
+    assert.match(source, /fetch:\s*window\.fetch/);
+    assert.match(source, /sessionStorage:\s*window\.sessionStorage/);
+  }
+  const studyMain = pageSources.find(
+    ({ relativePath }) => relativePath === "course-content/main.js"
+  ).source;
+  assert.match(studyMain, /fetch:\s*bindWindowFunction\(["']fetch["']\)/);
 });
 
 test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () => {
@@ -894,7 +941,7 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
     },
     {
       count: 77,
-      digest: "406ac11f31b15a9b98646fad28fefd87f3471f09858a87a9b935cd1f14ada2e9"
+      digest: "672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149"
     },
     "The centralized-origin source graph must retain its exact import aggregate"
   );
@@ -1279,15 +1326,22 @@ test("[FACE-01] Face SDK 1.5.0 assets, presentation hooks, and base-relative res
     );
     assert.equal(
       (entrySource.match(/import\s+["']\.\.\/azure-ai-vision-face-ui\/FaceLivenessDetector\.js["']/g) ?? []).length,
-      1,
-      "Each production Face entry must retain the vendored registration import"
+      0,
+      "A production Face entry must not execute the vendored bundle eagerly"
     );
     assert.equal(
-      (entrySource.match(/createFaceStyleSheet:\s*\(\)\s*=>\s*new CSSStyleSheet\(\)/g) ?? []).length,
+      (entrySource.match(/import\s*\(\s*["']\.\.\/azure-ai-vision-face-ui\/FaceLivenessDetector\.js["']\s*\)/g) ?? []).length,
+      1,
+      "Each production Face entry must retain one literal deferred vendored import"
+    );
+    assert.match(entrySource, /loadFaceRuntime:\s*\(\)\s*=>\s*import\s*\(/);
+    assert.equal(
+      (entrySource.match(/createFaceStyleSheet:\s*\(\)\s*=>\s*new window\.CSSStyleSheet\(\)/g) ?? []).length,
       1,
       "Each production Face entry must construct the application stylesheet in its browser realm"
     );
   }
+  assert.match(faceStartupSource, /ensureRuntime\(\)\.then\(\(\)\s*=>\s*\{/);
 
   const resolvedBase = new URL(basePath, inertOrigin);
   const resolvedDictionary = new URL(
@@ -1379,8 +1433,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20733425,
-      digest: "da0237fc0b01c165824413a9d6bde4caea4c53189506d7a6121e70be4ac1de7a"
+      bytes: 20750553,
+      digest: "bef9b6c97b8750fb749b4b251d52bb23ea51065a95c3dd857dd2fbb9247e2cad"
     },
     "The current manifest must produce the exact centralized-origin modernized platform target"
   );
@@ -1391,8 +1445,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20733425,
-      digest: "e752189e25b613e31e9b71c0fc5ed0ee5102ef4bdefefc7e421cc84454c87bdb"
+      bytes: 20750553,
+      digest: "9047caca95a1a0de4e8c6722f4c17971ebf47f8618252ececb96628e195b5b60"
     },
     "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
   );
@@ -1403,8 +1457,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 446374,
-      digest: "8a609b7842fe4c5190508f9ca28f5cd20588077cc7ada837688c90b7cf90e7f9"
+      bytes: 463502,
+      digest: "997b5db099fdb54891f6214482c572b2b0527507b443b928d52f350ebc87301b"
     },
     "The platform JavaScript files must retain their exact modernized identity"
   );
@@ -1449,8 +1503,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 10022020,
-      digest: "26da442362557c4fcca35f64401938de1dc6b50510c12a1a9ff12656646be148"
+      bytes: 10022018,
+      digest: "6d1168905923140744422ce35798015c5a276642d12e18808c1f09c08e57452e"
     },
     "The Study entry subtree must retain its modernized mapped identity"
   );
@@ -1834,8 +1888,8 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27338010,
-      digest: "cf070ef23c295f60ea42b5127503763918f1b78a6a012a6c8973c93fa4d6a5d5"
+      bytes: 27355138,
+      digest: "e60a6f5f41769de833fb11bb68a693de4793a8c518888fc28558259a02681350"
     },
     "The current manifest must produce the exact centralized-origin modernized frontend target"
   );

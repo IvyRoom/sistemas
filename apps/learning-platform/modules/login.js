@@ -9,7 +9,12 @@ import {
     learningPlatformErrorMessage,
     learningPlatformErrorPresentations
 } from './error-presentation.js';
-import { isMicrosoftEdge, redirectToDeviceWarning } from './lifecycle.js';
+import {
+    browserAdmissionEntries,
+    browserAdmissionOutcomes,
+    classifyBrowserAdmission,
+    redirectToDeviceWarning
+} from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
 
@@ -23,6 +28,7 @@ export function createLoginApplication({
     clock,
     createFaceElement,
     createFaceStyleSheet,
+    loadFaceRuntime,
     navigate,
     alert,
     console,
@@ -43,7 +49,14 @@ export function createLoginApplication({
     const faceStartup = createFaceStartup({
         createElement: createFaceElement,
         createStyleSheet: createFaceStyleSheet,
+        loadRuntime: loadFaceRuntime,
         mount: element => faceContainer.appendChild(element)
+    });
+    const browserAdmission = classifyBrowserAdmission({
+        document,
+        entry: browserAdmissionEntries.LOGIN,
+        navigator,
+        window
     });
 
     function redirectForWidth() {
@@ -53,7 +66,7 @@ export function createLoginApplication({
     window.addEventListener('resize', redirectForWidth);
 
     window.addEventListener('load', function() {
-        if (isMicrosoftEdge(navigator) === false) {
+        if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
         }
         else {
@@ -74,7 +87,14 @@ export function createLoginApplication({
     });
 
     loginForm.addEventListener('submit', function(event) {
-        if (submitButton.disabled) return;
+        if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
+            event.preventDefault();
+            return;
+        }
+        if (submitButton.disabled) {
+            event.preventDefault();
+            return;
+        }
         document.body.style.cursor = 'wait';
         submitButton.disabled = true;
         submitButton.style.display = 'none';

@@ -1,4 +1,3 @@
-import { isMicrosoftEdge, redirectToDeviceWarning } from '../modules/lifecycle.js';
 import { createPlatformClient } from '../modules/platform-client.js';
 import { createSessionStore } from '../modules/session.js';
 import { createStudyApplication } from '../modules/course-content/application.js';
@@ -25,13 +24,16 @@ async function loadSelectedMedia(player, { drmEnabled, moduleName, videoName }) 
 
 const session = createSessionStore(window.sessionStorage);
 const backendBase = `${BACKEND_ORIGIN}/plataforma_v2`;
+const bindWindowFunction = name => typeof window[name] === 'function'
+    ? window[name].bind(window)
+    : window[name];
 let legacySessionSeconds;
 const studyDom = createStudyDom(window.document, () => {
     legacySessionSeconds = session.read('legacySessionSeconds');
 });
 const platformClient = createPlatformClient({
     baseUrl: backendBase,
-    fetch: window.fetch.bind(window),
+    fetch: bindWindowFunction('fetch'),
     FormDataConstructor: window.FormData
 });
 
@@ -42,7 +44,7 @@ const mediaState = new Proxy({}, {
     }
 });
 const player = createStudyPlayer({
-    alert: window.alert.bind(window),
+    alert: bindWindowFunction('alert'),
     configureDrm,
     document: window.document,
     dom: studyDom,
@@ -53,7 +55,7 @@ const player = createStudyPlayer({
 });
 
 controller = createStudyApplication({
-    alert: window.alert.bind(window),
+    alert: bindWindowFunction('alert'),
     client: platformClient,
     clock: {
         createDate: (...argumentsList) => new window.Date(...argumentsList),
@@ -62,16 +64,14 @@ controller = createStudyApplication({
     configureDownloads: createDownloadConfigurator(window.document),
     document: window.document,
     dom: studyDom,
-    isMicrosoftEdge,
     loadMedia: player.loadMedia,
     navigate: path => { window.location.href = path; },
     navigator: window.navigator,
-    redirectToDeviceWarning,
     renderCertificate: createCertificateRenderer(() => window.jspdf.jsPDF),
     session,
     timers: {
-        clearInterval: window.clearInterval.bind(window),
-        setInterval: window.setInterval.bind(window)
+        clearInterval: bindWindowFunction('clearInterval'),
+        setInterval: bindWindowFunction('setInterval')
     },
     window
 });

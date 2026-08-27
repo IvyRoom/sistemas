@@ -7,6 +7,12 @@ import {
     learningPlatformErrorMessage,
     learningPlatformErrorPresentations
 } from '../error-presentation.js';
+import {
+    browserAdmissionEntries,
+    browserAdmissionOutcomes,
+    classifyBrowserAdmission,
+    redirectToDeviceWarning
+} from '../lifecycle.js';
 import { createStudyAssessment } from './assessment.js';
 import { createStudyCertificate } from './certificate.js';
 import { createStudyContent } from './content.js';
@@ -24,16 +30,20 @@ export function createStudyApplication({
     configureDownloads,
     document,
     dom,
-    isMicrosoftEdge,
     loadMedia,
     navigate,
     navigator,
-    redirectToDeviceWarning,
     renderCertificate,
     session,
     timers,
     window
 }) {
+    const browserAdmission = classifyBrowserAdmission({
+        document,
+        entry: browserAdmissionEntries.STUDY,
+        navigator,
+        window
+    });
     const stateContainer = createStudyState();
     const { state } = stateContainer;
     const navigation = createStudyNavigation({ document, dom, state });
@@ -140,7 +150,7 @@ export function createStudyApplication({
     function onLoad() {
         session.write('deviceWarningOrigin', 'Não');
 
-        if (isMicrosoftEdge(navigator) === false) {
+        if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
         } else if (session.read('loggedIn') !== 'Sim') {
             navigate('/plataforma/login');
