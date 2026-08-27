@@ -11,11 +11,11 @@ is mapped separately from maintained application identities.
 
 ## Program roadmap
 
-[`docs/project-roadmap.html`](docs/project-roadmap.html) is the local,
+[`docs/project-roadmap.md`](docs/project-roadmap.md) is the local,
 version-controlled source of truth for the coordinated frontend and backend
-best-practices program. Open it directly in a browser for the detailed card
-view or its compact overview. Future task handoffs should cite that file and
-the relevant card instead of copying the full roadmap into the handoff.
+best-practices program. It contains one copy-ready Mermaid diagram: read topics
+from top to bottom and tasks from left to right within each topic. Update that
+same diagram as work advances and include it in roadmap handoffs.
 
 ## URL contract
 
