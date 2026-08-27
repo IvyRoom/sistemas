@@ -1293,8 +1293,9 @@ async function fetchWithoutRedirect(url) {
   }
 }
 
-async function assertPublishedFile(baseUrl, contract, outputRoot) {
+async function assertPublishedFile(baseUrl, contract, outputRoot, search = "") {
   const requestUrl = new URL(contract.path, `${baseUrl}/`);
+  requestUrl.search = search;
   const expectedPath = contract.path.normalize("NFC");
   const requestedPath = decodeURIComponent(requestUrl.pathname).normalize("NFC");
   invariant(requestedPath === expectedPath, `Public path changed while constructing request: ${contract.path}`);
@@ -1334,6 +1335,20 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
       );
       encodedAccentedPaths += 1;
     }
+  }
+
+  const slashCompatibilityEntries = publicEntries(manifest).filter(
+    ({ path: publicPath }) => publicPath !== "/"
+  );
+  for (const entry of slashCompatibilityEntries) {
+    const search = "?navigation_probe=slash_compatibility";
+    await assertPublishedFile(normalizedBaseUrl, entry, outputRoot, search);
+    await assertPublishedFile(
+      normalizedBaseUrl,
+      { ...entry, path: entry.path.slice(0, -1) },
+      outputRoot,
+      search
+    );
   }
 
   const conectaEntry = publicEntries(manifest).find(
@@ -1380,6 +1395,7 @@ export async function verifyPublishedTree(baseUrl, manifest, outputRoot = distRo
     downloads: publicDownloads(manifest).length,
     encodedAccentedPaths,
     conectaQueryRoutes: 1,
+    slashCompatibilityPairs: slashCompatibilityEntries.length,
     notFoundPaths: expectedNotFound.length,
     supportingFiles: supportingFiles.length
   };

@@ -70,6 +70,7 @@ console.log(
     `${localReferences.javascriptReferences} local JavaScript imports`,
     `${localRoutes.supportingFiles} supporting files`,
     `${localRoutes.encodedAccentedPaths} URL-encoded accented paths`,
+    `${localRoutes.slashCompatibilityPairs} slashless/trailing-slash query pairs`,
     `${localRoutes.notFoundPaths} expected 404 paths`,
     `deterministic rebuild from sha256:${firstArtifact.stats.digest}`
   ].join(", ")

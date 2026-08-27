@@ -724,10 +724,16 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
     "The platform must not gain SPA navigation or route normalization"
   );
   assert.ok(
-    /production slashless redirect\/status\/history behavior remains\s+an\s+implementation-time evidence question/.test(
+    /Production serves each current slashless platform entry with the same entry\s+bytes and HTTP `200`, without a `Location` header or HTTP redirect/.test(
       contractSource
     ),
-    "Published slashless-host behavior must remain explicitly unproven"
+    "Measured slashless transport behavior must remain explicit"
+  );
+  assert.ok(
+    /On direct\s+slashless entry, the browser keeps the exact path, query string, and fragment\s+through refresh when existing page-lifecycle logic does not navigate away; the\s+route layer adds no normalization history entry/.test(
+      contractSource
+    ),
+    "Measured slashless browser-history behavior must remain explicit"
   );
 });
 

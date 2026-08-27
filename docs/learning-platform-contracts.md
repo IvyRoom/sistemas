@@ -196,11 +196,18 @@ platform's slashless internal-navigation table.
 
 There is no `location.replace`, History API state, hash router, `popstate`, or
 client-side route normalizer in the platform. Module and topic changes are
-DOM-only state. The source-preview and generated-artifact local servers accept
-a slashless directory request by finding `path/index.html` and do not issue a
-redirect. Published verification asserts only the canonical trailing-slash
-entries, so production slashless redirect/status/history behavior remains an
-implementation-time evidence question.
+DOM-only state. The canonical destination for every current platform entry is
+the exact trailing-slash path declared by the manifest and README.
+
+Production serves each current slashless platform entry with the same entry
+bytes and HTTP `200`, without a `Location` header or HTTP redirect. On direct
+slashless entry, the browser keeps the exact path, query string, and fragment
+through refresh when existing page-lifecycle logic does not navigate away; the
+route layer adds no normalization history entry. The source-preview and
+generated-artifact local servers have the same no-redirect directory lookup.
+Slashless entry is compatibility behavior for current routes, not an authoring
+destination or an alias for a retired path. The README owns the
+cross-application canonical-navigation and browser-history expectations.
 
 Two flows use browser history directly:
 
@@ -1374,8 +1381,9 @@ future work, not permission to change compatibility behavior in the baseline.
 ### Routing, browser, and lifecycle risks
 
 - Canonical deployment entries end in `/`, while every application navigation
-  target omits it. Repository tooling accepts both locally but does not prove
-  how the production host redirects, preserves, or rejects slashless paths.
+  target omits it. Production serves both spellings with the same entry bytes
+  and no HTTP redirect; because the platform has no normalizer, its slashless
+  links leave noncanonical paths in bookmarks, refreshes, and browser history.
 - The Edge gate depends on mutable user-agent strings. The browser-warning
   page also dereferences `navigator.userAgentData.brands` without the optional
   guard used elsewhere, so browsers without that API can fail before rendering
@@ -1543,39 +1551,37 @@ are current behavior above, not future work.
 The source snapshot cannot answer the following safely. The later task that
 changes the relevant seam must collect evidence without contacting production:
 
-1. How does the deployed host treat each slashless entry: redirect, rewrite,
-   preserve, or reject, and does it retain query strings and fragments?
-2. Which user-agent shapes and browser versions must remain supported when the
+1. Which user-agent shapes and browser versions must remain supported when the
    Edge gate is replaced, including environments without `userAgentData`?
-3. When the browser/device gate is separately redesigned, should the frozen
+2. When the browser/device gate is separately redesigned, should the frozen
    1024-pixel rule remain inclusive, and what explicit destination replaces
    `history.back()` when no valid predecessor exists?
-4. What authoritative expiry, revocation, rotation, and logout semantics will
+3. What authoritative expiry, revocation, rotation, and logout semantics will
    replace the current tab-local authorization-handle lifetime?
-5. Which backend operations are idempotent today under transport retry, and
+4. Which backend operations are idempotent today under transport retry, and
    where must request identifiers or reconciliation be introduced?
-6. Which partial Face-registration states exist in representative nonproduction
+5. Which partial Face-registration states exist in representative nonproduction
    data, and which one is authoritative when photo, workbook flag, and Face
    session disagree?
-7. What are the intended assessment attempt, timing, answer-authority, score,
+6. What are the intended assessment attempt, timing, answer-authority, score,
    dedupe, and resumption rules? Current source supplies no time limit.
-8. Should the Module 3 feedback name be corrected or must migrated historical
+7. Should the Module 3 feedback name be corrected or must migrated historical
    records first be reconciled from module 2?
-9. Which workbook formulas, row-order assumptions, and update/append outcomes
+8. Which workbook formulas, row-order assumptions, and update/append outcomes
    must be preserved during sequential migration, including feedback partial
    success?
-10. Which server-side report definition binds company, workbook, rows, labels,
+9. Which server-side report definition binds company, workbook, rows, labels,
     modules, report type, participant name, expiration, and revocation while
     retaining accepted forwarding behavior?
-11. What exact codecs, renditions, bitrates, segment templates, and DRM behavior
+10. What exact codecs, renditions, bitrates, segment templates, and DRM behavior
     do representative nonproduction MPDs expose? No media manifest was fetched
     for this characterization.
-12. Which of the 33 downloads, two unreachable copies, Face locales, duplicated
+11. Which of the 33 downloads, two unreachable copies, Face locales, duplicated
     image, and certificate inputs are intentional long-term public assets?
-13. What privacy-preserving replacement should govern the five-person non-DRM
+12. What privacy-preserving replacement should govern the five-person non-DRM
     branch, and when can the credential-bearing PlayReady configuration be
     rotated and removed from source?
-14. Which CDN dependency bytes and browser cache/offline behavior must be
+13. Which CDN dependency bytes and browser cache/offline behavior must be
     pinned, vendored, or integrity-checked in the transformed target?
 
 ## Behavior-baseline acceptance matrix
@@ -1589,7 +1595,7 @@ identify the current oracle.
 | --- | --- | --- |
 | ORIGIN-01 | Shared production origin | Exactly one executable production-origin literal is exported from the separate shared mapping and imported by exactly eight consumers; runtime code contains no executable localhost backend URL, hostname-based selection, backend-base storage key, stored override, or relative `/null/` request path. |
 | ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, including `/plataforma/cadastro-foto/` with exact case, every index is emitted under `dist/plataforma/`, and one directory mapping emits the complete canonical module tree within the exact nine learning-platform mappings. |
-| ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/` and all three former `/plataforma/cadastro` entry forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or `dist/plataforma_v2/` subtree exists. All 15 enumerated legacy module URLs are explicit 404s and have no emitted output, alias, or redirect. Internal source navigation remains slashless and published slashless behavior is marked unproven rather than invented. |
+| ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/` and all three former `/plataforma/cadastro` entry forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or `dist/plataforma_v2/` subtree exists. All 15 enumerated legacy module URLs are explicit 404s and have no emitted output, alias, or redirect. Internal source navigation remains slashless; production serves each current slashless entry with the same bytes and no HTTP redirect, while the manifest's trailing-slash spellings remain canonical. |
 | ROUTE-03 | Navigation/history | Login, initial notices, Face registration at `/plataforma/cadastro-foto`, study, warning pages, logout, and back navigation use the exact current targets and history operations. |
 | GATE-01 | Edge detection | Login/notices/registration/study accept when either current Edge signal matches and redirect when neither matches; status report does not gate; the browser-warning diagnostic throws when `userAgentData` is absent. |
 | GATE-02 | Width and resize | Initial and resize decisions cover 1023, 1024, and 1025 pixels, including each page's current ordering and the warning page's `history.back()` condition. |
@@ -1694,8 +1700,8 @@ failure before any application script executes.
 7. For browser-level route tests, serve only the generated local artifact and
    install request interception before navigation. Fulfil external script,
    media, and Face requests with inert local fixtures or block them. Keep
-   slashless production-host behavior explicitly pending until separately
-   evidenced.
+   trailing-slash canonical destinations and measured slashless compatibility
+   behavior distinct in assertions.
 8. Snapshot the contract-derived route/request/state matrices and the exact
    artifact inventory. When source or deployed paths move, update current
    anchors separately from stable expected behavior so a path-alignment change

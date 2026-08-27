@@ -402,6 +402,27 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.equal(publicEntries(manifest).length, 12);
   assert.equal(publicDownloads(manifest).length, 3);
   assert.deepEqual(
+    publicEntries(manifest).map(({ path: publicPath }) => publicPath),
+    [
+      "/",
+      "/solicitacao-orcamento/",
+      "/formulario-informacoes-iniciais/",
+      "/validacao-certificados/",
+      "/conecta/cadastro-recomendacoes/",
+      "/plataforma/aviso-dispositivo/",
+      "/plataforma/aviso-navegador/",
+      "/plataforma/avisos-iniciais/",
+      "/plataforma/cadastro-foto/",
+      "/plataforma/estudo/",
+      "/plataforma/login/",
+      "/plataforma/statusreport/"
+    ]
+  );
+  assert.equal(
+    publicEntries(manifest).filter(({ path: publicPath }) => publicPath !== "/").length,
+    11
+  );
+  assert.deepEqual(
     publicDownloads(manifest),
     [
       {

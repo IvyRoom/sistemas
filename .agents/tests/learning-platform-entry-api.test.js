@@ -412,7 +412,7 @@ test("[SAFETY-NETWORK] deny-all sentinel blocks fallback channels before scripts
   assertNoQuery(harness);
 });
 
-test("[ROUTE-03] exact slashless destinations and direct-history ambiguity remain fixed", async () => {
+test("[ROUTE-03] exact slashless destinations and history behavior remain fixed", async () => {
   const sources = Object.fromEntries(
     Object.keys(SCRIPT_PATHS).map((name) => [name, readApplicationSource(name)])
   );
