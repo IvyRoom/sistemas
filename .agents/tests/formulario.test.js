@@ -34,6 +34,10 @@ const applicationSource = fs.readFileSync(
   path.join(__dirname, '..', '..', 'apps', 'client-intake', 'main.js'),
   'utf8',
 );
+const styleSource = fs.readFileSync(
+  path.join(__dirname, '..', '..', 'apps', 'client-intake', 'style.css'),
+  'utf8',
+);
 const backendOriginImport = "import { BACKEND_ORIGIN } from '../shared/backend-origin.js';";
 const source = applicationSource.replace(backendOriginImport, '');
 assert.notEqual(source, applicationSource, 'Missing exact shared backend-origin import');
@@ -518,6 +522,9 @@ function createHarness({
     timeoutCalls,
     userSubmit,
     window,
+    windowListenerCount(type) {
+      return (windowListeners.get(type) || []).length;
+    },
   };
 }
 
@@ -529,14 +536,14 @@ async function settleAsyncWork() {
 test('legacy client-intake cases remain named node:test coverage', async (t) => {
   const harness = createHarness();
   const helpers = vm.runInContext(
-    '({ enforceDeviceGate, isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase })',
+    '({ enforceMinimumViewport, isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase })',
     harness.context,
   );
 
   const cases = [
-    ['device gate destination', () => {
+    ['minimum viewport destination', () => {
       harness.window.innerWidth = 1024;
-      helpers.enforceDeviceGate();
+      helpers.enforceMinimumViewport();
       return harness.window.location.href;
     }, '/plataforma/aviso-dispositivo/'],
     ['CPF valid 529.982.247-25', () => helpers.isValidCpf('529.982.247-25'), true],
@@ -566,16 +573,51 @@ test('legacy client-intake cases remain named node:test coverage', async (t) => 
   }
 });
 
-test('device gate redirects at 1024 and leaves the 1025 form available', () => {
-  const atBoundary = createHarness({ innerWidth: 1024 });
-  assert.equal(atBoundary.window.location.href, '/plataforma/aviso-dispositivo/');
+test('minimum viewport redirects initially and on resize at the inclusive boundary', () => {
+  for (const initialWidth of [1023, 1024]) {
+    const harness = createHarness({ innerWidth: initialWidth });
+    assert.equal(
+      harness.window.location.href,
+      '/plataforma/aviso-dispositivo/',
+      String(initialWidth),
+    );
+    assert.equal(harness.windowListenerCount('resize'), 1, String(initialWidth));
+    assert.equal(harness.fetchCalls.length, 0, String(initialWidth));
+  }
 
-  const aboveBoundary = createHarness({ innerWidth: 1025 });
-  assert.equal(aboveBoundary.window.location.href, aboveBoundary.initialHref);
+  for (const resizeWidth of [1024, 1023]) {
+    const harness = createHarness({ innerWidth: 1025 });
+    assert.equal(harness.window.location.href, harness.initialHref);
+    assert.equal(harness.participants().length, 1);
+    assert.equal(harness.windowListenerCount('resize'), 1);
 
-  aboveBoundary.window.innerWidth = 1024;
-  aboveBoundary.dispatchResize();
-  assert.equal(aboveBoundary.window.location.href, '/plataforma/aviso-dispositivo/');
+    harness.window.innerWidth = resizeWidth;
+    harness.dispatchResize();
+    assert.equal(harness.window.location.href, '/plataforma/aviso-dispositivo/');
+    assert.equal(harness.fetchCalls.length, 0);
+  }
+});
+
+test('responsive form CSS wraps flexible rows without concealing document overflow', () => {
+  assert.match(styleSource, /\.field-row\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;/s);
+  assert.match(styleSource, /\.field\s*\{[^}]*min-width:\s*0;/s);
+  assert.doesNotMatch(styleSource, /\.field label\s*\{[^}]*white-space:\s*nowrap;/s);
+  assert.match(
+    styleSource,
+    /\.section-description--important\s*\{[^}]*padding-left:\s*clamp\([^;]+\);[^}]*padding-right:\s*clamp\([^;]+\);/s,
+  );
+  assert.doesNotMatch(styleSource, /\.page\s*\{[^}]*overflow:\s*(?:hidden|clip);/s);
+});
+
+test('public client intake uses only the exact minimum-viewport admission rule', () => {
+  assert.match(applicationSource, /const MIN_VIEWPORT_WIDTH = 1024;/);
+  assert.match(applicationSource, /window\.innerWidth <= MIN_VIEWPORT_WIDTH/);
+  assert.match(applicationSource, /const DEVICE_WARNING_URL = '\/plataforma\/aviso-dispositivo\/';/);
+  assert.match(applicationSource, /addEventListener\('resize', enforceMinimumViewport\)/);
+  assert.doesNotMatch(
+    applicationSource,
+    /\b(?:outerWidth|deviceMemory|hardwareConcurrency|maxTouchPoints|userAgent|TouchEvent)\b|\bscreen\s*\.|\bwindow\s*\.\s*orientation\b|\bontouchstart\b|\bmatchMedia\s*\([^)]*(?:pointer|hover|orientation)/,
+  );
 });
 
 test('localhost, loopback, preview, and production pages use the same production endpoint', async () => {

@@ -152,11 +152,12 @@ export function createStudyApplication({
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
+        } else if (redirectToDeviceWarning({ window, navigate })) {
+            return;
         } else if (session.read('loggedIn') !== 'Sim') {
             navigate('/plataforma/login');
         } else {
             const handleDeviceWidth = () => redirectToDeviceWarning({ window, navigate });
-            handleDeviceWidth();
             window.addEventListener('resize', handleDeviceWidth);
 
             state.verifiedIndex = session.read('verifiedIndex');

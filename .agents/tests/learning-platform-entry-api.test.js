@@ -465,6 +465,10 @@ test("[ROUTE-03] exact slashless destinations and history behavior remain fixed"
   assert.equal(login.history.backCalls, 1);
   assert.equal(login.navigation.length, 0);
   assert.equal(login.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Não");
+  assert.equal((login.windowListeners.get("resize") ?? []).length, 1);
+  login.window.innerWidth = 1024;
+  login.dispatchWindow("resize");
+  assert.deepEqual(login.navigation, [PATHS.device]);
 });
 
 test("[GATE-01] centralized admission returns stable candidate, unsupported, and unverified results", async () => {
@@ -684,7 +688,7 @@ test("[GATE-01] centralized admission returns stable candidate, unsupported, and
   assert.deepEqual(missingOrdinaryLearning.missingCapabilities, ["fetch"]);
 });
 
-test("[GATE-01] four guarded entries redirect non-candidates while candidate ordering remains intact", async () => {
+test("[GATE-01] four guarded entries give browser rejection precedence over viewport admission", async () => {
   const guardedPages = ["login", "notices", "register", "study"];
   const profiles = [
     {
@@ -705,14 +709,22 @@ test("[GATE-01] four guarded entries redirect non-candidates while candidate ord
 
   for (const page of guardedPages) {
     for (const profile of profiles) {
-      const harness = createLearningPlatformHarness({
-        ...profile,
-        storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Sim" }
-      });
-      await installEntryApplication(harness, page);
-      await Promise.all(harness.dispatchWindow("load"));
-      assert.deepEqual(harness.navigation, [PATHS.browser], `${page}:${profile.label}`);
-      assert.equal(harness.timeline.some(({ type }) => type === "fetch"), false);
+      for (const width of [1023, 1024, 1025]) {
+        const harness = createLearningPlatformHarness({
+          ...profile,
+          innerWidth: width,
+          storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Sim" }
+        });
+        await installEntryApplication(harness, page);
+        await Promise.all(harness.dispatchWindow("load"));
+        assert.deepEqual(
+          harness.navigation,
+          [PATHS.browser],
+          `${page}:${profile.label}:${width}`
+        );
+        assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
+        assert.equal(harness.timeline.some(({ type }) => type === "fetch"), false);
+      }
     }
 
     const candidate = createLearningPlatformHarness({
@@ -801,7 +813,7 @@ test("[GATE-01] public report and warning entries remain available without brows
   assert.deepEqual(deviceWarning.navigation, []);
 });
 
-test("[GATE-02] login, notices, and registration keep inclusive width boundary and listener order", async () => {
+test("[GATE-02] admitted login, notices, and registration enforce the inclusive minimum viewport", async () => {
   const pages = ["login", "notices", "register"];
   for (const page of pages) {
     for (const width of [1023, 1024, 1025]) {
@@ -818,10 +830,10 @@ test("[GATE-02] login, notices, and registration keep inclusive width boundary a
         harness.timeline
           .filter(({ type }) => type === "window-listener")
           .map(({ event }) => event),
-        ["resize", "load"],
+        ["load"],
         `${page}:${width}`
       );
-      assert.equal((harness.windowListeners.get("resize") ?? []).length, 1, `${page}:${width}`);
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 0, `${page}:${width}`);
       assert.equal((harness.windowListeners.get("load") ?? []).length, 1, `${page}:${width}`);
       harness.dispatchWindow("load");
       assert.equal(
@@ -829,12 +841,22 @@ test("[GATE-02] login, notices, and registration keep inclusive width boundary a
         width <= 1024 ? 1 : 0,
         `${page}:${width}:load`
       );
-      harness.dispatchWindow("resize");
       assert.equal(
-        harness.navigation.filter((path) => path === PATHS.device).length,
-        width <= 1024 ? 2 : 0,
-        `${page}:${width}:resize`
+        (harness.windowListeners.get("resize") ?? []).length,
+        width <= 1024 ? 0 : 1,
+        `${page}:${width}:resize-listener`
       );
+      if (width === 1025) {
+        for (const resizeWidth of [1024, 1023]) {
+          harness.window.innerWidth = resizeWidth;
+          harness.dispatchWindow("resize");
+          assert.equal(
+            harness.navigation.at(-1),
+            PATHS.device,
+            `${page}:${width}->${resizeWidth}`
+          );
+        }
+      }
     }
   }
 });
@@ -853,7 +875,6 @@ test("login and registration factories preserve initial capture and listener ord
         { id: "Aviso-Login-Expirado", type: "dom-get" },
         { id: "Aviso-FaceID-Reprovado", type: "dom-get" },
         { id: "Container-Auxiliar-FaceID", type: "dom-get" },
-        { event: "resize", type: "window-listener" },
         { event: "load", type: "window-listener" },
         { event: "submit", id: "Formulário-Login", type: "element-listener" },
         { event: "input", id: "E-mail", type: "element-listener" },
@@ -869,7 +890,6 @@ test("login and registration factories preserve initial capture and listener ord
         { id: "Botão-Cadastrar-Foto-Referência", type: "dom-get" },
         { id: "Aviso-Cadastrando", type: "dom-get" },
         { id: "Container-Auxiliar-FaceID", type: "dom-get" },
-        { event: "resize", type: "window-listener" },
         { event: "load", type: "window-listener" },
         { event: "submit", id: "Formulário-Foto-Referência", type: "element-listener" }
       ],
@@ -1134,7 +1154,7 @@ test("[FACE-01] a rejected Face loader resets without creating or starting the c
   harness.hostGuard.assertUnused();
 });
 
-test("[GATE-02] study installs resize after gates and refreshes after its immediate width decision", async () => {
+test("[GATE-02] admitted study enforces viewport admission before refresh", async () => {
   for (const width of [1023, 1024, 1025]) {
     const harness = createLearningPlatformHarness({
       innerWidth: width,
@@ -1153,33 +1173,55 @@ test("[GATE-02] study installs resize after gates and refreshes after its immedi
     harness.dispatchWindow("load");
     await harness.flush();
 
-    assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
-    assert.equal(harness.navigation.includes(PATHS.device), width <= 1024, String(width));
-    assert.equal(harness.guard.requests.length, 1);
-    const relevant = harness.timeline.filter((entry) =>
-      entry.type === "navigate" ||
-      (entry.type === "window-listener" && entry.event === "resize") ||
-      entry.type === "fetch"
-    );
     if (width <= 1024) {
-      assert.deepEqual(relevant.map((entry) => entry.type), [
-        "navigate",
-        "window-listener",
-        "fetch"
-      ]);
+      assert.deepEqual(harness.navigation, [PATHS.device], String(width));
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
+      assert.equal(harness.guard.requests.length, 0);
     } else {
-      assert.deepEqual(relevant.map((entry) => entry.type), ["window-listener", "fetch"]);
+      assert.equal(harness.navigation.includes(PATHS.device), false, String(width));
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
+      assert.equal(harness.guard.requests.length, 1);
+      for (const resizeWidth of [1024, 1023]) {
+        harness.window.innerWidth = resizeWidth;
+        harness.dispatchWindow("resize");
+        assert.equal(harness.navigation.at(-1), PATHS.device, `${width}->${resizeWidth}`);
+        assert.equal(harness.guard.requests.length, 1, `${width}->${resizeWidth}`);
+      }
     }
-    harness.dispatchWindow("resize");
-    assert.equal(
-      harness.navigation.filter((path) => path === PATHS.device).length,
-      width <= 1024 ? 2 : 0,
-      String(width)
+  }
+
+  for (const width of [1023, 1024, 1025]) {
+    const unauthenticated = createLearningPlatformHarness({
+      innerWidth: width,
+      storage: { Usuário_Logado: "Não" }
+    });
+    await installStudyApplication(unauthenticated);
+    unauthenticated.dispatchWindow("load");
+    assert.deepEqual(
+      unauthenticated.navigation,
+      [width <= 1024 ? PATHS.device : PATHS.login],
+      `unauthenticated:${width}`
     );
+    assert.equal(unauthenticated.guard.requests.length, 0, `unauthenticated:${width}`);
+
+    const rejected = createLearningPlatformHarness({
+      innerWidth: width,
+      storage: { Usuário_Logado: "Sim" },
+      userAgent: WINDOWS_CHROME_USER_AGENT,
+      userAgentData: {
+        brands: [{ brand: "Google Chrome" }],
+        mobile: false,
+        platform: "Windows"
+      }
+    });
+    await installStudyApplication(rejected);
+    rejected.dispatchWindow("load");
+    assert.deepEqual(rejected.navigation, [PATHS.browser], `rejected:${width}`);
+    assert.equal(rejected.guard.requests.length, 0, `rejected:${width}`);
   }
 });
 
-test("[GATE-02] device warning goes back only when resize becomes wider than 1024", () => {
+test("[ROUTE-03] device warning retains its separate reverse boundary", () => {
   const harness = createLearningPlatformHarness({ innerWidth: 1023 });
   harness.loadScript(SCRIPT_PATHS.device);
   harness.dispatchWindow("resize");
@@ -1192,7 +1234,7 @@ test("[GATE-02] device warning goes back only when resize becomes wider than 102
   assert.equal(harness.history.backCalls, 1);
 });
 
-test("[GATE-02] status report checks width before installing its resize listener", async () => {
+test("[GATE-02] status report enforces viewport admission before rendering or requesting", async () => {
   for (const width of [1023, 1024, 1025]) {
     const harness = createLearningPlatformHarness({
       innerWidth: width,
@@ -1212,28 +1254,23 @@ test("[GATE-02] status report checks width before installing its resize listener
     await harness.window.onload();
     await harness.flush(10);
 
-    assert.equal(harness.navigation.includes(PATHS.device), width <= 1024, String(width));
-    assert.equal((harness.windowListeners.get("resize") ?? []).length, width > 1024 ? 1 : 0);
-    assert.equal(harness.guard.requests.length, width > 1024 ? 1 : 0);
-    if (width > 1024) {
-      for (const resizeWidth of [1023, 1024, 1025]) {
-        const priorWarnings = harness.navigation.filter((path) => path === PATHS.device).length;
+    if (width <= 1024) {
+      assert.deepEqual(harness.navigation, [PATHS.device], String(width));
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
+      assert.equal(harness.guard.requests.length, 0);
+      assert.notEqual(harness.element("Container_Externo_Conteúdo").style.display, "block");
+    } else {
+      assert.equal(harness.navigation.includes(PATHS.device), false, String(width));
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
+      assert.equal(harness.guard.requests.length, 1);
+      assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
+      assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
+      for (const resizeWidth of [1024, 1023]) {
         harness.window.innerWidth = resizeWidth;
         harness.dispatchWindow("resize");
-        assert.equal(
-          harness.navigation.filter((path) => path === PATHS.device).length,
-          priorWarnings + (resizeWidth <= 1024 ? 1 : 0),
-          String(resizeWidth)
-        );
+        assert.equal(harness.navigation.at(-1), PATHS.device, `${width}->${resizeWidth}`);
+        assert.equal(harness.guard.requests.length, 1, `${width}->${resizeWidth}`);
       }
-    } else {
-      const priorWarnings = harness.navigation.filter((path) => path === PATHS.device).length;
-      harness.window.innerWidth = 1025;
-      harness.dispatchWindow("resize");
-      assert.equal(
-        harness.navigation.filter((path) => path === PATHS.device).length,
-        priorWarnings
-      );
     }
   }
 });

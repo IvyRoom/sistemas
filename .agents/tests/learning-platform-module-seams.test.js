@@ -402,9 +402,10 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
     authorized.timeline
       .filter(({ type }) => type === "window-listener")
       .map(({ event }) => event),
-    ["resize", "load"]
+    ["load"]
   );
   authorized.dispatchWindow("load");
+  assert.equal((authorized.windowListeners.get("resize") ?? []).length, 1);
   assert.deepEqual(
     authorized.timeline
       .filter(({ type }) => ["storage-set", "storage-get", "navigate"].includes(type))
@@ -471,7 +472,8 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
 
   const narrow = installNotices({ innerWidth: 1024 });
   narrow.dispatchWindow("load");
-  assert.equal(narrow.navigation.at(-1), "/plataforma/aviso-dispositivo");
+  assert.deepEqual(narrow.navigation, ["/plataforma/aviso-dispositivo"]);
+  assert.equal((narrow.windowListeners.get("resize") ?? []).length, 0);
 
   const unauthorized = installNotices({ authorization: "N\u00e3o" });
   unauthorized.dispatchWindow("load");
@@ -849,24 +851,46 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     );
   }
 
-  const narrow = createLearningPlatformHarness({ innerWidth: 1024 });
-  narrow.window.location.search =
-    "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
-  installReportDom(narrow);
-  const narrowDependencies = narrow.dependencies();
-  const narrowClient = clientModule.createPlatformClient({
-    baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
-    fetch: narrowDependencies.fetch,
-    FormDataConstructor: narrowDependencies.FormDataConstructor
-  });
-  applicationModule.createStatusReportApplication({
-    ...narrowDependencies,
-    platformClient: narrowClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
-  }).install();
-  await narrow.window.onload();
-  assert.deepEqual(narrow.navigation, ["/plataforma/aviso-dispositivo"]);
-  assert.equal(narrow.guard.requests.length, 0);
-  assert.equal((narrow.windowListeners.get("resize") ?? []).length, 0);
-  narrow.hostGuard.assertUnused();
+  for (const width of [1023, 1024, 1025]) {
+    const responsive = createLearningPlatformHarness({
+      innerWidth: width,
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/statusreport",
+        response: { data: { Dados_Extraídos_BD_Plataforma: [] } }
+      }]
+    });
+    responsive.window.location.search =
+      "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
+    installReportDom(responsive);
+    const responsiveDependencies = responsive.dependencies();
+    const responsiveClient = clientModule.createPlatformClient({
+      baseUrl: FIXTURE_ORIGIN + "/plataforma_v2",
+      fetch: responsiveDependencies.fetch,
+      FormDataConstructor: responsiveDependencies.FormDataConstructor
+    });
+    applicationModule.createStatusReportApplication({
+      ...responsiveDependencies,
+      platformClient: responsiveClient,
+      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+    }).install();
+    await responsive.window.onload();
+    await responsive.flush(20);
+    assert.deepEqual(
+      responsive.navigation,
+      width <= 1024 ? ["/plataforma/aviso-dispositivo"] : [],
+      String(width)
+    );
+    assert.equal(responsive.guard.requests.length, width <= 1024 ? 0 : 1, String(width));
+    assert.equal(
+      responsive.element("Container_Externo_Conteúdo").style.display === "block",
+      width > 1024,
+      String(width)
+    );
+    assert.equal(
+      (responsive.windowListeners.get("resize") ?? []).length,
+      width <= 1024 ? 0 : 1
+    );
+    responsive.hostGuard.assertUnused();
+  }
 });

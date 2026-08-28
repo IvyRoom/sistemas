@@ -21,7 +21,7 @@ export function createInitialNoticesApplication({
     });
 
     function handleDeviceWidth() {
-        redirectToDeviceWarning({ window, navigate });
+        return redirectToDeviceWarning({ window, navigate });
     }
 
     function handleLoad() {
@@ -29,17 +29,18 @@ export function createInitialNoticesApplication({
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
+        } else if (handleDeviceWidth()) {
+            return;
         } else {
             if (session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
             } else {
-                handleDeviceWidth();
+                window.addEventListener('resize', handleDeviceWidth);
             }
         }
     }
 
     function install() {
-        window.addEventListener('resize', handleDeviceWidth);
         window.addEventListener('load', handleLoad);
 
         const credentialsPassword = document.getElementById('Palavra-Passe-Credenciais');

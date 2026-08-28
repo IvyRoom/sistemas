@@ -60,16 +60,18 @@ export function createLoginApplication({
     });
 
     function redirectForWidth() {
-        redirectToDeviceWarning({ window, navigate });
+        return redirectToDeviceWarning({ window, navigate });
     }
-
-    window.addEventListener('resize', redirectForWidth);
 
     window.addEventListener('load', function() {
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
         }
+        else if (redirectForWidth()) {
+            return;
+        }
         else {
+            window.addEventListener('resize', redirectForWidth);
             if (session.read('loggedIn') === 'Sim') {
                 navigate('/plataforma/estudo');
             }
@@ -79,9 +81,6 @@ export function createLoginApplication({
             ) {
                 session.write('deviceWarningOrigin', 'Não');
                 history.back();
-            }
-            else {
-                redirectForWidth();
             }
         }
     });

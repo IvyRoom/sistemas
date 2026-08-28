@@ -701,7 +701,7 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   ]);
   assertCapabilities("Warning pages", [
     "classic-script capabilities",
-    "1024-pixel rule",
+    "reverse boundary",
     "missing browser-identification API"
   ]);
   assertCapabilities("Fullscreen", [
@@ -842,6 +842,16 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   }
   assert.equal(lifecycleSource.includes("isMicrosoftEdge"), false);
   assert.equal(lifecycleSource.includes("userAgent.includes('Edg')"), false);
+  assert.equal(
+    lifecycleSource.includes("redirectToDeviceWarning"),
+    true,
+    "The shared minimum-viewport redirect seam must remain centralized"
+  );
+  assert.match(
+    lifecycleSource,
+    /window\.innerWidth\s*<=\s*1024[\s\S]*navigate\(['"]\/plataforma\/aviso-dispositivo['"]\)/,
+    "The shared seam must retain the exact inclusive viewport rule and destination"
+  );
   assert.doesNotMatch(
     lifecycleSource,
     /getUserMedia\s*\(|requestMediaKeySystemAccess\s*\(|isTypeSupported\s*\(|WebAssembly\.validate\s*\(/,
@@ -880,6 +890,32 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
     ({ relativePath }) => relativePath === "course-content/main.js"
   ).source;
   assert.match(studyMain, /fetch:\s*bindWindowFunction\(["']fetch["']\)/);
+
+  const minimumViewportPaths = [
+    "login/main.js",
+    "initial-notices/main.js",
+    "photo-registration/main.js",
+    "course-content/main.js",
+    "status-report/main.js",
+    "modules/login.js",
+    "modules/initial-notices.js",
+    "modules/photo-registration.js",
+    "modules/course-content/application.js",
+    "modules/status-report/application.js",
+    "modules/lifecycle.js"
+  ];
+  const minimumViewportSource = minimumViewportPaths.map((relativePath) => {
+    const record = pageSources.find((candidate) => candidate.relativePath === relativePath);
+    assert.ok(record, `${relativePath}:minimum-viewport source`);
+    return record.source;
+  }).join("\n");
+  assert.match(minimumViewportSource, /\/plataforma\/aviso-dispositivo/);
+  assert.match(minimumViewportSource, /\binnerWidth\b/);
+  assert.doesNotMatch(
+    minimumViewportSource,
+    /\bouterWidth\b|\bscreen\s*\.|\bwindow\s*\.\s*orientation\b|\bdeviceMemory\b|\bhardwareConcurrency\b|\bmaxTouchPoints\b|\bontouchstart\b|\bTouchEvent\b|\bmatchMedia\s*\([^)]*(?:pointer|hover|orientation)/,
+    "Minimum-viewport admission must not grow into device classification"
+  );
 });
 
 test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () => {
@@ -1433,8 +1469,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20750553,
-      digest: "bef9b6c97b8750fb749b4b251d52bb23ea51065a95c3dd857dd2fbb9247e2cad"
+      bytes: 20750610,
+      digest: "a2f4717dce2e268166e77faec2b101401a98745cfdc6826f159222e65acfa228"
     },
     "The current manifest must produce the exact centralized-origin modernized platform target"
   );
@@ -1445,8 +1481,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20750553,
-      digest: "9047caca95a1a0de4e8c6722f4c17971ebf47f8618252ececb96628e195b5b60"
+      bytes: 20750610,
+      digest: "700e1b470981663bb283bd4ec52745c9fd2df258d0e3eb208f95194008599a0f"
     },
     "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
   );
@@ -1457,8 +1493,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 463502,
-      digest: "997b5db099fdb54891f6214482c572b2b0527507b443b928d52f350ebc87301b"
+      bytes: 463559,
+      digest: "a35f1a96e1d05670bddb35785c70f7bccca4b5f70f3fbe585175716c114e012f"
     },
     "The platform JavaScript files must retain their exact modernized identity"
   );
@@ -1524,8 +1560,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     },
     "client-intake": {
       files: 5,
-      bytes: 164968,
-      digest: "05e6f0bc5d5b75372c623b86d02efcd7f985b31a90738270b0d3b0a765010fe0"
+      bytes: 165000,
+      digest: "d37529e6db618e09ed8e47a668e49cbd26eb68d9638b446d699c8e93dcb836b7"
     },
     "certificate-validation": {
       files: 5,
@@ -1547,8 +1583,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(backendConsumerApplicationRecords),
     {
       files: 20,
-      bytes: 736448,
-      digest: "1a2e16ce19f831ad36c4ffcfa9611122194d956ee70c929ea264cfd632a8aed1"
+      bytes: 736480,
+      digest: "29808aec95ad2945d1c553505f39f37b9564ab4416059fd3edc6d5d2856ed425"
     },
     "The four API-bearing public applications must retain their exact aggregate identity"
   );
@@ -1559,8 +1595,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(unrelatedRecords),
     {
       files: 75,
-      bytes: 6604504,
-      digest: "12e1bdf1e23f3dbbc7657cefde9a3a69425e7e7241ea023b20e789b4701a0110"
+      bytes: 6604536,
+      digest: "8a051e8760ccf9380527780edc1d9e670a3711360f9d9fe302ca88d3b66fc7cf"
     },
     "Non-platform applications must retain their current exact identity"
   );
@@ -1888,8 +1924,8 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27355138,
-      digest: "e60a6f5f41769de833fb11bb68a693de4793a8c518888fc28558259a02681350"
+      bytes: 27355227,
+      digest: "3581f7075a7b1fdfb436efeddc06a895d96578ea093255704d080ecc2786e392"
     },
     "The current manifest must produce the exact centralized-origin modernized frontend target"
   );

@@ -37,7 +37,7 @@ const SUBMIT_ERROR_MESSAGES = {
   Erro_013: 'Erro_013: dados inválidos ou incompletos.\nRevise o preenchimento e tente novamente.',
 };
 
-function enforceDeviceGate() {
+function enforceMinimumViewport() {
   if (window.innerWidth <= MIN_VIEWPORT_WIDTH) {
     window.location.href = DEVICE_WARNING_URL;
   }
@@ -407,8 +407,8 @@ async function submitForm() {
   }
 }
 
-enforceDeviceGate();
-window.addEventListener('resize', enforceDeviceGate);
+enforceMinimumViewport();
+window.addEventListener('resize', enforceMinimumViewport);
 
 form.addEventListener('input', (event) => {
   const target = event.target;

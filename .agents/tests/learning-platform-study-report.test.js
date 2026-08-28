@@ -1608,8 +1608,13 @@ function reportRow(name, progress, moduleOne, certificateId) {
   ];
 }
 
-function createReportHarness({ query, response = { data: { Dados_Extraídos_BD_Plataforma: [] }, status: 200 } }) {
+function createReportHarness({
+  innerWidth = 1025,
+  query,
+  response = { data: { Dados_Extraídos_BD_Plataforma: [] }, status: 200 }
+}) {
   const harness = createLearningPlatformHarness({
+    innerWidth,
     routes: [{ method: "POST", path: "/plataforma_v2/statusreport", response }],
     userAgent: "Non-gated fixture browser",
     userAgentData: undefined
@@ -1750,6 +1755,38 @@ test("[API-05] status report sends only its two public JSON bounds with no handl
   assert.equal(request.headers["Content-Type"], "application/json");
   assert.equal(Object.keys(request.headers).some((key) => key.toLowerCase() === "authorization"), false);
   assert.equal(Object.hasOwn(request.body, "IndexVerificado"), false);
+});
+
+test("[GATE-02] public report enforces viewport admission before request and rendering", async () => {
+  for (const innerWidth of [1023, 1024, 1025]) {
+    const { harness } = await loadReport({
+      innerWidth,
+      query: reportQuery()
+    });
+    if (innerWidth <= 1024) {
+      assert.equal(harness.guard.requests.length, 0, String(innerWidth));
+      assert.deepEqual(harness.navigation, ["/plataforma/aviso-dispositivo"]);
+      assert.notEqual(harness.element("Container_Externo_Conteúdo").style.display, "block");
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
+    } else {
+      assert.equal(harness.guard.requests.length, 1, String(innerWidth));
+      assert.equal(harness.navigation.length, 0, String(innerWidth));
+      assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
+      assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
+
+      for (const resizeWidth of [1024, 1023]) {
+        harness.window.innerWidth = resizeWidth;
+        harness.dispatchWindow("resize");
+        assert.equal(harness.guard.requests.length, 1, `${innerWidth}->${resizeWidth}`);
+        assert.equal(
+          harness.navigation.at(-1),
+          "/plataforma/aviso-dispositivo",
+          `${innerWidth}->${resizeWidth}`
+        );
+      }
+    }
+  }
 });
 
 test("[REPORT-02] public rendering exposes all synthetic row metrics, independently sorts charts, caps at 15 slots, and ignores certificate IDs", async () => {

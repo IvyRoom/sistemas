@@ -377,5 +377,9 @@ export function classifyBrowserAdmission({ document, entry, navigator, window })
 }
 
 export function redirectToDeviceWarning({ window, navigate }) {
-    if (window.innerWidth <= 1024) navigate('/plataforma/aviso-dispositivo');
+    if (window.innerWidth <= 1024) {
+        navigate('/plataforma/aviso-dispositivo');
+        return true;
+    }
+    return false;
 }
