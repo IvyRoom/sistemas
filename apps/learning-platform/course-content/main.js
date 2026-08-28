@@ -67,6 +67,7 @@ controller = createStudyApplication({
     loadMedia: player.loadMedia,
     navigate: path => { window.location.href = path; },
     navigator: window.navigator,
+    replaceNavigation: path => { window.location.replace(path); },
     renderCertificate: createCertificateRenderer(() => window.jspdf.jsPDF),
     session,
     timers: {

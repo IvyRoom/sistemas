@@ -125,12 +125,12 @@
       "id": "learning-platform",
       "mappings": [
         {
-          "source": "apps/learning-platform/device-warning",
-          "output": "plataforma/aviso-dispositivo"
+          "source": "apps/learning-platform/viewport-warning",
+          "output": "plataforma/aviso-viewport"
         },
         {
-          "source": "apps/learning-platform/browser-warning",
-          "output": "plataforma/aviso-navegador"
+          "source": "apps/learning-platform/device-browser-warning",
+          "output": "plataforma/aviso-dispositivo-navegador"
         },
         {
           "source": "apps/learning-platform/initial-notices",
@@ -163,12 +163,12 @@
       ],
       "publicEntries": [
         {
-          "path": "/plataforma/aviso-dispositivo/",
-          "file": "plataforma/aviso-dispositivo/index.html"
+          "path": "/plataforma/aviso-viewport/",
+          "file": "plataforma/aviso-viewport/index.html"
         },
         {
-          "path": "/plataforma/aviso-navegador/",
-          "file": "plataforma/aviso-navegador/index.html"
+          "path": "/plataforma/aviso-dispositivo-navegador/",
+          "file": "plataforma/aviso-dispositivo-navegador/index.html"
         },
         {
           "path": "/plataforma/avisos-iniciais/",
@@ -219,6 +219,12 @@
     "/plataforma/cadastro",
     "/plataforma/cadastro/",
     "/plataforma/cadastro/index.html",
+    "/plataforma/aviso-navegador",
+    "/plataforma/aviso-navegador/",
+    "/plataforma/aviso-navegador/index.html",
+    "/plataforma/aviso-dispositivo",
+    "/plataforma/aviso-dispositivo/",
+    "/plataforma/aviso-dispositivo/index.html",
     "/plataforma/modules/registration.js",
     "/plataforma/modules/study/application.js",
     "/plataforma/modules/study/assessment.js",

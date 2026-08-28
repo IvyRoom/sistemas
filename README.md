@@ -43,13 +43,18 @@ points. The deployment contract requires every listed route to return HTTP
 | Client initial-information form | [apps/client-intake/index.html](apps/client-intake/index.html) | [`/formulario-informacoes-iniciais/`](https://machadogestao.com/formulario-informacoes-iniciais/) |
 | Machado Conecta referral form | [apps/referrals-management/referral-form/index.html](apps/referrals-management/referral-form/index.html) | [`/conecta/cadastro-recomendacoes/`](https://machadogestao.com/conecta/cadastro-recomendacoes/) |
 | Certificate validation | [apps/certificate-validation/index.html](apps/certificate-validation/index.html) | [`/validacao-certificados/`](https://machadogestao.com/validacao-certificados/) |
-| Platform device warning | [apps/learning-platform/device-warning/index.html](apps/learning-platform/device-warning/index.html) | [`/plataforma/aviso-dispositivo/`](https://machadogestao.com/plataforma/aviso-dispositivo/) |
-| Platform browser warning | [apps/learning-platform/browser-warning/index.html](apps/learning-platform/browser-warning/index.html) | [`/plataforma/aviso-navegador/`](https://machadogestao.com/plataforma/aviso-navegador/) |
+| Platform viewport warning | [apps/learning-platform/viewport-warning/index.html](apps/learning-platform/viewport-warning/index.html) | [`/plataforma/aviso-viewport/`](https://machadogestao.com/plataforma/aviso-viewport/) |
+| Platform device/browser warning | [apps/learning-platform/device-browser-warning/index.html](apps/learning-platform/device-browser-warning/index.html) | [`/plataforma/aviso-dispositivo-navegador/`](https://machadogestao.com/plataforma/aviso-dispositivo-navegador/) |
 | Platform initial notices | [apps/learning-platform/initial-notices/index.html](apps/learning-platform/initial-notices/index.html) | [`/plataforma/avisos-iniciais/`](https://machadogestao.com/plataforma/avisos-iniciais/) |
 | Platform photo registration | [apps/learning-platform/photo-registration/index.html](apps/learning-platform/photo-registration/index.html) | [`/plataforma/cadastro-foto/`](https://machadogestao.com/plataforma/cadastro-foto/) |
 | Platform course content | [apps/learning-platform/course-content/index.html](apps/learning-platform/course-content/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
 | Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
 | Platform status report | [apps/learning-platform/status-report/index.html](apps/learning-platform/status-report/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
+
+The device/browser warning's exact visible message is "Acesse a plataforma em
+um computador com Windows, usando o Microsoft Edge." The viewport warning's
+exact visible message is "Maximize a janela do navegador ou use uma tela maior
+para continuar."
 
 ### Canonical navigation behavior
 
@@ -68,26 +73,45 @@ handling then differs by application group:
 | Entry group | Browser-visible slashless behavior | Browser-history effect |
 | --- | --- | --- |
 | Quote request, client intake, Conecta referral, and certificate validation | A parser-blocking inline script calls `location.replace` to change only the current slashless path to its trailing-slash canonical path and preserve the exact query string and fragment. | The correction replaces the current entry, so Back skips the slashless spelling and returns to the preceding document. Refresh and Forward retain the canonical URL. |
-| Seven learning-platform entries | There is no route normalizer. The slashless path, query string, and fragment remain visible and survive refresh when existing page-lifecycle logic does not navigate away. | The route layer adds no normalization entry. Ordinary `window.location.href` navigation adds one document-history entry. Existing warning-page `history.back()` behavior is a separate application contract. |
+| Seven learning-platform entries | There is no route normalizer. The slashless path, query string, and fragment remain visible and survive refresh when existing page-lifecycle logic does not navigate away. | The route layer adds no normalization entry. Admission transitions to either warning use `location.replace`, and validated viewport-warning recovery also replaces the warning. Ordinary login, registration, study, logout, and content navigation still use `window.location.href` and add one document-history entry. |
 
 Slashless spellings are compatibility inputs, not authoring destinations; new
 or updated links must use the canonical paths. This compatibility applies only
 to the eleven current non-root directory entries. It does not make explicit
 `index.html` spellings public contracts, create an SPA fallback, or alter any
-of the 58 explicit `404` paths. The three downloads use their exact file paths
+of the 64 explicit `404` paths. The three downloads use their exact file paths
 and are not subject to directory-slash normalization.
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply minimum-viewport, browser, query-parameter,
-authentication, or session checks after its static HTML loads. The maintained
-four browser-gated learning entries, public status report, and public
-client-intake form navigate to the device-warning entry when
-`window.innerWidth <= 1024`. The
-deployed `landing-page/`
+authentication, or session checks after its static HTML loads. Login, initial
+notices, photo registration, and study first apply the combined device/browser
+rule: only qualifying Windows/Microsoft Edge candidates proceed, while rejected
+and unverified profiles replace the current entry with the slashless
+`/plataforma/aviso-dispositivo-navegador` warning. Qualifying profiles then
+apply the inclusive minimum-viewport rule. At `window.innerWidth <= 1024`, those
+four entries and the public, browser-ungated status report replace the current
+entry with slashless `/plataforma/aviso-viewport`; the public, browser-ungated
+client-intake form uses the trailing-slash `/plataforma/aviso-viewport/`
+destination. The deployed `landing-page/`
 namespace and the `apps/learning-platform/` source directory do not contain root
 `index.html` files and therefore are not independent routes. There is no
 single-page-application fallback: those namespaces and unknown paths return
 `404` when no entry point exists.
+
+Every minimum-viewport transition supplies one percent-encoded `returnTo`
+value limited to 2,048 encoded characters and containing the originating path,
+query string, and fragment.
+Only relative same-origin targets whose normalized path is login, initial
+notices, photo registration, study, status report, or client intake are
+accepted; each accepted slashless or trailing-slash spelling is preserved.
+Absolute, protocol-relative, cross-origin, malformed, traversal, oversized,
+`javascript:` scheme, credential-bearing, and otherwise unapproved targets are
+rejected. The viewport warning evaluates the strict recovery boundary on
+initial execution and resize: it remains at widths through `1024`, and above
+`1024` it replaces itself with the validated origin at most once. Missing or
+invalid origins, including a direct wide warning visit, replace to canonical
+`/plataforma/login/`; a direct narrow visit renders the warning normally.
 
 The learning-platform namespace intentionally has no root entry:
 `/plataforma/` returns `404` without redirect. The former `/plataforma_v2/`
@@ -106,6 +130,15 @@ The photo-registration entry is now canonical at
 aliases or redirects. This retirement is independent of the older
 `/plataforma_v2/cadastro/` frontend route above and the unchanged
 `/plataforma_v2/CadastroFoto_e_FaceID` backend API.
+
+The current warning routes were renamed without compatibility aliases. All
+forms `/plataforma/aviso-navegador`, `/plataforma/aviso-navegador/`,
+`/plataforma/aviso-navegador/index.html`, `/plataforma/aviso-dispositivo`,
+`/plataforma/aviso-dispositivo/`, and
+`/plataforma/aviso-dispositivo/index.html` return `404` without a `Location`
+header. Their former asset subtrees are not emitted. This is independent of the
+unchanged historical `/plataforma_v2/aviso-dispositivo/` and
+`/plataforma_v2/aviso-navegador/` retirements above.
 
 The authoritative current-state compatibility specification for the legacy
 learning platform is

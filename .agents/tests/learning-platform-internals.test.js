@@ -8,8 +8,8 @@ const test = require("node:test");
 const repositoryRoot = path.join(__dirname, "..", "..");
 const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
 const entrySourcePaths = [
-  "device-warning/main.js",
-  "browser-warning/main.js",
+  "viewport-warning/main.js",
+  "device-browser-warning/main.js",
   "initial-notices/main.js",
   "photo-registration/main.js",
   "course-content/main.js",
@@ -73,10 +73,6 @@ const compatibilityCommentLocations = new Set([
 ]);
 
 const approvedApplicationCommentRules = [
-  {
-    path: "device-warning/main.js",
-    pattern: /^ Return to the previous page if the viewport becomes wider than 1024 pixels again\.$/u
-  },
   {
     path: "modules/course-content/downloads.js",
     pattern: /^\/+$/u

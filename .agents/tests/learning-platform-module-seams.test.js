@@ -132,6 +132,7 @@ test("[SAFETY-NETWORK] real application modules load behind host deny-all sentin
   assert.throws(() => globalThis.navigator.sendBeacon("fixture-target"), NetworkGuardError);
   assert.throws(() => globalThis.navigator.serviceWorker.register("fixture-target"), NetworkGuardError);
   assert.throws(() => globalThis.location.assign("fixture-target"), NetworkGuardError);
+  assert.throws(() => globalThis.location.replace("fixture-target"), NetworkGuardError);
   assert.throws(() => globalThis.history.back(), NetworkGuardError);
   assert.throws(() => globalThis.open("fixture-target"), NetworkGuardError);
   assert.deepEqual(hostGuard.attempts, [
@@ -151,6 +152,7 @@ test("[SAFETY-NETWORK] real application modules load behind host deny-all sentin
     { channel: "host storage" },
     { channel: "host sendBeacon" },
     { channel: "host service worker" },
+    { channel: "host navigation" },
     { channel: "host navigation" },
     { channel: "host history" },
     { channel: "host window.open" }
@@ -180,11 +182,18 @@ test("[SAFETY-NETWORK] injected navigation and by-id resources fail closed", () 
 
   dependencies.navigate("/plataforma/login");
   assert.deepEqual(harness.navigation, ["/plataforma/login"]);
+  dependencies.replaceNavigation(
+    "/plataforma/aviso-viewport?returnTo=%2Fplataforma%2Flogin%3Ffixture%3D1%23fragment"
+  );
+  assert.deepEqual(harness.replacementNavigation, [
+    "/plataforma/aviso-viewport?returnTo=%2Fplataforma%2Flogin%3Ffixture%3D1%23fragment"
+  ]);
 
   assert.throws(() => {
     harness.window.location.href = offOrigin;
   }, NetworkGuardError);
   assert.throws(() => dependencies.navigate(offOrigin), NetworkGuardError);
+  assert.throws(() => dependencies.replaceNavigation(offOrigin), NetworkGuardError);
   assert.throws(() => {
     harness.window.location.href = emailTarget;
   }, NetworkGuardError);
@@ -221,14 +230,14 @@ test("[SAFETY-NETWORK] injected navigation and by-id resources fail closed", () 
 test("[GATE-02] all seven entry assets retain their exact bootstrap loading modes", () => {
   const expectedModes = [
     {
-      sourceDirectory: "device-warning",
-      publicSuffix: "aviso-dispositivo",
+      sourceDirectory: "viewport-warning",
+      publicSuffix: "aviso-viewport",
       async: true,
       module: false
     },
     {
-      sourceDirectory: "browser-warning",
-      publicSuffix: "aviso-navegador",
+      sourceDirectory: "device-browser-warning",
+      publicSuffix: "aviso-dispositivo-navegador",
       async: false,
       module: false
     },
@@ -383,6 +392,7 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
   function installNotices(options = {}) {
     const harness = createLearningPlatformHarness({
       innerWidth: options.innerWidth ?? 1025,
+      pathname: "/plataforma/avisos-iniciais",
       storage: {
         [sessionModule.SESSION_KEYS.registrationAuthorization]:
           options.authorization ?? "Sim"
@@ -472,7 +482,10 @@ test("[FLOW-01] initial-notices module preserves gate, listener, submit, and res
 
   const narrow = installNotices({ innerWidth: 1024 });
   narrow.dispatchWindow("load");
-  assert.deepEqual(narrow.navigation, ["/plataforma/aviso-dispositivo"]);
+  assert.deepEqual(narrow.navigation, []);
+  assert.deepEqual(narrow.replacementNavigation, [
+    "/plataforma/aviso-viewport?returnTo=%2Fplataforma%2Favisos-iniciais"
+  ]);
   assert.equal((narrow.windowListeners.get("resize") ?? []).length, 0);
 
   const unauthorized = installNotices({ authorization: "N\u00e3o" });
@@ -572,7 +585,8 @@ test("[REPORT-01] report query and chart modules retain parsing, construction, a
     document: captureDocument,
     navigate() {},
     platformClient: {},
-    redirectToDeviceWarning() {},
+    replaceNavigation() {},
+    replaceWithViewportWarning() {},
     showAlert() {},
     window: captureWindow
   });
@@ -634,7 +648,7 @@ test("[API-05] status-report application uses the injected public request seam",
   applicationModule.createStatusReportApplication({
     ...dependencies,
     platformClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+    replaceWithViewportWarning: lifecycleModule.replaceWithViewportWarning
   }).install();
 
   assert.equal(typeof harness.window.onload, "function");
@@ -723,7 +737,7 @@ test("[API-05] status-report application preserves JSON/status and failure order
     applicationModule.createStatusReportApplication({
       ...dependencies,
       platformClient,
-      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+      replaceWithViewportWarning: lifecycleModule.replaceWithViewportWarning
     }).install();
 
     await harness.window.onload();
@@ -773,7 +787,7 @@ test("[API-05] status-report application preserves JSON/status and failure order
   applicationModule.createStatusReportApplication({
     ...malformedDependencies,
     platformClient: malformedClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+    replaceWithViewportWarning: lifecycleModule.replaceWithViewportWarning
   }).install();
 
   await malformed.window.onload();
@@ -829,7 +843,7 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     applicationModule.createStatusReportApplication({
       ...dependencies,
       platformClient,
-      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+      replaceWithViewportWarning: lifecycleModule.replaceWithViewportWarning
     }).install();
     await harness.window.onload();
     await harness.flush(20);
@@ -852,16 +866,18 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
   }
 
   for (const width of [1023, 1024, 1025]) {
+    const responsiveQuery =
+      "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
     const responsive = createLearningPlatformHarness({
       innerWidth: width,
+      pathname: "/plataforma/statusreport",
       routes: [{
         method: "POST",
         path: "/plataforma_v2/statusreport",
         response: { data: { Dados_Extraídos_BD_Plataforma: [] } }
       }]
     });
-    responsive.window.location.search =
-      "?ne=Fixture&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
+    responsive.window.location.search = responsiveQuery;
     installReportDom(responsive);
     const responsiveDependencies = responsive.dependencies();
     const responsiveClient = clientModule.createPlatformClient({
@@ -872,13 +888,21 @@ test("[REPORT-03] status rendering keeps exact consolidated label behavior and w
     applicationModule.createStatusReportApplication({
       ...responsiveDependencies,
       platformClient: responsiveClient,
-      redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+      replaceWithViewportWarning: lifecycleModule.replaceWithViewportWarning
     }).install();
     await responsive.window.onload();
     await responsive.flush(20);
+    assert.deepEqual(responsive.navigation, [], String(width));
     assert.deepEqual(
-      responsive.navigation,
-      width <= 1024 ? ["/plataforma/aviso-dispositivo"] : [],
+      responsive.replacementNavigation,
+      width <= 1024
+        ? [
+            "/plataforma/aviso-viewport?returnTo=" +
+              encodeURIComponent(
+                "/plataforma/statusreport" + responsiveQuery
+              )
+          ]
+        : [],
       String(width)
     );
     assert.equal(responsive.guard.requests.length, width <= 1024 ? 0 : 1, String(width));

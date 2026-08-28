@@ -13,7 +13,7 @@ import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
     classifyBrowserAdmission,
-    redirectToDeviceWarning
+    replaceWithViewportWarning
 } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -29,6 +29,7 @@ export function createRegistrationApplication({
     createFaceStyleSheet,
     loadFaceRuntime,
     navigate,
+    replaceNavigation,
     alert,
     backendBase
 }) {
@@ -53,17 +54,17 @@ export function createRegistrationApplication({
         window
     });
 
-    function redirectForWidth() {
-        return redirectToDeviceWarning({ window, navigate });
+    function replaceForViewport() {
+        return replaceWithViewportWarning({ replaceNavigation, window });
     }
 
     window.addEventListener('load', function() {
         session.write('deviceWarningOrigin', 'Não');
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
-            navigate('/plataforma/aviso-navegador');
+            replaceNavigation('/plataforma/aviso-dispositivo-navegador');
         }
-        else if (redirectForWidth()) {
+        else if (replaceForViewport()) {
             return;
         }
         else {
@@ -71,7 +72,7 @@ export function createRegistrationApplication({
                 navigate('/plataforma/login');
             }
             else {
-                window.addEventListener('resize', redirectForWidth);
+                window.addEventListener('resize', replaceForViewport);
             }
         }
     });

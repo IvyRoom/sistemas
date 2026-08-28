@@ -62,8 +62,11 @@ const backendOriginConsumers = [
   "apps/referrals-management/referral-form/main.js"
 ];
 const currentPlatformEntries = [
-  { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
-  { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
+  { sourceDirectory: "viewport-warning", publicSuffix: "aviso-viewport" },
+  {
+    sourceDirectory: "device-browser-warning",
+    publicSuffix: "aviso-dispositivo-navegador"
+  },
   { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
   { sourceDirectory: "photo-registration", publicSuffix: "cadastro-foto" },
   { sourceDirectory: "course-content", publicSuffix: "estudo" },
@@ -84,6 +87,31 @@ const retiredRegistrationPaths = [
   "/plataforma/cadastro/",
   "/plataforma/cadastro/index.html"
 ];
+const retiredCurrentWarningPaths = [
+  "/plataforma/aviso-navegador",
+  "/plataforma/aviso-navegador/",
+  "/plataforma/aviso-navegador/index.html",
+  "/plataforma/aviso-dispositivo",
+  "/plataforma/aviso-dispositivo/",
+  "/plataforma/aviso-dispositivo/index.html"
+];
+const warningRelativeFiles = [
+  "img/FAVICON.ico",
+  "img/LOGO_MACHADO.png",
+  "index.html",
+  "main.js",
+  "style.css"
+];
+const retiredWarningOutputs = ["aviso-dispositivo", "aviso-navegador"]
+  .flatMap((publicSuffix) =>
+    warningRelativeFiles.map((fileName) => `plataforma/${publicSuffix}/${fileName}`)
+  )
+  .sort(compareText);
+const currentWarningOutputs = ["aviso-dispositivo-navegador", "aviso-viewport"]
+  .flatMap((publicSuffix) =>
+    warningRelativeFiles.map((fileName) => `plataforma/${publicSuffix}/${fileName}`)
+  )
+  .sort(compareText);
 const retiredModuleOutputPairs = [
   {
     canonical: "plataforma/modules/photo-registration.js",
@@ -539,7 +567,7 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
       "Complete authenticated learning journey",
       "First-time Face registration",
       "Public status report",
-      "Browser and device warning pages"
+      "Device/browser and viewport warning pages"
     ].map((label) => [
       label,
       support.split(/\r?\n/).find((line) => line.startsWith(`| ${label} |`))
@@ -549,7 +577,7 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
     "Complete authenticated learning journey",
     "First-time Face registration",
     "Public status report",
-    "Browser and device warning pages"
+    "Device/browser and viewport warning pages"
   ]) {
     assert.ok(policyRows.get(matrixRow), `${matrixRow}:required policy row`);
   }
@@ -575,7 +603,7 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
     "The public report must retain its deliberately broader browser matrix"
   );
   assert.match(
-    policyRows.get("Browser and device warning pages"),
+    policyRows.get("Device/browser and viewport warning pages"),
     /Same public matrix as the status report/,
     "Warning pages must remain aligned with the public-report matrix"
   );
@@ -701,7 +729,8 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   ]);
   assertCapabilities("Warning pages", [
     "classic-script capabilities",
-    "reverse boundary",
+    "strict `> 1024` recovery boundary",
+    "bounded relative same-origin return target",
     "missing browser-identification API"
   ]);
   assertCapabilities("Fullscreen", [
@@ -843,15 +872,17 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   assert.equal(lifecycleSource.includes("isMicrosoftEdge"), false);
   assert.equal(lifecycleSource.includes("userAgent.includes('Edg')"), false);
   assert.equal(
-    lifecycleSource.includes("redirectToDeviceWarning"),
+    lifecycleSource.includes("replaceWithViewportWarning"),
     true,
-    "The shared minimum-viewport redirect seam must remain centralized"
+    "The shared minimum-viewport replacement seam must remain centralized"
   );
   assert.match(
     lifecycleSource,
-    /window\.innerWidth\s*<=\s*1024[\s\S]*navigate\(['"]\/plataforma\/aviso-dispositivo['"]\)/,
-    "The shared seam must retain the exact inclusive viewport rule and destination"
+    /window\.innerWidth\s*<=\s*1024[\s\S]*replaceNavigation\(warningTarget\)/,
+    "The shared seam must retain the exact inclusive viewport rule and replacement call"
   );
+  assert.match(lifecycleSource, /VIEWPORT_WARNING_PATH\s*=\s*['"]\/plataforma\/aviso-viewport['"]/);
+  assert.match(lifecycleSource, /MAX_ENCODED_RETURN_TO_LENGTH\s*=\s*2048/);
   assert.doesNotMatch(
     lifecycleSource,
     /getUserMedia\s*\(|requestMediaKeySystemAccess\s*\(|isTypeSupported\s*\(|WebAssembly\.validate\s*\(/,
@@ -861,7 +892,7 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   const userAgentReaders = pageSources
     .filter(({ source }) => /userAgent(?:Data)?/.test(source))
     .map(({ relativePath }) => relativePath);
-  assert.deepEqual(userAgentReaders, ["browser-warning/main.js", "modules/lifecycle.js"]);
+  assert.deepEqual(userAgentReaders, ["device-browser-warning/main.js", "modules/lifecycle.js"]);
   const guardedFactories = new Map([
     ["modules/login.js", "LOGIN"],
     ["modules/initial-notices.js", "INITIAL_NOTICES"],
@@ -877,7 +908,11 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
       /browserAdmission\.outcome\s*!==\s*browserAdmissionOutcomes\.CANDIDATE/
     );
   }
-  for (const publicEntry of ["status-report/main.js", "browser-warning/main.js", "device-warning/main.js"]) {
+  for (const publicEntry of [
+    "status-report/main.js",
+    "device-browser-warning/main.js",
+    "viewport-warning/main.js"
+  ]) {
     const source = pageSources.find((candidate) => candidate.relativePath === publicEntry).source;
     assert.equal(source.includes("classifyBrowserAdmission"), false, publicEntry);
   }
@@ -909,7 +944,7 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
     assert.ok(record, `${relativePath}:minimum-viewport source`);
     return record.source;
   }).join("\n");
-  assert.match(minimumViewportSource, /\/plataforma\/aviso-dispositivo/);
+  assert.match(minimumViewportSource, /\/plataforma\/aviso-viewport/);
   assert.match(minimumViewportSource, /\binnerWidth\b/);
   assert.doesNotMatch(
     minimumViewportSource,
@@ -1005,12 +1040,12 @@ test("[ROUTE-01] manifest retains seven entries and a separate shared runtime ma
   assert.deepEqual(platformApplication.mappings, finalPlatformMappings);
   assert.deepEqual(platformApplication.publicEntries, [
     {
-      path: "/plataforma/aviso-dispositivo/",
-      file: "plataforma/aviso-dispositivo/index.html"
+      path: "/plataforma/aviso-viewport/",
+      file: "plataforma/aviso-viewport/index.html"
     },
     {
-      path: "/plataforma/aviso-navegador/",
-      file: "plataforma/aviso-navegador/index.html"
+      path: "/plataforma/aviso-dispositivo-navegador/",
+      file: "plataforma/aviso-dispositivo-navegador/index.html"
     },
     {
       path: "/plataforma/avisos-iniciais/",
@@ -1116,6 +1151,28 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
     retiredRegistrationPaths,
     "All three retired registration entry forms must be explicit not-found contracts"
   );
+  assert.deepEqual(
+    retiredCurrentWarningPaths.filter((retiredPath) => manifest.notFoundPaths.includes(retiredPath)),
+    retiredCurrentWarningPaths,
+    "All six former current warning URL forms must be explicit not-found contracts"
+  );
+  assert.ok(
+    retiredWarningOutputs.every((output) => !outputPaths.has(output)),
+    "The complete former warning subtrees must not be emitted"
+  );
+  assert.ok(
+    records.every(
+      ({ output }) =>
+        !output.startsWith("plataforma/aviso-dispositivo/") &&
+        !output.startsWith("plataforma/aviso-navegador/")
+    ),
+    "No former warning subtree may remain in the mapped artifact"
+  );
+  assert.deepEqual(
+    currentWarningOutputs.filter((output) => outputPaths.has(output)),
+    currentWarningOutputs,
+    "The two renamed warning subtrees must each emit the same exact five relative files"
+  );
   assert.ok(
     retiredRegistrationPaths.every(
       (retiredPath) => !outputPaths.has(retiredPath.replace(/^\//, ""))
@@ -1154,8 +1211,6 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
     }
   }
   assert.deepEqual([...destinations].sort(compareText), [
-    "/plataforma/aviso-dispositivo",
-    "/plataforma/aviso-navegador",
     "/plataforma/avisos-iniciais",
     "/plataforma/cadastro-foto",
     "/plataforma/estudo",
@@ -1165,12 +1220,26 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
     [...destinations].every((destination) => !destination.endsWith("/")),
     "Internal document destinations must remain slashless"
   );
+  const replacementDestinations = new Set();
+  for (const { source } of pageSources) {
+    for (const match of source.matchAll(/\breplaceNavigation\(\s*["']([^"']+)["']\s*\)/g)) {
+      replacementDestinations.add(match[1]);
+    }
+  }
+  assert.deepEqual([...replacementDestinations].sort(compareText), [
+    "/plataforma/aviso-dispositivo-navegador"
+  ]);
+  assert.match(combinedPageSource, /VIEWPORT_WARNING_PATH\s*=\s*["']\/plataforma\/aviso-viewport["']/);
+  assert.ok(
+    [...replacementDestinations].every((destination) => !destination.endsWith("/")),
+    "Learning-platform replacement destinations must remain slashless"
+  );
   assert.equal(
-    /location\.replace|history\.(?:pushState|replaceState)|\bpopstate\b|hashchange/.test(
+    /history\.(?:pushState|replaceState)|\bpopstate\b|hashchange/.test(
       combinedPageSource
     ),
     false,
-    "The platform must not gain SPA navigation or route normalization"
+    "The platform must not gain SPA history manipulation or route normalization"
   );
   assert.ok(
     /Production serves each current slashless platform entry with the same entry\s+bytes and HTTP `200`, without a `Location` header or HTTP redirect/.test(
@@ -1469,8 +1538,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20750610,
-      digest: "a2f4717dce2e268166e77faec2b101401a98745cfdc6826f159222e65acfa228"
+      bytes: 20755189,
+      digest: "5a522847ebfe93816d3275c91054d96a875d39ac14bf1a74d4e48edcbaa0cdc7"
     },
     "The current manifest must produce the exact centralized-origin modernized platform target"
   );
@@ -1481,8 +1550,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20750610,
-      digest: "700e1b470981663bb283bd4ec52745c9fd2df258d0e3eb208f95194008599a0f"
+      bytes: 20755189,
+      digest: "845881e80c7f752585af81d59e6a82dc2534f4b0009eabbcbe0df256836fc00e"
     },
     "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
   );
@@ -1493,8 +1562,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 463559,
-      digest: "a35f1a96e1d05670bddb35785c70f7bccca4b5f70f3fbe585175716c114e012f"
+      bytes: 468051,
+      digest: "c80a20f0c9b49d71da26eedccc348225016b63e65060e92ffe62be3f6249f49c"
     },
     "The platform JavaScript files must retain their exact modernized identity"
   );
@@ -1505,8 +1574,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(nonJavaScriptRecords),
     {
       files: 146,
-      bytes: 20287051,
-      digest: "4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a"
+      bytes: 20287138,
+      digest: "f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357"
     },
     "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
   );
@@ -1528,7 +1597,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     {
       files: 52,
       bytes: 19319394,
-      digest: "afd12f0746dd5463077e8d9a879fb852b1ebfd81686afe7ca0b9f63fdf804563"
+      digest: "4fe456a88c86adc5804aedb90927ea8c52122dd198dce3452f8b780aab538d1a"
     },
     "The complete platform binary set must retain exact paths and bytes after alignment"
   );
@@ -1539,8 +1608,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 10022018,
-      digest: "6d1168905923140744422ce35798015c5a276642d12e18808c1f09c08e57452e"
+      bytes: 10022085,
+      digest: "ca7de8c8e30a0b296c24d7fbeebe12dca483c4651490b81503ff253ce3541692"
     },
     "The Study entry subtree must retain its modernized mapped identity"
   );
@@ -1560,8 +1629,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     },
     "client-intake": {
       files: 5,
-      bytes: 165000,
-      digest: "d37529e6db618e09ed8e47a668e49cbd26eb68d9638b446d699c8e93dcb836b7"
+      bytes: 165729,
+      digest: "99c1f01b02c5c1d2dd13b5c4b93e3654ff6b7c4970772f7850ecc18c4fb38ad4"
     },
     "certificate-validation": {
       files: 5,
@@ -1583,8 +1652,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(backendConsumerApplicationRecords),
     {
       files: 20,
-      bytes: 736480,
-      digest: "29808aec95ad2945d1c553505f39f37b9564ab4416059fd3edc6d5d2856ed425"
+      bytes: 737209,
+      digest: "a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b"
     },
     "The four API-bearing public applications must retain their exact aggregate identity"
   );
@@ -1595,8 +1664,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(unrelatedRecords),
     {
       files: 75,
-      bytes: 6604536,
-      digest: "8a051e8760ccf9380527780edc1d9e670a3711360f9d9fe302ca88d3b66fc7cf"
+      bytes: 6605265,
+      digest: "b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091"
     },
     "Non-platform applications must retain their current exact identity"
   );
@@ -1924,8 +1993,8 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27355227,
-      digest: "3581f7075a7b1fdfb436efeddc06a895d96578ea093255704d080ecc2786e392"
+      bytes: 27360535,
+      digest: "b81dc69cfdf5284814479c9f252e688c5cd58dca105b27fc6c199b22ba9f945a"
     },
     "The current manifest must produce the exact centralized-origin modernized frontend target"
   );

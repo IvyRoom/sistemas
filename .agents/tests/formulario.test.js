@@ -94,8 +94,11 @@ function createClassList(initialNames = []) {
 
 function createHarness({
   fetchImplementation = async () => ({ ok: true, json: async () => ({}) }),
+  hash = '',
   hostname = 'machadogestao.com',
   innerWidth = 1440,
+  pathname = '/formulario-informacoes-iniciais/',
+  search = '',
 } = {}) {
   const staticElements = new Map();
   const windowListeners = new Map();
@@ -104,6 +107,7 @@ function createHarness({
   const consoleErrors = [];
   const timeoutCalls = [];
   const clearedTimeouts = [];
+  const replacementNavigation = [];
   let nextTimeoutId = 1;
 
   class FakeElement {
@@ -357,10 +361,25 @@ function createHarness({
 
   form.reportValidity = () => allFormControls().every((element) => element.validationMessage === '');
 
-  const initialHref = hostname === 'localhost' || hostname === '127.0.0.1'
-    ? `http://${hostname}/clientes/formulario/`
-    : `https://${hostname}/clientes/formulario/`;
-  const location = { hostname, href: initialHref };
+  const protocol = hostname === 'localhost' || hostname === '127.0.0.1' ? 'http:' : 'https:';
+  const initialHref = `${protocol}//${hostname}${pathname}${search}${hash}`;
+  let href = initialHref;
+  const location = {
+    hash,
+    hostname,
+    pathname,
+    search,
+    get href() {
+      return href;
+    },
+    set href(value) {
+      href = String(value);
+    },
+    replace(value) {
+      href = String(value);
+      replacementNavigation.push(String(value));
+    },
+  };
   const window = {
     innerWidth,
     location,
@@ -518,6 +537,7 @@ function createHarness({
       return participantsList.querySelectorAll('.participant');
     },
     participantsList,
+    replacementNavigation,
     submitButton,
     timeoutCalls,
     userSubmit,
@@ -545,7 +565,7 @@ test('legacy client-intake cases remain named node:test coverage', async (t) => 
       harness.window.innerWidth = 1024;
       helpers.enforceMinimumViewport();
       return harness.window.location.href;
-    }, '/plataforma/aviso-dispositivo/'],
+    }, '/plataforma/aviso-viewport/?returnTo=%2Fformulario-informacoes-iniciais%2F'],
     ['CPF valid 529.982.247-25', () => helpers.isValidCpf('529.982.247-25'), true],
     ['CPF valid 111.444.777-35', () => helpers.isValidCpf('111.444.777-35'), true],
     ['CPF invalid check digit', () => helpers.isValidCpf('529.982.247-26'), false],
@@ -573,29 +593,60 @@ test('legacy client-intake cases remain named node:test coverage', async (t) => 
   }
 });
 
-test('minimum viewport redirects initially and on resize at the inclusive boundary', () => {
+test('minimum viewport replaces initially and on resize at the inclusive boundary', () => {
+  const search = '?fixture=one%20two&repeat=1&repeat=2';
+  const hash = '#invented-fragment';
+  const returnTarget = `/formulario-informacoes-iniciais/${search}${hash}`;
+  const warningTarget = `/plataforma/aviso-viewport/?returnTo=${encodeURIComponent(returnTarget)}`;
   for (const initialWidth of [1023, 1024]) {
-    const harness = createHarness({ innerWidth: initialWidth });
+    const harness = createHarness({ hash, innerWidth: initialWidth, search });
     assert.equal(
       harness.window.location.href,
-      '/plataforma/aviso-dispositivo/',
+      warningTarget,
       String(initialWidth),
     );
+    assert.deepEqual(harness.replacementNavigation, [warningTarget], String(initialWidth));
     assert.equal(harness.windowListenerCount('resize'), 1, String(initialWidth));
     assert.equal(harness.fetchCalls.length, 0, String(initialWidth));
+    assert.equal(harness.participants().length, 1, `${initialWidth}:initialization`);
   }
 
   for (const resizeWidth of [1024, 1023]) {
-    const harness = createHarness({ innerWidth: 1025 });
+    const harness = createHarness({ hash, innerWidth: 1025, search });
     assert.equal(harness.window.location.href, harness.initialHref);
     assert.equal(harness.participants().length, 1);
     assert.equal(harness.windowListenerCount('resize'), 1);
 
     harness.window.innerWidth = resizeWidth;
     harness.dispatchResize();
-    assert.equal(harness.window.location.href, '/plataforma/aviso-dispositivo/');
+    assert.equal(harness.window.location.href, warningTarget);
+    assert.deepEqual(harness.replacementNavigation, [warningTarget]);
     assert.equal(harness.fetchCalls.length, 0);
   }
+});
+
+test('minimum viewport return target is exact, allowlisted, and bounded', () => {
+  const slashless = createHarness({
+    hash: '#fixture',
+    innerWidth: 1024,
+    pathname: '/formulario-informacoes-iniciais',
+    search: '?fixture=one%20two',
+  });
+  assert.deepEqual(slashless.replacementNavigation, [
+    `/plataforma/aviso-viewport/?returnTo=${encodeURIComponent(
+      '/formulario-informacoes-iniciais?fixture=one%20two#fixture',
+    )}`,
+  ]);
+
+  const unapproved = createHarness({ innerWidth: 1024, pathname: '/clientes/formulario/' });
+  assert.deepEqual(unapproved.replacementNavigation, ['/plataforma/aviso-viewport/']);
+
+  const oversized = createHarness({
+    innerWidth: 1024,
+    search: `?fixture=${'x'.repeat(2048)}`,
+  });
+  assert.deepEqual(oversized.replacementNavigation, ['/plataforma/aviso-viewport/']);
+  assert.equal(oversized.fetchCalls.length, 0);
 });
 
 test('responsive form CSS wraps flexible rows without concealing document overflow', () => {
@@ -611,8 +662,11 @@ test('responsive form CSS wraps flexible rows without concealing document overfl
 
 test('public client intake uses only the exact minimum-viewport admission rule', () => {
   assert.match(applicationSource, /const MIN_VIEWPORT_WIDTH = 1024;/);
+  assert.match(applicationSource, /const MAX_ENCODED_RETURN_TO_LENGTH = 2048;/);
   assert.match(applicationSource, /window\.innerWidth <= MIN_VIEWPORT_WIDTH/);
-  assert.match(applicationSource, /const DEVICE_WARNING_URL = '\/plataforma\/aviso-dispositivo\/';/);
+  assert.match(applicationSource, /const VIEWPORT_WARNING_URL = '\/plataforma\/aviso-viewport\/';/);
+  assert.match(applicationSource, /window\.location\.replace\(warningTarget\)/);
+  assert.doesNotMatch(applicationSource, /window\.location\.href\s*=\s*VIEWPORT_WARNING_URL/);
   assert.match(applicationSource, /addEventListener\('resize', enforceMinimumViewport\)/);
   assert.doesNotMatch(
     applicationSource,

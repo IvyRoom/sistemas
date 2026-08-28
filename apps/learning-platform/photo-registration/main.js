@@ -16,6 +16,9 @@ createRegistrationApplication({
     navigate(target) {
         window.location.href = target;
     },
+    replaceNavigation(target) {
+        window.location.replace(target);
+    },
     alert(message) {
         window.alert(message);
     },
