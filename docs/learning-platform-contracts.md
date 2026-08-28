@@ -173,7 +173,7 @@ govern that distinction.
 | Face registration and Face login | A secure context; Custom Elements and Shadow DOM; WebAssembly with the vendored non-SIMD fallback accepted when SIMD is unavailable; Web Crypto, BigInt, and a usable graphics path; `mediaDevices.getUserMedia`; an available trusted physical camera; and explicit camera permission. Face-workflow startup also requires the application's constructable stylesheets (`CSSStyleSheet`, `replaceSync`, and `adoptedStyleSheets`). The vendored engine contains WebGL machinery, but Microsoft publishes no Face UI 1.5.0 GPU, WebGL version, resolution, or frame-rate minimum, so the exact physical-device fixture is authoritative. |
 | Protected study media | A secure context; Shaka Player 4.6.0 startup; DASH and Media Source Extensions; a positive `MediaSource.isTypeSupported()` result for every actual container and codec; Encrypted Media Extensions; a successful `requestMediaKeySystemAccess()` for the exact PlayReady configuration; an enabled PlayReady CDM; compatible encryption scheme, session type, robustness, and decoder; a reachable authorized EZDRM license service; the content's required PlayReady security level, output-protection level, and HDCP path; and a passing capture-resistance qualification for the exact environment and defined capture methods. The production MPDs were not fetched, so exact codec, profile, level, rendition, encryption, output, and capture requirements remain unverified until controlled nonproduction fixtures provide them. |
 | Public status report | Baseline native modules, DOM, Fetch/JSON, and `URLSearchParams`. It does not require camera, Face, Shaka, MSE, EME, PlayReady, or authenticated session storage. |
-| Warning pages | DOM rendering and the small entry-specific classic-script capabilities. The device-warning page retains its separate `> 1024` reverse boundary and `history.back()` behavior; active entries no longer use viewport width for admission or navigation. A missing browser-identification API must not prevent the warning document from rendering. |
+| Warning pages | DOM rendering and the small entry-specific classic-script capabilities. Active entries apply the inclusive `<= 1024` minimum-viewport admission rule; the device-warning page separately retains its `> 1024` reverse boundary and `history.back()` behavior. A missing browser-identification API must not prevent the warning document from rendering. |
 | Fullscreen | Shaka's UI may expose fullscreen when the Fullscreen API and the embedding policy allow it. Fullscreen absence or rejection limits that control but does not by itself make the browser unsupported, invalidate authentication, or prove that protected playback is unavailable. |
 
 Shaka's `isBrowserSupported()` is only a generic API-floor check. It does not
@@ -241,10 +241,9 @@ The centralized browser-admission classifier preserves these distinct outcomes:
    server failures remain dependency or application failures.
 6. **Other recoverable runtime failure:** session expiry, malformed data,
    storage denial, fullscreen rejection, graphics initialization, and ordinary
-   application exceptions retain their own error boundaries. Viewport width is
-   mutable presentation state, not an admission or runtime-failure category;
-   the device-warning page's retained reverse boundary is a separate legacy
-   navigation contract.
+   application exceptions retain their own error boundaries. The inclusive
+   minimum-viewport rule is a separate admission decision, not evidence of a
+   browser, operating system, device class, or runtime failure.
 
 No failure after a capability was admitted may be retrospectively rewritten as
 "unsupported browser" merely because a convenient user-agent check exists.
@@ -501,14 +500,12 @@ all source/deployed path relationships remain unchanged.
 Browser verification covers the source and generated previews with production
 networking blocked before application scripts execute and with local inert
 fixtures for otherwise remote dependencies. It does not submit forms or contact
-the backend, Graph, Face, workbook, mail, media, license, or download paths.
-Active entries now remain on their ordinary lifecycle at narrow widths and at
-200% zoom. Responsive verification therefore covers 320/390, 640, 768, 1024,
-1025, and 1440 CSS pixels without treating viewport width as device, operating-
-system, browser-support, or capability evidence. Ordinary forms, notices,
-navigation, and video content must avoid document-level horizontal overflow;
-status and performance tables retain their intentional two-dimensional
-scrollers.
+the backend, Graph, Face, workbook, mail, media, license, or download paths. The
+inclusive `<= 1024` minimum-viewport gate remains a hard redirect, so active-
+entry mobile-width and 200%-zoom reflow cannot be observed below that boundary
+without changing behavior. Verification covers the warning destination at
+those widths and active entries above the gate; this is an explicit limitation,
+not evidence of responsive behavior below the gate.
 
 Current internal navigation is normal document navigation through
 `window.location.href`, always using the following **slashless**, lower-case,
@@ -516,17 +513,17 @@ root-relative strings:
 
 | Destination | Exact internal path | Writers |
 | --- | --- | --- |
+| Device warning | `/plataforma/aviso-dispositivo` | Login, initial notices, registration, study, status report |
 | Browser warning | `/plataforma/aviso-navegador` | Login, initial notices, registration, study |
 | Login | `/plataforma/login` | Registration failure/rejection, unauthenticated study, logout, session expiry |
 | Initial notices | `/plataforma/avisos-iniciais` | Active login with Face enabled and no registered photo |
 | Registration | `/plataforma/cadastro-foto` | Successful initial-notices acknowledgement |
 | Study | `/plataforma/estudo` | Existing logged flag, Face-disabled login, successful Face verification/registration |
 
-The device-warning entry remains directly accessible at its canonical
-`/plataforma/aviso-dispositivo/` route, but neither the platform nor the
-maintained client-intake application has executable incoming navigation to its
-slashless or trailing-slash spelling. Its retained route and assets are not
-active navigation.
+The maintained client-intake application separately targets the canonical
+`/plataforma/aviso-dispositivo/` entry, including its trailing slash, as an
+explicit cross-application minimum-viewport destination. It is not part of the
+platform's slashless internal-navigation table.
 
 There is no `location.replace`, History API state, hash router, `popstate`, or
 client-side route normalizer in the platform. Module and topic changes are
@@ -560,7 +557,7 @@ history entry.
 - Exhaustive entry and retirement test:
   [`scripts/frontend-deployment.test.mjs`](../scripts/frontend-deployment.test.mjs).
 - README route/404 contract: [`README.md` lines 32-78](../README.md#L32-L78).
-- Client-intake viewport-independent entry:
+- Client-intake cross-application warning destination:
   [`main.js`](../apps/client-intake/main.js).
 - Published page, support-file, and `404`/no-redirect checks:
   [`scripts/frontend-deployment-lib.mjs` lines 1281-1370](../scripts/frontend-deployment-lib.mjs#L1281-L1370).
@@ -582,13 +579,14 @@ history entry.
   study [`index.html` lines 9-32](../apps/learning-platform/course-content/index.html#L9-L32) and
   [`index.html` lines 9108-9112](../apps/learning-platform/course-content/index.html#L9108-L9112),
   report [`index.html` lines 8-44](../apps/learning-platform/status-report/index.html#L8-L44).
-- Slashless destinations and history: device-warning
+- Slashless destinations and history: device
   [`main.js` lines 1-3](../apps/learning-platform/device-warning/main.js#L1-L3), shared
-  browser-admission [lifecycle seam](../apps/learning-platform/modules/lifecycle.js),
+  [lifecycle seam](../apps/learning-platform/modules/lifecycle.js),
   [notices factory](../apps/learning-platform/modules/initial-notices.js),
   [registration factory](../apps/learning-platform/modules/photo-registration.js),
   [login factory](../apps/learning-platform/modules/login.js),
-  and [study coordinator](../apps/learning-platform/modules/course-content/application.js).
+  [study coordinator](../apps/learning-platform/modules/course-content/application.js), and
+  [status-report coordinator](../apps/learning-platform/modules/status-report/application.js).
 
 ### Application modules and production-edge seams
 
@@ -620,12 +618,12 @@ selects or overrides the backend base.
 | `modules/platform-client.js` | Owns injected JSON GET/POST and ordered multipart POST mechanics. It normalizes fetch rejection and malformed JSON through the application error seam, still parses JSON before checking `ok`, and for parsed non-OK responses still throws exactly `{ status: response.status, error: data.error }`. It adds no retry, timeout, abort, dedupe, idempotency, or authorization header. |
 | `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, the exact named backend values, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
 | `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
-| `modules/lifecycle.js` | Owns the structured browser-admission outcomes, normalized Windows/Edge evidence, and side-effect-free entry API-shape checks. It exports no viewport or device-warning redirect helper. Entry factories retain browser/session gate order without device-gate resize listeners. |
+| `modules/lifecycle.js` | Owns the structured browser-admission outcomes, normalized Windows/Edge evidence, side-effect-free entry API-shape checks, and the exact inclusive `<= 1024` minimum-viewport redirect decision. Entry factories retain listener installation and gate order. |
 | `modules/face-startup.js` | Loads the injected Face runtime lazily and single-flight, then constructs one custom element per active start, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
 | `modules/login.js`, `modules/photo-registration.js`, `modules/initial-notices.js` | Own their existing credential, upload, Face, notice, form-reset, gate, storage, request, and navigation branches. Production configuration stays at the existing entry edge and is injected without being copied into tests or documentation. |
 | `modules/status-report/query.js` | Parses the nine legacy query keys, including all current coercion and missing-value behavior. |
 | `modules/status-report/charts.js` | Constructs chart markup/targets, applies the module range, independently sorts each metric, and renders the existing 15-slot layout and label quirks. |
-| `modules/status-report/application.js` | Captures query/DOM state at factory construction, assigns `window.onload`, and owns the public render, request, and error branches at every viewport width. |
+| `modules/status-report/application.js` | Captures query/DOM state at factory construction, assigns `window.onload`, applies minimum-viewport admission before rendering/requesting, and owns the public request and error branches. |
 
 The six import specifiers in `photo-registration/main.js` and
 `course-content/main.js` now match both source and deployment structure:
@@ -705,27 +703,32 @@ Both non-candidate outcomes navigate to the slashless browser-warning path.
 Status report and both warning entries do not apply this gate. The browser-
 warning diagnostic reads both absent and partial client hints defensively.
 
-`GATE-02` makes all active entries viewport-independent. Initial loads at 1023,
-1024, and 1025 pixels and repeated resize transitions across those values do not
-navigate to either spelling of the device-warning route, suppress public report
-rendering or requests, cause width-dependent session mutation, or delay admitted
-study refresh. No replacement screen, touch, pointer, hover, hardware,
-orientation, resize-
-history, or additional user-agent classifier is present. CSS media queries may
-remain presentation-only. The directly loaded device-warning page is separate:
-its unchanged classic script records `Origem_Aviso_Dispositivo=Sim` and calls
+`GATE-02` is an inclusive minimum-viewport admission rule. Active entries
+navigate to the device warning when `window.innerWidth <= 1024`; `1024` is
+rejected and `1025` is admitted. On the four protected learning entries,
+`GATE-01` runs first, so unsupported and unverified profiles reach the browser
+warning without installing a device-gate resize listener or beginning protected
+work. An admitted profile then applies width before session/history checks,
+Face work, or study refresh. Status report remains outside `GATE-01`, but applies
+width first during `load` and does not render or request while redirecting.
+Client intake independently applies the same inclusive decision and retains its
+trailing-slash warning destination. Wider active pages install one resize
+listener so crossing down to the boundary redirects. The rule uses no screen,
+touch, pointer, hover, hardware, orientation, resize-history, or additional
+user-agent classifier. The directly loaded device-warning page is separate: its
+unchanged classic script records `Origem_Aviso_Dispositivo=Sim` and calls
 `history.back()` on resize only when the viewport becomes wider than `1024px`.
 
 Gate order is stable:
 
 | Entry | Current order |
 | --- | --- |
-| Login | browser candidate → existing logged flag → registration/history rule → remain on login |
-| Initial notices | reset device origin → browser candidate → registration authorization → remain on notices |
-| Registration | reset device origin → browser candidate → registration authorization → remain on registration |
-| Study | reset device origin → browser candidate → logged flag → refresh |
-| Status report | query parse during factory construction → render/API during `load`; no browser/session gate |
-| Device/browser warning | no incoming gate; the directly loaded device-warning page retains its own reverse boundary |
+| Login | browser candidate → minimum viewport → install resize gate → existing logged flag → registration/history rule → remain on login |
+| Initial notices | reset device origin → browser candidate → minimum viewport → registration authorization → remain on notices and install resize gate |
+| Registration | reset device origin → browser candidate → minimum viewport → registration authorization → remain on registration and install resize gate |
+| Study | reset device origin → browser candidate → minimum viewport → logged flag → install resize gate → refresh |
+| Status report | query parse during factory construction → minimum viewport during `load` → install resize gate → render/API; no browser/session gate |
+| Device/browser warning | no browser-admission gate; the directly loaded device-warning page retains its separate reverse boundary |
 
 Login, notices, registration, and status report retain async module scripts.
 Study's ordered classic jsPDF/Shaka dependencies are followed by its non-async
@@ -974,9 +977,9 @@ or rendered HTML.
 
 `LP-STATE-LOGIN` begins by selecting the production backend role and computing
 the centralized browser-admission result without loading Face. The load gate
-then applies candidate admission, existing-login, and registration-history
-rules in that order, independently of viewport width. Non-candidate submission
-is inert. Candidate
+then applies candidate admission, minimum viewport, existing-login, and
+registration-history rules in that order. Non-candidate submission is inert.
+Candidate
 submission disables and hides the button, shows the initialization message,
 and captures the untrimmed credentials. A matched response is stored before
 branch selection. The lazy Face runtime loads only after an admitted flow has
@@ -1187,7 +1190,7 @@ Missing `dua` is the only absent-key case that throws before fetch because the
 code calls `.slice()` on `null`. When execution reaches fetch with nonnumeric
 row bounds, JSON serialization converts their `NaN` values to `null`.
 
-On load at every viewport width, the page inserts caller labels, builds 12 chart blocks
+After minimum-viewport admission, the page inserts caller labels, builds 12 chart blocks
 (progress, ten module grades, accumulated grade), hides module charts outside
 `mi..mf`, and calls the public report API with the two row bounds. Each metric
 sorts participants independently in descending order, so display order changes
@@ -1571,22 +1574,23 @@ moved. These were the aligned phase-B/pre-markup scoped identities:
 The centralized-origin change preserved all 257 application output paths and
 added only the separately mapped `shared/backend-origin.js` runtime file. The
 seven-entry markup modernization then retained that 258-file graph while
-changing reviewed HTML, CSS, and application JavaScript bytes. Removing active
-device redirects and correcting evidence-backed client-intake reflow defects
-again retain the same 258 paths while changing scoped JavaScript and CSS bytes.
+changing reviewed HTML, CSS, and application JavaScript bytes. Clarifying
+minimum-viewport admission order and retaining evidence-backed client-intake
+reflow corrections again preserve the same 258 paths while changing scoped
+JavaScript and CSS bytes.
 The current source-derived identities are:
 
 | Current centralized-origin post-modernization scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,353,068 | `f8751492a27dcd611eb1f391a04ae5c74b6371ea51a8d4aa078b4c15d6054a1f` |
+| Complete generated `dist/` artifact | 258 | 27,355,227 | `3581f7075a7b1fdfb436efeddc06a895d96578ea093255704d080ecc2786e392` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,748,770 | `b289c08b86eff0ce398de7f3384189240f5de7ad44c4d10f5b4046095ee3eaa0` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,748,770 | `4bee201b2112da73f7566f48eb7d3d06b5397a13fe7559d534e06801feefcf98` |
-| Platform JavaScript, retaining full output paths | 36 | 461,719 | `747926d0cb7848ed9df77411e3798376c6717ebac8a0dd304362a9adca12205b` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,750,610 | `a2f4717dce2e268166e77faec2b101401a98745cfdc6826f159222e65acfa228` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,750,610 | `700e1b470981663bb283bd4ec52745c9fd2df258d0e3eb208f95194008599a0f` |
+| Platform JavaScript, retaining full output paths | 36 | 463,559 | `a35f1a96e1d05670bddb35785c70f7bccca4b5f70f3fbe585175716c114e012f` |
 | Platform non-JavaScript files, retaining full output paths | 146 | 20,287,051 | `4d3f974ca91a1f50f4ef39070f3454f578a99a09200a478770bb7e44b074ea2a` |
 | Study entry subtree, retaining full output paths | 41 | 10,022,018 | `6d1168905923140744422ce35798015c5a276642d12e18808c1f09c08e57452e` |
-| Four public API applications, retaining full output paths | 20 | 736,161 | `13cd3f0b670ca577f4168082edb7902e7fe231ee2432a25ec07a907ee3c8450c` |
-| All non-platform applications, retaining full output paths | 75 | 6,604,217 | `7fd704a9e08ca47cd277ae7c179c27c4e4fe7fae2c92775528f5f15600f3503e` |
+| Four public API applications, retaining full output paths | 20 | 736,480 | `29808aec95ad2945d1c553505f39f37b9564ab4416059fd3edc6d5d2856ed425` |
+| All non-platform applications, retaining full output paths | 75 | 6,604,536 | `8a051e8760ccf9380527780edc1d9e670a3711360f9d9fe302ca88d3b66fc7cf` |
 
 Markup, CSS, and application-JavaScript changes account for the current byte
 and digest differences while leaving file counts and paths unchanged. The
@@ -1700,9 +1704,9 @@ the explicit negative-path contract. Across the complete frontend, 12 entry
 files plus 3 public downloads and 243 support files make the 258-file artifact.
 The separate shared mapping and the nine learning-platform mappings make ten
 combined runtime mappings, without classifying shared infrastructure as an
-application. Source and generated previews each resolve exactly 76 JavaScript
+application. Source and generated previews each resolve exactly 77 JavaScript
 imports. The ordered logical source-edge aggregate has SHA-256
-`c93b394d0c24c33bb65a01bfc39f689220c684c4f260be59c4b9b8f56ef29741`.
+`672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149`.
 Remote CDN libraries and all media manifests/segments remain outside it.
 
 Current anchors: mapping collection
@@ -1729,9 +1733,10 @@ future work, not permission to change compatibility behavior in the baseline.
   strings. Capability shapes improve failure classification but cannot prove
   Windows servicing or architecture, the Edge channel/build, physical-device
   status, PlayReady qualification, or capture resistance.
-- The device-warning page still assumes a useful preceding history entry and
-  calls `history.back()` only after a resize to `> 1024`. Direct visits and
-  histories without a usable predecessor still have no fallback destination.
+- The `<= 1024` minimum-viewport boundary is a hard redirect rather than a
+  responsive state. Returning relies on one browser-history entry whose
+  viewport is now `> 1024`; direct visits and histories without a usable
+  predecessor still have no fallback destination.
 - Several pages perform redirects from asynchronously loaded module scripts.
   Script-load failure, back/forward cache restoration, and closely spaced
   navigation events have no explicit state machine or recovery. The separate
@@ -1897,8 +1902,8 @@ The source snapshot cannot answer the following safely. The later task that
 changes the relevant seam must collect evidence without contacting production:
 
 1. When warning navigation is repaired, what explicit destination should
-   replace `history.back()` when the directly loaded device-warning page has no
-   valid predecessor?
+   replace `history.back()` when the device-warning page has no valid
+   predecessor?
 2. What authoritative expiry, revocation, rotation, and logout semantics will
    replace the current tab-local authorization-handle lifetime?
 3. Which backend operations are idempotent today under transport retry, and
@@ -1939,9 +1944,9 @@ identify the current oracle.
 | ORIGIN-01 | Shared production origin | Exactly one executable production-origin literal is exported from the separate shared mapping and imported by exactly eight consumers; runtime code contains no executable localhost backend URL, hostname-based selection, backend-base storage key, stored override, or relative `/null/` request path. |
 | ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, including `/plataforma/cadastro-foto/` with exact case, every index is emitted under `dist/plataforma/`, and one directory mapping emits the complete canonical module tree within the exact nine learning-platform mappings. |
 | ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/` and all three former `/plataforma/cadastro` entry forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or `dist/plataforma_v2/` subtree exists. All 15 enumerated legacy module URLs are explicit 404s and have no emitted output, alias, or redirect. Internal source navigation remains slashless; production serves each current slashless entry with the same bytes and no HTTP redirect, while the manifest's trailing-slash spellings remain canonical. |
-| ROUTE-03 | Navigation/history | Login, initial notices, Face registration at `/plataforma/cadastro-foto`, study, warning pages, logout, and back navigation use the exact current targets and history operations. No executable source navigates into either spelling of the device-warning route; direct device-warning entry still records its origin and goes back only after resizing above 1024. |
+| ROUTE-03 | Navigation/history | Login, initial notices, Face registration at `/plataforma/cadastro-foto`, study, status report, client intake, warning pages, logout, and back navigation use the exact current targets and history operations. Learning entries use the slashless device-warning destination, client intake uses the trailing-slash destination, and direct device-warning entry still records its origin and goes back only after resizing above 1024. |
 | GATE-01 | Browser admission | One centralized classifier gives login/notices/registration/study stable candidate, unsupported, or unverified results from consistent browser/platform evidence and side-effect-free entry API shapes. Usable Windows/Edge hints or fallback can produce only a candidate; missing or conflicting evidence stays unverified; explicit excluded families/platforms and missing mandatory APIs stay unsupported. Rejected and unverified profiles never load Face. Status report and both warning entries remain ungated, and browser diagnostics handle absent or partial `userAgentData`. |
-| GATE-02 | Viewport-independent active entries | Qualifying login, notices, registration, study, public status report, and public client intake remain on their ordinary lifecycle at 1023, 1024, and 1025 pixels and through repeated resize transitions, without device-warning navigation, request suppression, width-dependent session mutation, or a replacement device classifier. The unchanged directly loaded warning-page reverse boundary is characterized separately under ROUTE-03. |
+| GATE-02 | Minimum-viewport admission | After GATE-01 precedence on protected entries, qualifying login, notices, registration, study, public status report, and public client intake redirect at 1023 and the inclusive 1024 boundary, admit 1025, and redirect on a later resize down without starting protected work or narrow report requests. No alternate device classifier is introduced. The unchanged directly loaded warning-page reverse boundary is characterized separately under ROUTE-03. |
 | STORE-01 | Key inventory | The exact seven accented/cased keys, all readers/writers, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented; no backend base is stored or read. |
 | STORE-02 | Lifetime/reset | No flow clears storage; logout changes only `Usuário_Logado`; refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. |
 | API-01 | Login and Face registration | Methods, exact paths—including unchanged `POST /plataforma_v2/CadastroFoto_e_FaceID`—JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
@@ -1965,7 +1970,7 @@ identify the current oracle.
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
 | ARTIFACT-01 | Full frontend artifact | The current post-modernization artifact has 258 files and matches its recorded identity; the verified 257-file phase-B identity remains historical, all 257 application paths remain, the 15 named compatibility outputs remain absent, and `shared/backend-origin.js` is the sole added output path. |
-| ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 58 negative paths, and exactly 76 JavaScript imports in both source and generated previews. |
+| ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 58 negative paths, and exactly 77 JavaScript imports in both source and generated previews. |
 
 ### Automated traceability
 

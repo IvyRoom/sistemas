@@ -536,11 +536,16 @@ async function settleAsyncWork() {
 test('legacy client-intake cases remain named node:test coverage', async (t) => {
   const harness = createHarness();
   const helpers = vm.runInContext(
-    '({ isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase })',
+    '({ enforceMinimumViewport, isValidCpf, isValidCnpj, maskCpf, maskCnpj, maskCep, normalizeStreet, toTitleCase })',
     harness.context,
   );
 
   const cases = [
+    ['minimum viewport destination', () => {
+      harness.window.innerWidth = 1024;
+      helpers.enforceMinimumViewport();
+      return harness.window.location.href;
+    }, '/plataforma/aviso-dispositivo/'],
     ['CPF valid 529.982.247-25', () => helpers.isValidCpf('529.982.247-25'), true],
     ['CPF valid 111.444.777-35', () => helpers.isValidCpf('111.444.777-35'), true],
     ['CPF invalid check digit', () => helpers.isValidCpf('529.982.247-26'), false],
@@ -568,31 +573,28 @@ test('legacy client-intake cases remain named node:test coverage', async (t) => 
   }
 });
 
-test('former device boundary never redirects, suppresses initialization, or reacts to resize', () => {
-  for (const initialWidth of [1023, 1024, 1025]) {
+test('minimum viewport redirects initially and on resize at the inclusive boundary', () => {
+  for (const initialWidth of [1023, 1024]) {
     const harness = createHarness({ innerWidth: initialWidth });
-
-    assert.equal(harness.window.location.href, harness.initialHref, String(initialWidth));
-    assert.equal(harness.participants().length, 1, String(initialWidth));
-    assert.equal(harness.windowListenerCount('resize'), 0, String(initialWidth));
+    assert.equal(
+      harness.window.location.href,
+      '/plataforma/aviso-dispositivo/',
+      String(initialWidth),
+    );
+    assert.equal(harness.windowListenerCount('resize'), 1, String(initialWidth));
     assert.equal(harness.fetchCalls.length, 0, String(initialWidth));
+  }
 
-    harness.element('company-city').value = 'curitiba123';
-    harness.dispatchInput('company-city');
-    assert.equal(harness.element('company-city').value, 'curitiba', String(initialWidth));
-    harness.addParticipantButton.listeners.get('click')[0]();
-    assert.equal(harness.participants().length, 2, String(initialWidth));
+  for (const resizeWidth of [1024, 1023]) {
+    const harness = createHarness({ innerWidth: 1025 });
+    assert.equal(harness.window.location.href, harness.initialHref);
+    assert.equal(harness.participants().length, 1);
+    assert.equal(harness.windowListenerCount('resize'), 1);
 
-    for (const resizeWidth of [1025, 1024, 1023, 1024, 1025]) {
-      harness.window.innerWidth = resizeWidth;
-      harness.dispatchResize();
-      assert.equal(
-        harness.window.location.href,
-        harness.initialHref,
-        `${initialWidth} -> ${resizeWidth}`,
-      );
-      assert.equal(harness.fetchCalls.length, 0, `${initialWidth} -> ${resizeWidth}`);
-    }
+    harness.window.innerWidth = resizeWidth;
+    harness.dispatchResize();
+    assert.equal(harness.window.location.href, '/plataforma/aviso-dispositivo/');
+    assert.equal(harness.fetchCalls.length, 0);
   }
 });
 
@@ -607,12 +609,15 @@ test('responsive form CSS wraps flexible rows without concealing document overfl
   assert.doesNotMatch(styleSource, /\.page\s*\{[^}]*overflow:\s*(?:hidden|clip);/s);
 });
 
-test('public client intake has no replacement device classifier or warning navigation', () => {
+test('public client intake uses only the exact minimum-viewport admission rule', () => {
+  assert.match(applicationSource, /const MIN_VIEWPORT_WIDTH = 1024;/);
+  assert.match(applicationSource, /window\.innerWidth <= MIN_VIEWPORT_WIDTH/);
+  assert.match(applicationSource, /const DEVICE_WARNING_URL = '\/plataforma\/aviso-dispositivo\/';/);
+  assert.match(applicationSource, /addEventListener\('resize', enforceMinimumViewport\)/);
   assert.doesNotMatch(
     applicationSource,
-    /\/plataforma\/aviso-dispositivo\/?|\b(?:innerWidth|outerWidth|deviceMemory|hardwareConcurrency|maxTouchPoints|userAgent|TouchEvent)\b|\bscreen\s*\.|\bwindow\s*\.\s*orientation\b|\bontouchstart\b|\bmatchMedia\s*\([^)]*(?:pointer|hover|orientation)/,
+    /\b(?:outerWidth|deviceMemory|hardwareConcurrency|maxTouchPoints|userAgent|TouchEvent)\b|\bscreen\s*\.|\bwindow\s*\.\s*orientation\b|\bontouchstart\b|\bmatchMedia\s*\([^)]*(?:pointer|hover|orientation)/,
   );
-  assert.doesNotMatch(applicationSource, /addEventListener\s*\(\s*['"]resize['"]/);
 });
 
 test('localhost, loopback, preview, and production pages use the same production endpoint', async () => {

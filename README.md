@@ -56,7 +56,7 @@ points. The deployment contract requires every listed route to return HTTP
 The marketing entry is canonical at `/`; each of the other eleven page entries
 is canonical at its exact trailing-slash path in the table. Direct entry and
 refresh at a canonical URL return HTTP `200` without redirect and rerun that
-page's normal boot and any entry-specific warning-page, browser, query,
+page's normal boot and any entry-specific minimum-viewport, browser, query,
 authentication, or session logic.
 The query string remains part of the URL and may be application input. A
 fragment remains browser-only and does not create hash-routing behavior.
@@ -78,10 +78,12 @@ of the 58 explicit `404` paths. The three downloads use their exact file paths
 and are not subject to directory-slash normalization.
 
 These are URL entry points, not statements about anonymous access. A page's
-JavaScript may still apply entry-specific warning-page, browser, query-
-parameter, authentication, or session behavior after its static HTML loads.
-Viewport width is presentation state and is not an active-entry admission
-check. The deployed `landing-page/`
+JavaScript may still apply minimum-viewport, browser, query-parameter,
+authentication, or session checks after its static HTML loads. The maintained
+four browser-gated learning entries, public status report, and public
+client-intake form navigate to the device-warning entry when
+`window.innerWidth <= 1024`. The
+deployed `landing-page/`
 namespace and the `apps/learning-platform/` source directory do not contain root
 `index.html` files and therefore are not independent routes. There is no
 single-page-application fallback: those namespaces and unknown paths return

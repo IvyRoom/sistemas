@@ -12,7 +12,8 @@ import {
 import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
-    classifyBrowserAdmission
+    classifyBrowserAdmission,
+    redirectToDeviceWarning
 } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -52,15 +53,25 @@ export function createRegistrationApplication({
         window
     });
 
+    function redirectForWidth() {
+        return redirectToDeviceWarning({ window, navigate });
+    }
+
     window.addEventListener('load', function() {
         session.write('deviceWarningOrigin', 'Não');
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
         }
+        else if (redirectForWidth()) {
+            return;
+        }
         else {
             if (session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
+            }
+            else {
+                window.addEventListener('resize', redirectForWidth);
             }
         }
     });

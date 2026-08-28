@@ -27,7 +27,9 @@ export function requestStatusReport(platformClient, query) {
 export function createStatusReportApplication({
     URLSearchParamsConstructor,
     document,
+    navigate,
     platformClient,
+    redirectToDeviceWarning,
     showAlert,
     window
 }) {
@@ -51,7 +53,17 @@ export function createStatusReportApplication({
 
     const { chartInformation, targets } = createStatusReportChartDefinitions(query.lastModule);
 
+    function handleDeviceWidth() {
+        return redirectToDeviceWarning({ window, navigate });
+    }
+
     async function handleLoad() {
+        if (window.innerWidth <= 1024) {
+            navigate('/plataforma/aviso-dispositivo');
+            return;
+        }
+
+        window.addEventListener('resize', handleDeviceWidth);
         document.body.style.cursor = 'wait';
 
         reportTitle.innerHTML = 'Status Report ' + query.reportId + ': ' + query.companyName + ' - Turma ' + query.cohortNumber;

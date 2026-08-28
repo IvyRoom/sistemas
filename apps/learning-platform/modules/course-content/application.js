@@ -10,7 +10,8 @@ import {
 import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
-    classifyBrowserAdmission
+    classifyBrowserAdmission,
+    redirectToDeviceWarning
 } from '../lifecycle.js';
 import { createStudyAssessment } from './assessment.js';
 import { createStudyCertificate } from './certificate.js';
@@ -151,9 +152,14 @@ export function createStudyApplication({
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
             navigate('/plataforma/aviso-navegador');
+        } else if (redirectToDeviceWarning({ window, navigate })) {
+            return;
         } else if (session.read('loggedIn') !== 'Sim') {
             navigate('/plataforma/login');
         } else {
+            const handleDeviceWidth = () => redirectToDeviceWarning({ window, navigate });
+            window.addEventListener('resize', handleDeviceWidth);
+
             state.verifiedIndex = session.read('verifiedIndex');
             client.postJson('/refresh', {
                 IndexVerificado: state.verifiedIndex

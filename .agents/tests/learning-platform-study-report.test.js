@@ -56,12 +56,14 @@ let createStatusReportApplication;
 let createStudyApplication;
 let createStudyDom;
 let createStudyPlayer;
+let redirectToDeviceWarning;
 let studyModuleTopicCounts;
 
 test.before(async () => {
   const [
     sessionModule,
     clientModule,
+    lifecycleModule,
     applicationModule,
     domModule,
     downloadsModule,
@@ -72,6 +74,7 @@ test.before(async () => {
   ] = await Promise.all([
     loadPlatformModule("apps/learning-platform/modules/session.js"),
     loadPlatformModule("apps/learning-platform/modules/platform-client.js"),
+    loadPlatformModule("apps/learning-platform/modules/lifecycle.js"),
     loadPlatformModule("apps/learning-platform/modules/course-content/application.js"),
     loadPlatformModule("apps/learning-platform/modules/course-content/dom.js"),
     loadPlatformModule("apps/learning-platform/modules/course-content/downloads.js"),
@@ -83,6 +86,7 @@ test.before(async () => {
 
   ({ createSessionStore } = sessionModule);
   ({ createPlatformClient } = clientModule);
+  ({ redirectToDeviceWarning } = lifecycleModule);
   ({ createStudyApplication } = applicationModule);
   ({ createStudyDom } = domModule);
   ({ createDownloadConfigurator } = downloadsModule);
@@ -336,6 +340,7 @@ function createStudyHarness({
     loadMedia: player.loadMedia,
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
+    redirectToDeviceWarning,
     renderCertificate: createCertificateRenderer(() => PdfConstructor),
     session,
     timers: {
@@ -1625,7 +1630,9 @@ function createReportHarness({
   createStatusReportApplication({
     URLSearchParamsConstructor: dependencies.URLSearchParamsConstructor,
     document: dependencies.document,
+    navigate: dependencies.navigate,
     platformClient,
+    redirectToDeviceWarning,
     showAlert: dependencies.showAlert,
     window: dependencies.window
   }).install();
@@ -1750,22 +1757,34 @@ test("[API-05] status report sends only its two public JSON bounds with no handl
   assert.equal(Object.hasOwn(request.body, "IndexVerificado"), false);
 });
 
-test("[GATE-02] public report request and rendering are viewport-independent", async () => {
+test("[GATE-02] public report enforces viewport admission before request and rendering", async () => {
   for (const innerWidth of [1023, 1024, 1025]) {
     const { harness } = await loadReport({
       innerWidth,
       query: reportQuery()
     });
-    assert.equal(harness.guard.requests.length, 1, String(innerWidth));
-    assert.equal(harness.navigation.length, 0, String(innerWidth));
-    assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
-    assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
+    if (innerWidth <= 1024) {
+      assert.equal(harness.guard.requests.length, 0, String(innerWidth));
+      assert.deepEqual(harness.navigation, ["/plataforma/aviso-dispositivo"]);
+      assert.notEqual(harness.element("Container_Externo_Conteúdo").style.display, "block");
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
+    } else {
+      assert.equal(harness.guard.requests.length, 1, String(innerWidth));
+      assert.equal(harness.navigation.length, 0, String(innerWidth));
+      assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
+      assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
+      assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
 
-    for (const resizeWidth of [1025, 1024, 1023, 1024, 1025]) {
-      harness.window.innerWidth = resizeWidth;
-      harness.dispatchWindow("resize");
-      assert.equal(harness.guard.requests.length, 1, `${innerWidth}->${resizeWidth}`);
-      assert.equal(harness.navigation.length, 0, `${innerWidth}->${resizeWidth}`);
+      for (const resizeWidth of [1024, 1023]) {
+        harness.window.innerWidth = resizeWidth;
+        harness.dispatchWindow("resize");
+        assert.equal(harness.guard.requests.length, 1, `${innerWidth}->${resizeWidth}`);
+        assert.equal(
+          harness.navigation.at(-1),
+          "/plataforma/aviso-dispositivo",
+          `${innerWidth}->${resizeWidth}`
+        );
+      }
     }
   }
 });
