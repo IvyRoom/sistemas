@@ -10,13 +10,13 @@ const repositoryRoot = path.join(__dirname, "..", "..");
 const platformRoot = path.join(repositoryRoot, "apps", "learning-platform");
 
 const entries = Object.freeze({
-  "device-warning": {
-    textCharacters: 83,
-    textDigest: "8d14a486c0876d54a08747e1367b7d287182f352bd32347cd5be8dde848fd3b6"
+  "viewport-warning": {
+    textCharacters: 109,
+    textDigest: "4856aa1fb50fad34acb0030f8df6159a69319ef054e3ac3febb4a0ac2e885569"
   },
-  "browser-warning": {
-    textCharacters: 81,
-    textDigest: "ef65efb7af609672583ef2ee3e99082f4ac4321510ea63533d68d18c8acdca91"
+  "device-browser-warning": {
+    textCharacters: 115,
+    textDigest: "62dc9add0c4336cf9a2cd541e925f6db078fbc2ef0d32d19838742228ac3baad"
   },
   "initial-notices": {
     textCharacters: 2047,
@@ -124,14 +124,25 @@ function moduleSource(entryName) {
 
 test("[MARKUP-01] seven entry documents retain unique DOM seams and exact visible copy", () => {
   assert.deepEqual(Object.keys(entries), [
-    "device-warning",
-    "browser-warning",
+    "viewport-warning",
+    "device-browser-warning",
     "initial-notices",
     "photo-registration",
     "course-content",
     "login",
     "status-report"
   ]);
+
+  assert.ok(
+    readEntry("device-browser-warning", "index.html").includes(
+      '<h1 id="Aviso">Acesse a plataforma em um computador com Windows, usando o Microsoft Edge.</h1>'
+    )
+  );
+  assert.ok(
+    readEntry("viewport-warning", "index.html").includes(
+      '<h1 id="Aviso">Maximize a janela do navegador ou use uma tela maior para continuar.</h1>'
+    )
+  );
 
   for (const [entryName, expected] of Object.entries(entries)) {
     const html = readEntry(entryName, "index.html");
@@ -198,12 +209,12 @@ test("[MARKUP-02] current application selector producers retain their exact DOM 
 
 test("[MARKUP-03] current event targets and generated-control seams remain explicit", () => {
   const targetContracts = {
-    "device-warning": {
+    "viewport-warning": {
       "Sessão-Principal": "main",
       "Logo-Machado": "img",
       "Aviso": "h1"
     },
-    "browser-warning": {
+    "device-browser-warning": {
       "Sessão-Principal": "main",
       "Logo-Machado": "img",
       "Aviso": "h1"

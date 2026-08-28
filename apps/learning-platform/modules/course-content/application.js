@@ -11,7 +11,7 @@ import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
     classifyBrowserAdmission,
-    redirectToDeviceWarning
+    replaceWithViewportWarning
 } from '../lifecycle.js';
 import { createStudyAssessment } from './assessment.js';
 import { createStudyCertificate } from './certificate.js';
@@ -33,6 +33,7 @@ export function createStudyApplication({
     loadMedia,
     navigate,
     navigator,
+    replaceNavigation,
     renderCertificate,
     session,
     timers,
@@ -151,14 +152,17 @@ export function createStudyApplication({
         session.write('deviceWarningOrigin', 'Não');
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
-            navigate('/plataforma/aviso-navegador');
-        } else if (redirectToDeviceWarning({ window, navigate })) {
+            replaceNavigation('/plataforma/aviso-dispositivo-navegador');
+        } else if (replaceWithViewportWarning({ replaceNavigation, window })) {
             return;
         } else if (session.read('loggedIn') !== 'Sim') {
             navigate('/plataforma/login');
         } else {
-            const handleDeviceWidth = () => redirectToDeviceWarning({ window, navigate });
-            window.addEventListener('resize', handleDeviceWidth);
+            const handleViewportWidth = () => replaceWithViewportWarning({
+                replaceNavigation,
+                window
+            });
+            window.addEventListener('resize', handleViewportWidth);
 
             state.verifiedIndex = session.read('verifiedIndex');
             client.postJson('/refresh', {

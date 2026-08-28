@@ -376,9 +376,46 @@ export function classifyBrowserAdmission({ document, entry, navigator, window })
     );
 }
 
-export function redirectToDeviceWarning({ window, navigate }) {
+const MAX_ENCODED_RETURN_TO_LENGTH = 2048;
+const VIEWPORT_WARNING_PATH = '/plataforma/aviso-viewport';
+const viewportGatedPathnames = Object.freeze([
+    '/plataforma/login',
+    '/plataforma/login/',
+    '/plataforma/avisos-iniciais',
+    '/plataforma/avisos-iniciais/',
+    '/plataforma/cadastro-foto',
+    '/plataforma/cadastro-foto/',
+    '/plataforma/estudo',
+    '/plataforma/estudo/',
+    '/plataforma/statusreport',
+    '/plataforma/statusreport/',
+    '/formulario-informacoes-iniciais',
+    '/formulario-informacoes-iniciais/'
+]);
+
+function createEncodedReturnTo(location) {
+    try {
+        const pathname = location?.pathname;
+        if (!viewportGatedPathnames.includes(pathname)) return undefined;
+
+        const search = typeof location.search === 'string' ? location.search : '';
+        const hash = typeof location.hash === 'string' ? location.hash : '';
+        const encodedReturnTo = encodeURIComponent(`${pathname}${search}${hash}`);
+        return encodedReturnTo.length <= MAX_ENCODED_RETURN_TO_LENGTH
+            ? encodedReturnTo
+            : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+export function replaceWithViewportWarning({ replaceNavigation, window }) {
     if (window.innerWidth <= 1024) {
-        navigate('/plataforma/aviso-dispositivo');
+        const encodedReturnTo = createEncodedReturnTo(window.location);
+        const warningTarget = encodedReturnTo === undefined
+            ? VIEWPORT_WARNING_PATH
+            : `${VIEWPORT_WARNING_PATH}?returnTo=${encodedReturnTo}`;
+        replaceNavigation(warningTarget);
         return true;
     }
     return false;

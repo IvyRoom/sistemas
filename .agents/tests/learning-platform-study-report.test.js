@@ -56,7 +56,7 @@ let createStatusReportApplication;
 let createStudyApplication;
 let createStudyDom;
 let createStudyPlayer;
-let redirectToDeviceWarning;
+let replaceWithViewportWarning;
 let studyModuleTopicCounts;
 
 test.before(async () => {
@@ -86,7 +86,7 @@ test.before(async () => {
 
   ({ createSessionStore } = sessionModule);
   ({ createPlatformClient } = clientModule);
-  ({ redirectToDeviceWarning } = lifecycleModule);
+  ({ replaceWithViewportWarning } = lifecycleModule);
   ({ createStudyApplication } = applicationModule);
   ({ createStudyDom } = domModule);
   ({ createDownloadConfigurator } = downloadsModule);
@@ -340,7 +340,7 @@ function createStudyHarness({
     loadMedia: player.loadMedia,
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
-    redirectToDeviceWarning,
+    replaceNavigation: dependencies.replaceNavigation,
     renderCertificate: createCertificateRenderer(() => PdfConstructor),
     session,
     timers: {
@@ -1609,17 +1609,20 @@ function reportRow(name, progress, moduleOne, certificateId) {
 }
 
 function createReportHarness({
+  hash = "",
   innerWidth = 1025,
   query,
   response = { data: { Dados_Extraídos_BD_Plataforma: [] }, status: 200 }
 }) {
   const harness = createLearningPlatformHarness({
+    hash,
     innerWidth,
+    pathname: "/plataforma/statusreport",
     routes: [{ method: "POST", path: "/plataforma_v2/statusreport", response }],
+    search: query ?? "",
     userAgent: "Non-gated fixture browser",
     userAgentData: undefined
   });
-  harness.window.location.search = query;
   const dom = installReportDom(harness);
   const dependencies = harness.dependencies();
   const platformClient = createPlatformClient({
@@ -1632,7 +1635,8 @@ function createReportHarness({
     document: dependencies.document,
     navigate: dependencies.navigate,
     platformClient,
-    redirectToDeviceWarning,
+    replaceNavigation: dependencies.replaceNavigation,
+    replaceWithViewportWarning,
     showAlert: dependencies.showAlert,
     window: dependencies.window
   }).install();
@@ -1758,35 +1762,59 @@ test("[API-05] status report sends only its two public JSON bounds with no handl
 });
 
 test("[GATE-02] public report enforces viewport admission before request and rendering", async () => {
+  const query = reportQuery();
+  const returnTarget = "/plataforma/statusreport" + query + "#invented-fragment";
+  const warningTarget =
+    "/plataforma/aviso-viewport?returnTo=" + encodeURIComponent(returnTarget);
+
   for (const innerWidth of [1023, 1024, 1025]) {
     const { harness } = await loadReport({
+      hash: "#invented-fragment",
       innerWidth,
-      query: reportQuery()
+      query
     });
     if (innerWidth <= 1024) {
       assert.equal(harness.guard.requests.length, 0, String(innerWidth));
-      assert.deepEqual(harness.navigation, ["/plataforma/aviso-dispositivo"]);
+      assert.deepEqual(harness.navigation, [], String(innerWidth));
+      assert.deepEqual(harness.replacementNavigation, [warningTarget], String(innerWidth));
       assert.notEqual(harness.element("Container_Externo_Conteúdo").style.display, "block");
       assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
     } else {
       assert.equal(harness.guard.requests.length, 1, String(innerWidth));
       assert.equal(harness.navigation.length, 0, String(innerWidth));
+      assert.equal(harness.replacementNavigation.length, 0, String(innerWidth));
       assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
       assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
       assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
 
-      for (const resizeWidth of [1024, 1023]) {
-        harness.window.innerWidth = resizeWidth;
-        harness.dispatchWindow("resize");
-        assert.equal(harness.guard.requests.length, 1, `${innerWidth}->${resizeWidth}`);
-        assert.equal(
-          harness.navigation.at(-1),
-          "/plataforma/aviso-dispositivo",
-          `${innerWidth}->${resizeWidth}`
-        );
-      }
+      harness.window.innerWidth = 1024;
+      harness.dispatchWindow("resize");
+      assert.equal(harness.guard.requests.length, 1, `${innerWidth}->1024`);
+      assert.deepEqual(harness.replacementNavigation, [warningTarget]);
     }
   }
+
+  const viewportWarning = createLearningPlatformHarness({
+    innerWidth: 1024,
+    pathname: "/plataforma/aviso-viewport",
+    search: "?returnTo=" + encodeURIComponent(returnTarget)
+  });
+  viewportWarning.loadScript("apps/learning-platform/viewport-warning/main.js");
+  assert.deepEqual(viewportWarning.replacementNavigation, []);
+  viewportWarning.window.innerWidth = 1025;
+  viewportWarning.dispatchWindow("resize");
+  viewportWarning.dispatchWindow("resize");
+  assert.deepEqual(viewportWarning.replacementNavigation, [returnTarget]);
+  assert.equal(viewportWarning.guard.requests.length, 0);
+  viewportWarning.hostGuard.assertUnused();
+
+  const returned = await loadReport({
+    hash: "#invented-fragment",
+    innerWidth: 1025,
+    query
+  });
+  assert.equal(returned.harness.guard.requests.length, 1);
+  assert.deepEqual(returned.harness.replacementNavigation, []);
 });
 
 test("[REPORT-02] public rendering exposes all synthetic row metrics, independently sorts charts, caps at 15 slots, and ignores certificate IDs", async () => {

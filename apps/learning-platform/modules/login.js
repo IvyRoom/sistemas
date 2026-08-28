@@ -13,7 +13,7 @@ import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
     classifyBrowserAdmission,
-    redirectToDeviceWarning
+    replaceWithViewportWarning
 } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
 import { createSessionStore } from './session.js';
@@ -30,6 +30,7 @@ export function createLoginApplication({
     createFaceStyleSheet,
     loadFaceRuntime,
     navigate,
+    replaceNavigation,
     alert,
     console,
     backendBase
@@ -59,19 +60,19 @@ export function createLoginApplication({
         window
     });
 
-    function redirectForWidth() {
-        return redirectToDeviceWarning({ window, navigate });
+    function replaceForViewport() {
+        return replaceWithViewportWarning({ replaceNavigation, window });
     }
 
     window.addEventListener('load', function() {
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
-            navigate('/plataforma/aviso-navegador');
+            replaceNavigation('/plataforma/aviso-dispositivo-navegador');
         }
-        else if (redirectForWidth()) {
+        else if (replaceForViewport()) {
             return;
         }
         else {
-            window.addEventListener('resize', redirectForWidth);
+            window.addEventListener('resize', replaceForViewport);
             if (session.read('loggedIn') === 'Sim') {
                 navigate('/plataforma/estudo');
             }

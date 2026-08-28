@@ -8,11 +8,13 @@ const requiredAcknowledgements = Object.freeze({
 });
 
 const navigate = target => { window.location.href = target; };
+const replaceNavigation = target => { window.location.replace(target); };
 
 createInitialNoticesApplication({
     document,
     navigate,
     navigator,
+    replaceNavigation,
     requiredAcknowledgements,
     session: createSessionStore(sessionStorage),
     window

@@ -57,8 +57,11 @@ const backendConsumerModuleEntries = [
   }
 ];
 const learningPlatformEntries = [
-  { sourceDirectory: "device-warning", publicSuffix: "aviso-dispositivo" },
-  { sourceDirectory: "browser-warning", publicSuffix: "aviso-navegador" },
+  { sourceDirectory: "viewport-warning", publicSuffix: "aviso-viewport" },
+  {
+    sourceDirectory: "device-browser-warning",
+    publicSuffix: "aviso-dispositivo-navegador"
+  },
   { sourceDirectory: "initial-notices", publicSuffix: "avisos-iniciais" },
   { sourceDirectory: "photo-registration", publicSuffix: "cadastro-foto" },
   { sourceDirectory: "course-content", publicSuffix: "estudo" },
@@ -70,6 +73,38 @@ const retiredCurrentRegistrationPaths = [
   "/plataforma/cadastro/",
   "/plataforma/cadastro/index.html"
 ];
+const retiredCurrentWarningPaths = [
+  "/plataforma/aviso-navegador",
+  "/plataforma/aviso-navegador/",
+  "/plataforma/aviso-navegador/index.html",
+  "/plataforma/aviso-dispositivo",
+  "/plataforma/aviso-dispositivo/",
+  "/plataforma/aviso-dispositivo/index.html"
+];
+const retiredCurrentWarningAssetPaths = ["aviso-dispositivo", "aviso-navegador"]
+  .flatMap((publicSuffix) => [
+    `/plataforma/${publicSuffix}/style.css`,
+    `/plataforma/${publicSuffix}/main.js`,
+    `/plataforma/${publicSuffix}/img/LOGO_MACHADO.png`,
+    `/plataforma/${publicSuffix}/img/FAVICON.ico`
+  ]);
+const warningRelativeFileNames = [
+  "img/FAVICON.ico",
+  "img/LOGO_MACHADO.png",
+  "index.html",
+  "main.js",
+  "style.css"
+];
+const retiredCurrentWarningOutputs = ["aviso-dispositivo", "aviso-navegador"]
+  .flatMap((publicSuffix) =>
+    warningRelativeFileNames.map((fileName) => `plataforma/${publicSuffix}/${fileName}`)
+  )
+  .sort();
+const renamedCurrentWarningOutputs = ["aviso-dispositivo-navegador", "aviso-viewport"]
+  .flatMap((publicSuffix) =>
+    warningRelativeFileNames.map((fileName) => `plataforma/${publicSuffix}/${fileName}`)
+  )
+  .sort();
 const courseContentModuleFileNames = [
   "application.js",
   "assessment.js",
@@ -116,6 +151,7 @@ const retiredV2LearningPlatformPaths = [
 ];
 const retiredLearningPlatformPaths = [
   ...retiredCurrentRegistrationPaths,
+  ...retiredCurrentWarningPaths,
   ...retiredV2LearningPlatformPaths,
   ...retiredLearningPlatformModulePaths.map(({ publicPath }) => publicPath)
 ];
@@ -280,12 +316,12 @@ test("deployment inventory separates shared infrastructure, maintained frontends
   const [learningPlatform] = learningPlatformApplications;
   assert.deepEqual(learningPlatform.mappings, [
     {
-      source: "apps/learning-platform/device-warning",
-      output: "plataforma/aviso-dispositivo"
+      source: "apps/learning-platform/viewport-warning",
+      output: "plataforma/aviso-viewport"
     },
     {
-      source: "apps/learning-platform/browser-warning",
-      output: "plataforma/aviso-navegador"
+      source: "apps/learning-platform/device-browser-warning",
+      output: "plataforma/aviso-dispositivo-navegador"
     },
     {
       source: "apps/learning-platform/initial-notices",
@@ -323,12 +359,12 @@ test("deployment inventory separates shared infrastructure, maintained frontends
   );
   assert.deepEqual(learningPlatform.publicEntries, [
     {
-      path: "/plataforma/aviso-dispositivo/",
-      file: "plataforma/aviso-dispositivo/index.html"
+      path: "/plataforma/aviso-viewport/",
+      file: "plataforma/aviso-viewport/index.html"
     },
     {
-      path: "/plataforma/aviso-navegador/",
-      file: "plataforma/aviso-navegador/index.html"
+      path: "/plataforma/aviso-dispositivo-navegador/",
+      file: "plataforma/aviso-dispositivo-navegador/index.html"
     },
     {
       path: "/plataforma/avisos-iniciais/",
@@ -409,8 +445,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       "/formulario-informacoes-iniciais/",
       "/validacao-certificados/",
       "/conecta/cadastro-recomendacoes/",
-      "/plataforma/aviso-dispositivo/",
-      "/plataforma/aviso-navegador/",
+      "/plataforma/aviso-viewport/",
+      "/plataforma/aviso-dispositivo-navegador/",
       "/plataforma/avisos-iniciais/",
       "/plataforma/cadastro-foto/",
       "/plataforma/estudo/",
@@ -441,6 +477,17 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   );
   assert.equal(validation.mappings.length, 20);
   assert.equal(validation.files.length, 258);
+  const outputPaths = validation.files.map(({ output }) => output).sort();
+  assert.deepEqual(
+    renamedCurrentWarningOutputs.filter((output) => outputPaths.includes(output)),
+    renamedCurrentWarningOutputs,
+    "The two warning subtrees must move as ten exact output paths"
+  );
+  assert.deepEqual(
+    retiredCurrentWarningOutputs.filter((output) => outputPaths.includes(output)),
+    [],
+    "None of the ten former warning output paths may be emitted"
+  );
   assert.deepEqual(
     validation.files.find(({ output }) => output === "shared/backend-origin.js"),
     {
@@ -598,8 +645,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
   assert.equal(
     manifest.notFoundPaths.length + manifest.repositoryOnlyPaths.length,
-    58,
-    "Phase B must verify exactly 58 explicit negative paths"
+    64,
+    "The complete contract must verify exactly 64 explicit negative paths"
   );
   assert.equal(
     validation.entries.some(({ path }) => path.startsWith("/plataforma_v2/")),
@@ -764,8 +811,6 @@ test("source preview serves only manifest-mapped routes and files", async () => 
     }
 
     for (const { sourceDirectory, publicSuffix } of learningPlatformEntries) {
-      const path = `/plataforma/${publicSuffix}/`;
-      const response = await requestPreview(server.baseUrl, path);
       const source = await readFile(
         new URL(
           `../apps/learning-platform/${sourceDirectory}/index.html`,
@@ -773,10 +818,16 @@ test("source preview serves only manifest-mapped routes and files", async () => 
         )
       );
 
-      assert.equal(response.status, 200, path);
-      assert.equal(response.headers.location, undefined, path);
-      assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
-      assert.deepEqual(response.body, source, path);
+      for (const path of [
+        `/plataforma/${publicSuffix}/`,
+        `/plataforma/${publicSuffix}`
+      ]) {
+        const response = await requestPreview(server.baseUrl, path);
+        assert.equal(response.status, 200, path);
+        assert.equal(response.headers.location, undefined, path);
+        assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
+        assert.deepEqual(response.body, source, path);
+      }
     }
 
     for (const { publicPath, sourcePath } of alignedLearningPlatformModulePaths) {
@@ -805,6 +856,12 @@ test("source preview serves only manifest-mapped routes and files", async () => 
     for (const path of ["/plataforma/", ...retiredLearningPlatformPaths]) {
       const response = await requestPreview(server.baseUrl, path);
 
+      assert.equal(response.status, 404, path);
+      assert.equal(response.headers.location, undefined, `${path} must not redirect`);
+    }
+
+    for (const path of retiredCurrentWarningAssetPaths) {
+      const response = await requestPreview(server.baseUrl, path);
       assert.equal(response.status, 404, path);
       assert.equal(response.headers.location, undefined, `${path} must not redirect`);
     }

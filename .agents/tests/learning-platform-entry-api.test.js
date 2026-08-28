@@ -14,8 +14,8 @@ const {
 } = require("./helpers/learning-platform-harness.js");
 
 const SCRIPT_PATHS = {
-  browser: "apps/learning-platform/browser-warning/main.js",
-  device: "apps/learning-platform/device-warning/main.js",
+  deviceBrowser: "apps/learning-platform/device-browser-warning/main.js",
+  viewport: "apps/learning-platform/viewport-warning/main.js",
   login: "apps/learning-platform/login/main.js",
   notices: "apps/learning-platform/initial-notices/main.js",
   register: "apps/learning-platform/photo-registration/main.js",
@@ -52,13 +52,26 @@ const STATUS_REPORT_MODULE_PATHS = discoverModulePaths("status-report");
 const STUDY_MODULE_PATHS = discoverModulePaths("course-content");
 
 const PATHS = {
-  browser: "/plataforma/aviso-navegador",
-  device: "/plataforma/aviso-dispositivo",
+  deviceBrowser: "/plataforma/aviso-dispositivo-navegador",
   login: "/plataforma/login",
   notices: "/plataforma/avisos-iniciais",
   register: "/plataforma/cadastro-foto",
-  study: "/plataforma/estudo"
+  report: "/plataforma/statusreport",
+  study: "/plataforma/estudo",
+  viewport: "/plataforma/aviso-viewport"
 };
+
+const ENTRY_PATHS = {
+  login: PATHS.login,
+  notices: PATHS.notices,
+  register: PATHS.register,
+  report: PATHS.report,
+  study: PATHS.study
+};
+
+function viewportWarningTarget(pathname, search = "", hash = "") {
+  return `${PATHS.viewport}?returnTo=${encodeURIComponent(`${pathname}${search}${hash}`)}`;
+}
 
 function opaqueValue(kind) {
   return ["synthetic", kind, "value"].join(":");
@@ -239,7 +252,7 @@ async function installStatusReportApplication(harness) {
   applicationModule.createStatusReportApplication({
     ...dependencies,
     platformClient,
-    redirectToDeviceWarning: lifecycleModule.redirectToDeviceWarning
+    replaceWithViewportWarning: lifecycleModule.replaceWithViewportWarning
   }).install();
   harness.hostGuard.assertUnused();
 }
@@ -274,6 +287,7 @@ async function installStudyApplication(harness, overrides = {}) {
     async loadMedia() {},
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
+    replaceNavigation: dependencies.replaceNavigation,
     renderCertificate() {},
     session,
     timers: {
@@ -411,16 +425,15 @@ test("[SAFETY-NETWORK] deny-all sentinel blocks fallback channels before scripts
   assertNoQuery(harness);
 });
 
-test("[ROUTE-03] exact slashless destinations and history behavior remain fixed", async () => {
+test("[ROUTE-03] ordinary destinations stay separate from replacement admission", async () => {
   const sources = Object.fromEntries(
     Object.keys(SCRIPT_PATHS).map((name) => [name, readApplicationSource(name)])
   );
   const expectedWriters = {
-    login: [PATHS.device, PATHS.browser, PATHS.study, PATHS.notices],
-    notices: [PATHS.device, PATHS.browser, PATHS.login, PATHS.register],
-    register: [PATHS.device, PATHS.browser, PATHS.login, PATHS.study],
-    study: [PATHS.browser, PATHS.login, PATHS.device],
-    report: [PATHS.device]
+    login: [PATHS.study, PATHS.notices],
+    notices: [PATHS.login, PATHS.register],
+    register: [PATHS.login, PATHS.study],
+    study: [PATHS.login]
   };
 
   for (const [page, destinations] of Object.entries(expectedWriters)) {
@@ -438,22 +451,21 @@ test("[ROUTE-03] exact slashless destinations and history behavior remain fixed"
 
   const combined = Object.values(sources).join("\n");
   for (const absentRouterSeam of [
-    "location.replace(",
     "history.pushState(",
     "history.replaceState(",
     "popstate"
   ]) {
     assert.equal(combined.includes(absentRouterSeam), false, absentRouterSeam);
   }
-
-  const warning = createLearningPlatformHarness({ innerWidth: 1025 });
-  warning.loadScript(SCRIPT_PATHS.device);
-  assert.equal(warning.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Sim");
-  warning.dispatchWindow("resize");
-  assert.equal(warning.history.backCalls, 1);
-  assert.equal(warning.navigation.length, 0);
+  for (const page of ["login", "notices", "register", "study"]) {
+    assert.ok(sources[page].includes(PATHS.deviceBrowser), `${page}:GATE-01 target`);
+    assert.ok(sources[page].includes(PATHS.viewport), `${page}:GATE-02 target`);
+  }
+  assert.ok(sources.report.includes(PATHS.viewport), "report:GATE-02 target");
+  assert.equal(sources.viewport.includes("history.back()"), false);
 
   const login = createLearningPlatformHarness({
+    pathname: PATHS.login,
     storage: {
       Origem_Aviso_Dispositivo: "Não",
       Usuário_Autorização_Cadastro: "Sim",
@@ -468,7 +480,8 @@ test("[ROUTE-03] exact slashless destinations and history behavior remain fixed"
   assert.equal((login.windowListeners.get("resize") ?? []).length, 1);
   login.window.innerWidth = 1024;
   login.dispatchWindow("resize");
-  assert.deepEqual(login.navigation, [PATHS.device]);
+  assert.deepEqual(login.navigation, []);
+  assert.deepEqual(login.replacementNavigation, [viewportWarningTarget(PATHS.login)]);
 });
 
 test("[GATE-01] centralized admission returns stable candidate, unsupported, and unverified results", async () => {
@@ -713,26 +726,29 @@ test("[GATE-01] four guarded entries give browser rejection precedence over view
         const harness = createLearningPlatformHarness({
           ...profile,
           innerWidth: width,
+          pathname: ENTRY_PATHS[page],
           storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Sim" }
         });
         await installEntryApplication(harness, page);
         await Promise.all(harness.dispatchWindow("load"));
         assert.deepEqual(
-          harness.navigation,
-          [PATHS.browser],
+          harness.replacementNavigation,
+          [PATHS.deviceBrowser],
           `${page}:${profile.label}:${width}`
         );
+        assert.deepEqual(harness.navigation, [], `${page}:${profile.label}:${width}:ordinary`);
         assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
         assert.equal(harness.timeline.some(({ type }) => type === "fetch"), false);
       }
     }
 
     const candidate = createLearningPlatformHarness({
+      pathname: ENTRY_PATHS[page],
       storage: { Usuário_Autorização_Cadastro: "Sim", Usuário_Logado: "Não" }
     });
     await installEntryApplication(candidate, page);
     await Promise.all(candidate.dispatchWindow("load"));
-    assert.equal(candidate.navigation.includes(PATHS.browser), false, page);
+    assert.equal(candidate.replacementNavigation.includes(PATHS.deviceBrowser), false, page);
   }
 });
 
@@ -773,6 +789,7 @@ test("[GATE-01] rejected and unverified Face entries cannot load Face or submit"
 
 test("[GATE-01] public report and warning entries remain available without browser admission", async () => {
   const report = createLearningPlatformHarness({
+    pathname: PATHS.report,
     routes: [{
       method: "POST",
       path: "/plataforma_v2/statusreport",
@@ -791,26 +808,33 @@ test("[GATE-01] public report and warning entries remain available without brows
   await report.window.onload();
   await report.flush();
   assert.equal(report.guard.requests.length, 1);
-  assert.equal(report.navigation.includes(PATHS.browser), false);
+  assert.equal(report.replacementNavigation.includes(PATHS.deviceBrowser), false);
   assert.equal(/userAgent(?:Data)?|classifyBrowserAdmission/.test(
     readPlatformScript(SCRIPT_PATHS.report)
   ), false);
 
   for (const userAgentData of [null, {}, { brands: undefined }]) {
-    const browserWarning = createLearningPlatformHarness({ userAgentData: userAgentData ?? {} });
-    if (userAgentData === null) delete browserWarning.window.navigator.userAgentData;
-    assert.doesNotThrow(() => browserWarning.loadScript(SCRIPT_PATHS.browser));
-    assert.equal(browserWarning.consoleCalls.length, 2);
-    assert.deepEqual(browserWarning.navigation, []);
+    const deviceBrowserWarning = createLearningPlatformHarness({
+      pathname: `${PATHS.deviceBrowser}/`,
+      userAgentData: userAgentData ?? {}
+    });
+    if (userAgentData === null) delete deviceBrowserWarning.window.navigator.userAgentData;
+    assert.doesNotThrow(() => deviceBrowserWarning.loadScript(SCRIPT_PATHS.deviceBrowser));
+    assert.equal(deviceBrowserWarning.consoleCalls.length, 2);
+    assert.deepEqual(deviceBrowserWarning.navigation, []);
+    assert.deepEqual(deviceBrowserWarning.replacementNavigation, []);
   }
 
-  const deviceWarning = createLearningPlatformHarness({
+  const viewportWarning = createLearningPlatformHarness({
+    innerWidth: 1024,
+    pathname: `${PATHS.viewport}/`,
     userAgent: "FixtureBrowser",
     userAgentData: {}
   });
-  assert.doesNotThrow(() => deviceWarning.loadScript(SCRIPT_PATHS.device));
-  assert.equal(deviceWarning.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Sim");
-  assert.deepEqual(deviceWarning.navigation, []);
+  assert.doesNotThrow(() => viewportWarning.loadScript(SCRIPT_PATHS.viewport));
+  assert.equal(viewportWarning.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Sim");
+  assert.deepEqual(viewportWarning.navigation, []);
+  assert.deepEqual(viewportWarning.replacementNavigation, []);
 });
 
 test("[GATE-02] admitted login, notices, and registration enforce the inclusive minimum viewport", async () => {
@@ -819,6 +843,7 @@ test("[GATE-02] admitted login, notices, and registration enforce the inclusive 
     for (const width of [1023, 1024, 1025]) {
       const harness = createLearningPlatformHarness({
         innerWidth: width,
+        pathname: ENTRY_PATHS[page],
         storage: {
           Origem_Aviso_Dispositivo: "Sim",
           Usuário_Autorização_Cadastro: "Sim",
@@ -837,26 +862,40 @@ test("[GATE-02] admitted login, notices, and registration enforce the inclusive 
       assert.equal((harness.windowListeners.get("load") ?? []).length, 1, `${page}:${width}`);
       harness.dispatchWindow("load");
       assert.equal(
-        harness.navigation.filter((path) => path === PATHS.device).length,
+        harness.replacementNavigation.filter(
+          (target) => target === viewportWarningTarget(ENTRY_PATHS[page])
+        ).length,
         width <= 1024 ? 1 : 0,
         `${page}:${width}:load`
       );
+      assert.equal(harness.navigation.length, 0, `${page}:${width}:ordinary`);
       assert.equal(
         (harness.windowListeners.get("resize") ?? []).length,
         width <= 1024 ? 0 : 1,
         `${page}:${width}:resize-listener`
       );
-      if (width === 1025) {
-        for (const resizeWidth of [1024, 1023]) {
-          harness.window.innerWidth = resizeWidth;
-          harness.dispatchWindow("resize");
-          assert.equal(
-            harness.navigation.at(-1),
-            PATHS.device,
-            `${page}:${width}->${resizeWidth}`
-          );
+    }
+
+    for (const resizeWidth of [1024, 1023]) {
+      const harness = createLearningPlatformHarness({
+        innerWidth: 1025,
+        pathname: ENTRY_PATHS[page],
+        storage: {
+          Origem_Aviso_Dispositivo: "Sim",
+          Usuário_Autorização_Cadastro: "Sim",
+          Usuário_Logado: "Não"
         }
-      }
+      });
+      await installEntryApplication(harness, page);
+      harness.dispatchWindow("load");
+      harness.window.innerWidth = resizeWidth;
+      harness.dispatchWindow("resize");
+      assert.deepEqual(
+        harness.replacementNavigation,
+        [viewportWarningTarget(ENTRY_PATHS[page])],
+        `${page}:1025->${resizeWidth}`
+      );
+      assert.deepEqual(harness.navigation, [], `${page}:1025->${resizeWidth}:ordinary`);
     }
   }
 });
@@ -1158,6 +1197,7 @@ test("[GATE-02] admitted study enforces viewport admission before refresh", asyn
   for (const width of [1023, 1024, 1025]) {
     const harness = createLearningPlatformHarness({
       innerWidth: width,
+      pathname: PATHS.study,
       routes: [{
         method: "POST",
         path: "/plataforma_v2/refresh",
@@ -1174,38 +1214,63 @@ test("[GATE-02] admitted study enforces viewport admission before refresh", asyn
     await harness.flush();
 
     if (width <= 1024) {
-      assert.deepEqual(harness.navigation, [PATHS.device], String(width));
+      assert.deepEqual(
+        harness.replacementNavigation,
+        [viewportWarningTarget(PATHS.study)],
+        String(width)
+      );
+      assert.deepEqual(harness.navigation, [], `${width}:ordinary`);
       assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
       assert.equal(harness.guard.requests.length, 0);
     } else {
-      assert.equal(harness.navigation.includes(PATHS.device), false, String(width));
+      assert.equal(harness.replacementNavigation.length, 0, String(width));
       assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
       assert.equal(harness.guard.requests.length, 1);
-      for (const resizeWidth of [1024, 1023]) {
-        harness.window.innerWidth = resizeWidth;
-        harness.dispatchWindow("resize");
-        assert.equal(harness.navigation.at(-1), PATHS.device, `${width}->${resizeWidth}`);
-        assert.equal(harness.guard.requests.length, 1, `${width}->${resizeWidth}`);
-      }
     }
+  }
+
+  for (const resizeWidth of [1024, 1023]) {
+    const harness = createLearningPlatformHarness({
+      innerWidth: 1025,
+      pathname: PATHS.study,
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/refresh",
+        response: { data: {}, status: 401 }
+      }],
+      storage: {
+        IndexVerificado: opaqueValue("row-handle"),
+        Usuário_Logado: "Sim"
+      }
+    });
+    await installStudyApplication(harness);
+    harness.dispatchWindow("load");
+    await harness.flush();
+    harness.window.innerWidth = resizeWidth;
+    harness.dispatchWindow("resize");
+    assert.deepEqual(harness.replacementNavigation, [viewportWarningTarget(PATHS.study)]);
+    assert.equal(harness.guard.requests.length, 1, `1025->${resizeWidth}`);
   }
 
   for (const width of [1023, 1024, 1025]) {
     const unauthenticated = createLearningPlatformHarness({
       innerWidth: width,
+      pathname: PATHS.study,
       storage: { Usuário_Logado: "Não" }
     });
     await installStudyApplication(unauthenticated);
     unauthenticated.dispatchWindow("load");
+    assert.deepEqual(unauthenticated.navigation, width <= 1024 ? [] : [PATHS.login]);
     assert.deepEqual(
-      unauthenticated.navigation,
-      [width <= 1024 ? PATHS.device : PATHS.login],
+      unauthenticated.replacementNavigation,
+      width <= 1024 ? [viewportWarningTarget(PATHS.study)] : [],
       `unauthenticated:${width}`
     );
     assert.equal(unauthenticated.guard.requests.length, 0, `unauthenticated:${width}`);
 
     const rejected = createLearningPlatformHarness({
       innerWidth: width,
+      pathname: PATHS.study,
       storage: { Usuário_Logado: "Sim" },
       userAgent: WINDOWS_CHROME_USER_AGENT,
       userAgentData: {
@@ -1216,36 +1281,134 @@ test("[GATE-02] admitted study enforces viewport admission before refresh", asyn
     });
     await installStudyApplication(rejected);
     rejected.dispatchWindow("load");
-    assert.deepEqual(rejected.navigation, [PATHS.browser], `rejected:${width}`);
+    assert.deepEqual(rejected.navigation, [], `rejected:${width}:ordinary`);
+    assert.deepEqual(
+      rejected.replacementNavigation,
+      [PATHS.deviceBrowser],
+      `rejected:${width}`
+    );
     assert.equal(rejected.guard.requests.length, 0, `rejected:${width}`);
   }
 });
 
-test("[ROUTE-03] device warning retains its separate reverse boundary", () => {
-  const harness = createLearningPlatformHarness({ innerWidth: 1023 });
-  harness.loadScript(SCRIPT_PATHS.device);
+test("[ROUTE-03] viewport warning recovers once by replacement above the strict boundary", () => {
+  const returnTarget = `${PATHS.notices}/?fixture=one%20two#invented-fragment`;
+  const harness = createLearningPlatformHarness({
+    innerWidth: 1023,
+    pathname: `${PATHS.viewport}/`,
+    search: `?returnTo=${encodeURIComponent(returnTarget)}`
+  });
+  harness.loadScript(SCRIPT_PATHS.viewport);
+  assert.equal(harness.sessionStorage.getItem("Origem_Aviso_Dispositivo"), "Sim");
+  assert.deepEqual(harness.replacementNavigation, []);
   harness.dispatchWindow("resize");
-  assert.equal(harness.history.backCalls, 0);
   harness.window.innerWidth = 1024;
   harness.dispatchWindow("resize");
-  assert.equal(harness.history.backCalls, 0);
+  assert.deepEqual(harness.replacementNavigation, []);
+
   harness.window.innerWidth = 1025;
   harness.dispatchWindow("resize");
-  assert.equal(harness.history.backCalls, 1);
+  harness.window.innerWidth = 1440;
+  harness.dispatchWindow("resize");
+  harness.dispatchWindow("resize");
+  assert.deepEqual(harness.replacementNavigation, [returnTarget]);
+  assert.deepEqual(harness.navigation, []);
+  assert.equal(harness.history.backCalls, 0);
+
+  const directWide = createLearningPlatformHarness({
+    innerWidth: 1025,
+    pathname: `${PATHS.viewport}/`
+  });
+  directWide.loadScript(SCRIPT_PATHS.viewport);
+  directWide.dispatchWindow("resize");
+  assert.deepEqual(directWide.replacementNavigation, [`${PATHS.login}/`]);
+  assert.equal(directWide.history.backCalls, 0);
+  directWide.hostGuard.assertUnused();
+});
+
+test("[ROUTE-03] viewport warning accepts only exact bounded return targets", () => {
+  const approvedPathnames = [
+    PATHS.login,
+    PATHS.notices,
+    PATHS.register,
+    PATHS.study,
+    PATHS.report,
+    "/formulario-informacoes-iniciais"
+  ].flatMap((pathname) => [pathname, `${pathname}/`]);
+
+  for (const pathname of approvedPathnames) {
+    const returnTarget = `${pathname}?fixture=one%20two&repeat=1&repeat=2#fragment%20value`;
+    const harness = createLearningPlatformHarness({
+      innerWidth: 1025,
+      pathname: `${PATHS.viewport}/`,
+      search: `?returnTo=${encodeURIComponent(returnTarget)}`
+    });
+    assert.doesNotThrow(() => harness.loadScript(SCRIPT_PATHS.viewport), pathname);
+    assert.deepEqual(harness.replacementNavigation, [returnTarget], pathname);
+    assert.equal(harness.history.backCalls, 0, pathname);
+  }
+
+  const rejectedTargets = [
+    "plataforma/login",
+    "../plataforma/login",
+    "/plataforma/login/../estudo",
+    "/plataforma/%2e%2e/login",
+    "/plataforma/login\\outside.invalid",
+    "\\\\outside.invalid\\plataforma\\login",
+    "//outside.invalid/plataforma/login",
+    `${FIXTURE_ORIGIN}/plataforma/login`,
+    "https:" + "//outside.invalid/plataforma/login",
+    "https:" + "//fixture:password@learning-platform.test/plataforma/login",
+    "javascript:alert(1)",
+    "/plataforma/unknown",
+    "/formulario-informacoes-iniciais/extra",
+    `${PATHS.login}?fixture=${"x".repeat(2048)}`
+  ];
+  for (const returnTarget of rejectedTargets) {
+    const harness = createLearningPlatformHarness({
+      innerWidth: 1025,
+      pathname: PATHS.viewport,
+      search: `?returnTo=${encodeURIComponent(returnTarget)}`
+    });
+    assert.doesNotThrow(() => harness.loadScript(SCRIPT_PATHS.viewport), returnTarget);
+    assert.deepEqual(harness.replacementNavigation, [`${PATHS.login}/`], returnTarget);
+  }
+
+  for (const search of [
+    "",
+    "?returnTo",
+    "?returnTo=",
+    "?returnTo=%",
+    "?returnTo=%E0%A4%A",
+    "?returnTo=%2fplataforma%2flogin",
+    `?returnTo=${encodeURIComponent(PATHS.login)}&returnTo=${encodeURIComponent(PATHS.study)}`
+  ]) {
+    const harness = createLearningPlatformHarness({
+      innerWidth: 1025,
+      pathname: PATHS.viewport,
+      search
+    });
+    assert.doesNotThrow(() => harness.loadScript(SCRIPT_PATHS.viewport), search);
+    assert.deepEqual(harness.replacementNavigation, [`${PATHS.login}/`], search);
+  }
 });
 
 test("[GATE-02] status report enforces viewport admission before rendering or requesting", async () => {
+  const reportSearch =
+    "?ne=Invented%20Company&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
+  const reportHash = "#invented-status-fragment";
   for (const width of [1023, 1024, 1025]) {
     const harness = createLearningPlatformHarness({
+      hash: reportHash,
       innerWidth: width,
+      pathname: PATHS.report,
       routes: [{
         method: "POST",
         path: "/plataforma_v2/statusreport",
         response: { data: { Dados_Extraídos_BD_Plataforma: [] } }
-      }]
+      }],
+      search: reportSearch
     });
-    harness.window.location.search =
-      "?ne=Invented&nt=1&li=0&lf=0&dua=01012035&idsr=1&mi=1&mf=1&mrm=individual";
     harness.selectorResults.set(
       ".Gráficos_Controle_Resultados",
       Array.from({ length: 12 }, (_, index) => harness.element(`fixture-report-graph-${index}`))
@@ -1255,23 +1418,51 @@ test("[GATE-02] status report enforces viewport admission before rendering or re
     await harness.flush(10);
 
     if (width <= 1024) {
-      assert.deepEqual(harness.navigation, [PATHS.device], String(width));
+      assert.deepEqual(
+        harness.replacementNavigation,
+        [viewportWarningTarget(PATHS.report, reportSearch, reportHash)],
+        String(width)
+      );
+      assert.deepEqual(harness.navigation, [], `${width}:ordinary`);
       assert.equal((harness.windowListeners.get("resize") ?? []).length, 0);
       assert.equal(harness.guard.requests.length, 0);
       assert.notEqual(harness.element("Container_Externo_Conteúdo").style.display, "block");
     } else {
-      assert.equal(harness.navigation.includes(PATHS.device), false, String(width));
+      assert.equal(harness.replacementNavigation.length, 0, String(width));
       assert.equal((harness.windowListeners.get("resize") ?? []).length, 1);
       assert.equal(harness.guard.requests.length, 1);
       assert.equal(harness.element("Container_Externo_Conteúdo").style.display, "block");
       assert.equal(harness.element("Aviso_Carregando_Informações").style.display, "none");
-      for (const resizeWidth of [1024, 1023]) {
-        harness.window.innerWidth = resizeWidth;
-        harness.dispatchWindow("resize");
-        assert.equal(harness.navigation.at(-1), PATHS.device, `${width}->${resizeWidth}`);
-        assert.equal(harness.guard.requests.length, 1, `${width}->${resizeWidth}`);
-      }
     }
+  }
+
+  for (const resizeWidth of [1024, 1023]) {
+    const harness = createLearningPlatformHarness({
+      hash: reportHash,
+      innerWidth: 1025,
+      pathname: PATHS.report,
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/statusreport",
+        response: { data: { Dados_Extraídos_BD_Plataforma: [] } }
+      }],
+      search: reportSearch
+    });
+    harness.selectorResults.set(
+      ".Gráficos_Controle_Resultados",
+      Array.from({ length: 12 }, (_, index) => harness.element(`resize-report-${index}`))
+    );
+    await installStatusReportApplication(harness);
+    await harness.window.onload();
+    await harness.flush(10);
+    harness.window.innerWidth = resizeWidth;
+    harness.dispatchWindow("resize");
+    assert.deepEqual(
+      harness.replacementNavigation,
+      [viewportWarningTarget(PATHS.report, reportSearch, reportHash)],
+      `1025->${resizeWidth}`
+    );
+    assert.equal(harness.guard.requests.length, 1, `1025->${resizeWidth}`);
   }
 });
 
@@ -1338,7 +1529,7 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
   const expectedWriters = {
     "Horário-Encerramento-Sessão": ["login"],
     IndexVerificado: ["login"],
-    Origem_Aviso_Dispositivo: ["device", "login", "notices", "register", "study"],
+    Origem_Aviso_Dispositivo: ["login", "notices", "register", "study", "viewport"],
     TempoSessão_Segundos: [],
     Usuário_Autorização_Cadastro: ["login", "register"],
     Usuário_Foto_Cadastrada: ["login"],

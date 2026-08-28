@@ -3,7 +3,12 @@ import { BACKEND_ORIGIN } from '../shared/backend-origin.js';
 'use strict';
 
 const MIN_VIEWPORT_WIDTH = 1024;
-const DEVICE_WARNING_URL = '/plataforma/aviso-dispositivo/';
+const MAX_ENCODED_RETURN_TO_LENGTH = 2048;
+const VIEWPORT_WARNING_URL = '/plataforma/aviso-viewport/';
+const CLIENT_INTAKE_PATHNAMES = Object.freeze([
+  '/formulario-informacoes-iniciais',
+  '/formulario-informacoes-iniciais/',
+]);
 const SUBMIT_ENDPOINT = `${BACKEND_ORIGIN}/clientes/processa-formulario`;
 const SUBMIT_TIMEOUT_MS = 60000;
 const MAX_PARTICIPANTS = 25;
@@ -39,7 +44,22 @@ const SUBMIT_ERROR_MESSAGES = {
 
 function enforceMinimumViewport() {
   if (window.innerWidth <= MIN_VIEWPORT_WIDTH) {
-    window.location.href = DEVICE_WARNING_URL;
+    let encodedReturnTo;
+    try {
+      if (CLIENT_INTAKE_PATHNAMES.includes(window.location.pathname)) {
+        encodedReturnTo = encodeURIComponent(
+          `${window.location.pathname}${window.location.search}${window.location.hash}`,
+        );
+        if (encodedReturnTo.length > MAX_ENCODED_RETURN_TO_LENGTH) encodedReturnTo = undefined;
+      }
+    } catch {
+      encodedReturnTo = undefined;
+    }
+
+    const warningTarget = encodedReturnTo === undefined
+      ? VIEWPORT_WARNING_URL
+      : `${VIEWPORT_WARNING_URL}?returnTo=${encodedReturnTo}`;
+    window.location.replace(warningTarget);
   }
 }
 

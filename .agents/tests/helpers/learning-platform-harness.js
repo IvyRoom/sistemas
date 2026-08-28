@@ -17,8 +17,8 @@ const PLATFORM_MODULE_ROOT = path.join(
 const PLATFORM_MODULE_ROOT_REAL_PATH = fs.realpathSync(PLATFORM_MODULE_ROOT);
 const FIXTURE_ORIGIN = "https:" + "//learning-platform.test";
 const CLASSIC_SCRIPT_PATHS = new Set([
-  "apps/learning-platform/device-warning/main.js",
-  "apps/learning-platform/browser-warning/main.js"
+  "apps/learning-platform/device-browser-warning/main.js",
+  "apps/learning-platform/viewport-warning/main.js"
 ]);
 
 let platformModuleHooksRegistered = false;
@@ -327,7 +327,7 @@ function sanitizeNavigationTarget(target) {
     if (url.protocol !== "http:" && url.protocol !== "https:") {
       return "<non-http-navigation>";
     }
-    return sanitizePathname(url.pathname);
+    return `${sanitizePathname(url.pathname)}${url.search}${url.hash}`;
   } catch {
     return "<invalid-navigation>";
   }
@@ -346,6 +346,24 @@ function isLocalPlatformTarget(target) {
     (url.pathname === "/plataforma" || url.pathname.startsWith("/plataforma/")) &&
     url.search === "" &&
     url.hash === "";
+}
+
+function isLocalReplacementTarget(target) {
+  let url;
+  try {
+    url = new URL(String(target), FIXTURE_ORIGIN);
+  } catch {
+    return false;
+  }
+  return url.origin === FIXTURE_ORIGIN &&
+    url.username === "" &&
+    url.password === "" &&
+    (
+      url.pathname === "/plataforma" ||
+      url.pathname.startsWith("/plataforma/") ||
+      url.pathname === "/formulario-informacoes-iniciais" ||
+      url.pathname === "/formulario-informacoes-iniciais/"
+    );
 }
 
 function sanitizeBody(body) {
@@ -758,9 +776,12 @@ function createElementFactory({ faceStartImplementation, focusElement, guard, ti
 
 function createLearningPlatformHarness({
   faceStartImplementation,
+  hash = "",
   innerWidth = 1025,
   now = 2_000_000_000_000,
+  pathname = "/current/",
   routes = [],
+  search = "",
   storage = {},
   userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 " +
@@ -827,22 +848,63 @@ function createLearningPlatformHarness({
   };
 
   const navigation = [];
-  let href = FIXTURE_ORIGIN + "/current/";
+  const replacementNavigation = [];
+  let currentUrl = new URL(`${pathname}${search}${hash}`, FIXTURE_ORIGIN);
   const location = {};
-  Object.defineProperty(location, "href", {
-    get() {
-      return href;
-    },
-    set(value) {
-      if (!isLocalPlatformTarget(value)) {
-        guard.block("navigation", value);
+  Object.defineProperties(location, {
+    hash: {
+      get() {
+        return currentUrl.hash;
+      },
+      set(value) {
+        currentUrl.hash = String(value);
       }
-      href = String(value);
-      const recordedTarget = sanitizeNavigationTarget(value);
-      navigation.push(recordedTarget);
-      timeline.push({ path: recordedTarget, type: "navigate" });
+    },
+    href: {
+      get() {
+        return currentUrl.href;
+      },
+      set(value) {
+        if (!isLocalPlatformTarget(value)) {
+          guard.block("navigation", value);
+        }
+        currentUrl = new URL(String(value), FIXTURE_ORIGIN);
+        const recordedTarget = sanitizeNavigationTarget(value);
+        navigation.push(recordedTarget);
+        timeline.push({ path: recordedTarget, type: "navigate" });
+      }
+    },
+    origin: {
+      get() {
+        return currentUrl.origin;
+      }
+    },
+    pathname: {
+      get() {
+        return currentUrl.pathname;
+      },
+      set(value) {
+        currentUrl.pathname = String(value);
+      }
+    },
+    search: {
+      get() {
+        return currentUrl.search;
+      },
+      set(value) {
+        currentUrl.search = String(value);
+      }
     }
   });
+  location.replace = function(value) {
+    if (!isLocalReplacementTarget(value)) {
+      guard.block("replacement navigation", value);
+    }
+    currentUrl = new URL(String(value), FIXTURE_ORIGIN);
+    const recordedTarget = sanitizeNavigationTarget(value);
+    replacementNavigation.push(recordedTarget);
+    timeline.push({ path: recordedTarget, type: "replace-navigation" });
+  };
 
   const history = {
     backCalls: 0,
@@ -1058,7 +1120,7 @@ function createLearningPlatformHarness({
     assert.equal(
       CLASSIC_SCRIPT_PATHS.has(relativePath),
       true,
-      "Only unchanged classic warning scripts can use the VM script loader"
+      "Only classic warning scripts can use the VM script loader"
     );
     const source = fs.readFileSync(path.join(REPOSITORY_ROOT, relativePath), "utf8");
     vm.runInContext(source, context, { filename: relativePath });
@@ -1109,6 +1171,9 @@ function createLearningPlatformHarness({
       now() {
         return currentNow;
       },
+      replaceNavigation(target) {
+        location.replace(target);
+      },
       sessionStorage,
       setInterval: window.setInterval,
       setTimeout: window.setTimeout,
@@ -1144,6 +1209,7 @@ function createLearningPlatformHarness({
     loadScript,
     navigation,
     now,
+    replacementNavigation,
     runTimer(timerId) {
       const timer = timers.get(timerId);
       assert.ok(timer, "The requested fixture timer must exist");

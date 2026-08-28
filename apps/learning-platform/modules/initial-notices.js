@@ -2,13 +2,14 @@ import {
     browserAdmissionEntries,
     browserAdmissionOutcomes,
     classifyBrowserAdmission,
-    redirectToDeviceWarning
+    replaceWithViewportWarning
 } from './lifecycle.js';
 
 export function createInitialNoticesApplication({
     document,
     navigate,
     navigator,
+    replaceNavigation,
     requiredAcknowledgements,
     session,
     window
@@ -20,22 +21,22 @@ export function createInitialNoticesApplication({
         window
     });
 
-    function handleDeviceWidth() {
-        return redirectToDeviceWarning({ window, navigate });
+    function handleViewportWidth() {
+        return replaceWithViewportWarning({ replaceNavigation, window });
     }
 
     function handleLoad() {
         session.write('deviceWarningOrigin', 'Não');
 
         if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
-            navigate('/plataforma/aviso-navegador');
-        } else if (handleDeviceWidth()) {
+            replaceNavigation('/plataforma/aviso-dispositivo-navegador');
+        } else if (handleViewportWidth()) {
             return;
         } else {
             if (session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
             } else {
-                window.addEventListener('resize', handleDeviceWidth);
+                window.addEventListener('resize', handleViewportWidth);
             }
         }
     }
