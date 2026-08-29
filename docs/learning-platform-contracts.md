@@ -31,7 +31,7 @@ configuration or external integration was exercised. In particular, this
 characterization did not call the backend, Microsoft Graph or workbooks, Azure
 Face, the media store, EZDRM, email, or any customer-facing route.
 
-The document keeps six categories separate:
+The document keeps seven categories separate:
 
 - **Browser support contract** is the selected customer-support target. Runtime
   admission implements only its observable candidate boundary and is not
@@ -39,6 +39,8 @@ The document keeps six categories separate:
 - **Source-observed current behavior** is the compatibility baseline.
 - **Known risks and unresolved legacy behavior** must be preserved by a pure
   move/baseline unless a later task explicitly changes them.
+- **Approved future session-authority consumer decision** aligns the frontend
+  to the backend-owned target without describing that target as deployed.
 - **Route-adoption and deployed-path history** records approved frontend path
   changes and bounded compatibility without redefining backend or remote-media
   contracts.
@@ -1942,6 +1944,274 @@ future work, not permission to change compatibility behavior in the baseline.
   Face hint image and two study workbooks are emitted but unreferenced, while
   support assets remain outside explicit `publicDownloads` coverage.
 
+## Approved future session-authority consumer decision
+
+The authoritative target is the backend-owned
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/36f3dd3aec8c198612e7008b25b07dab479ada46/docs/session-authority.md).
+This section freezes the frontend consumer alignment and future synthetic
+acceptance coverage. It does not change current runtime behavior. Publishing
+the decision does not create a cookie, provision SQL, change the backend
+origin, alter CORS, protect an endpoint, revoke `IndexVerificado`, change
+logout, guard BFCache, or remediate any risk recorded above.
+
+The current STORE, API, ERROR, FLOW, GATE, route, asset, and artifact contracts
+remain the compatibility baseline until their named Topic 05 implementation
+task changes them. `GATE-01` and `GATE-02` retain precedence ahead of every
+session task and remain browser-admission checks, never authentication.
+
+### Selected target boundary
+
+The target frontend will treat the backend as the sole authority for session
+existence, subject, authentication phase, permission, server-time expiry,
+revocation, and account eligibility. Browser state may present an authoritative
+response but cannot create or preserve authority.
+
+The selected target uses:
+
+- verified first-party API origin `https://api.machadogestao.com`;
+- one host-only `__Host-machado-session` cookie with `Path=/`, `Secure`,
+  `HttpOnly`, and `SameSite=Strict`, and no `Domain`;
+- Azure SQL Database Basic as the shared backend session/revocation store,
+  pulled forward as a narrow Topic 12 dependency before implementation;
+- a 20-minute absolute provisional lifetime, preserving its original deadline
+  across provisional transitions;
+- a four-hour absolute authenticated lifetime beginning at successful backend
+  promotion;
+- no idle timeout and no request-driven extension;
+- backend-bound Face completion, never a client verdict or client-selected
+  provider session identifier;
+- one cookie shared across tabs in a browser profile; logout in one tab revokes
+  the shared session; and
+- concurrent sessions on other devices, with a new login replacing only the
+  current profile session and revoke-all reaching every subject session; the
+  first target issuance also irreversibly retires that subject's legacy handles
+  across all old tabs/devices during migration.
+
+The frontend never reads the HttpOnly identifier. It sends target session and
+protected requests with `credentials: "include"` and the exact
+`X-Machado-Session-Request: 1` header. The target API accepts credentialed CORS
+only from `https://machadogestao.com`, checks that exact Origin on unsafe
+requests, uses no wildcard with credentials, and marks session/protected
+responses `no-store`. The full host, cookie, CORS, CSRF, cache, and response
+contract is also recorded in
+[`frontend-backend-origin-contract.md`](frontend-backend-origin-contract.md#approved-future-session-topology).
+
+DNS, TLS, the App Service custom-hostname binding, first-party cookie behavior,
+the pulled-forward SQL session slice, multi-instance transactions, and
+five-minute eligibility revalidation are prerequisites. A durable full-handle
+verifier-to-subject compatibility ledger must also seed continuously for one
+complete four-hour handle lifetime before dual-stack enforcement; no
+pre-ledger handle is backfilled from a mutable row. The current separate App
+Service origin and current fetch mechanics remain unchanged in this task. There
+is no third-party-cookie or Web Storage bearer fallback.
+
+### Target states and page behavior
+
+The target states are `anonymous`, `credential-verified`,
+`registration-pending`, `face-pending`, `authenticated`, `expired`, and
+`revoked`, plus terminal `rotated-out` predecessors. Every
+externally visible phase transition rotates the opaque identifier; provisional
+rotations preserve the original 20-minute deadline, and only authenticated
+promotion starts a new four-hour clock.
+
+| Target state | Frontend presentation and allowed request roles |
+| --- | --- |
+| `anonymous` | Public/session-free pages and APIs, credential submission, and idempotent current-session logout; current-session status is `401`; no provisional or protected work |
+| `credential-verified` | Public/session-free behavior, current-session status/logout, and exactly one backend-approved next step: registration enrollment when required or existing-photo Face challenge when registration is complete; no study authority |
+| `registration-pending` | Public/session-free behavior, current-session status/logout, idempotent repeated enrollment, and scoped registration upload/reconciliation plus one registration Face challenge; no study, progress, assessment, feedback, or certificate authority |
+| `face-pending` | Public/session-free behavior, current-session status/logout, and session-bound completion for the one backend-bound challenge; repeated challenge creation is `409`; no client result assertion and no study authority |
+| `authenticated` | Public/session-free behavior, current-session status/logout, revoke-all, and protected learning requests; a completion repeat after successful promotion returns current status without another session |
+| `expired` / `revoked` / `rotated-out` | Public/session-free behavior, fresh credential submission, and idempotent logout only; status is `401`; explicit invalid-session presentation never treats storage flags as authority |
+
+When backend policy does not require Face, successful credential validation may
+create `authenticated` directly. When Face is required, promotion occurs only
+after the backend reads the result bound to the current provisional session.
+The current public Face-result GET remains a compatibility risk and cannot
+promote a target session. Protecting or retiring that route remains the later
+Face-result-security milestone.
+
+Every authority-bearing provisional or authenticated request must use the
+backend record and its current eligibility observation. When the observation
+is five minutes old, registration, Face challenge/completion, authenticated
+promotion, and protected work synchronously revalidate; known entitlement
+expiry is checked on every such operation. `503`, dependency loss, or network
+loss preserves the current phase/cookie and blocks the transition/work.
+
+Every protected entry must also validate the current session before protected
+fetches, media/player startup, Face startup, timers, or writes. It repeats that
+validation on `pageshow`, including `event.persisted` BFCache restoration.
+`401` establishes an explicit invalid-session transition. Availability loss
+presents retry state; it does not pretend that the user is anonymous, revoked,
+authenticated, or successfully logged out.
+
+Only successful login/rotation emits `Set-Cookie`. Logout, revoke-all,
+definitive Face failure, ineligibility, missing/malformed/unknown credentials,
+terminal/wrong-phase records, repeated requests, store failures, and
+compare-and-replace losers never mutate or delete the cookie. The retained
+value is inert after revocation and naturally expires or is overwritten by the
+next successful credential login. This prevents any delayed non-issuance
+response from erasing a newer shared-profile cookie.
+
+Cookie-less credential requests are independent logins. A delayed successful
+response may therefore set a newly authenticated cookie after current-session
+logout revoked a different record; logout does not cancel outstanding
+credential attempts or other sessions. Revoke-all invalidates records committed
+before its epoch change, while a login committed afterward is a new
+authentication. Future tests cover both commit and response orders.
+
+### Target consumer/API alignment
+
+The current paths remain current during this definition task. Later Topic 05
+work adopts these backend roles:
+
+| Consumer operation | Target role |
+| --- | --- |
+| Credential login | Current `POST /plataforma_v2/login-FaceID` validates credentials/eligibility; target mode sends `X-Machado-Session-Request: 1`, atomically disables all legacy authority for the subject, conditionally replaces an active profile session, and never returns `IndexVerificado`; with the store available, fresh valid credentials overwrite an absent/malformed/unknown/terminal cookie; same-active-predecessor conflict is `409` without `Set-Cookie`; bounded legacy mode presents no target cookie, omits the header, and is allowed only for a not-yet-adopted subject before global stop-issuance, otherwise it is `409` upgrade-required without a handle |
+| Registration enrollment | New `POST /plataforma_v2/sessions/current/registration-enrollment`; first `credential-verified` success rotates to `registration-pending`; repeat in that phase is `204` without another rotation |
+| Registration upload/challenge | Current `POST /plataforma_v2/CadastroFoto_e_FaceID`; cookie-authenticated `registration-pending`; no application session identifier in multipart; success is `200` and becomes `face-pending`; ambiguity does not promote/rotate and blocks repeat with `409` pending the separately authorized reconciliation decision |
+| Existing-photo Face challenge | Current `POST /plataforma_v2/FaceID`; cookie-authenticated `credential-verified`; returns only provider data required by the SDK; success is `200` and becomes `face-pending`; repeat while creating/active is `409` without another provider call or rotation |
+| Face completion/promotion | New `POST /plataforma_v2/sessions/current/face-completion`; sends no verdict/provider session ID; backend reads the bound result; pending is `409` and preserves phase/cookie, definitive factor failure revokes without cookie mutation and returns `403`, provider/network/store unavailability is `503` and preserves `face-pending`/cookie, and success rotates with `200` |
+| Current-session validation | New `GET /plataforma_v2/sessions/current`; `200` returns phase, server time, expiry, eligibility revalidation time, and presentation next-operation roles, never an identifier; invalid `401` and store-outage `503` preserve the browser cookie while blocking authority |
+| Study refresh/progress/assessment/feedback | Existing current paths; cookie-authenticated `authenticated` only; no `IndexVerificado` body field after cutover |
+| Current logout | New effect-idempotent `DELETE /plataforma_v2/sessions/current`; successful active-record revocation and missing/invalid/terminal/repeated `204` outcomes all emit no `Set-Cookie`; navigate/update presentation only after a non-`503` result; retained bytes are inert |
+| Revoke all | New authenticated `DELETE /plataforma_v2/sessions`; first success is `204` and revokes every subject session without mutating the caller cookie; a repeat without fresh authentication is `401` |
+
+Public status report, public client intake, quote, Conecta, certificate
+validation, viewport warning, and device/browser warning remain session-free.
+This decision does not protect the current public Face-result lookup or change
+any current public request, response, route, query, gate, or warning behavior.
+
+### Future disposition of the exact seven keys
+
+This definition task preserves every spelling, reader, writer, and value. The
+target disposition is:
+
+| Exact key | Future disposition |
+| --- | --- |
+| `IndexVerificado` | Has no target authority; during migration it is accepted only through an immutable full-handle-verifier binding seeded before dual stack and only for a not-yet-adopted subject; first target issuance atomically and irreversibly rejects every subject handle across devices; global issuance stops at authoritative-client cutover; browser use and central acceptance end at final rejection, with seven days only the fixed outer maximum |
+| `Usuário_Foto_Cadastrada` | Remove the dead mirror when current-session/registration status supplies presentation |
+| `Horário-Encerramento-Sessão` | During adoption, presentation may derive from server-returned time/expiry; remove after the server-time timer/status is adopted |
+| `Usuário_Logado` | Presentation-only during adoption and never a backend/page authority gate; remove after direct/BFCache validation is adopted |
+| `Usuário_Autorização_Cadastro` | Replace with backend `registration-pending`; remove when server-side enrollment is adopted |
+| `Origem_Aviso_Dispositivo` | Retain as the current UI/history compatibility marker through this task; decide/remove it in **Guard restored protected pages** with restored-page/login-history reconciliation |
+| `TempoSessão_Segundos` | Remove the unused legacy read when the server-time session presentation is adopted |
+
+No replacement Web Storage credential is permitted. Forged, missing,
+nonnumeric, stale, or otherwise malformed storage may affect only bounded
+presentation/navigation compatibility while it remains.
+
+### Bounded adoption and rollback
+
+The Topic 05 order is fixed:
+
+1. **Implement revocable sessions** adds the durable backend authority, legacy
+   compatibility binding, provisional states, status/logout/revoke-all, private
+   Face binding, rotation, revocation, and dual-stack middleware after the SQL
+   and hostname prerequisites pass.
+2. **Adopt authoritative sessions** replaces the one shared backend origin for
+   all eight consumers with the verified first-party hostname while adding
+   credentials/session headers only to learning session/protected requests. It
+   adopts backend phases, server time, and session-bound Face completion, then
+   stops legacy-handle issuance only when authoritative logout is ready for the
+   same production enablement.
+3. **Make logout authoritative** makes durable revocation the prerequisite to
+   successful logout presentation/navigation.
+4. **Guard restored protected pages** validates direct and BFCache-restored
+   entries before protected work and owns the later warning-origin disposition.
+
+Before the dual-stack window, a seeding release transactionally records a
+unique HMAC verifier of every newly issued complete legacy handle with its
+stable `subject_id` and original expiry. It runs continuously for one full
+four-hour issuance horizon; a write/continuity failure restarts the horizon.
+Handles from before the ledger therefore expire naturally, and enforcement
+never reconstructs ownership from a mutable workbook row. Once enforcement is
+enabled, a missing binding is `401`, a conflicting/corrupt binding is `503`,
+and neither reaches protected domain work.
+
+Because current issuance can deterministically repeat the same handle for the
+same row within one second, an existing binding with identical subject,
+issue/expiry instants, and key ID is idempotent success. Only differing metadata,
+an impossible duplicate row, or corrupt/unreadable state is the `503` integrity
+case.
+
+The dual-stack window then begins when production first accepts both target
+cookies and ledger-bound legacy handles and has a fixed, non-extendable hard
+maximum of seven calendar days. Any presence of the target cookie is
+decisive—valid, invalid, expired, revoked, wrong-phase, or unavailable—and
+prevents legacy evaluation; `IndexVerificado` is considered only when the
+cookie is absent. Absence alone does not permit downgrade: target-mode login
+atomically sets an irreversible per-subject legacy cutoff, and every legacy
+authorization derives the subject only from its immutable ledger binding and
+checks that cutoff plus the same bounded current eligibility decision in SQL.
+An adopted subject's old handles therefore remain rejected after cookie
+eviction, manual deletion, expiry, logout, revoke-all, Face failure, or
+ineligibility; store or due-eligibility outage is `503`, never unchecked
+fallback. Old legacy tabs/devices must load the target client and reauthenticate.
+The production adoption gate cannot open until authoritative logout is ready
+for the same coordinated enablement.
+
+Before global stop-issuance, legacy-mode login presents no target cookie, omits
+the session header, and may receive only the current handle for a
+not-yet-adopted subject. Target-mode login sends the header, sets the subject
+cutoff, and receives only the cookie. The cutoff is never cleared by rollback
+or administration. Concurrent target-device sessions remain allowed; the
+cross-device legacy retirement is a bounded migration exception.
+
+If first target issuance commits but its response is lost, the cutoff remains
+and legacy authority does not return. The frontend shows an availability state
+and requires a fresh target-mode credential login; it does not blindly replay
+the ambiguous request.
+
+At authoritative-client cutover, the backend stops issuing the legacy field.
+Cutover must occur at least four hours before the seven-day sunset or the
+adoption aborts/rolls back. Already issued handles may age out only for their
+existing four-hour lifetime; central rejection occurs mechanically when the
+final lifetime passes and never waits for telemetry. Hosted synthetic checks,
+unchanged public-surface checks, and a reviewed frontend/backend rollback pair
+are prerequisites. Privacy-safe telemetry confirms that nothing is accepted
+after rejection but cannot extend the window.
+
+Before central legacy rejection, frontend and backend may roll back together
+only to reviewed cookie-capable dual-stack code while preserving every subject
+cutoff and any central stop-issuance setting; a target-adopted subject never
+returns to legacy mode. Rollback never mints a disallowed new legacy handle,
+extends an existing lifetime, or extends the sunset. After rejection, rollback
+must remain cookie-capable and cannot re-enable legacy issuance or acceptance.
+Revoked records are never resurrected, and schema rollback cannot discard
+revocation/cutoff evidence while any corresponding identifier could remain
+valid.
+
+### Synthetic future-session acceptance matrix
+
+These rows are future target coverage, separate from the current
+**Behavior-baseline acceptance matrix** below. They use invented identifiers,
+fake UTC clocks, synthetic accounts, inert session records, injected providers,
+and denied production networking.
+
+| ID | Future synthetic assertion |
+| --- | --- |
+| `SESSION-TARGET-01` | Every protected operation accepts a valid authenticated cookie and derives the expected backend subject; no provisional phase can reach it |
+| `SESSION-TARGET-02` | Missing, malformed, unknown, expired, revoked, rotated-out, and wrong-subject sessions fail closed before domain work and without stale-response cookie mutation; any cookie presence prevents fallthrough to the legacy body credential |
+| `SESSION-TARGET-03` | Credential, registration, and Face provisional states reach only their exact minimum routes and never study, progress, assessment, feedback, or certificate work |
+| `SESSION-TARGET-04` | Authenticated promotion atomically consumes the bound Face challenge, invalidates the provisional verifier, creates the authenticated record, and rotates the cookie |
+| `SESSION-TARGET-05` | Every old provisional identifier fails immediately after elevation on every backend instance |
+| `SESSION-TARGET-06` | Forged or malformed values for all seven exact storage keys never grant backend access or change subject, phase, expiry, or eligibility |
+| `SESSION-TARGET-07` | Browser-clock and stored-deadline tampering have no authority effect; provisional/authenticated deadlines use server UTC and no request extends them |
+| `SESSION-TARGET-08` | Known entitlement expiry is exact; account deactivation/shortening or credential-fingerprint change blocks provisional transition, promotion, and protected work within five minutes; due revalidation outage returns `503` without serving stale authority |
+| `SESSION-TARGET-09` | Current logout revokes only the shared profile session; every successful/repeated/invalid `204` leaves the retained cookie inert and untouched; the subject cutoff prevents legacy resurrection; revoke-all invalidates every subject session/device without cookie mutation |
+| `SESSION-TARGET-10` | Tabs share rotation/logout, concurrent target devices follow the selected allowance, and successful new login preserves other-device sessions; cookie-less login/logout races prove that a delayed successful credential response is a new authentication that may win after current-session logout |
+| `SESSION-TARGET-11` | Store failure and unknown transaction outcome fail closed as availability failures; restore/verifier-key incidents retire target and legacy keys outside restored SQL, advance authority epoch, invalidate backup-era credentials, and wait for every instance before resuming |
+| `SESSION-TARGET-12` | Target hostname, host-only cookie flags, credentialed CORS, exact Origin, custom header, preflight, cache, response, issuance-only cookie mutation, and natural-expiry/overwrite behavior match the ADR |
+| `SESSION-TARGET-13` | No application session identifier/verifier appears in a URL, body, Web Storage, log, fixture, snapshot, public diagnostic, or client-visible provider session field |
+| `SESSION-TARGET-14` | The browser supplies neither Face verdict nor provider session ID; only the backend-bound provider result can promote; pending is `409`, definitive failure is revoking `403`, provider/store outage is preserving `503`, and the public compatibility lookup cannot promote |
+| `SESSION-TARGET-15` | Direct and BFCache-restored protected pages revalidate before any protected fetch, media, Face runtime, timer, or write; validation outage blocks without false logout |
+| `SESSION-TARGET-16` | Legacy compatibility is bounded by a full four-hour verifier-binding seeding gate, cookie-first/no-fallback, an irreversible per-subject cutoff on first target issuance, global stop-issuance at least four hours before the fixed seven-day sunset, the last not-yet-adopted lifetime, and non-reversible final rejection across rollback |
+| `SESSION-TARGET-17` | Public status report, client intake, quote, Conecta, certificate validation, and both warning pages retain their current session-free behavior |
+| `SESSION-TARGET-18` | Current-session status, registration enrollment, Face challenge/completion, logout, revoke-all, wrong-stage, wrong-subject, and store-outage roles match their methods, statuses, cookie effects, and idempotency |
+| `SESSION-TARGET-19` | Same-predecessor races let only the compare-and-replace winner issue a cookie; every non-issuance response has no `Set-Cookie` in either response order; fresh login overwrites unusable cookies; cookie-less login/logout races follow the last-processed-response/new-authentication policy; restart and multi-instance checks observe committed rotation/revocation and subject cutoffs without positive authorization caching |
+| `SESSION-TARGET-20` | This definition task leaves runtime, dependencies, the current five authorization placements, seven-key inventory, public Face-result behavior, frontend artifact, and import graph unchanged |
+| `SESSION-TARGET-21` | Every accepted migration handle resolves through one immutable full-handle-verifier-to-subject binding; an identical same-second deterministic issuance is idempotent success; pre-ledger/missing bindings fail `401`, differing/corrupt bindings fail `503`, and workbook row movement cannot change the subject |
+
 ## Approved future decisions
 
 These remaining decisions are approved roadmap direction only. The named-only
@@ -1966,9 +2236,10 @@ are current behavior above, not future work.
   separate Azure operations milestone. Observability diagnoses failures; it
   neither replaces the client/server error contract nor exposes private
   diagnostic detail through that contract.
-- Keep session authority and logout, HTTP-status reclassification, retries,
-  idempotency, timeout and cancellation policy, partial-success redesign, and
-  versioned response-envelope changes in separately authorized milestones.
+- Implement the approved session-authority decision only through the four
+  named Topic 05 tasks. Keep broader HTTP-status reclassification, retries,
+  idempotency, timeout/cancellation, partial-success redesign, and versioned
+  response-envelope changes in their separately authorized milestones.
 - Re-encode the video ladder and evaluate storage redundancy before considering
   a CDN.
 - Automate Face SDK and dependency maintenance; remove secret-bearing manual
@@ -1976,11 +2247,13 @@ are current behavior above, not future work.
 
 ## Questions requiring implementation-time evidence
 
-The source snapshot cannot answer the following safely. The later task that
-changes the relevant seam must collect evidence without contacting production:
+The former Question 1—authoritative expiry, revocation, rotation, and logout
+semantics—is resolved by the separate future-session decision above and the
+backend ADR. Publishing that answer does not implement it or remediate the
+current risks. The source snapshot cannot answer the remaining unrelated
+questions safely. They retain their original numbers, and the later task that
+changes each relevant seam must collect evidence without contacting production:
 
-1. What authoritative expiry, revocation, rotation, and logout semantics will
-   replace the current tab-local authorization-handle lifetime?
 2. Which backend operations are idempotent today under transport retry, and
    where must request identifiers or reconciliation be introduced?
 3. Which partial Face-registration states exist in representative nonproduction
