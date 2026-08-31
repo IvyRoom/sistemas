@@ -42,7 +42,7 @@ override, fallback base, or path that can concatenate a relative `/null/` reques
 ## Approved future session topology
 
 This section is the consumer alignment for the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/36f3dd3aec8c198612e7008b25b07dab479ada46/docs/session-authority.md).
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/be9e9a96e3d93325a92eeb9a6bbe645b554529fe/docs/session-authority.md).
 It is an approved future topology, not current runtime behavior. This definition
 task does not change `BACKEND_ORIGIN`, any import, fetch option, header, route,
 cookie, CORS response, DNS record, certificate, App Service binding, deployment

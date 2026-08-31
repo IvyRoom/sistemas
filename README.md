@@ -147,7 +147,7 @@ It records route, state, API, runtime-asset, and artifact behavior separately
 from known risks and approved future changes.
 
 The approved replacement for browser-held row authority is the backend-owned
-[session-authority target decision](https://github.com/IvyRoom/backend/blob/36f3dd3aec8c198612e7008b25b07dab479ada46/docs/session-authority.md),
+[session-authority target decision](https://github.com/IvyRoom/backend/blob/be9e9a96e3d93325a92eeb9a6bbe645b554529fe/docs/session-authority.md),
 with frontend consumer and future acceptance alignment in the compatibility
 specification above and target-origin details in
 [`docs/frontend-backend-origin-contract.md`](docs/frontend-backend-origin-contract.md#approved-future-session-topology).

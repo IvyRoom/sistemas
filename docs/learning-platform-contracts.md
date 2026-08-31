@@ -1947,7 +1947,7 @@ future work, not permission to change compatibility behavior in the baseline.
 ## Approved future session-authority consumer decision
 
 The authoritative target is the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/36f3dd3aec8c198612e7008b25b07dab479ada46/docs/session-authority.md).
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/be9e9a96e3d93325a92eeb9a6bbe645b554529fe/docs/session-authority.md).
 This section freezes the frontend consumer alignment and future synthetic
 acceptance coverage. It does not change current runtime behavior. Publishing
 the decision does not create a cookie, provision SQL, change the backend
@@ -2023,9 +2023,41 @@ promotion starts a new four-hour clock.
 | `authenticated` | Public/session-free behavior, current-session status/logout, revoke-all, and protected learning requests; a completion repeat after successful promotion returns current status without another session |
 | `expired` / `revoked` / `rotated-out` | Public/session-free behavior, fresh credential submission, and idempotent logout only; status is `401`; explicit invalid-session presentation never treats storage flags as authority |
 
-When backend policy does not require Face, successful credential validation may
-create `authenticated` directly. When Face is required, promotion occurs only
-after the backend reads the result bound to the current provisional session.
+### Face-requirement account policy
+
+While `BD - PLATAFORMA` remains the account-policy adapter, its existing
+`FACEID` cell at platform-row index `4` is the single backend-read policy source
+for every fresh credential login. Exact, case-sensitive `Ativo` requires the
+scoped registration/Face path and backend-bound successful Face completion
+before `authenticated`; exact `Inativo` allows valid credentials plus account
+eligibility to create `authenticated` directly, regardless of photo-registration
+state. Missing, blank, unreadable, or any other value fails closed as `503`
+without a target identifier, legacy handle, or `Set-Cookie`, and leaves any
+previously valid cookie session unchanged.
+
+The target frontend never submits, derives, or overrides this policy. The
+`Usuário_Status_FaceID` field remains in the bounded legacy compatibility
+payload and retains its source-observed legacy navigation branch, but it is
+never accepted as target session authority or as a waiver of a backend-required
+factor. The backend captures the policy at credential validation and copies it
+unchanged through provisional rotations and authenticated promotion. An
+`Ativo`/`Inativo` edit applies only to a fresh login. It neither promotes an
+existing provisional session nor revokes, downgrades, or upgrades an
+authenticated session. A user blocked in Face must restart credential login
+after `Ativo` becomes `Inativo`; an authenticated session issued without Face
+continues until logout, revoke-all, its four-hour absolute expiry, entitlement
+expiry, or another already defined revocation trigger. A later `Inativo` to
+`Ativo` change governs the next login only and is not part of five-minute
+eligibility revalidation.
+
+Topic 05 requires no dedicated Face-policy audit log, actor/reason field,
+time-bounded override, or management UI under the current single-operator
+model. Existing workbook access restriction and ordinary file history remain
+operational safeguards rather than session-contract machinery. When account
+authority later moves to SQL, the policy moves once to a backend-owned boolean
+such as `face_auth_required`; the frontend does not support workbook/SQL dual
+authority, a precedence rule, or fallback after that cutover.
+
 The current public Face-result GET remains a compatibility risk and cannot
 promote a target session. Protecting or retiring that route remains the later
 Face-result-security milestone.
@@ -2066,7 +2098,7 @@ work adopts these backend roles:
 
 | Consumer operation | Target role |
 | --- | --- |
-| Credential login | Current `POST /plataforma_v2/login-FaceID` validates credentials/eligibility; target mode sends `X-Machado-Session-Request: 1`, atomically disables all legacy authority for the subject, conditionally replaces an active profile session, and never returns `IndexVerificado`; with the store available, fresh valid credentials overwrite an absent/malformed/unknown/terminal cookie; same-active-predecessor conflict is `409` without `Set-Cookie`; bounded legacy mode presents no target cookie, omits the header, and is allowed only for a not-yet-adopted subject before global stop-issuance, otherwise it is `409` upgrade-required without a handle |
+| Credential login | Current `POST /plataforma_v2/login-FaceID` validates credentials/eligibility; the target backend also reads exact `BD - PLATAFORMA.FACEID`, with `Inativo` issuing `authenticated` directly and `Ativo` issuing only the minimum registration/Face provisional phase; missing/blank/other policy is `503` without a target identifier, legacy handle, or `Set-Cookie`. Target mode sends `X-Machado-Session-Request: 1`, atomically disables all legacy authority for the subject, conditionally replaces an active profile session, and never returns `IndexVerificado`; with the store available, fresh valid credentials overwrite an absent/malformed/unknown/terminal cookie; same-active-predecessor conflict is `409` without `Set-Cookie`; bounded legacy mode presents no target cookie, omits the header, and is allowed only for a not-yet-adopted subject before global stop-issuance, otherwise it is `409` upgrade-required without a handle |
 | Registration enrollment | New `POST /plataforma_v2/sessions/current/registration-enrollment`; first `credential-verified` success rotates to `registration-pending`; repeat in that phase is `204` without another rotation |
 | Registration upload/challenge | Current `POST /plataforma_v2/CadastroFoto_e_FaceID`; cookie-authenticated `registration-pending`; no application session identifier in multipart; success is `200` and becomes `face-pending`; ambiguity does not promote/rotate and blocks repeat with `409` pending the separately authorized reconciliation decision |
 | Existing-photo Face challenge | Current `POST /plataforma_v2/FaceID`; cookie-authenticated `credential-verified`; returns only provider data required by the SDK; success is `200` and becomes `face-pending`; repeat while creating/active is `409` without another provider call or rotation |
@@ -2211,6 +2243,7 @@ and denied production networking.
 | `SESSION-TARGET-19` | Same-predecessor races let only the compare-and-replace winner issue a cookie; every non-issuance response has no `Set-Cookie` in either response order; fresh login overwrites unusable cookies; cookie-less login/logout races follow the last-processed-response/new-authentication policy; restart and multi-instance checks observe committed rotation/revocation and subject cutoffs without positive authorization caching |
 | `SESSION-TARGET-20` | This definition task leaves runtime, dependencies, the current five authorization placements, seven-key inventory, public Face-result behavior, frontend artifact, and import graph unchanged |
 | `SESSION-TARGET-21` | Every accepted migration handle resolves through one immutable full-handle-verifier-to-subject binding; an identical same-second deterministic issuance is idempotent success; pre-ledger/missing bindings fail `401`, differing/corrupt bindings fail `503`, and workbook row movement cannot change the subject |
+| `SESSION-TARGET-22` | Fresh-login coverage proves exact backend-read `FACEID = Ativo` requires backend-bound Face, exact `Inativo` authenticates directly regardless of photo state, and missing/blank/other values fail `503` without a target identifier, legacy handle, or `Set-Cookie`; edits affect only fresh logins, existing provisional/authenticated sessions retain their captured policy and normal lifetime, forged client state cannot waive Face, and the later account-authority cutover leaves exactly one policy source |
 
 ## Approved future decisions
 
