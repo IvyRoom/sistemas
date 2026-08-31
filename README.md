@@ -146,6 +146,14 @@ learning platform is
 It records route, state, API, runtime-asset, and artifact behavior separately
 from known risks and approved future changes.
 
+The approved replacement for browser-held row authority is the backend-owned
+[session-authority target decision](https://github.com/IvyRoom/backend/blob/be9e9a96e3d93325a92eeb9a6bbe645b554529fe/docs/session-authority.md),
+with frontend consumer and future acceptance alignment in the compatibility
+specification above and target-origin details in
+[`docs/frontend-backend-origin-contract.md`](docs/frontend-backend-origin-contract.md#approved-future-session-topology).
+It is not implemented: current storage, origin, request, route, logout, timer,
+Face-result, BFCache, and deployment behavior remains unchanged.
+
 Machado Conecta personal links add both required query parameters to the
 referral-form route:
 `/conecta/cadastro-recomendacoes/?ncr=<URL-encoded recommender name>&eb=<URL-encoded benefited company>`.
