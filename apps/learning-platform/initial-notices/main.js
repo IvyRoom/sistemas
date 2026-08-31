@@ -1,5 +1,8 @@
 import { createInitialNoticesApplication } from '../modules/initial-notices.js';
-import { createSessionStore } from '../modules/session.js';
+import {
+    AUTHORITATIVE_SESSIONS_ENABLED,
+    createSessionStore
+} from '../modules/session.js';
 
 const requiredAcknowledgements = Object.freeze({
     credentials: 'credenciais',
@@ -17,5 +20,6 @@ createInitialNoticesApplication({
     replaceNavigation,
     requiredAcknowledgements,
     session: createSessionStore(sessionStorage),
-    window
+    window,
+    authoritativeSessions: AUTHORITATIVE_SESSIONS_ENABLED
 }).install();

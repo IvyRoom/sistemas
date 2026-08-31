@@ -12,7 +12,8 @@ export function createInitialNoticesApplication({
     replaceNavigation,
     requiredAcknowledgements,
     session,
-    window
+    window,
+    authoritativeSessions = false
 }) {
     const browserAdmission = classifyBrowserAdmission({
         document,
@@ -33,7 +34,7 @@ export function createInitialNoticesApplication({
         } else if (handleViewportWidth()) {
             return;
         } else {
-            if (session.read('registrationAuthorization') !== 'Sim') {
+            if (!authoritativeSessions && session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
             } else {
                 window.addEventListener('resize', handleViewportWidth);

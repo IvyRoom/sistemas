@@ -1,5 +1,6 @@
 import { createRegistrationApplication } from "../modules/photo-registration.js";
 import { BACKEND_ORIGIN } from "../../shared/backend-origin.js";
+import { AUTHORITATIVE_SESSIONS_ENABLED } from "../modules/session.js";
 
 const backendBase = `${BACKEND_ORIGIN}/plataforma_v2`;
 
@@ -22,5 +23,6 @@ createRegistrationApplication({
     alert(message) {
         window.alert(message);
     },
-    backendBase
+    backendBase,
+    authoritativeSessions: AUTHORITATIVE_SESSIONS_ENABLED
 });

@@ -1,5 +1,8 @@
 import { createPlatformClient } from '../modules/platform-client.js';
-import { createSessionStore } from '../modules/session.js';
+import {
+    AUTHORITATIVE_SESSIONS_ENABLED,
+    createSessionStore
+} from '../modules/session.js';
 import { createStudyApplication } from '../modules/course-content/application.js';
 import { createCertificateRenderer } from '../modules/course-content/certificate-renderer.js';
 import { createStudyDom } from '../modules/course-content/dom.js';
@@ -29,12 +32,15 @@ const bindWindowFunction = name => typeof window[name] === 'function'
     : window[name];
 let legacySessionSeconds;
 const studyDom = createStudyDom(window.document, () => {
-    legacySessionSeconds = session.read('legacySessionSeconds');
+    if (!AUTHORITATIVE_SESSIONS_ENABLED) {
+        legacySessionSeconds = session.read('legacySessionSeconds');
+    }
 });
 const platformClient = createPlatformClient({
     baseUrl: backendBase,
     fetch: bindWindowFunction('fetch'),
-    FormDataConstructor: window.FormData
+    FormDataConstructor: window.FormData,
+    sessionRequest: AUTHORITATIVE_SESSIONS_ENABLED
 });
 
 let controller;
@@ -56,9 +62,11 @@ const player = createStudyPlayer({
 
 controller = createStudyApplication({
     alert: bindWindowFunction('alert'),
+    authoritativeSessionsEnabled: AUTHORITATIVE_SESSIONS_ENABLED,
     client: platformClient,
     clock: {
         createDate: (...argumentsList) => new window.Date(...argumentsList),
+        monotonicNow: () => window.performance.now(),
         now: () => window.Date.now()
     },
     configureDownloads: createDownloadConfigurator(window.document),

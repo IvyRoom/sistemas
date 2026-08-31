@@ -1,5 +1,6 @@
 import { createLoginApplication } from "../modules/login.js";
 import { BACKEND_ORIGIN } from "../../shared/backend-origin.js";
+import { AUTHORITATIVE_SESSIONS_ENABLED } from "../modules/session.js";
 
 const backendBase = `${BACKEND_ORIGIN}/plataforma_v2`;
 
@@ -24,5 +25,6 @@ createLoginApplication({
         window.alert(message);
     },
     console: window.console,
-    backendBase
+    backendBase,
+    authoritativeSessions: AUTHORITATIVE_SESSIONS_ENABLED
 });

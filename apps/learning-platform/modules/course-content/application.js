@@ -13,6 +13,12 @@ import {
     classifyBrowserAdmission,
     replaceWithViewportWarning
 } from '../lifecycle.js';
+import {
+    AUTHENTICATION_PHASES,
+    SESSION_NEXT_OPERATIONS,
+    hasSessionNextOperation,
+    readAuthoritativeSessionStatus
+} from '../session.js';
 import { createStudyAssessment } from './assessment.js';
 import { createStudyCertificate } from './certificate.js';
 import { createStudyContent } from './content.js';
@@ -25,6 +31,7 @@ import { createStudyState } from './state.js';
 
 export function createStudyApplication({
     alert,
+    authoritativeSessionsEnabled = false,
     client,
     clock,
     configureDownloads,
@@ -48,7 +55,14 @@ export function createStudyApplication({
     const stateContainer = createStudyState();
     const { state } = stateContainer;
     const navigation = createStudyNavigation({ document, dom, state });
-    const sessionTimer = createStudySessionTimer({ clock, document, navigate, session, timers });
+    const sessionTimer = createStudySessionTimer({
+        authoritativeSessionsEnabled,
+        clock,
+        document,
+        navigate,
+        session,
+        timers
+    });
 
     let content;
     let assessment;
@@ -81,6 +95,7 @@ export function createStudyApplication({
 
     const progress = createStudyProgress({
         alert,
+        authoritativeSessionsEnabled,
         client,
         document,
         dom,
@@ -91,6 +106,7 @@ export function createStudyApplication({
     content = createStudyContent({ configureDownloads, document, dom, loadMedia, progress, state });
     assessment = createStudyAssessment({
         alert,
+        authoritativeSessionsEnabled,
         client,
         document,
         dom,
@@ -102,6 +118,7 @@ export function createStudyApplication({
     performanceView = createStudyPerformance({ certificate, document, dom, navigation, state });
     feedback = createStudyFeedback({
         alert,
+        authoritativeSessionsEnabled,
         client,
         clock,
         document,
@@ -112,7 +129,10 @@ export function createStudyApplication({
         state
     });
 
-    function hydrate(data) {
+    function hydrate(data, authoritativeSessionStatus) {
+        if (authoritativeSessionsEnabled) {
+            state.authoritativeSessionStatus = authoritativeSessionStatus;
+        }
         state.fullName = data.Usuário_NomeCompleto;
         state.firstName = data.Usuário_PrimeiroNome;
         state.email = data.Usuário_Email;
@@ -144,8 +164,65 @@ export function createStudyApplication({
             openPerformance
         );
         document.getElementById('Usuário-Nome').innerHTML = state.fullName;
-        sessionTimer.start();
+        sessionTimer.start(authoritativeSessionStatus);
         navigation.openInitialTopic(closedTopics, openTopic, openPerformance);
+    }
+
+    function presentRefreshFailure(error) {
+        const failure = normalizeLearningPlatformError(
+            error,
+            learningPlatformErrorOperations.REFRESH
+        );
+        if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE) {
+            alert(learningPlatformErrorMessage(
+                learningPlatformErrorPresentations.STUDY_REFRESH_GENERIC
+            ));
+        } else {
+            alert(learningPlatformErrorMessage(
+                learningPlatformErrorPresentations.STUDY_REFRESH_PLATFORM_DATA
+            ));
+        }
+    }
+
+    function readStudySessionStatus(data) {
+        const status = readAuthoritativeSessionStatus(data);
+        if (
+            status.authenticationPhase !== AUTHENTICATION_PHASES.AUTHENTICATED ||
+            !hasSessionNextOperation(status, SESSION_NEXT_OPERATIONS.PROTECTED_LEARNING)
+        ) {
+            throw new TypeError('Authoritative session does not permit protected learning');
+        }
+        return status;
+    }
+
+    function loadAuthoritativeStudy() {
+        let refreshData;
+        client.postJson('/refresh', {}).then(data => {
+            refreshData = data;
+            return client.getJson('/sessions/current');
+        }).then(data => {
+            const status = readStudySessionStatus(data);
+            hydrate(refreshData, status);
+            session.write('loggedIn', 'Sim');
+        }).catch(error => {
+            const failure = normalizeLearningPlatformError(
+                error,
+                learningPlatformErrorOperations.REFRESH
+            );
+            if (failure.status === 401) {
+                session.write('loggedIn', 'Não');
+                navigate('/plataforma/login');
+                return;
+            }
+            presentRefreshFailure(failure);
+        });
+    }
+
+    function loadLegacyStudy() {
+        state.verifiedIndex = session.read('verifiedIndex');
+        client.postJson('/refresh', {
+            IndexVerificado: state.verifiedIndex
+        }).then(hydrate).catch(presentRefreshFailure);
     }
 
     function onLoad() {
@@ -155,7 +232,7 @@ export function createStudyApplication({
             replaceNavigation('/plataforma/aviso-dispositivo-navegador');
         } else if (replaceWithViewportWarning({ replaceNavigation, window })) {
             return;
-        } else if (session.read('loggedIn') !== 'Sim') {
+        } else if (!authoritativeSessionsEnabled && session.read('loggedIn') !== 'Sim') {
             navigate('/plataforma/login');
         } else {
             const handleViewportWidth = () => replaceWithViewportWarning({
@@ -164,24 +241,11 @@ export function createStudyApplication({
             });
             window.addEventListener('resize', handleViewportWidth);
 
-            state.verifiedIndex = session.read('verifiedIndex');
-            client.postJson('/refresh', {
-                IndexVerificado: state.verifiedIndex
-            }).then(hydrate).catch(error => {
-                const failure = normalizeLearningPlatformError(
-                    error,
-                    learningPlatformErrorOperations.REFRESH
-                );
-                if (failure.kind !== learningPlatformErrorKinds.PLATFORM_DATA_READ_FAILURE) {
-                    alert(learningPlatformErrorMessage(
-                        learningPlatformErrorPresentations.STUDY_REFRESH_GENERIC
-                    ));
-                } else {
-                    alert(learningPlatformErrorMessage(
-                        learningPlatformErrorPresentations.STUDY_REFRESH_PLATFORM_DATA
-                    ));
-                }
-            });
+            if (authoritativeSessionsEnabled) {
+                loadAuthoritativeStudy();
+            } else {
+                loadLegacyStudy();
+            }
         }
     }
 

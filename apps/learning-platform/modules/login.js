@@ -16,7 +16,13 @@ import {
     replaceWithViewportWarning
 } from './lifecycle.js';
 import { createPlatformClient } from './platform-client.js';
-import { createSessionStore } from './session.js';
+import {
+    AUTHENTICATION_PHASES,
+    SESSION_NEXT_OPERATIONS,
+    createSessionStore,
+    hasSessionNextOperation,
+    readAuthoritativeSessionStatus
+} from './session.js';
 
 export function createLoginApplication({
     window,
@@ -33,10 +39,15 @@ export function createLoginApplication({
     replaceNavigation,
     alert,
     console,
-    backendBase
+    backendBase,
+    authoritativeSessions = false
 }) {
     const session = createSessionStore(sessionStorage);
-    const client = createPlatformClient({ baseUrl: backendBase, fetch });
+    const client = createPlatformClient({
+        baseUrl: backendBase,
+        fetch,
+        sessionRequest: authoritativeSessions
+    });
 
     const loginForm = document.getElementById('Formulário-Login');
     const email = document.getElementById('E-mail');
@@ -73,15 +84,17 @@ export function createLoginApplication({
         }
         else {
             window.addEventListener('resize', replaceForViewport);
-            if (session.read('loggedIn') === 'Sim') {
-                navigate('/plataforma/estudo');
-            }
-            else if (
-                session.read('registrationAuthorization') === 'Sim' &&
-                session.read('deviceWarningOrigin') !== 'Sim'
-            ) {
-                session.write('deviceWarningOrigin', 'Não');
-                history.back();
+            if (!authoritativeSessions) {
+                if (session.read('loggedIn') === 'Sim') {
+                    navigate('/plataforma/estudo');
+                }
+                else if (
+                    session.read('registrationAuthorization') === 'Sim' &&
+                    session.read('deviceWarningOrigin') !== 'Sim'
+                ) {
+                    session.write('deviceWarningOrigin', 'Não');
+                    history.back();
+                }
             }
         }
     });
@@ -110,6 +123,10 @@ export function createLoginApplication({
             Usuário_Senha: userPassword
         })
         .then(data => {
+            if (authoritativeSessions) {
+                return continueAuthoritativeLogin(data);
+            }
+
             const verifiedIndex = data.IndexVerificado;
             const faceStatus = data.Usuário_Status_FaceID;
             const registeredPhoto = data.Usuário_Foto_Cadastrada;
@@ -218,7 +235,20 @@ export function createLoginApplication({
             }
         })
         .catch(err => {
+            if (authoritativeSessions) {
+                return presentAuthoritativeLoginFailure(err).finally(() => {
+                    const invalidCredentialsPresented =
+                        invalidCredentialsNotice.style.display === 'block';
+                    resetLogin();
+                    if (invalidCredentialsPresented) {
+                        email.setAttribute('aria-invalid', 'true');
+                        password.setAttribute('aria-invalid', 'true');
+                    }
+                });
+            }
+
             resetLogin();
+
             const failure = normalizeLearningPlatformError(
                 err,
                 learningPlatformErrorOperations.LOGIN
@@ -240,6 +270,183 @@ export function createLoginApplication({
             }
         });
     });
+
+    async function continueAuthoritativeLogin(data) {
+        const status = readAuthoritativeSessionStatus(data);
+
+        if (
+            status.authenticationPhase === AUTHENTICATION_PHASES.AUTHENTICATED &&
+            hasSessionNextOperation(status, SESSION_NEXT_OPERATIONS.PROTECTED_LEARNING)
+        ) {
+            session.write('loggedIn', 'Sim');
+            navigate('/plataforma/estudo');
+            return;
+        }
+
+        if (
+            status.authenticationPhase === AUTHENTICATION_PHASES.CREDENTIAL_VERIFIED &&
+            hasSessionNextOperation(status, SESSION_NEXT_OPERATIONS.REGISTRATION_ENROLLMENT)
+        ) {
+            try {
+                await client.post('/sessions/current/registration-enrollment');
+                const enrolledStatus = readAuthoritativeSessionStatus(
+                    await client.getJson('/sessions/current')
+                );
+                if (
+                    enrolledStatus.authenticationPhase === AUTHENTICATION_PHASES.REGISTRATION_PENDING &&
+                    hasSessionNextOperation(
+                        enrolledStatus,
+                        SESSION_NEXT_OPERATIONS.REGISTRATION_CHALLENGE
+                    )
+                ) {
+                    navigate('/plataforma/avisos-iniciais');
+                    return;
+                }
+                throw new TypeError('Authoritative registration enrollment returned an invalid phase');
+            }
+            catch (error) {
+                throw createAuthoritativeFailure('registration-enrollment', error);
+            }
+        }
+
+        if (
+            status.authenticationPhase === AUTHENTICATION_PHASES.CREDENTIAL_VERIFIED &&
+            hasSessionNextOperation(status, SESSION_NEXT_OPERATIONS.FACE_CHALLENGE)
+        ) {
+            let challenge;
+            try {
+                challenge = await client.post('/FaceID');
+            }
+            catch (error) {
+                throw createAuthoritativeFailure('face-challenge', error);
+            }
+
+            let faceToken;
+            try {
+                faceToken = readAuthoritativeFaceChallenge(challenge);
+            }
+            catch (error) {
+                throw createAuthoritativeFailure('face-challenge', error);
+            }
+
+            document.body.style.cursor = 'default';
+            try {
+                await faceStartup.start(faceToken);
+            }
+            catch (error) {
+                throw createAuthoritativeFailure('face-component', error);
+            }
+
+            try {
+                const completedStatus = readAuthoritativeSessionStatus(
+                    await client.post('/sessions/current/face-completion')
+                );
+                if (
+                    completedStatus.authenticationPhase === AUTHENTICATION_PHASES.AUTHENTICATED &&
+                    hasSessionNextOperation(
+                        completedStatus,
+                        SESSION_NEXT_OPERATIONS.PROTECTED_LEARNING
+                    )
+                ) {
+                    session.write('loggedIn', 'Sim');
+                    navigate('/plataforma/estudo');
+                    return;
+                }
+                throw new TypeError('Authoritative Face completion returned an invalid phase');
+            }
+            catch (error) {
+                throw createAuthoritativeFailure('face-completion', error);
+            }
+        }
+
+        throw new TypeError('Authoritative login returned an unsupported phase');
+    }
+
+    function readAuthoritativeFaceChallenge(value) {
+        const keys = value && typeof value === 'object' && !Array.isArray(value)
+            ? Object.keys(value)
+            : [];
+        const token = value?.Azure_Face_API_LivenessSession_authToken;
+        if (
+            keys.length !== 1 ||
+            keys[0] !== 'Azure_Face_API_LivenessSession_authToken' ||
+            typeof token !== 'string' ||
+            token.trim().length === 0
+        ) {
+            throw new TypeError('Authoritative Face challenge has an invalid shape');
+        }
+        return token;
+    }
+
+    function createAuthoritativeFailure(stage, cause) {
+        return { authoritativeStage: stage, cause };
+    }
+
+    async function presentAuthoritativeLoginFailure(failure) {
+        const stage = failure?.authoritativeStage || 'credential-login';
+        const cause = failure?.cause || failure;
+
+        if (stage === 'face-component') {
+            const localFailure = normalizeLearningPlatformLocalError(
+                cause,
+                learningPlatformErrorKinds.FACE_COMPONENT_FAILURE
+            );
+            if (localFailure.kind === learningPlatformErrorKinds.FACE_COMPONENT_FAILURE) {
+                alert(learningPlatformErrorMessage(
+                    learningPlatformErrorPresentations.LOGIN_FACE_COMPONENT
+                ));
+            }
+            return;
+        }
+
+        if (stage === 'credential-login' && cause?.status === 401) {
+            invalidCredentialsNotice.style.display = 'block';
+            email.setAttribute('aria-invalid', 'true');
+            password.setAttribute('aria-invalid', 'true');
+            return;
+        }
+
+        if (stage === 'face-completion' && cause?.status === 403) {
+            try {
+                const status = readAuthoritativeSessionStatus(
+                    await client.getJson('/sessions/current')
+                );
+                if (
+                    status.authenticationPhase === AUTHENTICATION_PHASES.AUTHENTICATED &&
+                    hasSessionNextOperation(
+                        status,
+                        SESSION_NEXT_OPERATIONS.PROTECTED_LEARNING
+                    )
+                ) {
+                    session.write('loggedIn', 'Sim');
+                    navigate('/plataforma/estudo');
+                    return;
+                }
+            }
+            catch (statusError) {
+                if (statusError?.status === 401) {
+                    rejectedFaceNotice.style.display = 'block';
+                    rejectedFaceNotice.innerHTML = '⮾ FaceID reprovado. Tente novamente.';
+                    return;
+                }
+            }
+            alert(learningPlatformErrorMessage(
+                learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+            ));
+            return;
+        }
+
+        if (cause?.status === 409) {
+            alert(learningPlatformErrorMessage(
+                learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+            ));
+            return;
+        }
+
+        alert(learningPlatformErrorMessage(
+            learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+        ));
+    }
 
     function resetLogin() {
         document.body.style.cursor = 'default';

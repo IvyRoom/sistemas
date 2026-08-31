@@ -10,6 +10,7 @@ import {
 
 export function createStudyFeedback({
     alert,
+    authoritativeSessionsEnabled = false,
     client,
     clock,
     document,
@@ -68,7 +69,7 @@ export function createStudyFeedback({
         const comments = document.getElementById('Campo-Comentários').value;
 
         client.postJson('/processa-feedback', {
-            IndexVerificado: state.verifiedIndex,
+            ...(authoritativeSessionsEnabled ? {} : { IndexVerificado: state.verifiedIndex }),
             NúmeroTópicosConcluídos: state.completedTopics,
             Usuário_NomeCompleto: state.fullName,
             Usuário_Email: state.email,

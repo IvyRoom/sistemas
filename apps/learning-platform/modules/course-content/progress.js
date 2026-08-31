@@ -8,7 +8,16 @@ import {
     learningPlatformErrorPresentations
 } from '../error-presentation.js';
 
-export function createStudyProgress({ alert, client, document, dom, navigation, openTopic, state }) {
+export function createStudyProgress({
+    alert,
+    authoritativeSessionsEnabled = false,
+    client,
+    document,
+    dom,
+    navigation,
+    openTopic,
+    state
+}) {
     function completeTopic(selectedTopic) {
         dom.footer.innerHTML = '';
         document.body.style.cursor = 'wait';
@@ -16,7 +25,7 @@ export function createStudyProgress({ alert, client, document, dom, navigation, 
 
         client.postJson('/updates', {
             TipoAtualização: 'NúmeroTópicosConcluídos',
-            IndexVerificado: state.verifiedIndex,
+            ...(authoritativeSessionsEnabled ? {} : { IndexVerificado: state.verifiedIndex }),
             NúmeroTópicosConcluídos: state.completedTopics,
             NúmeroMódulo: 'n/a',
             NotaTeste: 'n/a'
