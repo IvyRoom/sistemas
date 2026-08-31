@@ -21,9 +21,9 @@ generated and Azure deployments.
 | Client Intake | `POST /clientes/processa-formulario` |
 | Certificate Validation | `GET /validacaocertificados/:encodedCertificateId` |
 | Conecta referral form | `POST /conecta/processa-recomendacao` |
-| Learning-platform Login | `POST /plataforma_v2/login-FaceID`, `POST /plataforma_v2/FaceID`, and `GET /plataforma_v2/FaceID_resultado/:sessionId` |
-| Learning-platform Registration | `POST /plataforma_v2/CadastroFoto_e_FaceID` and `GET /plataforma_v2/FaceID_resultado/:sessionId` |
-| Learning-platform Study | `POST /plataforma_v2/refresh`, `POST /plataforma_v2/updates`, and `POST /plataforma_v2/processa-feedback` |
+| Learning-platform Login | Legacy and target `POST /plataforma_v2/login-FaceID` and `POST /plataforma_v2/FaceID`; legacy compatibility `GET /plataforma_v2/FaceID_resultado/:sessionId`; dormant target `POST /plataforma_v2/sessions/current/registration-enrollment`, `POST /plataforma_v2/sessions/current/face-completion`, and `GET /plataforma_v2/sessions/current` |
+| Learning-platform Registration | Legacy and target `POST /plataforma_v2/CadastroFoto_e_FaceID`; legacy compatibility `GET /plataforma_v2/FaceID_resultado/:sessionId`; dormant target `GET /plataforma_v2/sessions/current` and `POST /plataforma_v2/sessions/current/face-completion` |
+| Learning-platform Study | Legacy and target `POST /plataforma_v2/refresh`, `POST /plataforma_v2/updates`, and `POST /plataforma_v2/processa-feedback`; dormant target `GET /plataforma_v2/sessions/current` |
 | Learning-platform Status Report | `POST /plataforma_v2/statusreport` |
 
 The Marketing Site is excluded because it does not contact the Machado backend.
@@ -39,14 +39,17 @@ localhost backend URLs, localhost-backend comments, and the
 Study and Registration can start directly without reading one. There is no stored
 override, fallback base, or path that can concatenate a relative `/null/` request.
 
-## Approved future session topology
+## Dormant authoritative-session topology
 
-This section is the consumer alignment for the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/be9e9a96e3d93325a92eeb9a6bbe645b554529fe/docs/session-authority.md).
-It is an approved future topology, not current runtime behavior. This definition
-task does not change `BACKEND_ORIGIN`, any import, fetch option, header, route,
-cookie, CORS response, DNS record, certificate, App Service binding, deployment
-manifest, or infrastructure.
+This section records the implemented consumer alignment for the backend-owned
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/0b09f92009b99280ff348701fede3edaba3f9945/docs/session-authority.md).
+The target request branches exist in source and generated output, but the
+source-controlled `AUTHORITATIVE_SESSIONS_ENABLED` latch is exactly `false`.
+Browser-controlled URL/query input, Web Storage, cookies, hostname state, and
+window globals cannot enable it. The deployment therefore keeps the current
+`BACKEND_ORIGIN`, public/legacy fetches, routes, and observable client behavior;
+it does not create a target cookie, change deployed CORS, or modify DNS, TLS,
+App Service, secrets, SQL, the manifest, or other infrastructure.
 
 The target API origin is exactly `https://api.machadogestao.com`. Before
 adoption, that hostname must be proven under controlled DNS, have valid TLS and
@@ -57,13 +60,17 @@ not redirect between API hosts. If the custom hostname is not ready, session
 adoption is blocked; a third-party cookie or Web Storage bearer is not a
 fallback.
 
-Adoption replaces the value of the one existing shared `BACKEND_ORIGIN` export
-for all eight consumers; it does not create a learning-platform-only origin or
+Coordinated adoption will replace the value of the one existing shared
+`BACKEND_ORIGIN` export for all eight consumers; it does not create a
+learning-platform-only origin or
 a second runtime configuration source. Quote Request, Client Intake,
 Certificate Validation, Conecta, and the public learning-platform Status Report
 therefore use the verified custom hostname while continuing to omit credentials
 and the session header. Only learning session/protected consumers add the
-credentialed options below.
+credentialed options below. The origin replacement and latch change must ship
+as one reviewed release pair after every topology, store, browser, CORS, ledger,
+privacy, rollback, and authoritative-logout prerequisite passes; neither change
+is active here.
 
 The target session cookie is exactly `__Host-machado-session` with `Path=/`,
 `Secure`, `HttpOnly`, and `SameSite=Strict`, and without `Domain`. Its browser
@@ -84,7 +91,8 @@ Target session and protected consumers use this exact browser boundary:
 - `credentials: "include"`;
 - `X-Machado-Session-Request: 1` on target-mode credential login and every
   cookie-authenticated request;
-- exact production `Origin: https://machadogestao.com` for unsafe requests;
+- browser-supplied exact production `Origin: https://machadogestao.com` for
+  unsafe requests; frontend JavaScript never sets `Origin` or `Cookie` manually;
 - exact `Access-Control-Allow-Origin: https://machadogestao.com` and
   `Access-Control-Allow-Credentials: true`, never wildcard credentialed CORS;
 - only the matching route methods plus `Content-Type` and the session header in
@@ -94,6 +102,17 @@ Target session and protected consumers use this exact browser boundary:
   actual session/protected responses; and
 - `Cache-Control: no-store`, no `ETag` or `Last-Modified`, and the ADR's
   no-cache/referrer response rules on session responses.
+
+The dormant `platform-client.js` branch adds `credentials: "include"`, the
+session header, `cache: "no-store"`, `mode: "cors"`, `redirect: "error"`, and
+`referrerPolicy: "no-referrer"` only when an entry injects the immutable false
+release latch. Login, Registration, and Study inject that same source value;
+all public clients continue to use the default uncredentialed request boundary.
+Registration validates exact `registration-pending` and
+`registration-challenge` status before upload. No target branch calls the
+public Face-result lookup, reads the cookie, sends `IndexVerificado`, or adds a
+browser DELETE. Logout and direct/pageshow/BFCache guarding remain unchanged for
+their next named tasks.
 
 Public status report, client intake, quote, Conecta, certificate validation,
 viewport warning, and device/browser warning remain session-free. Their target
@@ -120,7 +139,9 @@ integrations.
 Acceptance requires source and generated previews to resolve the shared import,
 all API-bearing entries to select the same production origin on local, preview,
 and production hosts, and static checks to prove one executable production
-literal, no executable localhost backend URLs, no hostname selection, and no
-`URL_Base_Backend` string under `apps/`. Deployment adds one shared support file
-and one separate mapping while retaining every public route, download, negative
-route, and the nine learning-platform mappings.
+literal across exactly eight API-bearing consumers, no executable localhost
+backend URLs, no hostname selection, and no `URL_Base_Backend` string under
+`apps/`. Source and generated previews resolve the same 80 logical JavaScript
+imports. Deployment retains one shared support file, one separate shared
+mapping, every public route/download/negative route, and the nine
+learning-platform mappings.

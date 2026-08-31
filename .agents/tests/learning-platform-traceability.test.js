@@ -55,6 +55,18 @@ function acceptanceIds() {
   );
 }
 
+function sessionAdoptionIds() {
+  const matrixStart = contractSource.indexOf("The implemented frontend subset has direct traceability:");
+  const matrixEnd = contractSource.indexOf("## Approved future decisions");
+  assert.notEqual(matrixStart, -1, "The dormant session-adoption matrix must remain present");
+  assert.ok(matrixEnd > matrixStart, "The dormant session-adoption matrix must remain bounded");
+
+  return Array.from(
+    contractSource.slice(matrixStart, matrixEnd).matchAll(/^\| `(SESSION-ADOPT-\d{2})` \|/gm),
+    ([, id]) => id
+  );
+}
+
 function namedTestTitles() {
   return learningPlatformTestPaths().flatMap((testPath) => {
     const source = fs.readFileSync(testPath, "utf8");
@@ -90,10 +102,12 @@ function sensitiveSourceLiterals() {
 
 test("[TRACEABILITY] every behavior-baseline acceptance ID has a named test", () => {
   const ids = acceptanceIds();
+  const adoptionIds = sessionAdoptionIds();
   const testTitles = namedTestTitles();
 
   assert.equal(ids.length, 30, "The acceptance matrix must retain all 30 stable IDs");
-  for (const id of ids) {
+  assert.equal(adoptionIds.length, 13, "The dormant adoption matrix must retain all 13 IDs");
+  for (const id of [...ids, ...adoptionIds]) {
     assert.ok(
       testTitles.some((title) => title.startsWith(`[${id}]`)),
       `Missing named learning-platform test coverage for ${id}`
