@@ -14,84 +14,38 @@ async function parseJsonResponse(response) {
     return data;
 }
 
-async function parseActionResponse(response) {
-    if (response.status === 204) {
-        if (!response.ok) throw { status: response.status };
-        return undefined;
-    }
-    return parseJsonResponse(response);
-}
-
-function parseNoContentResponse(response) {
-    if (!response || response.status !== 204 || response.ok !== true) {
-        throw { status: response && response.status };
-    }
-    return undefined;
-}
-
 function normalizeRequest(request, parse = parseJsonResponse) {
     return request.catch(error => {
         throw normalizeLearningPlatformTransportError(error);
     }).then(parse);
 }
 
-function requestOptions(options, sessionRequest) {
-    if (!sessionRequest) return options;
-    return {
-        ...options,
-        cache: 'no-store',
-        credentials: 'include',
-        headers: {
-            ...options.headers,
-            'X-Machado-Session-Request': '1'
-        },
-        mode: 'cors',
-        redirect: 'error',
-        referrerPolicy: 'no-referrer'
-    };
-}
-
 export function createPlatformClient({
     baseUrl,
     fetch,
-    FormDataConstructor,
-    sessionRequest = false
+    FormDataConstructor
 }) {
-    if (typeof sessionRequest !== 'boolean') {
-        throw new TypeError('sessionRequest must be a boolean');
-    }
-
     return {
-        delete(path) {
-            return normalizeRequest(fetch(baseUrl + path, requestOptions({
-                method: 'DELETE'
-            }, sessionRequest)), parseNoContentResponse);
-        },
         getJson(path) {
-            return normalizeRequest(fetch(baseUrl + path, requestOptions({
+            return normalizeRequest(fetch(baseUrl + path, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
-            }, sessionRequest)));
-        },
-        post(path) {
-            return normalizeRequest(fetch(baseUrl + path, requestOptions({
-                method: 'POST'
-            }, sessionRequest)), parseActionResponse);
+            }));
         },
         postJson(path, body) {
-            return normalizeRequest(fetch(baseUrl + path, requestOptions({
+            return normalizeRequest(fetch(baseUrl + path, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
-            }, sessionRequest)));
+            }));
         },
         postMultipart(path, fields) {
             const formData = new FormDataConstructor();
             fields.forEach(([key, value]) => formData.append(key, value));
-            return normalizeRequest(fetch(baseUrl + path, requestOptions({
+            return normalizeRequest(fetch(baseUrl + path, {
                 method: 'POST',
                 body: formData
-            }, sessionRequest)));
+            }));
         }
     };
 }

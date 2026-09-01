@@ -1,9 +1,5 @@
 import { createInitialNoticesApplication } from '../modules/initial-notices.js';
-import {
-    AUTHORITATIVE_SESSIONS_ENABLED,
-    createLogoutPresentationChannel,
-    createSessionStore
-} from '../modules/session.js';
+import { createSessionStore } from '../modules/session.js';
 
 const requiredAcknowledgements = Object.freeze({
     credentials: 'credenciais',
@@ -21,9 +17,5 @@ createInitialNoticesApplication({
     replaceNavigation,
     requiredAcknowledgements,
     session: createSessionStore(sessionStorage),
-    window,
-    authoritativeSessions: AUTHORITATIVE_SESSIONS_ENABLED,
-    logoutPresentation: createLogoutPresentationChannel({
-        createChannel: name => new window.BroadcastChannel(name)
-    })
+    window
 }).install();

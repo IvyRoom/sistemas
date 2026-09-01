@@ -146,13 +146,13 @@ learning platform is
 It records route, state, API, runtime-asset, and artifact behavior separately
 from known risks and approved future changes.
 
-The approved replacement for browser-held row authority is the backend-owned
-[session-authority target decision](https://github.com/IvyRoom/backend/blob/be9e9a96e3d93325a92eeb9a6bbe645b554529fe/docs/session-authority.md),
-with frontend consumer and future acceptance alignment in the compatibility
-specification above and target-origin details in
-[`docs/frontend-backend-origin-contract.md`](docs/frontend-backend-origin-contract.md#approved-future-session-topology).
-It is not implemented: current storage, origin, request, route, logout, timer,
-Face-result, BFCache, and deployment behavior remains unchanged.
+Learning-platform access remains intentionally lean. Excel `PRAZO ACESSO`
+drives the calculated `STATUS LOGIN`; only exact `Ativo` permits login to
+return the signed four-hour `IndexVerificado` handle used by Registration and
+Study requests. Explicit logout and timer expiry remove this tab's stored
+handle and make Study locally final without a backend logout request or
+cross-tab synchronization. A previously copied handle can remain technically
+usable until its original expiry.
 
 Machado Conecta personal links add both required query parameters to the
 referral-form route:

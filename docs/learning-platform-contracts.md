@@ -4,13 +4,12 @@ Status: authoritative current-state compatibility specification. Its frozen
 behavior baseline was characterized from `sistemas` commit
 `c68f361de054a936b7a6871d82d75a1cdb457c97`; source-layout, public-route, and
 artifact sections are maintained against the current repository tree. Companion
-`backend` session-authority evidence is pinned at verified producer commit
+`backend` signed-handle evidence is pinned at verified producer commit
 `ba286cc0b3d3e67176d46dee84a5ba7d55b7162c`. This document records the completed
-entry-markup modernization, warning-navigation repair, production-disabled
-authoritative-session consumer, production-disabled authoritative-logout
-consumer, and browser-final false-latch Study logout/restoration behavior. It
-does not authorize target activation, a production request, data migration,
-infrastructure mutation, or an integration exercise.
+entry-markup modernization, warning-navigation repair, and lean signed-handle
+access model with browser-final Study logout/restoration behavior. It does not
+authorize a production request, data migration, infrastructure mutation, or an
+integration exercise.
 
 ## How to use this specification
 
@@ -33,7 +32,7 @@ configuration or external integration was exercised. In particular, this
 characterization did not call the backend, Microsoft Graph or workbooks, Azure
 Face, the media store, EZDRM, email, or any customer-facing route.
 
-The document keeps seven categories separate:
+The document keeps six categories separate:
 
 - **Browser support contract** is the selected customer-support target. Runtime
   admission implements only its observable candidate boundary and is not
@@ -41,8 +40,6 @@ The document keeps seven categories separate:
 - **Source-observed current behavior** is the compatibility baseline.
 - **Known risks and unresolved legacy behavior** must be preserved by a pure
   move/baseline unless a later task explicitly changes them.
-- **Dormant session-authority consumer** records the implemented frontend
-  target while keeping production adoption disabled.
 - **Route-adoption and deployed-path history** records approved frontend path
   changes and bounded compatibility without redefining backend or remote-media
   contracts.
@@ -566,7 +563,7 @@ platform's slashless internal-navigation table.
 
 There is no History API state, hash router, `popstate`, or client-side route
 normalizer in the platform. Module and topic changes are DOM-only state.
-Admission, viewport-warning recovery, and false-latch Study finalization use
+Admission, viewport-warning recovery, and browser-final Study finalization use
 `location.replace`. Explicit legacy logout, legacy timer expiry, and a logged-
 out direct or `pageshow`-restored Study page therefore do not leave Study as an
 ordinary Back destination. Other login, study, registration, and content
@@ -816,7 +813,7 @@ Study's ordered classic jsPDF/Shaka dependencies are followed by its non-async
 native-module entry. The viewport warning remains an async classic script and
 the device/browser warning remains synchronous classic. Every application factory is installed immediately when
 its entry module evaluates, with no `readyState` or `DOMContentLoaded`
-fallback. After Study passes GATE-01, GATE-02, and its false-latch logged flag,
+fallback. After Study passes GATE-01, GATE-02, and its logged flag,
 it installs one `pageshow` listener before refresh. A restored page whose flag
 is no longer exact `Sim` stays inert and hidden, receives the same local
 cleanup, and replace-navigates to Login without protected work. No other page
@@ -1679,92 +1676,55 @@ reflow corrections again preserve the same 258 paths while changing scoped
 JavaScript and CSS bytes. Warning-navigation repair retains the 258-file count
 while replacing exactly ten former warning paths with ten renamed paths and
 changing the approved warning HTML, lifecycle, entry, and client-intake bytes.
-The dormant authoritative-session consumer again retained every output path
-while changing exactly 15 mapped platform JavaScript files. Its verified merge
-baseline at `sistemas` commit
-`aa68ff54ce6960b1d7cb0a6ac13e85f0d1dce627` had these source-derived
-identities:
+Retiring the production-disabled session-authority consumer preserves every
+generated output path while simplifying exactly 15 mapped platform JavaScript
+files. Relative to the immediate browser-final baseline at `sistemas` commit
+`e543dc6cf72d7c8b077b07e4f7dc79b3453054cc`, the complete artifact changes
+from 258 files, 27,395,632 bytes, and
+`sha256:08dfdf96411fbc0c239e29c091c689eaa261f4df66d7fb70ff8335926da1dd5b`
+to these lean signed-handle identities:
 
-| Prior dormant-session scope | Files | Bytes | SHA-256 |
+| Current lean signed-handle scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,383,391 | `8b6785f85f7677af06fb54719c8279e40d462ee11ccce3882a3dd919f6e9a016` |
+| Complete generated `dist/` artifact | 258 | 27,362,565 | `a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,778,045 | `fdc443646d6824b9fe7e1790f76a1d5dd73c5b605b990fcb80945409b554f788` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,778,045 | `c72b94b45fdff3b2131e32bd2c980187ce87f5c5c39a3e598e2dcbab32be8c23` |
-| Platform JavaScript, retaining full output paths | 36 | 490,907 | `468dfd45eec83f550cf50ab219f46154c62fd8c3012da95b653314c4939364c3` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,757,219 | `c6c6b7c4968757bc3bd8f6b782f8c674815eadf8eba5d87cc7b8e653e1088cb1` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,757,219 | `13b91e0489a619b6052d7fb6f841d6ed9c778fdbc5faacc8a76a8cf0c5233284` |
+| Platform JavaScript, retaining full output paths | 36 | 470,081 | `bb7977e91adf64324a27bb1bc0faf23bf081e31637b416c490a05747858a0dfb` |
 | Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
-| Study entry subtree, retaining full output paths | 41 | 10,022,350 | `bcdbc102dd1f54fdd8e6a92ee05132d95ff3bec22ab463aebfd7a9f11bd71932` |
+| Study entry subtree, retaining full output paths | 41 | 10,022,029 | `19cbf0067226f54e1ea521d606762ad9f1acc0b8acd2ff7d5129a1c9e413a44c` |
 | Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
 | All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
 
-The production-disabled authoritative-logout consumer baseline at `sistemas`
-commit `e5f6edf4da162e02535b9dc13f46bbdf295a581b` retained all 258 paths. Its
-source-derived identities were:
+All 258 paths remain. The 33,067-byte reduction is exactly the sum of these
+15 mapped-output deltas; the other 243 outputs are byte-identical:
 
-| Prior dormant-logout baseline scope | Files | Bytes | SHA-256 |
-| --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,394,267 | `44dcfac25898ba343e0c4e18d7ddece6e9c655579d91a67ee53e64b49613d517` |
-| Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,788,921 | `d9a1bc2c047def79de171f46573772c3b26bd4e06a81650c4d00d10ba5b815e5` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,788,921 | `b8314bbfe4407ecc81f077c1fc1ee86a307c9097def1240af7f52353696c8712` |
-| Platform JavaScript, retaining full output paths | 36 | 501,783 | `0dc1f85e3fef0b943e3e291e18b768b0bc61d082721de5b0a318c42d40afe6e3` |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
-| Study entry subtree, retaining full output paths | 41 | 10,022,518 | `412341987b6b7b04029866f5d310124d10c021e75eff00b76a0bb9aafd789ab4` |
-| Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
-| All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
-
-Relative to the 27,383,391-byte authoritative-session baseline, only these 11
-mapped JavaScript outputs change; their `+10,876` bytes exactly account for the
-27,394,267-byte dormant-logout baseline:
-
-| Changed mapped output | Byte delta |
-| --- | ---: |
-| `plataforma/avisos-iniciais/main.js` | +168 |
-| `plataforma/cadastro-foto/main.js` | +172 |
-| `plataforma/estudo/main.js` | +168 |
-| `plataforma/login/main.js` | +172 |
-| `plataforma/modules/course-content/application.js` | +3,301 |
-| `plataforma/modules/course-content/session-timer.js` | +690 |
-| `plataforma/modules/initial-notices.js` | +664 |
-| `plataforma/modules/login.js` | +396 |
-| `plataforma/modules/photo-registration.js` | +1,066 |
-| `plataforma/modules/platform-client.js` | +402 |
-| `plataforma/modules/session.js` | +3,677 |
-
-The other 247 outputs in that prior comparison were byte-identical.
-
-Browser-final legacy logout retains the same 258 paths and advances the
-immediate 258-file, 27,394,267-byte baseline to these current identities:
-
-| Current browser-final logout scope | Files | Bytes | SHA-256 |
-| --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,395,632 | `08dfdf96411fbc0c239e29c091c689eaa261f4df66d7fb70ff8335926da1dd5b` |
-| Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,790,286 | `e383916ced000039459e19d54eedf9c2c83e83db63c47d2d51fb6bd2069bb08e` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,790,286 | `ba5e3c5c0eafa488c44a24bbfd3d72a0a98e96aa3cf896abb16149ee0c9baccb` |
-| Platform JavaScript, retaining full output paths | 36 | 503,148 | `4bc92f67774b596554e902b5b9f47fa36545288bc20244d5e692d40095296813` |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
-| Study entry subtree, retaining full output paths | 41 | 10,022,518 | `412341987b6b7b04029866f5d310124d10c021e75eff00b76a0bb9aafd789ab4` |
-| Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
-| All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
-
-Exactly three mapped JavaScript outputs change against that immediate
-baseline, and their `+1,365` bytes exactly account for the new total:
-
-| Changed mapped output | Byte delta | Intentional delta |
+| Changed mapped output | Byte delta | Intentional simplification |
 | --- | ---: | --- |
-| `plataforma/modules/course-content/application.js` | +1,214 | Centralize false-latch local teardown; make presentation inert/hidden; stop its timer; pause media; update/remove only the two scoped storage values; replace-navigate; and guard logged-out direct/`pageshow` restoration before refresh. |
-| `plataforma/modules/course-content/session-timer.js` | +59 | Retain the legacy interval ID so teardown can stop it and delegate legacy expiry to the same application cleanup without changing authoritative expiry. |
-| `plataforma/modules/session.js` | +92 | Add the key-mapped `removeItem` seam used only for `IndexVerificado`; the seven-key inventory is unchanged. |
+| `plataforma/avisos-iniciais/main.js` | -267 | Remove the target toggle and cross-tab channel bootstrap arguments. |
+| `plataforma/cadastro-foto/main.js` | -303 | Remove the target toggle and cross-tab channel bootstrap arguments. |
+| `plataforma/estudo/main.js` | -489 | Remove target session requests, server-time injection, and logout-presentation wiring. |
+| `plataforma/login/main.js` | -303 | Remove the target toggle and cross-tab channel bootstrap arguments. |
+| `plataforma/modules/course-content/application.js` | -5,181 | Collapse startup, refresh, expiry, direct entry, BFCache restoration, and logout onto the retained signed-handle path. |
+| `plataforma/modules/course-content/assessment.js` | -87 | Always send the signed handle in the established request body. |
+| `plataforma/modules/course-content/feedback.js` | -87 | Always send the signed handle in the established request body. |
+| `plataforma/modules/course-content/progress.js` | -87 | Always send the signed handle in the established request body. |
+| `plataforma/modules/course-content/session-timer.js` | -1,828 | Remove server-authoritative expiry inputs while retaining client deadline teardown. |
+| `plataforma/modules/course-content/state.js` | -47 | Remove unused target status state. |
+| `plataforma/modules/initial-notices.js` | -725 | Remove target session adoption and status transitions. |
+| `plataforma/modules/login.js` | -7,998 | Retain only the active login, Face, storage, and signed-handle transitions. |
+| `plataforma/modules/photo-registration.js` | -7,017 | Retain only the active multipart handle and Face result flow. |
+| `plataforma/modules/platform-client.js` | -1,444 | Remove cookie, custom-header, bodyless session, DELETE, and `204` target machinery. |
+| `plataforma/modules/session.js` | -7,204 | Retain only the exact seven-key storage seam and Study handle removal. |
 
-The other 255 outputs are byte-identical to the immediate baseline. The
-inventory remains exactly 12 public pages, 3 downloads, and 243 supporting
+The inventory remains exactly 12 public pages, 3 downloads, and 243 supporting
 files across all 258 paths, with all 20 mappings and all 64 explicit negative
-paths unchanged. The source and generated module graphs remain exactly 80
-logical JavaScript imports with unchanged graph SHA-256
-`4e5b19225a140479b99ff5677ee62b13ea56be48ebc30ff8d65d15e9e0aee510`;
-this change adds no import edge.
-
+paths unchanged. Removing the three now-unused `session.js` imports changes
+the source and generated module graphs from 80 to exactly 77 logical JavaScript
+imports; their new graph SHA-256 is
+`672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149`.
+The removed edges are Login entry to `modules/session.js`, Registration entry
+to `modules/session.js`, and Study application to `../session.js`.
 Warning assets retain their source bytes, but moving four warning binary output
 paths changes the binary path-framed digest. The Face, study-download, and
 certificate-input scopes retain both their paths and bytes:
@@ -1876,14 +1836,11 @@ the explicit negative-path contract. Across the complete frontend, 12 entry
 files plus 3 public downloads and 243 support files make the 258-file artifact.
 The separate shared mapping and the nine learning-platform mappings make ten
 combined runtime mappings, without classifying shared infrastructure as an
-application. Source and generated previews each resolve exactly 80 JavaScript
-imports. The three intentional additions connect Login, Registration, and the
-Study application to the dormant session contract:
-`login/main.js -> ../modules/session.js`,
-`photo-registration/main.js -> ../modules/session.js`, and
-`modules/course-content/application.js -> ../session.js`. No edge is removed.
-The ordered logical source-edge aggregate has SHA-256
-`4e5b19225a140479b99ff5677ee62b13ea56be48ebc30ff8d65d15e9e0aee510`.
+application. Source and generated previews each resolve exactly 77 JavaScript
+imports. Removing the abandoned consumer removes the former Login,
+Registration, and Study-application imports of `session.js`; no active import
+edge is replaced. The ordered logical source-edge aggregate has SHA-256
+`672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149`.
 Remote CDN libraries and all media manifests/segments remain outside it.
 
 Current anchors: mapping collection
@@ -2043,425 +2000,46 @@ future work, not permission to change compatibility behavior in the baseline.
   Face hint image and two study workbooks are emitted but unreferenced, while
   support assets remain outside explicit `publicDownloads` coverage.
 
-## Dormant session-authority and authoritative-logout consumers
+## Lean access and browser-final logout
 
-The authoritative target is the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/ba286cc0b3d3e67176d46dee84a5ba7d55b7162c/docs/session-authority.md).
-The frontend target consumer is implemented behind the source-controlled
-`AUTHORITATIVE_SESSIONS_ENABLED = false` release latch. URL/query values,
-Web Storage, cookies, hostname inspection, and other browser-controlled input
-cannot enable it. The generated production artifact therefore still executes
-the bounded legacy branch against the existing shared origin; no target cookie,
-session header, credentialed request, ledger horizon, stop-issuance event, or
-sunset starts after merge.
+Excel `PRAZO ACESSO` drives the calculated `STATUS LOGIN` using the
+workbook formula:
 
-This implementation does not provision SQL, change the shared backend origin,
-alter deployed CORS, create DNS/TLS/App Service bindings, activate target
-sessions or authoritative logout, or add authoritative direct/BFCache status
-revalidation. The false-latch legacy branch now has only a browser-local
-logged-out Study guard; it neither consults nor creates server authority. The
-remaining target changes stay separately gated.
+`=SE([@[PRAZO ACESSO]]="-";"Inativo";SE([@[PRAZO ACESSO]]>=HOJE();"Ativo";"Inativo"))`
 
-The legacy STORE, API, ERROR, FLOW, route, and public-surface contracts remain
-the production-safe compatibility baseline while the latch is false. The
-dormant consumer changes only its reviewed target branches and artifact/import
-identity. `GATE-01` and `GATE-02` retain precedence ahead of every session task
-and remain browser-admission checks, never authentication.
+The displayed deadline is inclusive. `-` and past dates produce exact
+`Inativo`. Onboarding writes `PRAZO ACESSO` and leaves `STATUS LOGIN`
+null for the calculated column. Only exact `Ativo` permits the backend to
+mint a new signed `IndexVerificado` handle; exact `Inativo` remains a
+visible inactive-login outcome.
 
-### Selected target boundary
+The handle is the retained browser authority. Login stores it in this tab's
+`sessionStorage`, Registration sends it in the established multipart field,
+and the five protected Study operations send it in their established JSON
+fields. The signed handle has an absolute four-hour lifetime and is neither
+rotated nor server-revoked by refresh or logout. The exact seven storage keys
+remain unchanged, and no replacement credential or eighth key exists.
 
-The dormant target frontend treats the backend as the sole authority for session
-existence, subject, authentication phase, permission, server-time expiry,
-revocation, and account eligibility. Browser state may present an authoritative
-response but cannot create or preserve authority.
+Explicit logout and timer expiry perform the same browser-local teardown: make
+Study inert and hidden, stop its timer, pause media, set
+`Usuário_Logado=Não`, remove only `IndexVerificado`, and replace-navigate
+to Login. A logged-out direct entry or `pageshow`/BFCache restoration applies
+that teardown before protected work. These paths issue no logout request and
+perform no cross-tab synchronization. Removing this tab's stored copy prevents
+ordinary reuse from that tab, but a previously copied or already issued handle
+can remain technically usable until its original expiry.
 
-The selected target uses:
-
-- the existing shared `BACKEND_ORIGIN` used by all eight consumers;
-- one host-only `__Host-machado-session` cookie with `Path=/`, `Secure`,
-  `HttpOnly`, `SameSite=None`, and `Partitioned`, and no `Domain`;
-- Azure SQL Database Basic as the shared backend session/revocation store,
-  pulled forward as a narrow Topic 12 dependency before production enablement;
-- a 20-minute absolute provisional lifetime, preserving its original deadline
-  across provisional transitions;
-- a four-hour absolute authenticated lifetime beginning at successful backend
-  promotion;
-- no idle timeout and no request-driven extension;
-- backend-bound Face completion, never a client verdict or client-selected
-  provider session identifier;
-- one cookie shared across tabs in a browser profile; logout in one tab revokes
-  the shared session; and
-- concurrent sessions on other devices, with a new login replacing only the
-  current profile session and revoke-all reaching every subject session; the
-  first target issuance also irreversibly retires that subject's legacy handles
-  across all old tabs/devices during migration.
-
-The frontend never reads the HttpOnly identifier. When the source latch is
-enabled in a separately approved coordinated release, it sends target session
-and protected requests with `credentials: "include"` and the exact
-`X-Machado-Session-Request: 1` header. The target API accepts credentialed CORS
-only from `https://machadogestao.com`, checks that exact Origin on unsafe
-requests, uses no wildcard with credentials, and marks session/protected
-responses `no-store`. The full host, cookie, CORS, CSRF, cache, and response
-contract is also recorded in
-[`frontend-backend-origin-contract.md`](frontend-backend-origin-contract.md#dormant-authoritative-session-topology).
-
-The existing App Service default-TLS endpoint, partitioned-cookie behavior and
-top-level-site isolation across supported Edge profiles, the pulled-forward SQL
-session slice, multi-instance transactions, and five-minute eligibility
-revalidation are prerequisites. A durable full-handle verifier-to-subject
-compatibility ledger must also seed continuously for one complete four-hour
-handle lifetime before dual-stack enforcement; no pre-ledger handle is
-backfilled from a mutable row. The current shared App Service origin and every
-deployed public/legacy fetch remain unchanged; the new credentialed fetch
-mechanics are present but unreachable while the latch is false. There is no
-unpartitioned cross-site cookie or Web Storage bearer fallback. The selected
-transport adds no custom-domain or additional App Service resource, while the
-existing F1 plan's capacity limits and lack of SLA remain operational
-constraints.
-
-### Target states and page behavior
-
-The target states are `anonymous`, `credential-verified`,
-`registration-pending`, `face-pending`, `authenticated`, `expired`, and
-`revoked`, plus terminal `rotated-out` predecessors. Every
-externally visible phase transition rotates the opaque identifier; provisional
-rotations preserve the original 20-minute deadline, and only authenticated
-promotion starts a new four-hour clock.
-
-| Target state | Frontend presentation and allowed request roles |
-| --- | --- |
-| `anonymous` | Public/session-free pages and APIs, credential submission, and idempotent current-session logout; current-session status is `401`; no provisional or protected work |
-| `credential-verified` | Public/session-free behavior, current-session status/logout, and exactly one backend-approved next step: registration enrollment when required or existing-photo Face challenge when registration is complete; no study authority |
-| `registration-pending` | Public/session-free behavior, current-session status/logout, idempotent repeated enrollment, and scoped registration upload/reconciliation plus one registration Face challenge; no study, progress, assessment, feedback, or certificate authority |
-| `face-pending` | Public/session-free behavior, current-session status/logout, and session-bound completion for the one backend-bound challenge; repeated challenge creation is `409`; no client result assertion and no study authority |
-| `authenticated` | Public/session-free behavior, current-session status/logout, revoke-all, and protected learning requests; a completion repeat after successful promotion returns current status without another session |
-| `expired` / `revoked` / `rotated-out` | Public/session-free behavior, fresh credential submission, and idempotent logout only; status is `401`; explicit invalid-session presentation never treats storage flags as authority |
-
-### Face-requirement account policy
-
-While `BD - PLATAFORMA` remains the account-policy adapter, its existing
-`FACEID` cell at platform-row index `4` is the single backend-read policy source
-for every fresh credential login. Exact, case-sensitive `Ativo` requires the
-scoped registration/Face path and backend-bound successful Face completion
-before `authenticated`; exact `Inativo` allows valid credentials plus account
-eligibility to create `authenticated` directly, regardless of photo-registration
-state. Missing, blank, unreadable, or any other value fails closed as `503`
-without a target identifier, legacy handle, or `Set-Cookie`, and leaves any
-previously valid cookie session unchanged.
-
-The target frontend never submits, derives, or overrides this policy. The
-`Usuário_Status_FaceID` field remains in the bounded legacy compatibility
-payload and retains its source-observed legacy navigation branch, but it is
-never accepted as target session authority or as a waiver of a backend-required
-factor. The backend captures the policy at credential validation and copies it
-unchanged through provisional rotations and authenticated promotion. An
-`Ativo`/`Inativo` edit applies only to a fresh login. It neither promotes an
-existing provisional session nor revokes, downgrades, or upgrades an
-authenticated session. A user blocked in Face must restart credential login
-after `Ativo` becomes `Inativo`; an authenticated session issued without Face
-continues until logout, revoke-all, its four-hour absolute expiry, entitlement
-expiry, or another already defined revocation trigger. A later `Inativo` to
-`Ativo` change governs the next login only and is not part of five-minute
-eligibility revalidation.
-
-Topic 05 requires no dedicated Face-policy audit log, actor/reason field,
-time-bounded override, or management UI under the current single-operator
-model. Existing workbook access restriction and ordinary file history remain
-operational safeguards rather than session-contract machinery. When account
-authority later moves to SQL, the policy moves once to a backend-owned boolean
-such as `face_auth_required`; the frontend does not support workbook/SQL dual
-authority, a precedence rule, or fallback after that cutover.
-
-The current public Face-result GET remains a compatibility risk and cannot
-promote a target session. Protecting or retiring that route remains the later
-Face-result-security milestone.
-
-Every authority-bearing provisional or authenticated request must use the
-backend record and its current eligibility observation. When the observation
-is five minutes old, registration, Face challenge/completion, authenticated
-promotion, and protected work synchronously revalidate; known entitlement
-expiry is checked on every such operation. `503`, dependency loss, or network
-loss preserves the current phase/cookie and blocks the transition/work.
-
-This adoption task validates the exact `registration-pending` plus
-`registration-challenge` role before registration upload. Study uses the
-authenticated cookie for its existing refresh, then requires exact
-`authenticated` plus `protected-learning` current status before hydration,
-media/player startup, timers, or writes. `401` establishes an explicit
-invalid-session presentation; `503`, malformed status, and wrong phase block
-without pretending that the user is anonymous, revoked, authenticated, or
-successfully logged out. Moving current-session validation ahead of the first
-protected refresh and repeating it on direct or `pageshow`/BFCache restoration
-belongs to **Guard restored protected pages** and remains deliberately absent.
-
-Only successful login/rotation emits `Set-Cookie`. Logout, revoke-all,
-definitive Face failure, ineligibility, missing/malformed/unknown credentials,
-terminal/wrong-phase records, repeated requests, store failures, and
-compare-and-replace losers never mutate or delete the cookie. The retained
-value is inert after revocation and naturally expires or is overwritten by the
-next successful credential login. This prevents any delayed non-issuance
-response from erasing a newer shared-profile cookie.
-
-Cookie-less credential requests are independent logins. A delayed successful
-response may therefore set a newly authenticated cookie after current-session
-logout revoked a different record; logout does not cancel outstanding
-credential attempts or other sessions. Revoke-all invalidates records committed
-before its epoch change, while a login committed afterward is a new
-authentication. Synthetic consumer tests cover both response orders without
-claiming cancellation or revoke-all semantics.
-
-### Target consumer/API alignment
-
-The dormant Login, Registration, and Study consumers implement the first eight
-rows below. They use the existing paths plus the target session actions and
-remain unreachable in the production-safe build because the adoption latch is
-false. Current logout is the only browser DELETE. Revoke-all remains backend-
-only here; no revoke-all browser UI or automatic call is invented.
-
-| Consumer operation | Target role |
-| --- | --- |
-| Credential login | Current `POST /plataforma_v2/login-FaceID` validates credentials/eligibility; the target backend also reads exact `BD - PLATAFORMA.FACEID`, with `Inativo` issuing `authenticated` directly and `Ativo` issuing only the minimum registration/Face provisional phase; missing/blank/other policy is `503` without a target identifier, legacy handle, or `Set-Cookie`. Target mode sends `X-Machado-Session-Request: 1`, atomically disables all legacy authority for the subject, conditionally replaces an active profile session, and never returns `IndexVerificado`; with the store available, fresh valid credentials overwrite an absent/malformed/unknown/terminal cookie; same-active-predecessor conflict is `409` without `Set-Cookie`; bounded legacy mode presents no target cookie, omits the header, and is allowed only for a not-yet-adopted subject before global stop-issuance, otherwise it is `409` upgrade-required without a handle |
-| Registration enrollment | New `POST /plataforma_v2/sessions/current/registration-enrollment`; first `credential-verified` success rotates to `registration-pending`; repeat in that phase is `204` without another rotation |
-| Registration upload/challenge | Current `POST /plataforma_v2/CadastroFoto_e_FaceID`; cookie-authenticated `registration-pending`; no application session identifier in multipart; success is `200` and becomes `face-pending`; ambiguity does not promote/rotate and blocks repeat with `409` pending the separately authorized reconciliation decision |
-| Existing-photo Face challenge | Current `POST /plataforma_v2/FaceID`; cookie-authenticated `credential-verified`; returns only provider data required by the SDK; success is `200` and becomes `face-pending`; repeat while creating/active is `409` without another provider call or rotation |
-| Face completion/promotion | New `POST /plataforma_v2/sessions/current/face-completion`; sends no verdict/provider session ID; backend reads the bound result; pending is `409` and preserves phase/cookie, definitive factor failure revokes without cookie mutation and returns `403`, provider/network/store unavailability is `503` and preserves `face-pending`/cookie, and success rotates with `200` |
-| Current-session validation | New `GET /plataforma_v2/sessions/current`; `200` returns phase, server time, expiry, eligibility revalidation time, and presentation next-operation roles, never an identifier; invalid `401` and store-outage `503` preserve the browser cookie while blocking authority |
-| Study refresh/progress/assessment/feedback | Existing current paths; cookie-authenticated `authenticated` only; no `IndexVerificado` body field after cutover |
-| Current logout | New effect-idempotent, bodyless `DELETE /plataforma_v2/sessions/current`; the target client sends only the cookie transport and exact target request metadata, never an identifier, verifier, subject, authority field, manual `Cookie`, or manual `Origin`. Successful active-record revocation and missing/invalid/terminal/repeated outcomes are privacy-indistinguishable exact `204` responses with no `Set-Cookie`; only exact `204` permits local presentation/timer cleanup, `Usuário_Logado=Não`, a logout-only cross-tab signal, and Login navigation. `503`, network loss, malformed/ambiguous response, or any other status preserves presentation and navigation and restores an explicit retry without automatic replay. The retained cookie bytes remain inert. |
-| Revoke all | New authenticated `DELETE /plataforma_v2/sessions`; first success is `204` and revokes every subject session without mutating the caller cookie; a repeat without fresh authentication is `401` |
-
-Public status report, public client intake, quote, Conecta, certificate
-validation, viewport warning, and device/browser warning remain session-free.
-This decision does not protect the current public Face-result lookup or change
-any current public request, response, route, query, gate, or warning behavior.
-
-### Authoritative logout presentation boundary
-
-The dormant target Study consumer single-flights an explicit logout activation
-and issues the bodyless current-session DELETE once. While it is pending, the
-logout control and protected interaction surface are disabled, but presentation
-state, the session timer, storage, navigation, and cross-tab state do not claim
-success. An availability or ambiguous result restores the retryable control and
-shows the existing availability-safe retry presentation; there is no automatic
-retry. An explicit retry is safe because the backend action is effect-
-idempotent.
-
-Only exact `204` commits the initiating tab's logout presentation. It then stops
-the target timer and protected presentation, writes `Usuário_Logado=Não` as
-compatibility presentation only, attempts one versioned logout-only
-`BroadcastChannel` message, closes the channel boundary, and navigates to Login.
-The message has exactly `type: "logout"` and `version: 1`; it contains no time,
-subject, identifier, verifier, cookie, credential, provider value, URL data, or
-account data. Login, Initial Notices, Photo Registration, and Study install one
-injected application-owned listener only after GATE-01 and GATE-02. A receiving
-tab reduces presentation and navigates when necessary without issuing DELETE or
-rebroadcasting.
-
-Missing, malformed, duplicate, replayed, or forged channel input can never
-grant, restore, extend, prove, or preserve authority. An exact forged logout
-message can at most cause the same conservative logged-out presentation. There
-is no Web Storage or `storage`-event fallback and no eighth key. If channel
-creation or publication fails after committed `204`, local logout remains
-successful because durable backend revocation already committed; synthetic
-qualification records the channel failure and production adoption remains
-blocked. A delayed `204` and its presentation outcome speak only for the record
-presented by that DELETE. They do not cancel an independent credential request,
-revoke all sessions, or prevent a later successful authentication from becoming
-authoritative.
-
-Authoritative timer expiry is deliberately not logout: at the backend-provided
-expiry instant, presentation stops and navigates without a DELETE or cross-tab
-logout outcome. Likewise, protected-request `401`, logout `204`, and
-availability `503` retain distinct meanings. Authoritative direct entry and
-`pageshow`/BFCache status revalidation remain the next **Guard
-restored protected pages** task. The active false-latch branch separately
-reduces an already logged-out Study presentation without a backend request.
-
-### Implemented target-path disposition of the exact seven keys
-
-The false-gate legacy path preserves every spelling, reader, request payload,
-and ordinary login write. Its only key-disposition change is the scoped
-`IndexVerificado` removal during browser-final Study cleanup described above;
-no key or replacement credential was added. The dormant target path has this
-implemented disposition:
-
-| Exact key | Dormant target-path disposition |
-| --- | --- |
-| `IndexVerificado` | Never read, written, returned, or sent by target code. The bounded legacy branch remains until central final rejection; backend first issuance owns the irreversible per-subject cutoff. |
-| `Usuário_Foto_Cadastrada` | Not read by target navigation or registration; backend phase/current status supplies presentation authority. |
-| `Horário-Encerramento-Sessão` | Not read by the target timer; presentation uses backend `serverTime`/`expiresAt` plus monotonic elapsed time. |
-| `Usuário_Logado` | Presentation-only and never gates target protected work. It becomes `Sim` only after authoritative authenticated status. It may become `Não` after exact target logout `204`, a received logout-only presentation signal, authoritative expiry, or explicit invalid-session presentation. Final removal waits for direct/BFCache validation. |
-| `Usuário_Autorização_Cadastro` | Not read or written by target flow; bodyless enrollment plus exact `registration-pending`/`registration-challenge` current status controls registration. |
-| `Origem_Aviso_Dispositivo` | Retained as the current UI/history compatibility marker. Its decision/removal belongs to **Guard restored protected pages**. |
-| `TempoSessão_Segundos` | Not read by target entry or timer; the legacy read remains only inside the false-gate compatibility path. |
-
-No replacement Web Storage credential is permitted. Forged, missing,
-nonnumeric, stale, or otherwise malformed storage may affect only bounded
-presentation/navigation compatibility while it remains.
-
-### Bounded adoption and rollback
-
-The Topic 05 order is fixed:
-
-1. **Implement revocable sessions** has added the backend authority, legacy
-   compatibility binding, provisional states, status/logout/revoke-all, private
-   Face binding, rotation, revocation, and dual-stack middleware behind its safe
-   controls; the durable production store and rollout latches remain off.
-2. **Adopt authoritative sessions** now contains the production-disabled
-   consumer for exact backend phases, server time, credentialed session and
-   protected requests, registration enrollment/status validation, and
-   session-bound Face completion. Coordinated enablement keeps the one shared
-   App Service origin unchanged and turns on the source latch only with the
-   matching backend partitioned-cookie and rollout gates; no latch changes in
-   this task.
-   Legacy issuance can stop only when authoritative logout is ready for that
-   same approved release pair.
-3. **Make logout authoritative** now contains the production-disabled consumer:
-   durable current-record revocation and exact `204` are prerequisites to local
-   successful logout presentation/navigation, and one logout-only
-   `BroadcastChannel` outcome reduces presentation across relevant target tabs.
-   It does not call revoke-all or activate the adoption latch.
-4. **Guard restored protected pages** validates direct and BFCache-restored
-   entries before protected work and owns the later warning-origin disposition.
-
-Before the dual-stack window, a seeding release transactionally records a
-unique HMAC verifier of every newly issued complete legacy handle with its
-stable `subject_id` and original expiry. It runs continuously for one full
-four-hour issuance horizon; a write/continuity failure restarts the horizon.
-Handles from before the ledger therefore expire naturally, and enforcement
-never reconstructs ownership from a mutable workbook row. Once enforcement is
-enabled, a missing binding is `401`, a conflicting/corrupt binding is `503`,
-and neither reaches protected domain work.
-
-Because current issuance can deterministically repeat the same handle for the
-same row within one second, an existing binding with identical subject,
-issue/expiry instants, and key ID is idempotent success. Only differing metadata,
-an impossible duplicate row, or corrupt/unreadable state is the `503` integrity
-case.
-
-The dual-stack window then begins when production first accepts both target
-cookies and ledger-bound legacy handles and has a fixed, non-extendable hard
-maximum of seven calendar days. Any presence of the target cookie is
-decisive—valid, invalid, expired, revoked, wrong-phase, or unavailable—and
-prevents legacy evaluation; `IndexVerificado` is considered only when the
-cookie is absent. Absence alone does not permit downgrade: target-mode login
-atomically sets an irreversible per-subject legacy cutoff, and every legacy
-authorization derives the subject only from its immutable ledger binding and
-checks that cutoff plus the same bounded current eligibility decision in SQL.
-An adopted subject's old handles therefore remain rejected after cookie
-eviction, manual deletion, expiry, logout, revoke-all, Face failure, or
-ineligibility; store or due-eligibility outage is `503`, never unchecked
-fallback. Old legacy tabs/devices must load the target client and reauthenticate.
-The production adoption gate cannot open until authoritative logout is ready
-for the same coordinated enablement.
-
-Before global stop-issuance, legacy-mode login presents no target cookie, omits
-the session header, and may receive only the current handle for a
-not-yet-adopted subject. Target-mode login sends the header, sets the subject
-cutoff, and receives only the cookie. The cutoff is never cleared by rollback
-or administration. Concurrent target-device sessions remain allowed; the
-cross-device legacy retirement is a bounded migration exception.
-
-If first target issuance commits but its response is lost, the cutoff remains
-and legacy authority does not return. The frontend shows an availability state
-and requires a fresh target-mode credential login; it does not blindly replay
-the ambiguous request. A registration upload or Face-completion ambiguity locks
-the upload form before returning to Login, while a lost credential response is
-already presented on the Login page. No branch falls back to the stored handle.
-
-At authoritative-client cutover, the backend stops issuing the legacy field.
-Cutover must occur at least four hours before the seven-day sunset or the
-adoption aborts/rolls back. Already issued handles may age out only for their
-existing four-hour lifetime; central rejection occurs mechanically when the
-final lifetime passes and never waits for telemetry. Hosted synthetic checks,
-unchanged public-surface checks, and a reviewed frontend/backend rollback pair
-are prerequisites. Privacy-safe telemetry confirms that nothing is accepted
-after rejection but cannot extend the window.
-
-Before central legacy rejection, frontend and backend may roll back together
-only to reviewed cookie-capable dual-stack code while preserving every subject
-cutoff and any central stop-issuance setting; a target-adopted subject never
-returns to legacy mode. Rollback never mints a disallowed new legacy handle,
-extends an existing lifetime, or extends the sunset. After rejection, rollback
-must remain cookie-capable and cannot re-enable legacy issuance or acceptance.
-Revoked records are never resurrected, and schema rollback cannot discard
-revocation/cutoff evidence while any corresponding identifier could remain
-valid.
-
-### Synthetic session acceptance matrix
-
-These producer/rollout rows remain separate from the current
-**Behavior-baseline acceptance matrix** below. Backend implementation covers its
-safe and qualified inventories; the dormant frontend now covers current logout,
-while coordinated rollout and restored-page rows remain future work. All evidence uses invented
-identifiers, fake UTC clocks, synthetic accounts, inert session records,
-injected providers, and denied production networking.
-
-| ID | Future synthetic assertion |
-| --- | --- |
-| `SESSION-TARGET-01` | Every protected operation accepts a valid authenticated cookie and derives the expected backend subject; no provisional phase can reach it |
-| `SESSION-TARGET-02` | Missing, malformed, unknown, expired, revoked, rotated-out, and wrong-subject sessions fail closed before domain work and without stale-response cookie mutation; any cookie presence prevents fallthrough to the legacy body credential |
-| `SESSION-TARGET-03` | Credential, registration, and Face provisional states reach only their exact minimum routes and never study, progress, assessment, feedback, or certificate work |
-| `SESSION-TARGET-04` | Authenticated promotion atomically consumes the bound Face challenge, invalidates the provisional verifier, creates the authenticated record, and rotates the cookie |
-| `SESSION-TARGET-05` | Every old provisional identifier fails immediately after elevation on every backend instance |
-| `SESSION-TARGET-06` | Forged or malformed values for all seven exact storage keys never grant backend access or change subject, phase, expiry, or eligibility |
-| `SESSION-TARGET-07` | Browser-clock and stored-deadline tampering have no authority effect; provisional/authenticated deadlines use server UTC and no request extends them |
-| `SESSION-TARGET-08` | Known entitlement expiry is exact; account deactivation/shortening or credential-fingerprint change blocks provisional transition, promotion, and protected work within five minutes; due revalidation outage returns `503` without serving stale authority |
-| `SESSION-TARGET-09` | Current logout revokes only the shared profile session; every successful/repeated/invalid `204` leaves the retained cookie inert and untouched; the subject cutoff prevents legacy resurrection; revoke-all invalidates every subject session/device without cookie mutation |
-| `SESSION-TARGET-10` | Tabs share rotation/logout, concurrent target devices follow the selected allowance, and successful new login preserves other-device sessions; cookie-less login/logout races prove that a delayed successful credential response is a new authentication that may win after current-session logout |
-| `SESSION-TARGET-11` | Store failure and unknown transaction outcome fail closed as availability failures; restore/verifier-key incidents retire target and legacy keys outside restored SQL, advance authority epoch, invalidate backup-era credentials, and wait for every instance before resuming |
-| `SESSION-TARGET-12` | Existing shared App Service hostname, host-only partitioned-cookie flags, credentialed CORS, exact Origin, custom header, preflight, cache, response, issuance-only cookie mutation, and natural-expiry/overwrite behavior match the ADR |
-| `SESSION-TARGET-13` | No application session identifier/verifier appears in a URL, body, Web Storage, log, fixture, snapshot, public diagnostic, or client-visible provider session field |
-| `SESSION-TARGET-14` | The browser supplies neither Face verdict nor provider session ID; only the backend-bound provider result can promote; pending is `409`, definitive failure is revoking `403`, provider/store outage is preserving `503`, and the public compatibility lookup cannot promote |
-| `SESSION-TARGET-15` | Direct and BFCache-restored protected pages revalidate before any protected fetch, media, Face runtime, timer, or write; validation outage blocks without false logout |
-| `SESSION-TARGET-16` | Legacy compatibility is bounded by a full four-hour verifier-binding seeding gate, cookie-first/no-fallback, an irreversible per-subject cutoff on first target issuance, global stop-issuance at least four hours before the fixed seven-day sunset, the last not-yet-adopted lifetime, and non-reversible final rejection across rollback |
-| `SESSION-TARGET-17` | Public status report, client intake, quote, Conecta, certificate validation, and both warning pages retain their current session-free behavior |
-| `SESSION-TARGET-18` | Current-session status, registration enrollment, Face challenge/completion, logout, revoke-all, wrong-stage, wrong-subject, and store-outage roles match their methods, statuses, cookie effects, and idempotency |
-| `SESSION-TARGET-19` | Same-predecessor races let only the compare-and-replace winner issue a cookie; every non-issuance response has no `Set-Cookie` in either response order; fresh login overwrites unusable cookies; cookie-less login/logout races follow the last-processed-response/new-authentication policy; restart and multi-instance checks observe committed rotation/revocation and subject cutoffs without positive authorization caching |
-| `SESSION-TARGET-20` | The consumer release latch remains source-controlled false; its legacy branch retains the current five authorization placements and public Face-result behavior, its target branch adds no storage credential, and the reviewed artifact/import changes preserve every output path and public contract |
-| `SESSION-TARGET-21` | Every accepted migration handle resolves through one immutable full-handle-verifier-to-subject binding; an identical same-second deterministic issuance is idempotent success; pre-ledger/missing bindings fail `401`, differing/corrupt bindings fail `503`, and workbook row movement cannot change the subject |
-| `SESSION-TARGET-22` | Fresh-login coverage proves exact backend-read `FACEID = Ativo` requires backend-bound Face, exact `Inativo` authenticates directly regardless of photo state, and missing/blank/other values fail `503` without a target identifier, legacy handle, or `Set-Cookie`; edits affect only fresh logins, existing provisional/authenticated sessions retain their captured policy and normal lifetime, forged client state cannot waive Face, and the later account-authority cutover leaves exactly one policy source |
-
-The implemented frontend subset has direct traceability:
-
-| ID | Dormant consumer assertion |
-| --- | --- |
-| `SESSION-ADOPT-01` | The production latch is false and cannot be enabled by URL/query, storage, cookie presence, hostname, or window state. |
-| `SESSION-ADOPT-02` | Current status accepts only the five exact fields, canonical server instants, four active phases, and their exact ordered next-operation roles. |
-| `SESSION-ADOPT-03` | Public requests omit credentials/session header while target session/protected requests add only the exact credential, cache, redirect, mode, header, and referrer options without manual Cookie or Origin. |
-| `SESSION-ADOPT-04` | Login follows authenticated, registration-enrollment, and existing-photo Face roles without target handle storage or public Face-result promotion. |
-| `SESSION-ADOPT-05` | Registration first validates its current role, uploads only `file`, runs lazy Face, and completes through the bodyless backend-bound action. |
-| `SESSION-ADOPT-06` | Study refresh/status/writes are cookie-authenticated, omit the stored handle, and present expiry from backend UTC plus monotonic elapsed time. |
-| `SESSION-ADOPT-07` | Current-session `401`, `503`, malformed, and wrong-phase outcomes remain distinct and never manufacture authority or availability as logout. |
-| `SESSION-ADOPT-08` | The exact seven-key inventory has the implemented target disposition and no replacement credential. |
-| `SESSION-ADOPT-09` | `403` is reconciled against current status, `409`/`503` do not replay, invalid FACEID policy is availability, and lost issuance never downgrades. |
-| `SESSION-ADOPT-10` | GATE-01 precedes GATE-02, and both precede target networking. |
-| `SESSION-ADOPT-11` | Protected feedback retains its business payload while omitting browser authority and using target request metadata. |
-| `SESSION-ADOPT-12` | Registration remains locked on invalid, unavailable, malformed, or wrong provisional status. |
-| `SESSION-ADOPT-13` | Lost/conflicting/unavailable registration and completion transitions lock replay and require fresh target credential login. |
-
-The authoritative-logout subset has direct traceability:
-
-| ID | Dormant authoritative-logout assertion |
-| --- | --- |
-| `SESSION-LOGOUT-01` | The target client sends exactly one bodyless `DELETE /sessions/current` with credentialed no-store CORS metadata and no identifier, verifier, subject, authority field, manual `Cookie`, or manual `Origin`; active, missing, invalid, and repeated backend outcomes are identical exact `204`. |
-| `SESSION-LOGOUT-02` | Pending logout is single-flight and blocks protected interaction without changing storage, timer, navigation, or channel state; exact `204` alone commits local cleanup and one logout-only signal. |
-| `SESSION-LOGOUT-03` | `503`, network loss, malformed response, unexpected status, and ambiguous response preserve presentation/navigation, restore an explicit retry, and never replay automatically. |
-| `SESSION-LOGOUT-04` | One committed logout outcome reduces Login, Initial Notices, Photo Registration, and Study presentation without receiver DELETE or rebroadcast. |
-| `SESSION-LOGOUT-05` | Missing, malformed, duplicate, replayed, and forged channel messages cannot add authority; only the exact two-field logout message can conservatively reduce presentation once. |
-| `SESSION-LOGOUT-06` | Unavailable or failed `BroadcastChannel` publication records failed cross-tab qualification but cannot undo local success after backend `204`. |
-| `SESSION-LOGOUT-07` | Independent credential response and logout-presentation orders preserve the backend rule that a later successful authentication may win and logout never implies revoke-all or cancellation. |
-| `SESSION-LOGOUT-08` | Backend-returned authoritative expiry stops presentation without issuing DELETE or manufacturing a logout signal or response. |
-| `SESSION-LOGOUT-09` | GATE-01/GATE-02 precede channel/network setup; the latch stays false and browser-uncontrollable; exactly seven storage keys remain; no cookie read/write, local-storage fallback, storage event, or revoke-all call is introduced. The target branch still has no authoritative restored-page validation; the false-latch branch has the separately tested local Study guard and browser-final cleanup. |
+`GATE-01` retains precedence over `GATE-02`, and both precede every
+learning-platform request. They are browser-admission checks, not authority.
+The current implementation has no cookie-based platform session, custom
+session header, session-status endpoint, authoritative-session runtime flag,
+server-side logout call, SQL session integration, or rollout control.
 
 ## Approved future decisions
 
 These remaining decisions are approved roadmap direction only. The named-only
 frontend adapter, named backend producers, and separate presentation catalog
 are current behavior above, not future work.
-- Use Azure SQL Database Basic as the initial relational target, subject to
-  representative load testing.
 - Migrate workbook capabilities sequentially, with reconciliation and rollback
   evidence for every capability.
 - Replace status reporting with live, participant-named, revocable company
@@ -2479,10 +2057,9 @@ are current behavior above, not future work.
   separate Azure operations milestone. Observability diagnoses failures; it
   neither replaces the client/server error contract nor exposes private
   diagnostic detail through that contract.
-- Implement the approved session-authority decision only through the four
-  named Topic 05 tasks. Keep broader HTTP-status reclassification, retries,
-  idempotency, timeout/cancellation, partial-success redesign, and versioned
-  response-envelope changes in their separately authorized milestones.
+- Keep broader HTTP-status reclassification, retries, idempotency,
+  timeout/cancellation, partial-success redesign, and versioned response-envelope
+  changes in their separately authorized milestones.
 - Re-encode the video ladder and evaluate storage redundancy before considering
   a CDN.
 - Automate Face SDK and dependency maintenance; remove secret-bearing manual
@@ -2490,12 +2067,9 @@ are current behavior above, not future work.
 
 ## Questions requiring implementation-time evidence
 
-The former Question 1—authoritative expiry, revocation, rotation, and logout
-semantics—is resolved by the separate future-session decision above and the
-backend ADR. Publishing that answer does not implement it or remediate the
-current risks. The source snapshot cannot answer the remaining unrelated
-questions safely. They retain their original numbers, and the later task that
-changes each relevant seam must collect evidence without contacting production:
+The source snapshot cannot answer the remaining unrelated questions safely.
+They retain their original numbers, and the later task that changes each
+relevant seam must collect evidence without contacting production:
 
 2. Which backend operations are idempotent today under transport retry, and
    where must request identifiers or reconciliation be introduced?
@@ -2535,11 +2109,11 @@ identify the current oracle.
 | ORIGIN-01 | Shared production origin | Exactly one executable production-origin literal is exported from the separate shared mapping and imported by exactly eight consumers; runtime code contains no executable localhost backend URL, hostname-based selection, backend-base storage key, stored override, or relative `/null/` request path. |
 | ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, including `/plataforma/aviso-viewport/`, `/plataforma/aviso-dispositivo-navegador/`, and `/plataforma/cadastro-foto/` with exact case; every index is emitted under `dist/plataforma/`, and one directory mapping emits the complete canonical module tree within the exact nine learning-platform mappings. |
 | ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/`, all three former `/plataforma/cadastro` forms, and all six former current warning forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or old warning or `dist/plataforma_v2/` subtree exists. All 15 enumerated legacy module URLs are explicit 404s and have no emitted output, alias, or redirect. Internal source navigation remains slashless; production serves each current slashless entry with the same bytes and no HTTP redirect, while the manifest's trailing-slash spellings remain canonical. The complete negative-path contract is exactly 64. |
-| ROUTE-03 | Navigation/history | GATE-01, GATE-02, false-latch explicit logout, legacy timer expiry, and the logged-out Study direct/`pageshow` guard use injected replacement navigation; other ordinary login, registration, study, and content navigation retains its existing history-adding behavior. Each viewport transition carries the exact originating path/query/fragment in a bounded encoded `returnTo`; the warning accepts only the six approved relative same-origin path families, preserves accepted slash spelling and suffixes, rejects unsafe input without external navigation, and replaces at most once above 1024 with canonical login as fallback. Login's separate registration `history.back()` rule and the exact legacy origin marker remain unchanged. |
+| ROUTE-03 | Navigation/history | GATE-01, GATE-02, browser-final explicit logout, timer expiry, and the logged-out Study direct/`pageshow` guard use replacement navigation; other ordinary login, registration, study, and content navigation retains its existing history-adding behavior. Each viewport transition carries the exact originating path/query/fragment in a bounded encoded `returnTo`; the warning accepts only the six approved relative same-origin path families, preserves accepted slash spelling and suffixes, rejects unsafe input without external navigation, and replaces at most once above 1024 with canonical login as fallback. Login's separate registration `history.back()` rule and the exact legacy origin marker remain unchanged. |
 | GATE-01 | Device/browser admission | One centralized classifier gives login/notices/registration/study stable candidate, unsupported, or unverified results from consistent browser/platform evidence and side-effect-free entry API shapes. Usable Windows/Edge hints or fallback can produce only a candidate; missing or conflicting evidence stays unverified; explicit excluded families/platforms and missing mandatory APIs stay unsupported. Rejected and unverified profiles replace to `/plataforma/aviso-dispositivo-navegador` before GATE-02 and never load Face. Status report, client intake, and both warning entries remain ungated, and the device/browser diagnostic handles absent or partial `userAgentData`. |
 | GATE-02 | Minimum-viewport admission | After GATE-01 precedence on protected entries, qualifying login, notices, registration, study, public status report, and public client intake replace to the viewport warning at 1023 and the inclusive 1024 boundary, admit 1025, and replace on a later resize down without starting protected work or narrow report requests. Platform entries use slashless `/plataforma/aviso-viewport`; client intake uses trailing-slash `/plataforma/aviso-viewport/`. No alternate device classifier is introduced. Direct narrow warning entry remains; direct wide entry uses the canonical login fallback. |
 | STORE-01 | Key inventory | The exact seven accented/cased keys, all readers/writers, the Study-only `IndexVerificado` remover, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented; no backend base or new key is stored or read. |
-| STORE-02 | Lifetime/reset | No flow clears storage. Refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. False-latch explicit logout, timer expiry, and logged-out direct/BFCache restoration set `Usuário_Logado=Não`, remove only `IndexVerificado`, and leave the other five legacy values unchanged; a later valid login writes fresh state. |
+| STORE-02 | Lifetime/reset | No flow clears storage. Refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. Browser-final explicit logout, timer expiry, and logged-out direct/BFCache restoration set `Usuário_Logado=Não`, remove only `IndexVerificado`, and leave the other five legacy values unchanged; a later valid login writes fresh state. |
 | API-01 | Login and Face registration | Methods, exact paths—including unchanged `POST /plataforma_v2/CadastroFoto_e_FaceID`—JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
 | API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, named request-error, and backend-retry-visible branches with no client polling. |
 | API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, named semantic mapping, and optimistic update/rollback behavior match current transitions. |
@@ -2551,7 +2125,7 @@ identify the current oracle.
 | FLOW-03 | Content completion | Manual and `ended` completion both exercise optimistic increment, protected update, success advance, and local failure rollback. |
 | FLOW-04 | Assessment | Synthetic DOM answers reproduce current client score and update behavior, including absence of a source-defined time limit or dedupe identity. |
 | FLOW-05 | Feedback | Synthetic submission records current client-controlled fields, update-before-append ordering, failure positions, and duplicate-visible retry behavior. |
-| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, and validation text remain exact. False-latch explicit logout and timer expiry make Study inert/hidden, stop its timer, pause media, update/remove only the scoped storage values, and replace to Login without DELETE or cross-tab signaling; logged-out direct/BFCache restoration does the same before protected work, and fresh login restores new browser state. The copied-handle limitation remains. Dormant target logout is covered separately by `SESSION-LOGOUT-*`. |
+| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, and validation text remain exact. Browser-final explicit logout and timer expiry make Study inert/hidden, stop its timer, pause media, update/remove only the scoped storage values, and replace to Login without DELETE or cross-tab signaling; logged-out direct/BFCache restoration does the same before protected work, and fresh login restores new browser state. The copied-handle limitation remains. |
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
@@ -2560,26 +2134,18 @@ identify the current oracle.
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The current browser-final logout artifact has 258 files and matches its recalculated 27,395,632-byte identity. Relative to the immediate 258-file, 27,394,267-byte dormant authoritative-logout baseline, exactly three mapped platform JavaScript outputs add 1,365 bytes while the other 255 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
-| ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 64 negative paths, and exactly 80 JavaScript imports in both source and generated previews. |
+| ARTIFACT-01 | Full frontend artifact | The lean signed-handle artifact has 258 files and matches its recalculated 27,362,565-byte identity. Relative to the immediate 27,395,632-byte browser-final baseline, exactly 15 mapped platform JavaScript outputs remove 33,067 bytes while the other 243 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
+| ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 64 negative paths, and exactly 77 JavaScript imports in both source and generated previews. |
 
 ### Automated traceability
 
-The behavior matrix retains its 30 stable acceptance IDs, the dormant session
-table adds 13 implementation IDs, and dormant authoritative logout adds nine.
-Every matrix-coverage test
+The behavior matrix retains its 30 stable acceptance IDs. Every matrix-coverage test
 title begins with one of those IDs in brackets; focused markup tests use their
 own guard labels without expanding the acceptance matrix. Coverage is grouped
 by execution seam rather than by future source location:
 
 - `.agents/tests/learning-platform-static.test.js` covers declarative route,
   Face asset/presentation, download, video/DRM, and artifact contracts;
-- `.agents/tests/learning-platform-authoritative-sessions.test.js` covers the
-  dormant latch, target request boundary, phases/roles, registration and Face
-  transitions, storage disposition, server-time presentation, and failure
-  reconciliation plus exact current-session DELETE, strict `204` commitment,
-  retry/single-flight behavior, injected logout-only cross-tab presentation,
-  independent-login ordering, and expiry without production networking;
 - `.agents/tests/learning-platform-markup.test.js` locks the seven documents'
   visible copy, unique IDs, selector and event-target inventory, native-control
   relationships, accessible labels/status, focus movement, the application-wide
@@ -2606,7 +2172,7 @@ by execution seam rather than by future source location:
 Shared helpers under `.agents/tests/helpers/` provide isolated browser seams and
 install the deny-all network guard before application code executes. All
 behavior fixtures are invented and local; no test uses a production service.
-The deployment suite resolves all 80 imports in a temporary generated preview,
+The deployment suite resolves all 77 imports in a temporary generated preview,
 and build checking proves every generated byte equals its mapped source. That
 byte identity carries the source-executed network-denial boundary into the
 generated artifact without contacting a hosted preview.
@@ -2614,9 +2180,7 @@ generated artifact without contacting a hosted preview.
 Backend-internal feedback ordering and partial-success boundaries remain
 independently executable in `backend/test/app-platform-routes.test.js` at the
 verified companion commit `ba286cc0b3d3e67176d46dee84a5ba7d55b7162c`.
-Session-producer verification at that commit also freezes the exact 14-route
-safe-default and 19-route qualified synthetic inventories without starting the
-production backend. The frontend harness models only client-visible behavior.
+The frontend harness models only client-visible behavior.
 
 ## Safe synthetic-dependency strategy
 

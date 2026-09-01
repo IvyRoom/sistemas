@@ -10,7 +10,6 @@ import {
 
 export function createStudyAssessment({
     alert,
-    authoritativeSessionsEnabled = false,
     client,
     document,
     dom,
@@ -93,7 +92,7 @@ export function createStudyAssessment({
 
         client.postJson('/updates', {
             TipoAtualização: 'NúmeroTópicosConcluídos-e-NotaTeste',
-            ...(authoritativeSessionsEnabled ? {} : { IndexVerificado: state.verifiedIndex }),
+            IndexVerificado: state.verifiedIndex,
             NúmeroTópicosConcluídos: state.completedTopics,
             NúmeroMódulo: moduleNumber,
             NotaTeste: score

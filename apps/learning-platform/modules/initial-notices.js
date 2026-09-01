@@ -12,17 +12,8 @@ export function createInitialNoticesApplication({
     replaceNavigation,
     requiredAcknowledgements,
     session,
-    window,
-    authoritativeSessions = false,
-    logoutPresentation
+    window
 }) {
-    if (
-        authoritativeSessions &&
-        (!logoutPresentation || typeof logoutPresentation.listen !== 'function')
-    ) {
-        throw new TypeError('Authoritative logout presentation is required');
-    }
-    let logoutPresentationEnded = false;
     const browserAdmission = classifyBrowserAdmission({
         document,
         entry: browserAdmissionEntries.INITIAL_NOTICES,
@@ -42,17 +33,10 @@ export function createInitialNoticesApplication({
         } else if (handleViewportWidth()) {
             return;
         } else {
-            if (!authoritativeSessions && session.read('registrationAuthorization') !== 'Sim') {
+            if (session.read('registrationAuthorization') !== 'Sim') {
                 navigate('/plataforma/login');
             } else {
                 window.addEventListener('resize', handleViewportWidth);
-                if (authoritativeSessions) {
-                    logoutPresentation.listen(() => {
-                        logoutPresentationEnded = true;
-                        session.write('loggedIn', 'Não');
-                        navigate('/plataforma/login');
-                    });
-                }
             }
         }
     }
@@ -69,10 +53,7 @@ export function createInitialNoticesApplication({
         const agreementButton = document.getElementById('Botão-Li-e-Concordo');
 
         document.getElementById('Formulário').addEventListener('submit', function (event) {
-            if (
-                browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE ||
-                logoutPresentationEnded
-            ) {
+            if (browserAdmission.outcome !== browserAdmissionOutcomes.CANDIDATE) {
                 event.preventDefault();
                 return;
             }

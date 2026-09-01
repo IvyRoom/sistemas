@@ -1008,6 +1008,11 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
     "The retired backend-base storage key must be absent beneath apps"
   );
   assert.equal(combinedJavaScript.includes("/null/"), false);
+  assert.doesNotMatch(
+    combinedJavaScript,
+    /AUTHORITATIVE_SESSIONS_ENABLED|authoritativeSessions|sessionContext|BroadcastChannel|\/sessions(?:\/current)?\b|X-Machado-Session|credentials\s*:\s*["']include["']|document\.cookie/,
+    "Retired session-authority flags, state, routes, headers, cookies, and cross-tab channels must be absent from runtime source"
+  );
 
   const importEdges = moduleImportEdges(javaScriptSources);
   assert.deepEqual(
@@ -1016,10 +1021,10 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
       digest: digestStrings(importEdges)
     },
     {
-      count: 80,
-      digest: "4e5b19225a140479b99ff5677ee62b13ea56be48ebc30ff8d65d15e9e0aee510"
+      count: 77,
+      digest: "672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149"
     },
-    "The dormant authoritative-session source graph must retain its exact import aggregate"
+    "The lean signed-handle source graph must retain its exact import aggregate"
   );
 });
 
@@ -1544,10 +1549,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20790286,
-      digest: "e383916ced000039459e19d54eedf9c2c83e83db63c47d2d51fb6bd2069bb08e"
+      bytes: 20757219,
+      digest: "c6c6b7c4968757bc3bd8f6b782f8c674815eadf8eba5d87cc7b8e653e1088cb1"
     },
-    "The current manifest must produce the exact browser-final logout platform target"
+    "The current manifest must produce the exact lean signed-handle platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -1556,10 +1561,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20790286,
-      digest: "ba5e3c5c0eafa488c44a24bbfd3d72a0a98e96aa3cf896abb16149ee0c9baccb"
+      bytes: 20757219,
+      digest: "13b91e0489a619b6052d7fb6f841d6ed9c778fdbc5faacc8a76a8cf0c5233284"
     },
-    "The current manifest must produce the exact prefix-omitted browser-final logout target"
+    "The current manifest must produce the exact prefix-omitted lean signed-handle target"
   );
   const javaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
@@ -1568,10 +1573,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 503148,
-      digest: "4bc92f67774b596554e902b5b9f47fa36545288bc20244d5e692d40095296813"
+      bytes: 470081,
+      digest: "bb7977e91adf64324a27bb1bc0faf23bf081e31637b416c490a05747858a0dfb"
     },
-    "The platform JavaScript files must retain their exact browser-final logout identity"
+    "The platform JavaScript files must retain their exact lean signed-handle identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -1614,10 +1619,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 10022518,
-      digest: "412341987b6b7b04029866f5d310124d10c021e75eff00b76a0bb9aafd789ab4"
+      bytes: 10022029,
+      digest: "19cbf0067226f54e1ea521d606762ad9f1acc0b8acd2ff7d5129a1c9e413a44c"
     },
-    "The Study entry subtree must retain its dormant-logout mapped identity"
+    "The Study entry subtree must retain its lean signed-handle mapped identity"
   );
   const backendConsumerApplicationStats = Object.fromEntries(
     backendConsumerApplicationIds.map((applicationId) => [
@@ -1940,8 +1945,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
   assert.equal(
     (studySource.match(/(?:ContainerInternoShakaPlayer|dom\.playerElement)\.pause\(\)/g) ?? []).length,
-    5,
-    "Assessment, feedback, certificate, and both logout paths must pause presentation"
+    4,
+    "Assessment, feedback, certificate, and browser-final logout must pause presentation"
   );
   assert.equal(
     (studySource.match(/dom\.playerElement\.onended\s*=/g) ?? []).length,
@@ -1975,7 +1980,7 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] browser-final logout advances the dormant authoritative-logout baseline", () => {
+test("[ARTIFACT-01] lean signed-handle artifact retains the complete output graph", () => {
   const historicalPhaseB = {
     files: 257,
     bytes: 27298502,
@@ -1999,10 +2004,10 @@ test("[ARTIFACT-01] browser-final logout advances the dormant authoritative-logo
     treeStats(records),
     {
       files: 258,
-      bytes: 27395632,
-      digest: "08dfdf96411fbc0c239e29c091c689eaa261f4df66d7fb70ff8335926da1dd5b"
+      bytes: 27362565,
+      digest: "a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6"
     },
-    "The current manifest must produce the exact browser-final logout frontend target"
+    "The current manifest must produce the exact lean signed-handle frontend artifact"
   );
   assert.deepEqual(
     treeStats(sharedRuntimeRecords()),
@@ -2082,7 +2087,7 @@ test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform do
   assert.equal(
     completeRecords.length - publicEntryCount - publicDownloadCount,
     243,
-    "The complete dormant authoritative-session artifact must contain 243 support files"
+    "The complete lean signed-handle artifact must contain 243 support files"
   );
 });
 

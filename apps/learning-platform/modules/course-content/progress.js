@@ -10,7 +10,6 @@ import {
 
 export function createStudyProgress({
     alert,
-    authoritativeSessionsEnabled = false,
     client,
     document,
     dom,
@@ -25,7 +24,7 @@ export function createStudyProgress({
 
         client.postJson('/updates', {
             TipoAtualização: 'NúmeroTópicosConcluídos',
-            ...(authoritativeSessionsEnabled ? {} : { IndexVerificado: state.verifiedIndex }),
+            IndexVerificado: state.verifiedIndex,
             NúmeroTópicosConcluídos: state.completedTopics,
             NúmeroMódulo: 'n/a',
             NotaTeste: 'n/a'

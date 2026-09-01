@@ -438,11 +438,16 @@ test("[ROUTE-03] ordinary destinations stay separate from replacement admission"
 
   for (const [page, destinations] of Object.entries(expectedWriters)) {
     for (const destination of destinations) {
+      const browserFinalStudyDestination =
+        page === "study" && destination === PATHS.login;
       assert.equal(
-        sources[page].includes(`window.location.href = '${destination}'`) ||
-          sources[page].includes(`window.location.href = "${destination}"`) ||
-          sources[page].includes(`navigate('${destination}')`) ||
-          sources[page].includes(`navigate("${destination}")`),
+        browserFinalStudyDestination
+          ? sources[page].includes(`replaceNavigation('${destination}')`) ||
+            sources[page].includes(`replaceNavigation("${destination}")`)
+          : sources[page].includes(`window.location.href = '${destination}'`) ||
+            sources[page].includes(`window.location.href = "${destination}"`) ||
+            sources[page].includes(`navigate('${destination}')`) ||
+            sources[page].includes(`navigate("${destination}")`),
         true,
         `${page} must retain ${destination}`
       );
@@ -1544,7 +1549,7 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
     TempoSessão_Segundos: [],
     Usuário_Autorização_Cadastro: ["login", "register"],
     Usuário_Foto_Cadastrada: ["login"],
-    Usuário_Logado: ["login", "notices", "register", "study"]
+    Usuário_Logado: ["login", "register", "study"]
   };
   for (const [key, pages] of Object.entries(expectedReaders)) {
     assert.deepEqual(

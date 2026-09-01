@@ -21,9 +21,9 @@ generated and Azure deployments.
 | Client Intake | `POST /clientes/processa-formulario` |
 | Certificate Validation | `GET /validacaocertificados/:encodedCertificateId` |
 | Conecta referral form | `POST /conecta/processa-recomendacao` |
-| Learning-platform Login | Legacy and target `POST /plataforma_v2/login-FaceID` and `POST /plataforma_v2/FaceID`; legacy compatibility `GET /plataforma_v2/FaceID_resultado/:sessionId`; dormant target `POST /plataforma_v2/sessions/current/registration-enrollment`, `POST /plataforma_v2/sessions/current/face-completion`, and `GET /plataforma_v2/sessions/current` |
-| Learning-platform Registration | Legacy and target `POST /plataforma_v2/CadastroFoto_e_FaceID`; legacy compatibility `GET /plataforma_v2/FaceID_resultado/:sessionId`; dormant target `GET /plataforma_v2/sessions/current` and `POST /plataforma_v2/sessions/current/face-completion` |
-| Learning-platform Study | Legacy and target `POST /plataforma_v2/refresh`, `POST /plataforma_v2/updates`, and `POST /plataforma_v2/processa-feedback`; dormant target `GET /plataforma_v2/sessions/current` and bodyless `DELETE /plataforma_v2/sessions/current` |
+| Learning-platform Login | `POST /plataforma_v2/login-FaceID`, `POST /plataforma_v2/FaceID`, and `GET /plataforma_v2/FaceID_resultado/:sessionId` |
+| Learning-platform Registration | `POST /plataforma_v2/CadastroFoto_e_FaceID` and `GET /plataforma_v2/FaceID_resultado/:sessionId` |
+| Learning-platform Study | `POST /plataforma_v2/refresh`, `POST /plataforma_v2/updates`, and `POST /plataforma_v2/processa-feedback` |
 | Learning-platform Status Report | `POST /plataforma_v2/statusreport` |
 
 The Marketing Site is excluded because it does not contact the Machado backend.
@@ -39,111 +39,27 @@ localhost backend URLs, localhost-backend comments, and the
 Study and Registration can start directly without reading one. There is no stored
 override, fallback base, or path that can concatenate a relative `/null/` request.
 
-## Dormant authoritative-session topology
+## Lean learning-platform request boundary
 
-This section records the implemented consumer alignment for the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/ba286cc0b3d3e67176d46dee84a5ba7d55b7162c/docs/session-authority.md).
-The target request branches exist in source and generated output, but the
-source-controlled `AUTHORITATIVE_SESSIONS_ENABLED` latch is exactly `false`.
-Browser-controlled URL/query input, Web Storage, cookies, hostname state, and
-window globals cannot enable it. The deployment therefore keeps the current
-`BACKEND_ORIGIN`, public/legacy fetches, routes, and observable client behavior;
-it does not create a target cookie, change deployed CORS, or modify DNS, TLS,
-App Service, secrets, SQL, the manifest, or other infrastructure.
+The learning platform uses the same shared backend origin as the other API
+consumers and the browser's ordinary uncredentialed fetch behavior. It has no
+cookie-based platform session, custom session header, session-status request,
+or logout request. Login sends only the credential payload. Registration and
+the five protected learning operations carry the signed `IndexVerificado`
+handle in their established multipart or JSON fields.
 
-The target API origin remains exactly the existing shared
-`https://plataforma-backend-v3.azurewebsites.net` origin. Before adoption, the
-default-TLS endpoint and host-only partitioned cookie must pass the supported
-Edge matrix: Stable, Extended Stable, InPrivate, and the supported tracking-
-prevention configuration with ordinary third-party cookies blocked. The cookie
-must remain scoped by the browser to top-level `https://machadogestao.com` and
-must not be available under an unrelated top-level site. Credentialed requests
-do not redirect or mirror the cookie between hosts. Any failed profile blocks
-adoption; an unpartitioned cross-site cookie or Web Storage bearer is not a
-fallback. This design requires no new custom domain, DNS record, TLS certificate,
-or App Service hostname binding and adds no hosting resource; the existing F1
-plan's capacity limits and lack of SLA remain operational constraints.
-
-Coordinated adoption keeps the value of the one existing `BACKEND_ORIGIN`
-export unchanged for all eight consumers; it does not create a learning-
-platform-only origin or a second runtime configuration source. Quote Request,
-Client Intake, Certificate Validation, Conecta, and the public learning-
-platform Status Report continue to omit credentials and the session header.
-Only learning session/protected consumers add the credentialed options below.
-The frontend source latch, backend
-`SESSION_AUTHORITY_PARTITIONED_COOKIE_TOPOLOGY_QUALIFIED` evidence latch, and
-matching backend rollout gates may change only as one reviewed release pair
-after every topology, store, browser, CORS, ledger, privacy, rollback, and
-authoritative-logout prerequisite passes; no latch changes here.
-
-The target session cookie is exactly `__Host-machado-session` with `Path=/`,
-`Secure`, `HttpOnly`, `SameSite=None`, and `Partitioned`, and without `Domain`.
-Its browser expiry is cleanup only; the durable backend record and server time
-own authority. JavaScript never reads or copies the identifier, and no
-application session identifier appears in a URL, body, Web Storage, log,
-fixture, snapshot, or public diagnostic.
-
-Only successful login/rotation emits `Set-Cookie`. Logout, revoke-all,
-definitive Face failure, ineligibility, invalid/terminal/stale credentials,
-repeated requests, store failures, and compare-and-replace losers never mutate
-or delete it. A revoked browser value stays inert until its original browser
-expiry or the next successful credential login overwrites it, so no delayed
-non-issuance response can erase a newer shared-profile cookie.
-
-Target session and protected consumers use this exact browser boundary:
-
-- `credentials: "include"`;
-- `X-Machado-Session-Request: 1` on target-mode credential login and every
-  cookie-authenticated request;
-- browser-supplied exact production `Origin: https://machadogestao.com` for
-  unsafe requests; frontend JavaScript never sets `Origin` or `Cookie` manually;
-- exact `Access-Control-Allow-Origin: https://machadogestao.com` and
-  `Access-Control-Allow-Credentials: true`, never wildcard credentialed CORS;
-- only the matching route methods plus `Content-Type` and the session header in
-  preflight policy;
-- `Vary: Origin, Access-Control-Request-Method,
-  Access-Control-Request-Headers` on preflight and `Vary: Origin, Cookie` on
-  actual session/protected responses; and
-- `Cache-Control: no-store`, no `ETag` or `Last-Modified`, and the ADR's
-  no-cache/referrer response rules on session responses.
-
-The dormant `platform-client.js` branch adds `credentials: "include"`, the
-session header, `cache: "no-store"`, `mode: "cors"`, `redirect: "error"`, and
-`referrerPolicy: "no-referrer"` only when an entry injects the immutable false
-release latch. Login, Registration, and Study inject that same source value;
-all public clients continue to use the default uncredentialed request boundary.
-Registration validates exact `registration-pending` and
-`registration-challenge` status before upload. No target branch calls the
-public Face-result lookup, reads the cookie, sends `IndexVerificado`, or adds a
-browser authority value. Study alone owns the exact bodyless current-session
-DELETE. Only exact `204` commits local target logout presentation; availability,
-network, malformed, unexpected, or ambiguous outcomes leave presentation and
-navigation intact and require an explicit retry. No target branch calls
-`DELETE /plataforma_v2/sessions`. Direct/pageshow/BFCache guarding remains
-unchanged for its next named task.
-
-The cross-tab boundary is one injected, application-owned `BroadcastChannel`
-used only by target-mode Login, Initial Notices, Photo Registration, and Study
-after both browser gates. It publishes only after committed current-session
-`204` and carries exactly `{ type: "logout", version: 1 }`. The message contains
-no subject, identifier, verifier, cookie, credential, provider value, URL data,
-account data, or time. Receivers reduce presentation without another DELETE or
-rebroadcast. Malformed, duplicate, replayed, or forged input cannot grant or
-preserve authority. There is no Web Storage or `storage`-event fallback and no
-eighth key. A failed/unavailable channel after `204` blocks production
-qualification but cannot undo the already committed local logout.
+Excel `PRAZO ACESSO` drives the calculated `STATUS LOGIN`. Only exact `Ativo`
+permits the backend to mint a new signed handle, which remains valid for its
+absolute four-hour lifetime. Explicit logout, timer expiry, and logged-out
+direct or BFCache restoration remove this tab's stored handle and replace to
+Login without network work or cross-tab synchronization. A previously copied
+handle can remain technically usable until its original expiry.
 
 Public status report, client intake, quote, Conecta, certificate validation,
-viewport warning, and device/browser warning remain session-free. Their target
-classification does not imply a change to the current public payload or
-presentation contract. The current public Face-result lookup remains a
-compatibility route and cannot promote a target session; protecting or retiring
-it belongs to the later Face-result-security milestone.
-
-Local, automated, generated-preview, and Azure-preview verification uses only
-invented origins and synthetic transports. Production-network denial remains
-installed before application code. A preview never sends credentials to the
-production API origin.
+viewport warning, and device/browser warning remain free of learning-platform
+authority. Local, automated, generated-preview, and Azure-preview verification
+uses invented origins and synthetic transports with production-network denial
+installed before application code.
 
 ## Verification policy
 
@@ -160,7 +76,7 @@ all API-bearing entries to select the same production origin on local, preview,
 and production hosts, and static checks to prove one executable production
 literal across exactly eight API-bearing consumers, no executable localhost
 backend URLs, no hostname selection, and no `URL_Base_Backend` string under
-`apps/`. Source and generated previews resolve the same 80 logical JavaScript
+`apps/`. Source and generated previews resolve the same 77 logical JavaScript
 imports. Deployment retains one shared support file, one separate shared
 mapping, every public route/download/negative route, and the nine
 learning-platform mappings.
