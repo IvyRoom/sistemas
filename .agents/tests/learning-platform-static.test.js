@@ -1543,10 +1543,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20778045,
-      digest: "fdc443646d6824b9fe7e1790f76a1d5dd73c5b605b990fcb80945409b554f788"
+      bytes: 20788921,
+      digest: "d9a1bc2c047def79de171f46573772c3b26bd4e06a81650c4d00d10ba5b815e5"
     },
-    "The current manifest must produce the exact dormant authoritative-session platform target"
+    "The current manifest must produce the exact dormant authoritative-logout platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -1555,10 +1555,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20778045,
-      digest: "c72b94b45fdff3b2131e32bd2c980187ce87f5c5c39a3e598e2dcbab32be8c23"
+      bytes: 20788921,
+      digest: "b8314bbfe4407ecc81f077c1fc1ee86a307c9097def1240af7f52353696c8712"
     },
-    "The current manifest must produce the exact prefix-omitted dormant-session target"
+    "The current manifest must produce the exact prefix-omitted dormant-logout target"
   );
   const javaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
@@ -1567,10 +1567,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 490907,
-      digest: "468dfd45eec83f550cf50ab219f46154c62fd8c3012da95b653314c4939364c3"
+      bytes: 501783,
+      digest: "0dc1f85e3fef0b943e3e291e18b768b0bc61d082721de5b0a318c42d40afe6e3"
     },
-    "The platform JavaScript files must retain their exact dormant-session identity"
+    "The platform JavaScript files must retain their exact dormant-logout identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -1613,10 +1613,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 10022350,
-      digest: "bcdbc102dd1f54fdd8e6a92ee05132d95ff3bec22ab463aebfd7a9f11bd71932"
+      bytes: 10022518,
+      digest: "412341987b6b7b04029866f5d310124d10c021e75eff00b76a0bb9aafd789ab4"
     },
-    "The Study entry subtree must retain its dormant-session mapped identity"
+    "The Study entry subtree must retain its dormant-logout mapped identity"
   );
   const backendConsumerApplicationStats = Object.fromEntries(
     backendConsumerApplicationIds.map((applicationId) => [
@@ -1939,8 +1939,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
   assert.equal(
     (studySource.match(/(?:ContainerInternoShakaPlayer|dom\.playerElement)\.pause\(\)/g) ?? []).length,
-    3,
-    "Assessment, feedback, and certificate views must retain pause calls"
+    4,
+    "Assessment, feedback, certificate, and committed authoritative logout must pause presentation"
   );
   assert.equal(
     (studySource.match(/dom\.playerElement\.onended\s*=/g) ?? []).length,
@@ -1974,7 +1974,7 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] dormant session adoption advances the historical artifact", () => {
+test("[ARTIFACT-01] dormant authoritative logout advances the historical artifact", () => {
   const historicalPhaseB = {
     files: 257,
     bytes: 27298502,
@@ -1998,10 +1998,10 @@ test("[ARTIFACT-01] dormant session adoption advances the historical artifact", 
     treeStats(records),
     {
       files: 258,
-      bytes: 27383391,
-      digest: "8b6785f85f7677af06fb54719c8279e40d462ee11ccce3882a3dd919f6e9a016"
+      bytes: 27394267,
+      digest: "44dcfac25898ba343e0c4e18d7ddece6e9c655579d91a67ee53e64b49613d517"
     },
-    "The current manifest must produce the exact dormant authoritative-session frontend target"
+    "The current manifest must produce the exact dormant authoritative-logout frontend target"
   );
   assert.deepEqual(
     treeStats(sharedRuntimeRecords()),

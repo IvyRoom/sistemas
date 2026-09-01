@@ -4,13 +4,12 @@ Status: authoritative current-state compatibility specification. Its frozen
 behavior baseline was characterized from `sistemas` commit
 `c68f361de054a936b7a6871d82d75a1cdb457c97`; source-layout, public-route, and
 artifact sections are maintained against the current repository tree. Companion
-`backend` session-authority evidence is pinned at verified correction commit
-`515a683484ea47586b2858ca0fff79acd64814d2`, based on producer merge
-`0b09f92009b99280ff348701fede3edaba3f9945`. This document records the completed
-entry-markup modernization, warning-navigation repair, and production-disabled
-authoritative-session consumer. It does not authorize target activation, a
-production request, data migration, infrastructure mutation, or an integration
-exercise.
+`backend` session-authority evidence is pinned at verified producer commit
+`ba286cc0b3d3e67176d46dee84a5ba7d55b7162c`. This document records the completed
+entry-markup modernization, warning-navigation repair, production-disabled
+authoritative-session consumer, and production-disabled authoritative-logout
+consumer. It does not authorize target activation, a production request, data
+migration, infrastructure mutation, or an integration exercise.
 
 ## How to use this specification
 
@@ -1662,11 +1661,13 @@ reflow corrections again preserve the same 258 paths while changing scoped
 JavaScript and CSS bytes. Warning-navigation repair retains the 258-file count
 while replacing exactly ten former warning paths with ten renamed paths and
 changing the approved warning HTML, lifecycle, entry, and client-intake bytes.
-The dormant authoritative-session consumer again retains every output path while
-changing exactly 15 mapped platform JavaScript files. The current source-derived
-identities are:
+The dormant authoritative-session consumer again retained every output path
+while changing exactly 15 mapped platform JavaScript files. Its verified merge
+baseline at `sistemas` commit
+`aa68ff54ce6960b1d7cb0a6ac13e85f0d1dce627` had these source-derived
+identities:
 
-| Current dormant-session scope | Files | Bytes | SHA-256 |
+| Prior dormant-session scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
 | Complete generated `dist/` artifact | 258 | 27,383,391 | `8b6785f85f7677af06fb54719c8279e40d462ee11ccce3882a3dd919f6e9a016` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
@@ -1678,32 +1679,46 @@ identities are:
 | Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
 | All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
 
-Relative to the prior 27,360,535-byte artifact, only these 15 mapped
-JavaScript outputs change; their `+22,856` bytes exactly account for the new
-total:
+The authoritative-logout consumer again retains all 258 paths. Its current
+source-derived identities are:
+
+| Current dormant-logout scope | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Complete generated `dist/` artifact | 258 | 27,394,267 | `44dcfac25898ba343e0c4e18d7ddece6e9c655579d91a67ee53e64b49613d517` |
+| Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,788,921 | `d9a1bc2c047def79de171f46573772c3b26bd4e06a81650c4d00d10ba5b815e5` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,788,921 | `b8314bbfe4407ecc81f077c1fc1ee86a307c9097def1240af7f52353696c8712` |
+| Platform JavaScript, retaining full output paths | 36 | 501,783 | `0dc1f85e3fef0b943e3e291e18b768b0bc61d082721de5b0a318c42d40afe6e3` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
+| Study entry subtree, retaining full output paths | 41 | 10,022,518 | `412341987b6b7b04029866f5d310124d10c021e75eff00b76a0bb9aafd789ab4` |
+| Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
+| All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
+
+Relative to the 27,383,391-byte authoritative-session baseline, only these 11
+mapped JavaScript outputs change; their `+10,876` bytes exactly account for the
+new total:
 
 | Changed mapped output | Byte delta |
 | --- | ---: |
-| `plataforma/avisos-iniciais/main.js` | +99 |
-| `plataforma/cadastro-foto/main.js` | +131 |
-| `plataforma/estudo/main.js` | +265 |
-| `plataforma/login/main.js` | +131 |
-| `plataforma/modules/course-content/application.js` | +1,971 |
-| `plataforma/modules/course-content/assessment.js` | +115 |
-| `plataforma/modules/course-content/feedback.js` | +87 |
-| `plataforma/modules/course-content/progress.js` | +115 |
-| `plataforma/modules/course-content/session-timer.js` | +1,516 |
-| `plataforma/modules/course-content/state.js` | +47 |
-| `plataforma/modules/initial-notices.js` | +61 |
-| `plataforma/modules/login.js` | +7,623 |
-| `plataforma/modules/photo-registration.js` | +6,099 |
-| `plataforma/modules/platform-client.js` | +1,069 |
-| `plataforma/modules/session.js` | +3,527 |
+| `plataforma/avisos-iniciais/main.js` | +168 |
+| `plataforma/cadastro-foto/main.js` | +172 |
+| `plataforma/estudo/main.js` | +168 |
+| `plataforma/login/main.js` | +172 |
+| `plataforma/modules/course-content/application.js` | +3,301 |
+| `plataforma/modules/course-content/session-timer.js` | +690 |
+| `plataforma/modules/initial-notices.js` | +664 |
+| `plataforma/modules/login.js` | +396 |
+| `plataforma/modules/photo-registration.js` | +1,066 |
+| `plataforma/modules/platform-client.js` | +402 |
+| `plataforma/modules/session.js` | +3,677 |
 
-The other 243 outputs are byte-identical. All 12 public HTML entries, all three
-downloads, 228 other supporting files, every non-platform output, the shared
-runtime, every platform non-JavaScript file, all 20 mappings, and all 64
-negative paths remain unchanged.
+The other 247 outputs are byte-identical. The inventory remains exactly 12
+public pages, 3 downloads, and 243 supporting files across all 258 paths, with
+all 20 mappings and all 64 explicit negative paths unchanged. The source and
+generated module graphs remain exactly 80 logical JavaScript imports with
+unchanged graph SHA-256
+`4e5b19225a140479b99ff5677ee62b13ea56be48ebc30ff8d65d15e9e0aee510`;
+the changed entry imports add names on existing edges rather than new edges.
 
 Warning assets retain their source bytes, but moving four warning binary output
 paths changes the binary path-framed digest. The Face, study-download, and
@@ -1980,10 +1995,10 @@ future work, not permission to change compatibility behavior in the baseline.
   Face hint image and two study workbooks are emitted but unreferenced, while
   support assets remain outside explicit `publicDownloads` coverage.
 
-## Dormant session-authority consumer and blocked enablement
+## Dormant session-authority and authoritative-logout consumers
 
 The authoritative target is the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/515a683484ea47586b2858ca0fff79acd64814d2/docs/session-authority.md).
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/ba286cc0b3d3e67176d46dee84a5ba7d55b7162c/docs/session-authority.md).
 The frontend target consumer is implemented behind the source-controlled
 `AUTHORITATIVE_SESSIONS_ENABLED = false` release latch. URL/query values,
 Web Storage, cookies, hostname inspection, and other browser-controlled input
@@ -1993,9 +2008,9 @@ session header, credentialed request, ledger horizon, stop-issuance event, or
 sunset starts after merge.
 
 This implementation does not provision SQL, change the shared backend origin,
-alter deployed CORS, create DNS/TLS/App Service bindings, make logout
-authoritative, guard direct/BFCache-restored protected pages, or remediate an
-unrelated risk recorded above. Those changes remain separately gated.
+alter deployed CORS, create DNS/TLS/App Service bindings, activate target
+sessions or logout, guard direct/BFCache-restored protected pages, or remediate
+an unrelated risk recorded above. Those changes remain separately gated.
 
 The legacy STORE, API, ERROR, FLOW, route, and public-surface contracts remain
 the production-safe compatibility baseline while the latch is false. The
@@ -2143,16 +2158,16 @@ response may therefore set a newly authenticated cookie after current-session
 logout revoked a different record; logout does not cancel outstanding
 credential attempts or other sessions. Revoke-all invalidates records committed
 before its epoch change, while a login committed afterward is a new
-authentication. Future tests cover both commit and response orders.
+authentication. Synthetic consumer tests cover both response orders without
+claiming cancellation or revoke-all semantics.
 
 ### Target consumer/API alignment
 
-The dormant Login, Registration, and Study consumers implement the first seven
-rows below. They use the existing paths plus the three target session actions,
-and remain unreachable in the production-safe build because the adoption latch
-is false. The two DELETE roles remain backend-only here: current logout belongs
-to **Make logout authoritative**, and no revoke-all browser UI or automatic call
-is invented.
+The dormant Login, Registration, and Study consumers implement the first eight
+rows below. They use the existing paths plus the target session actions and
+remain unreachable in the production-safe build because the adoption latch is
+false. Current logout is the only browser DELETE. Revoke-all remains backend-
+only here; no revoke-all browser UI or automatic call is invented.
 
 | Consumer operation | Target role |
 | --- | --- |
@@ -2163,13 +2178,54 @@ is invented.
 | Face completion/promotion | New `POST /plataforma_v2/sessions/current/face-completion`; sends no verdict/provider session ID; backend reads the bound result; pending is `409` and preserves phase/cookie, definitive factor failure revokes without cookie mutation and returns `403`, provider/network/store unavailability is `503` and preserves `face-pending`/cookie, and success rotates with `200` |
 | Current-session validation | New `GET /plataforma_v2/sessions/current`; `200` returns phase, server time, expiry, eligibility revalidation time, and presentation next-operation roles, never an identifier; invalid `401` and store-outage `503` preserve the browser cookie while blocking authority |
 | Study refresh/progress/assessment/feedback | Existing current paths; cookie-authenticated `authenticated` only; no `IndexVerificado` body field after cutover |
-| Current logout | New effect-idempotent `DELETE /plataforma_v2/sessions/current`; successful active-record revocation and missing/invalid/terminal/repeated `204` outcomes all emit no `Set-Cookie`; navigate/update presentation only after a non-`503` result; retained bytes are inert |
+| Current logout | New effect-idempotent, bodyless `DELETE /plataforma_v2/sessions/current`; the target client sends only the cookie transport and exact target request metadata, never an identifier, verifier, subject, authority field, manual `Cookie`, or manual `Origin`. Successful active-record revocation and missing/invalid/terminal/repeated outcomes are privacy-indistinguishable exact `204` responses with no `Set-Cookie`; only exact `204` permits local presentation/timer cleanup, `Usuário_Logado=Não`, a logout-only cross-tab signal, and Login navigation. `503`, network loss, malformed/ambiguous response, or any other status preserves presentation and navigation and restores an explicit retry without automatic replay. The retained cookie bytes remain inert. |
 | Revoke all | New authenticated `DELETE /plataforma_v2/sessions`; first success is `204` and revokes every subject session without mutating the caller cookie; a repeat without fresh authentication is `401` |
 
 Public status report, public client intake, quote, Conecta, certificate
 validation, viewport warning, and device/browser warning remain session-free.
 This decision does not protect the current public Face-result lookup or change
 any current public request, response, route, query, gate, or warning behavior.
+
+### Authoritative logout presentation boundary
+
+The dormant target Study consumer single-flights an explicit logout activation
+and issues the bodyless current-session DELETE once. While it is pending, the
+logout control and protected interaction surface are disabled, but presentation
+state, the session timer, storage, navigation, and cross-tab state do not claim
+success. An availability or ambiguous result restores the retryable control and
+shows the existing availability-safe retry presentation; there is no automatic
+retry. An explicit retry is safe because the backend action is effect-
+idempotent.
+
+Only exact `204` commits the initiating tab's logout presentation. It then stops
+the target timer and protected presentation, writes `Usuário_Logado=Não` as
+compatibility presentation only, attempts one versioned logout-only
+`BroadcastChannel` message, closes the channel boundary, and navigates to Login.
+The message has exactly `type: "logout"` and `version: 1`; it contains no time,
+subject, identifier, verifier, cookie, credential, provider value, URL data, or
+account data. Login, Initial Notices, Photo Registration, and Study install one
+injected application-owned listener only after GATE-01 and GATE-02. A receiving
+tab reduces presentation and navigates when necessary without issuing DELETE or
+rebroadcasting.
+
+Missing, malformed, duplicate, replayed, or forged channel input can never
+grant, restore, extend, prove, or preserve authority. An exact forged logout
+message can at most cause the same conservative logged-out presentation. There
+is no Web Storage or `storage`-event fallback and no eighth key. If channel
+creation or publication fails after committed `204`, local logout remains
+successful because durable backend revocation already committed; synthetic
+qualification records the channel failure and production adoption remains
+blocked. A delayed `204` and its presentation outcome speak only for the record
+presented by that DELETE. They do not cancel an independent credential request,
+revoke all sessions, or prevent a later successful authentication from becoming
+authoritative.
+
+Authoritative timer expiry is deliberately not logout: at the backend-provided
+expiry instant, presentation stops and navigates without a DELETE or cross-tab
+logout outcome. Likewise, protected-request `401`, logout `204`, and
+availability `503` retain distinct meanings. Direct entry and
+`pageshow`/BFCache revalidation remain the next **Guard restored protected
+pages** task.
 
 ### Implemented target-path disposition of the exact seven keys
 
@@ -2182,7 +2238,7 @@ has this implemented disposition:
 | `IndexVerificado` | Never read, written, returned, or sent by target code. The bounded legacy branch remains until central final rejection; backend first issuance owns the irreversible per-subject cutoff. |
 | `Usuário_Foto_Cadastrada` | Not read by target navigation or registration; backend phase/current status supplies presentation authority. |
 | `Horário-Encerramento-Sessão` | Not read by the target timer; presentation uses backend `serverTime`/`expiresAt` plus monotonic elapsed time. |
-| `Usuário_Logado` | Written only as compatibility presentation after an authenticated status or explicit invalid outcome; never gates target protected work. Final removal waits for direct/BFCache validation. |
+| `Usuário_Logado` | Presentation-only and never gates target protected work. It becomes `Sim` only after authoritative authenticated status. It may become `Não` after exact target logout `204`, a received logout-only presentation signal, authoritative expiry, or explicit invalid-session presentation. Final removal waits for direct/BFCache validation. |
 | `Usuário_Autorização_Cadastro` | Not read or written by target flow; bodyless enrollment plus exact `registration-pending`/`registration-challenge` current status controls registration. |
 | `Origem_Aviso_Dispositivo` | Retained as the current UI/history compatibility marker. Its decision/removal belongs to **Guard restored protected pages**. |
 | `TempoSessão_Segundos` | Not read by target entry or timer; the legacy read remains only inside the false-gate compatibility path. |
@@ -2208,8 +2264,11 @@ The Topic 05 order is fixed:
    this task.
    Legacy issuance can stop only when authoritative logout is ready for that
    same approved release pair.
-3. **Make logout authoritative** makes durable revocation the prerequisite to
-   successful logout presentation/navigation.
+3. **Make logout authoritative** now contains the production-disabled consumer:
+   durable current-record revocation and exact `204` are prerequisites to local
+   successful logout presentation/navigation, and one logout-only
+   `BroadcastChannel` outcome reduces presentation across relevant target tabs.
+   It does not call revoke-all or activate the adoption latch.
 4. **Guard restored protected pages** validates direct and BFCache-restored
    entries before protected work and owns the later warning-origin disposition.
 
@@ -2281,8 +2340,8 @@ valid.
 
 These producer/rollout rows remain separate from the current
 **Behavior-baseline acceptance matrix** below. Backend implementation covers its
-safe and qualified inventories; later coordinated rollout, authoritative logout,
-and restored-page rows remain future work. All evidence uses invented
+safe and qualified inventories; the dormant frontend now covers current logout,
+while coordinated rollout and restored-page rows remain future work. All evidence uses invented
 identifiers, fake UTC clocks, synthetic accounts, inert session records,
 injected providers, and denied production networking.
 
@@ -2328,6 +2387,20 @@ The implemented frontend subset has direct traceability:
 | `SESSION-ADOPT-11` | Protected feedback retains its business payload while omitting browser authority and using target request metadata. |
 | `SESSION-ADOPT-12` | Registration remains locked on invalid, unavailable, malformed, or wrong provisional status. |
 | `SESSION-ADOPT-13` | Lost/conflicting/unavailable registration and completion transitions lock replay and require fresh target credential login. |
+
+The authoritative-logout subset has direct traceability:
+
+| ID | Dormant authoritative-logout assertion |
+| --- | --- |
+| `SESSION-LOGOUT-01` | The target client sends exactly one bodyless `DELETE /sessions/current` with credentialed no-store CORS metadata and no identifier, verifier, subject, authority field, manual `Cookie`, or manual `Origin`; active, missing, invalid, and repeated backend outcomes are identical exact `204`. |
+| `SESSION-LOGOUT-02` | Pending logout is single-flight and blocks protected interaction without changing storage, timer, navigation, or channel state; exact `204` alone commits local cleanup and one logout-only signal. |
+| `SESSION-LOGOUT-03` | `503`, network loss, malformed response, unexpected status, and ambiguous response preserve presentation/navigation, restore an explicit retry, and never replay automatically. |
+| `SESSION-LOGOUT-04` | One committed logout outcome reduces Login, Initial Notices, Photo Registration, and Study presentation without receiver DELETE or rebroadcast. |
+| `SESSION-LOGOUT-05` | Missing, malformed, duplicate, replayed, and forged channel messages cannot add authority; only the exact two-field logout message can conservatively reduce presentation once. |
+| `SESSION-LOGOUT-06` | Unavailable or failed `BroadcastChannel` publication records failed cross-tab qualification but cannot undo local success after backend `204`. |
+| `SESSION-LOGOUT-07` | Independent credential response and logout-presentation orders preserve the backend rule that a later successful authentication may win and logout never implies revoke-all or cancellation. |
+| `SESSION-LOGOUT-08` | Backend-returned authoritative expiry stops presentation without issuing DELETE or manufacturing a logout signal or response. |
+| `SESSION-LOGOUT-09` | GATE-01/GATE-02 precede channel/network setup; the latch stays false and browser-uncontrollable; exactly seven storage keys remain; no cookie read/write, local-storage fallback, storage event, revoke-all call, or restored-page guard is introduced; the legacy logout callback remains source-exact. |
 
 ## Approved future decisions
 
@@ -2425,7 +2498,7 @@ identify the current oracle.
 | FLOW-03 | Content completion | Manual and `ended` completion both exercise optimistic increment, protected update, success advance, and local failure rollback. |
 | FLOW-04 | Assessment | Synthetic DOM answers reproduce current client score and update behavior, including absence of a source-defined time limit or dedupe identity. |
 | FLOW-05 | Feedback | Synthetic submission records current client-controlled fields, update-before-append ordering, failure positions, and duplicate-visible retry behavior. |
-| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, validation text, and logout's non-revoking redirect behavior remain observable. |
+| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, validation text, and the false-latch legacy logout's source-exact non-revoking redirect behavior remain observable. The dormant target logout is covered separately by `SESSION-LOGOUT-*`. |
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
@@ -2434,13 +2507,14 @@ identify the current oracle.
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The current dormant authoritative-session artifact has 258 files and matches its recalculated identity. Exactly 15 mapped platform JavaScript outputs change while the other 243 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
+| ARTIFACT-01 | Full frontend artifact | The current dormant authoritative-logout artifact has 258 files and matches its recalculated identity. Relative to the authoritative-session baseline, exactly 11 mapped platform JavaScript outputs change while the other 247 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
 | ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 64 negative paths, and exactly 80 JavaScript imports in both source and generated previews. |
 
 ### Automated traceability
 
-The behavior matrix retains its 30 stable acceptance IDs, and the dormant
-session table adds 13 implementation IDs. Every matrix-coverage test
+The behavior matrix retains its 30 stable acceptance IDs, the dormant session
+table adds 13 implementation IDs, and dormant authoritative logout adds nine.
+Every matrix-coverage test
 title begins with one of those IDs in brackets; focused markup tests use their
 own guard labels without expanding the acceptance matrix. Coverage is grouped
 by execution seam rather than by future source location:
@@ -2450,7 +2524,9 @@ by execution seam rather than by future source location:
 - `.agents/tests/learning-platform-authoritative-sessions.test.js` covers the
   dormant latch, target request boundary, phases/roles, registration and Face
   transitions, storage disposition, server-time presentation, and failure
-  reconciliation without production networking;
+  reconciliation plus exact current-session DELETE, strict `204` commitment,
+  retry/single-flight behavior, injected logout-only cross-tab presentation,
+  independent-login ordering, and expiry without production networking;
 - `.agents/tests/learning-platform-markup.test.js` locks the seven documents'
   visible copy, unique IDs, selector and event-target inventory, native-control
   relationships, accessible labels/status, focus movement, the application-wide
@@ -2482,7 +2558,7 @@ generated artifact without contacting a hosted preview.
 
 Backend-internal feedback ordering and partial-success boundaries remain
 independently executable in `backend/test/app-platform-routes.test.js` at the
-verified companion commit `515a683484ea47586b2858ca0fff79acd64814d2`.
+verified companion commit `ba286cc0b3d3e67176d46dee84a5ba7d55b7162c`.
 Session-producer verification at that commit also freezes the exact 14-route
 safe-default and 19-route qualified synthetic inventories without starting the
 production backend. The frontend harness models only client-visible behavior.

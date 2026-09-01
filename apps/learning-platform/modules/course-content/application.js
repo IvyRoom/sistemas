@@ -40,12 +40,25 @@ export function createStudyApplication({
     loadMedia,
     navigate,
     navigator,
+    logoutPresentation,
     replaceNavigation,
     renderCertificate,
     session,
     timers,
     window
 }) {
+    if (
+        authoritativeSessionsEnabled &&
+        (
+            !logoutPresentation ||
+            typeof logoutPresentation.close !== 'function' ||
+            typeof logoutPresentation.listen !== 'function' ||
+            typeof logoutPresentation.publish !== 'function' ||
+            typeof logoutPresentation.snapshot !== 'function'
+        )
+    ) {
+        throw new TypeError('Authoritative logout presentation is required');
+    }
     const browserAdmission = classifyBrowserAdmission({
         document,
         entry: browserAdmissionEntries.STUDY,
@@ -55,11 +68,15 @@ export function createStudyApplication({
     const stateContainer = createStudyState();
     const { state } = stateContainer;
     const navigation = createStudyNavigation({ document, dom, state });
+    let logoutControl;
+    let logoutPending = false;
+    let authoritativePresentationEnded = false;
     const sessionTimer = createStudySessionTimer({
         authoritativeSessionsEnabled,
         clock,
         document,
         navigate,
+        onAuthoritativeExpiry: () => endAuthoritativePresentation({ publish: false }),
         session,
         timers
     });
@@ -69,6 +86,51 @@ export function createStudyApplication({
     let feedback;
     let certificate;
     let performanceView;
+
+    function setAuthoritativeLogoutPending(pending) {
+        logoutPending = pending;
+        if (logoutControl) logoutControl.disabled = pending;
+        const protectedPresentation = document.getElementById('Container-Seções');
+        protectedPresentation.inert = pending;
+        protectedPresentation.setAttribute('aria-busy', pending ? 'true' : 'false');
+        document.body.style.cursor = pending ? 'wait' : 'default';
+    }
+
+    function endAuthoritativePresentation({ publish }) {
+        if (authoritativePresentationEnded) return;
+        authoritativePresentationEnded = true;
+        logoutPending = false;
+        const protectedPresentation = document.getElementById('Container-Seções');
+        protectedPresentation.inert = true;
+        protectedPresentation.setAttribute('aria-busy', 'false');
+        protectedPresentation.style.display = 'none';
+        if (logoutControl) logoutControl.disabled = true;
+        document.body.style.cursor = 'default';
+        sessionTimer.stop();
+        if (dom.playerElement && typeof dom.playerElement.pause === 'function') {
+            dom.playerElement.pause();
+        }
+        session.write('loggedIn', 'Não');
+        if (publish) logoutPresentation.publish();
+        logoutPresentation.close();
+        navigate('/plataforma/login');
+    }
+
+    async function logoutAuthoritatively() {
+        if (logoutPending || authoritativePresentationEnded) return;
+        setAuthoritativeLogoutPending(true);
+        try {
+            await client.delete('/sessions/current');
+            if (authoritativePresentationEnded) return;
+            endAuthoritativePresentation({ publish: true });
+        } catch {
+            if (authoritativePresentationEnded) return;
+            setAuthoritativeLogoutPending(false);
+            alert(learningPlatformErrorMessage(
+                learningPlatformErrorPresentations.GENERIC_SERVER_RETRY
+            ));
+        }
+    }
 
     function openTopic(options) {
         const selectedTopic = this;
@@ -149,10 +211,15 @@ export function createStudyApplication({
         state.certificateId = data.Usuário_Formação_CertificadoID;
 
         document.getElementById('Container-Seções').style.display = 'flex';
-        document.getElementById("Botão-Sair").addEventListener("click", () => {
-            session.write('loggedIn', 'Não');
-            navigate('/plataforma/login');
-        });
+        if (authoritativeSessionsEnabled) {
+            logoutControl = document.getElementById("Botão-Sair");
+            logoutControl.addEventListener("click", logoutAuthoritatively);
+        } else {
+            document.getElementById("Botão-Sair").addEventListener("click", () => {
+                session.write('loggedIn', 'Não');
+                navigate('/plataforma/login');
+            });
+        }
         document.getElementById('Formação-Prazo-Acesso').textContent =
             "Acesso Expira: " + state.accessDeadline;
         navigation.updateMetrics(state.completedTopics);
@@ -198,13 +265,16 @@ export function createStudyApplication({
     function loadAuthoritativeStudy() {
         let refreshData;
         client.postJson('/refresh', {}).then(data => {
+            if (authoritativePresentationEnded) return undefined;
             refreshData = data;
             return client.getJson('/sessions/current');
         }).then(data => {
+            if (authoritativePresentationEnded || data === undefined) return;
             const status = readStudySessionStatus(data);
             hydrate(refreshData, status);
             session.write('loggedIn', 'Sim');
         }).catch(error => {
+            if (authoritativePresentationEnded) return;
             const failure = normalizeLearningPlatformError(
                 error,
                 learningPlatformErrorOperations.REFRESH
@@ -242,7 +312,10 @@ export function createStudyApplication({
             window.addEventListener('resize', handleViewportWidth);
 
             if (authoritativeSessionsEnabled) {
-                loadAuthoritativeStudy();
+                logoutPresentation.listen(() => {
+                    endAuthoritativePresentation({ publish: false });
+                });
+                if (!authoritativePresentationEnded) loadAuthoritativeStudy();
             } else {
                 loadLegacyStudy();
             }
@@ -263,6 +336,7 @@ export function createStudyApplication({
         openPerformance,
         openTopic,
         snapshotState: stateContainer.snapshot,
+        snapshotLogoutPresentation: () => logoutPresentation && logoutPresentation.snapshot(),
         state
     };
 }

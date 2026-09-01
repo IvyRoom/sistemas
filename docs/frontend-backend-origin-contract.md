@@ -23,7 +23,7 @@ generated and Azure deployments.
 | Conecta referral form | `POST /conecta/processa-recomendacao` |
 | Learning-platform Login | Legacy and target `POST /plataforma_v2/login-FaceID` and `POST /plataforma_v2/FaceID`; legacy compatibility `GET /plataforma_v2/FaceID_resultado/:sessionId`; dormant target `POST /plataforma_v2/sessions/current/registration-enrollment`, `POST /plataforma_v2/sessions/current/face-completion`, and `GET /plataforma_v2/sessions/current` |
 | Learning-platform Registration | Legacy and target `POST /plataforma_v2/CadastroFoto_e_FaceID`; legacy compatibility `GET /plataforma_v2/FaceID_resultado/:sessionId`; dormant target `GET /plataforma_v2/sessions/current` and `POST /plataforma_v2/sessions/current/face-completion` |
-| Learning-platform Study | Legacy and target `POST /plataforma_v2/refresh`, `POST /plataforma_v2/updates`, and `POST /plataforma_v2/processa-feedback`; dormant target `GET /plataforma_v2/sessions/current` |
+| Learning-platform Study | Legacy and target `POST /plataforma_v2/refresh`, `POST /plataforma_v2/updates`, and `POST /plataforma_v2/processa-feedback`; dormant target `GET /plataforma_v2/sessions/current` and bodyless `DELETE /plataforma_v2/sessions/current` |
 | Learning-platform Status Report | `POST /plataforma_v2/statusreport` |
 
 The Marketing Site is excluded because it does not contact the Machado backend.
@@ -42,7 +42,7 @@ override, fallback base, or path that can concatenate a relative `/null/` reques
 ## Dormant authoritative-session topology
 
 This section records the implemented consumer alignment for the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/515a683484ea47586b2858ca0fff79acd64814d2/docs/session-authority.md).
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/ba286cc0b3d3e67176d46dee84a5ba7d55b7162c/docs/session-authority.md).
 The target request branches exist in source and generated output, but the
 source-controlled `AUTHORITATIVE_SESSIONS_ENABLED` latch is exactly `false`.
 Browser-controlled URL/query input, Web Storage, cookies, hostname state, and
@@ -115,8 +115,23 @@ all public clients continue to use the default uncredentialed request boundary.
 Registration validates exact `registration-pending` and
 `registration-challenge` status before upload. No target branch calls the
 public Face-result lookup, reads the cookie, sends `IndexVerificado`, or adds a
-browser DELETE. Logout and direct/pageshow/BFCache guarding remain unchanged for
-their next named tasks.
+browser authority value. Study alone owns the exact bodyless current-session
+DELETE. Only exact `204` commits local target logout presentation; availability,
+network, malformed, unexpected, or ambiguous outcomes leave presentation and
+navigation intact and require an explicit retry. No target branch calls
+`DELETE /plataforma_v2/sessions`. Direct/pageshow/BFCache guarding remains
+unchanged for its next named task.
+
+The cross-tab boundary is one injected, application-owned `BroadcastChannel`
+used only by target-mode Login, Initial Notices, Photo Registration, and Study
+after both browser gates. It publishes only after committed current-session
+`204` and carries exactly `{ type: "logout", version: 1 }`. The message contains
+no subject, identifier, verifier, cookie, credential, provider value, URL data,
+account data, or time. Receivers reduce presentation without another DELETE or
+rebroadcast. Malformed, duplicate, replayed, or forged input cannot grant or
+preserve authority. There is no Web Storage or `storage`-event fallback and no
+eighth key. A failed/unavailable channel after `204` blocks production
+qualification but cannot undo the already committed local logout.
 
 Public status report, client intake, quote, Conecta, certificate validation,
 viewport warning, and device/browser warning remain session-free. Their target

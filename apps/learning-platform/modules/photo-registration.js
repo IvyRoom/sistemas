@@ -38,8 +38,15 @@ export function createRegistrationApplication({
     replaceNavigation,
     alert,
     backendBase,
-    authoritativeSessions = false
+    authoritativeSessions = false,
+    logoutPresentation
 }) {
+    if (
+        authoritativeSessions &&
+        (!logoutPresentation || typeof logoutPresentation.listen !== 'function')
+    ) {
+        throw new TypeError('Authoritative logout presentation is required');
+    }
     const session = createSessionStore(sessionStorage);
     const verifiedIndex = authoritativeSessions ? undefined : session.read('verifiedIndex');
     const client = createPlatformClient({
@@ -53,6 +60,7 @@ export function createRegistrationApplication({
     const submitButton = document.getElementById('Botão-Cadastrar-Foto-Referência');
     const registeringNotice = document.getElementById('Aviso-Cadastrando');
     let authoritativeRegistrationReady = false;
+    let logoutPresentationEnded = false;
 
     if (authoritativeSessions) {
         submitButton.disabled = true;
@@ -91,7 +99,15 @@ export function createRegistrationApplication({
             }
             else {
                 window.addEventListener('resize', replaceForViewport);
-                if (authoritativeSessions) validateAuthoritativeRegistration();
+                if (authoritativeSessions) {
+                    logoutPresentation.listen(() => {
+                        logoutPresentationEnded = true;
+                        blockAuthoritativeRegistration();
+                        session.write('loggedIn', 'Não');
+                        navigate('/plataforma/login');
+                    });
+                    if (!logoutPresentationEnded) validateAuthoritativeRegistration();
+                }
             }
         }
     });
@@ -105,7 +121,10 @@ export function createRegistrationApplication({
             event.preventDefault();
             return;
         }
-        if (authoritativeSessions && !authoritativeRegistrationReady) {
+        if (
+            authoritativeSessions &&
+            (!authoritativeRegistrationReady || logoutPresentationEnded)
+        ) {
             event.preventDefault();
             return;
         }
@@ -129,6 +148,7 @@ export function createRegistrationApplication({
         client.postMultipart('/CadastroFoto_e_FaceID', fields)
         .then(async data => {
             if (authoritativeSessions) {
+                if (logoutPresentationEnded) return;
                 return continueAuthoritativeRegistration(data);
             }
 
@@ -184,6 +204,7 @@ export function createRegistrationApplication({
         })
         .catch(err => {
             if (authoritativeSessions) {
+                if (logoutPresentationEnded) return;
                 blockAuthoritativeRegistration();
                 return presentAuthoritativeRegistrationFailure(err);
             }
@@ -223,6 +244,7 @@ export function createRegistrationApplication({
 
     function validateAuthoritativeRegistration() {
         client.getJson('/sessions/current').then(data => {
+            if (logoutPresentationEnded) return;
             const status = readAuthoritativeSessionStatus(data);
             if (
                 status.authenticationPhase !== AUTHENTICATION_PHASES.REGISTRATION_PENDING ||
@@ -237,6 +259,7 @@ export function createRegistrationApplication({
             submitButton.disabled = false;
             referencePhotoForm.setAttribute('aria-busy', 'false');
         }).catch(error => {
+            if (logoutPresentationEnded) return;
             blockAuthoritativeRegistration();
             if (error?.status === 401) {
                 navigate('/plataforma/login');
@@ -249,6 +272,7 @@ export function createRegistrationApplication({
     }
 
     async function continueAuthoritativeRegistration(data) {
+        if (logoutPresentationEnded) return;
         let faceToken;
         try {
             faceToken = readAuthoritativeFaceChallenge(data);
@@ -261,6 +285,7 @@ export function createRegistrationApplication({
 
         try {
             await faceStartup.start(faceToken);
+            if (logoutPresentationEnded) return;
         }
         catch (error) {
             throw createAuthoritativeFailure('face-component', error);
@@ -270,6 +295,7 @@ export function createRegistrationApplication({
             const completedStatus = readAuthoritativeSessionStatus(
                 await client.post('/sessions/current/face-completion')
             );
+            if (logoutPresentationEnded) return;
             if (
                 completedStatus.authenticationPhase === AUTHENTICATION_PHASES.AUTHENTICATED &&
                 hasSessionNextOperation(
