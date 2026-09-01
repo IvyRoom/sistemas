@@ -15,7 +15,7 @@ function installFaceShadowPresentation(faceLivenessDetector, createStyleSheet) {
 
 export function createFaceStartup({ createElement, createStyleSheet, loadRuntime, mount }) {
     let loadPromise;
-    let startPromise;
+    let activeAttempt;
 
     function ensureRuntime() {
         if (!loadPromise) {
@@ -28,25 +28,47 @@ export function createFaceStartup({ createElement, createStyleSheet, loadRuntime
         return loadPromise;
     }
 
-    return {
-        start(token) {
-            if (startPromise) return startPromise;
+    function createAttempt() {
+        let startPromise;
+        const preparationPromise = ensureRuntime().then(() => {
+            const faceLivenessDetector = createElement('azure-ai-vision-face-ui');
+            installFaceShadowPresentation(faceLivenessDetector, createStyleSheet);
+            faceLivenessDetector.locale = 'pt-BR';
+            faceLivenessDetector.fontSize = '18px';
+            faceLivenessDetector.buttonStyles = FACE_BUTTON_STYLES;
+            mount(faceLivenessDetector);
+            return faceLivenessDetector;
+        });
+        const attempt = {
+            start(token) {
+                if (startPromise) return startPromise;
 
-            const currentStart = ensureRuntime().then(() => {
-                const faceLivenessDetector = createElement('azure-ai-vision-face-ui');
-                installFaceShadowPresentation(faceLivenessDetector, createStyleSheet);
-                faceLivenessDetector.locale = 'pt-BR';
-                faceLivenessDetector.fontSize = '18px';
-                faceLivenessDetector.buttonStyles = FACE_BUTTON_STYLES;
-                mount(faceLivenessDetector);
-                return faceLivenessDetector.start(token);
-            });
-            startPromise = currentStart;
-            currentStart.then(
-                () => { if (startPromise === currentStart) startPromise = undefined; },
-                () => { if (startPromise === currentStart) startPromise = undefined; }
-            );
-            return currentStart;
+                const currentStart = preparationPromise.then(faceLivenessDetector => (
+                    faceLivenessDetector.start(token)
+                ));
+                startPromise = currentStart;
+                currentStart.then(
+                    () => { if (activeAttempt === attempt) activeAttempt = undefined; },
+                    () => { if (activeAttempt === attempt) activeAttempt = undefined; }
+                );
+                return currentStart;
+            }
+        };
+        preparationPromise.then(undefined, () => {
+            if (activeAttempt === attempt) activeAttempt = undefined;
+        });
+        return attempt;
+    }
+
+    function prepare() {
+        if (!activeAttempt) activeAttempt = createAttempt();
+        return activeAttempt;
+    }
+
+    return {
+        prepare,
+        start(token) {
+            return prepare().start(token);
         }
     };
 }

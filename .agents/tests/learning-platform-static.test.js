@@ -1549,8 +1549,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20757219,
-      digest: "c6c6b7c4968757bc3bd8f6b782f8c674815eadf8eba5d87cc7b8e653e1088cb1"
+      bytes: 20758017,
+      digest: "bb071712d59e1d49d13615fe6e4aa2482bbddf2667843bc39394b37e788aa88e"
     },
     "The current manifest must produce the exact lean signed-handle platform target"
   );
@@ -1561,8 +1561,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20757219,
-      digest: "13b91e0489a619b6052d7fb6f841d6ed9c778fdbc5faacc8a76a8cf0c5233284"
+      bytes: 20758017,
+      digest: "2f7ddc5ab3b6a71acb0cd5568ab3d03f23ed01198b303c29ca824afa1e0e4236"
     },
     "The current manifest must produce the exact prefix-omitted lean signed-handle target"
   );
@@ -1573,8 +1573,8 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 470081,
-      digest: "bb7977e91adf64324a27bb1bc0faf23bf081e31637b416c490a05747858a0dfb"
+      bytes: 470879,
+      digest: "0198ae883811b585120290f1d4596e91ec79280aa5f889c189cdf9242cb79178"
     },
     "The platform JavaScript files must retain their exact lean signed-handle identity"
   );
@@ -2004,8 +2004,8 @@ test("[ARTIFACT-01] lean signed-handle artifact retains the complete output grap
     treeStats(records),
     {
       files: 258,
-      bytes: 27362565,
-      digest: "a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6"
+      bytes: 27363363,
+      digest: "31f0e0641c40e51c8a6bb30b43e532176f821b894a2bd372b203dcb7c8276bb8"
     },
     "The current manifest must produce the exact lean signed-handle frontend artifact"
   );
