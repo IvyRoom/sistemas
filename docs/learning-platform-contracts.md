@@ -1145,7 +1145,7 @@ The production-network-denied entry harness now records the returning-user
 critical path with deterministic virtual delays. The fixed profile assigns 120
 virtual milliseconds to Login, 600 to the protected Face-session request, 100
 to the wrapper import, 900 from element mount to synthetic engine readiness,
-and 80 to the single result request. At test-only baseline commit `5a7979b`,
+and 80 to the single result request. At test-only baseline commit `c51f979`,
 whose production sources still match `ff83ea0`, the serialized path reaches
 Study at 1,800 virtual milliseconds. The current overlap reaches the same
 navigation at 1,200: a 600-unit or 33.3% synthetic critical-path reduction.
