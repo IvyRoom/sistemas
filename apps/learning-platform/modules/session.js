@@ -26,6 +26,13 @@ export const SESSION_KEYS = Object.freeze({
     loggedIn: 'Usuário_Logado'
 });
 
+export const LOGOUT_PRESENTATION_CHANNEL_NAME = 'machado-learning-platform-logout';
+
+export const LOGOUT_PRESENTATION_MESSAGE = Object.freeze({
+    type: 'logout',
+    version: 1
+});
+
 const STATUS_KEYS = Object.freeze([
     'allowedNextOperations',
     'authenticationPhase',
@@ -113,4 +120,133 @@ export function createSessionStore(storage) {
             storage.setItem(SESSION_KEYS[keyName], value);
         }
     };
+}
+
+function isLogoutPresentationMessage(value) {
+    try {
+        return Boolean(
+            value &&
+            typeof value === 'object' &&
+            !Array.isArray(value) &&
+            Object.keys(value).length === 2 &&
+            value.type === LOGOUT_PRESENTATION_MESSAGE.type &&
+            value.version === LOGOUT_PRESENTATION_MESSAGE.version
+        );
+    } catch {
+        return false;
+    }
+}
+
+export function createLogoutPresentationChannel({ createChannel }) {
+    if (typeof createChannel !== 'function') {
+        throw new TypeError('A BroadcastChannel factory is required');
+    }
+
+    let channel;
+    let messageListener;
+    let closed = false;
+    let failed = false;
+    let published = false;
+    let received = false;
+
+    function close() {
+        if (closed) return;
+        closed = true;
+        if (channel && messageListener) {
+            try {
+                channel.removeEventListener('message', messageListener);
+            } catch {
+                failed = true;
+            }
+        }
+        if (channel) {
+            try {
+                channel.close();
+            } catch {
+                failed = true;
+            }
+        }
+        channel = undefined;
+        messageListener = undefined;
+    }
+
+    function open() {
+        if (channel) return true;
+        if (closed || failed) return false;
+        try {
+            const candidate = createChannel(LOGOUT_PRESENTATION_CHANNEL_NAME);
+            if (
+                !candidate ||
+                typeof candidate.addEventListener !== 'function' ||
+                typeof candidate.removeEventListener !== 'function' ||
+                typeof candidate.postMessage !== 'function' ||
+                typeof candidate.close !== 'function'
+            ) {
+                throw new TypeError('BroadcastChannel is unavailable');
+            }
+            channel = candidate;
+            return true;
+        } catch {
+            failed = true;
+            return false;
+        }
+    }
+
+    function listen(onLogout) {
+        if (typeof onLogout !== 'function') {
+            throw new TypeError('A logout presentation listener is required');
+        }
+        if (messageListener) return true;
+        if (!open()) return false;
+
+        messageListener = event => {
+            let data;
+            try {
+                data = event && event.data;
+            } catch {
+                return;
+            }
+            if (received || !isLogoutPresentationMessage(data)) return;
+            received = true;
+            try {
+                onLogout();
+            } finally {
+                close();
+            }
+        };
+        try {
+            channel.addEventListener('message', messageListener);
+            return true;
+        } catch {
+            failed = true;
+            messageListener = undefined;
+            close();
+            return false;
+        }
+    }
+
+    function publish() {
+        if (!open()) return false;
+        try {
+            channel.postMessage(LOGOUT_PRESENTATION_MESSAGE);
+            published = true;
+            return true;
+        } catch {
+            failed = true;
+            close();
+            return false;
+        }
+    }
+
+    function snapshot() {
+        return Object.freeze({
+            available: Boolean(channel) && !closed && !failed,
+            closed,
+            failed,
+            published,
+            received
+        });
+    }
+
+    return Object.freeze({ close, listen, publish, snapshot });
 }

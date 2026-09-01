@@ -40,8 +40,15 @@ export function createLoginApplication({
     alert,
     console,
     backendBase,
-    authoritativeSessions = false
+    authoritativeSessions = false,
+    logoutPresentation
 }) {
+    if (
+        authoritativeSessions &&
+        (!logoutPresentation || typeof logoutPresentation.listen !== 'function')
+    ) {
+        throw new TypeError('Authoritative logout presentation is required');
+    }
     const session = createSessionStore(sessionStorage);
     const client = createPlatformClient({
         baseUrl: backendBase,
@@ -84,7 +91,12 @@ export function createLoginApplication({
         }
         else {
             window.addEventListener('resize', replaceForViewport);
-            if (!authoritativeSessions) {
+            if (authoritativeSessions) {
+                logoutPresentation.listen(() => {
+                    session.write('loggedIn', 'Não');
+                });
+            }
+            else {
                 if (session.read('loggedIn') === 'Sim') {
                     navigate('/plataforma/estudo');
                 }

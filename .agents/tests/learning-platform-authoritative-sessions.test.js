@@ -1,6 +1,8 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const test = require("node:test");
 
 const {
@@ -56,6 +58,109 @@ function assertTargetRequestOptions(request) {
   assertNoManualAuthorityHeaders(request);
 }
 
+function createIsolatedLogoutPresentation() {
+  let closed = false;
+  let listener;
+  let published = false;
+  return {
+    close() {
+      closed = true;
+      listener = undefined;
+    },
+    listen(nextListener) {
+      if (closed) return false;
+      listener ??= nextListener;
+      return true;
+    },
+    publish() {
+      if (closed) return false;
+      published = true;
+      return true;
+    },
+    snapshot() {
+      return {
+        available: !closed,
+        closed,
+        failed: false,
+        published,
+        received: false
+      };
+    }
+  };
+}
+
+function deferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+}
+
+function createBroadcastChannelHub({ failCreate = false, failPost = false } = {}) {
+  const channels = [];
+  const messages = [];
+
+  function deliver(data, sender) {
+    for (const channel of channels) {
+      if (channel === sender || channel.closed) continue;
+      for (const listener of channel.listeners) {
+        listener({ data: structuredClone(data) });
+      }
+    }
+  }
+
+  function createChannel(name) {
+    if (failCreate) throw new Error("Invented BroadcastChannel creation failure");
+    const channel = {
+      closed: false,
+      listeners: new Set(),
+      name,
+      addEventListener(type, listener) {
+        if (type !== "message" || this.closed) {
+          throw new Error("Invented BroadcastChannel listener failure");
+        }
+        this.listeners.add(listener);
+      },
+      close() {
+        this.closed = true;
+        this.listeners.clear();
+      },
+      postMessage(message) {
+        if (this.closed || failPost) {
+          throw new Error("Invented BroadcastChannel publish failure");
+        }
+        const cloned = structuredClone(message);
+        messages.push(cloned);
+        deliver(cloned, this);
+      },
+      removeEventListener(type, listener) {
+        if (type === "message") this.listeners.delete(listener);
+      }
+    };
+    channels.push(channel);
+    return channel;
+  }
+
+  return {
+    channels,
+    createChannel,
+    inject(message) {
+      deliver(message);
+    },
+    messages
+  };
+}
+
+async function createBroadcastPresentation(harness, hub) {
+  const sessionModule = await harness.loadModule(MODULE_PATHS.session);
+  return sessionModule.createLogoutPresentationChannel({
+    createChannel: hub.createChannel
+  });
+}
+
 function moduleDependencies(harness, overrides = {}) {
   const dependencies = harness.dependencies();
   return {
@@ -73,6 +178,7 @@ function moduleDependencies(harness, overrides = {}) {
     navigate(target) {
       dependencies.window.location.href = target;
     },
+    logoutPresentation: createIsolatedLogoutPresentation(),
     ...overrides
   };
 }
@@ -111,6 +217,7 @@ async function installInitialNoticesApplication(harness, overrides = {}) {
       rights: "direitos",
       window: "janela"
     },
+    logoutPresentation: createIsolatedLogoutPresentation(),
     session: sessionModule.createSessionStore(dependencies.sessionStorage),
     ...overrides
   }).install();
@@ -213,6 +320,7 @@ async function installStudyApplication(harness, overrides = {}) {
     document: dependencies.document,
     dom,
     async loadMedia() {},
+    logoutPresentation: createIsolatedLogoutPresentation(),
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
     replaceNavigation: dependencies.replaceNavigation,
@@ -901,18 +1009,6 @@ test("[SESSION-ADOPT-06] target Study uses cookie-protected calls and server-tim
   });
   assertTargetRequestOptions(harness.guard.requests[2]);
 
-  const requestCountBeforeLocalLogout = harness.guard.requests.length;
-  harness.element("Botão-Sair").dispatch("click");
-  assert.equal(harness.guard.requests.length, requestCountBeforeLocalLogout);
-  assert.equal(harness.navigation.at(-1), "/plataforma/login");
-  assert.deepEqual(storageTimeline(harness).at(-1), {
-    key: "Usuário_Logado",
-    type: "storage-set"
-  });
-  assert.equal((harness.windowListeners.get("pageshow") ?? []).length, 0);
-  assert.equal(harness.guard.requests.some(({ method }) => method === "DELETE"), false);
-  harness.navigation.length = 0;
-
   const [timerId] = harness.timers.keys();
   assert.ok(timerId);
   harness.runTimer(timerId);
@@ -1535,4 +1631,501 @@ test("[SESSION-ADOPT-13] ambiguous registration transitions lock replay and requ
       assertOnlyTargetRequests(harness);
     });
   }
+});
+
+function authoritativeStudyRoutes(deleteRoute) {
+  return [
+    {
+      method: "POST",
+      path: "/plataforma_v2/refresh",
+      response: { data: refreshData() }
+    },
+    {
+      method: "GET",
+      path: "/plataforma_v2/sessions/current",
+      response: {
+        data: sessionStatus("authenticated", ["protected-learning", "revoke-all"])
+      }
+    },
+    ...(deleteRoute ? [{
+      method: "DELETE",
+      path: "/plataforma_v2/sessions/current",
+      ...deleteRoute
+    }] : [])
+  ];
+}
+
+async function launchAuthoritativeStudy({ deleteRoute, hub = createBroadcastChannelHub() } = {}) {
+  const harness = createLearningPlatformHarness({
+    routes: authoritativeStudyRoutes(deleteRoute),
+    storage: {
+      "Horário-Encerramento-Sessão": "1",
+      IndexVerificado: "invented-legacy-presentation-value",
+      Origem_Aviso_Dispositivo: "Sim",
+      TempoSessão_Segundos: "1",
+      Usuário_Autorização_Cadastro: "Sim",
+      Usuário_Foto_Cadastrada: "Não",
+      Usuário_Logado: "Não"
+    }
+  });
+  const logoutPresentation = await createBroadcastPresentation(harness, hub);
+  const study = await installStudyApplication(harness, { logoutPresentation });
+  harness.dispatchWindow("load");
+  await harness.flush(40);
+  return { harness, hub, logoutPresentation, study };
+}
+
+test("[SESSION-LOGOUT-01] target client sends only the exact bodyless current-session DELETE", async () => {
+  const harness = createLearningPlatformHarness({
+    routes: [{
+      method: "DELETE",
+      path: "/plataforma_v2/sessions/current",
+      response: { status: 204 }
+    }]
+  });
+  const { createPlatformClient } = await harness.loadModule(MODULE_PATHS.platformClient);
+  const dependencies = harness.dependencies();
+  const client = createPlatformClient({
+    baseUrl: FIXTURE_PLATFORM_BASE,
+    fetch: dependencies.fetch,
+    FormDataConstructor: dependencies.FormDataConstructor,
+    sessionRequest: true
+  });
+
+  for (const syntheticOutcome of ["active", "missing", "invalid", "repeated"]) {
+    assert.equal(await client.delete("/sessions/current"), undefined, syntheticOutcome);
+  }
+
+  assert.equal(harness.guard.requests.length, 4);
+  for (const request of harness.guard.requests) {
+    assert.deepEqual(request, {
+      body: undefined,
+      formFields: undefined,
+      headers: { [SESSION_HEADER]: "1" },
+      method: "DELETE",
+      path: "/plataforma_v2/sessions/current",
+      cache: "no-store",
+      credentials: "include",
+      mode: "cors",
+      redirect: "error",
+      referrerPolicy: "no-referrer"
+    });
+    assertTargetRequestOptions(request);
+  }
+  assert.equal(harness.sessionStorage.length, 0);
+  harness.hostGuard.assertUnused();
+});
+
+test("[SESSION-LOGOUT-02] exact 204 alone commits local presentation cleanup and one signal", async () => {
+  const releaseDelete = deferred();
+  const run = await launchAuthoritativeStudy({
+    deleteRoute: {
+      handler: async () => {
+        await releaseDelete.promise;
+        return { status: 204 };
+      }
+    }
+  });
+  const { harness, hub, logoutPresentation } = run;
+  const storageEventsBeforeLogout = storageTimeline(harness).length;
+  const timerIdsBeforeLogout = [...harness.timers.keys()];
+
+  harness.element("Botão-Sair").dispatch("click");
+  harness.element("Botão-Sair").dispatch("click");
+
+  assert.equal(
+    harness.guard.requests.filter(({ method }) => method === "DELETE").length,
+    1
+  );
+  assert.equal(harness.element("Botão-Sair").disabled, true);
+  assert.equal(harness.element("Container-Seções").inert, true);
+  assert.equal(harness.element("Container-Seções").getAttribute("aria-busy"), "true");
+  assert.equal(storageTimeline(harness).length, storageEventsBeforeLogout);
+  assert.deepEqual([...harness.timers.keys()], timerIdsBeforeLogout);
+  assert.deepEqual(harness.navigation, []);
+  assert.deepEqual(hub.messages, []);
+
+  releaseDelete.resolve();
+  await harness.flush(30);
+
+  assert.equal(harness.element("Container-Seções").style.display, "none");
+  assert.equal(harness.element("Container-Seções").inert, true);
+  assert.equal(harness.element("Container-Seções").getAttribute("aria-busy"), "false");
+  assert.equal(harness.element("Container-Interno-Shaka-Player").pauseCalls, 1);
+  assert.equal(harness.timers.size, 0);
+  assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+  assert.equal(harness.navigation.at(-1), "/plataforma/login");
+  assert.deepEqual(hub.messages, [{ type: "logout", version: 1 }]);
+  assert.deepEqual(logoutPresentation.snapshot(), {
+    available: false,
+    closed: true,
+    failed: false,
+    published: true,
+    received: false
+  });
+  assertOnlyTargetRequests(harness);
+});
+
+test("[SESSION-LOGOUT-03] unavailable or ambiguous logout stays retryable without automatic replay", async (context) => {
+  const failures = [
+    ["availability-503", { response: { data: {}, status: 503 } }],
+    ["network-loss", { handler: async () => { throw new Error("Invented network loss"); } }],
+    ["malformed-response", {
+      handler: async () => ({
+        json: async () => ({}),
+        ok: true,
+        status: undefined
+      })
+    }],
+    ["unexpected-status", { response: { data: {}, status: 200 } }],
+    ["ambiguous-response", {
+      handler: async () => Promise.reject(new Error("Invented ambiguous response"))
+    }]
+  ];
+
+  for (const [name, deleteRoute] of failures) {
+    await context.test(name, async () => {
+      const run = await launchAuthoritativeStudy({ deleteRoute });
+      const { harness, hub } = run;
+      const storageEventsBeforeLogout = storageTimeline(harness).length;
+
+      harness.element("Botão-Sair").dispatch("click");
+      await harness.flush(30);
+      await harness.flush(30);
+
+      assert.equal(
+        harness.guard.requests.filter(({ method }) => method === "DELETE").length,
+        1
+      );
+      assert.equal(harness.element("Botão-Sair").disabled, false);
+      assert.equal(harness.element("Container-Seções").inert, false);
+      assert.equal(harness.element("Container-Seções").style.display, "flex");
+      assert.equal(harness.element("Container-Seções").getAttribute("aria-busy"), "false");
+      assert.equal(harness.timers.size, 1);
+      assert.equal(storageTimeline(harness).length, storageEventsBeforeLogout);
+      assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Sim");
+      assert.deepEqual(harness.navigation, []);
+      assert.deepEqual(hub.messages, []);
+      assert.equal(harness.alerts.length, 1);
+      assertOnlyTargetRequests(harness);
+    });
+  }
+
+  await context.test("explicit retry after availability failure", async () => {
+    let deleteCalls = 0;
+    const run = await launchAuthoritativeStudy({
+      deleteRoute: {
+        handler: async () => {
+          deleteCalls += 1;
+          return deleteCalls === 1 ? { data: {}, status: 503 } : { status: 204 };
+        }
+      }
+    });
+    const { harness, hub } = run;
+
+    harness.element("Botão-Sair").dispatch("click");
+    await harness.flush(30);
+    assert.equal(deleteCalls, 1);
+    assert.equal(harness.element("Botão-Sair").disabled, false);
+    assert.deepEqual(harness.navigation, []);
+    assert.deepEqual(hub.messages, []);
+
+    await harness.flush(30);
+    assert.equal(deleteCalls, 1, "The client must not retry without user activation");
+
+    harness.element("Botão-Sair").dispatch("click");
+    await harness.flush(30);
+    assert.equal(deleteCalls, 2);
+    assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+    assert.equal(harness.navigation.at(-1), "/plataforma/login");
+    assert.deepEqual(hub.messages, [{ type: "logout", version: 1 }]);
+  });
+});
+
+test("[SESSION-LOGOUT-04] one 204 signal reduces Login Notices Registration and Study presentation", async () => {
+  const hub = createBroadcastChannelHub();
+
+  const loginHarness = createLearningPlatformHarness({
+    storage: { Usuário_Logado: "Sim" }
+  });
+  const loginPresentation = await createBroadcastPresentation(loginHarness, hub);
+  await installLoginApplication(loginHarness, { logoutPresentation: loginPresentation });
+  loginHarness.dispatchWindow("load");
+
+  const noticesHarness = createLearningPlatformHarness({
+    storage: { Usuário_Logado: "Sim" }
+  });
+  const noticesPresentation = await createBroadcastPresentation(noticesHarness, hub);
+  await installInitialNoticesApplication(noticesHarness, {
+    logoutPresentation: noticesPresentation
+  });
+  noticesHarness.dispatchWindow("load");
+
+  const registrationHarness = createLearningPlatformHarness({
+    routes: [{
+      method: "GET",
+      path: "/plataforma_v2/sessions/current",
+      response: {
+        data: sessionStatus("registration-pending", ["registration-challenge"])
+      }
+    }],
+    storage: { Usuário_Logado: "Sim" }
+  });
+  const registrationPresentation = await createBroadcastPresentation(
+    registrationHarness,
+    hub
+  );
+  await installRegistrationApplication(registrationHarness, {
+    logoutPresentation: registrationPresentation
+  });
+  registrationHarness.dispatchWindow("load");
+  await registrationHarness.flush(30);
+
+  const studyRun = await launchAuthoritativeStudy({ hub });
+  const publisher = await createBroadcastPresentation(loginHarness, hub);
+  publisher.listen(() => {});
+  assert.equal(publisher.publish(), true);
+
+  assert.equal(loginHarness.sessionStorage.getItem("Usuário_Logado"), "Não");
+  assert.deepEqual(loginHarness.navigation, []);
+  for (const harness of [noticesHarness, registrationHarness, studyRun.harness]) {
+    assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+    assert.equal(harness.navigation.at(-1), "/plataforma/login");
+    assert.equal(
+      harness.guard.requests.some(({ method }) => method === "DELETE"),
+      false
+    );
+  }
+  assert.equal(studyRun.harness.timers.size, 0);
+  assert.equal(studyRun.harness.element("Container-Seções").style.display, "none");
+  assert.deepEqual(hub.messages, [{ type: "logout", version: 1 }]);
+  assert.equal(loginPresentation.snapshot().received, true);
+  assert.equal(noticesPresentation.snapshot().received, true);
+  assert.equal(registrationPresentation.snapshot().received, true);
+  assert.equal(studyRun.logoutPresentation.snapshot().received, true);
+  assert.equal(
+    hub.messages.length,
+    1,
+    "Receiving tabs must neither issue DELETE nor rebroadcast the outcome"
+  );
+});
+
+test("[SESSION-LOGOUT-05] malformed duplicate replayed and forged messages stay presentation-only", async () => {
+  const harness = createLearningPlatformHarness({
+    storage: { Usuário_Logado: "Sim" }
+  });
+  const hub = createBroadcastChannelHub();
+  const presentation = await createBroadcastPresentation(harness, hub);
+  let outcomes = 0;
+  presentation.listen(() => {
+    outcomes += 1;
+    harness.sessionStorage.setItem("Usuário_Logado", "Não");
+  });
+
+  for (const malformed of [
+    undefined,
+    null,
+    [],
+    {},
+    { type: "logout" },
+    { type: "logout", version: 2 },
+    { type: "login", version: 1 },
+    { extra: true, type: "logout", version: 1 }
+  ]) {
+    hub.inject(malformed);
+  }
+  assert.equal(outcomes, 0);
+  assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Sim");
+
+  const forgedLogoutOnlyOutcome = { type: "logout", version: 1 };
+  hub.inject(forgedLogoutOnlyOutcome);
+  hub.inject(forgedLogoutOnlyOutcome);
+  hub.inject(forgedLogoutOnlyOutcome);
+
+  assert.equal(outcomes, 1);
+  assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+  assert.deepEqual(hub.messages, []);
+  assert.deepEqual(presentation.snapshot(), {
+    available: false,
+    closed: true,
+    failed: false,
+    published: false,
+    received: true
+  });
+  assert.deepEqual(harness.guard.requests, []);
+});
+
+test("[SESSION-LOGOUT-06] BroadcastChannel failure cannot undo a committed local 204", async (context) => {
+  for (const [name, hub] of [
+    ["unavailable", createBroadcastChannelHub({ failCreate: true })],
+    ["publish-failure", createBroadcastChannelHub({ failPost: true })]
+  ]) {
+    await context.test(name, async () => {
+      const run = await launchAuthoritativeStudy({
+        deleteRoute: { response: { status: 204 } },
+        hub
+      });
+      const { harness, logoutPresentation } = run;
+
+      harness.element("Botão-Sair").dispatch("click");
+      await harness.flush(30);
+
+      assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+      assert.equal(harness.navigation.at(-1), "/plataforma/login");
+      assert.equal(harness.timers.size, 0);
+      assert.deepEqual(hub.messages, []);
+      assert.deepEqual(logoutPresentation.snapshot(), {
+        available: false,
+        closed: true,
+        failed: true,
+        published: false,
+        received: false
+      });
+    });
+  }
+});
+
+test("[SESSION-LOGOUT-07] independent credential responses remain authoritative across logout orders", async (context) => {
+  await context.test("logout presentation precedes the independent login response", async () => {
+    const loginResponse = deferred();
+    const hub = createBroadcastChannelHub();
+    const harness = createLearningPlatformHarness({
+      routes: [{
+        handler: async () => {
+          await loginResponse.promise;
+          return {
+            data: sessionStatus("authenticated", ["protected-learning", "revoke-all"])
+          };
+        },
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID"
+      }],
+      storage: { Usuário_Logado: "Sim" }
+    });
+    const presentation = await createBroadcastPresentation(harness, hub);
+    await installLoginApplication(harness, { logoutPresentation: presentation });
+    harness.dispatchWindow("load");
+    harness.element("E-mail").value = "invented@example.test";
+    harness.element("Senha").value = "invented-password";
+    submit(harness.element("Formulário-Login"));
+    await harness.flush(10);
+
+    const publisher = await createBroadcastPresentation(harness, hub);
+    publisher.listen(() => {});
+    publisher.publish();
+    assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+
+    loginResponse.resolve();
+    await harness.flush(40);
+    assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Sim");
+    assert.equal(harness.navigation.at(-1), "/plataforma/estudo");
+    assert.equal(harness.guard.requests.length, 1);
+    assert.equal(harness.guard.requests[0].method, "POST");
+    assert.equal(harness.guard.requests.some(({ method }) => method === "DELETE"), false);
+  });
+
+  await context.test("logout presentation follows the independent login response", async () => {
+    const hub = createBroadcastChannelHub();
+    const harness = createLearningPlatformHarness({
+      routes: [{
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID",
+        response: {
+          data: sessionStatus("authenticated", ["protected-learning", "revoke-all"])
+        }
+      }],
+      storage: { Usuário_Logado: "Não" }
+    });
+    const presentation = await createBroadcastPresentation(harness, hub);
+    await installLoginApplication(harness, { logoutPresentation: presentation });
+    harness.dispatchWindow("load");
+    harness.element("E-mail").value = "invented@example.test";
+    harness.element("Senha").value = "invented-password";
+    submit(harness.element("Formulário-Login"));
+    await harness.flush(40);
+    assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Sim");
+    assert.equal(harness.navigation.at(-1), "/plataforma/estudo");
+
+    const publisher = await createBroadcastPresentation(harness, hub);
+    publisher.listen(() => {});
+    publisher.publish();
+    assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+    assert.deepEqual(harness.navigation, ["/plataforma/estudo"]);
+    assert.equal(harness.guard.requests.some(({ method }) => method === "DELETE"), false);
+    assert.deepEqual(hub.messages, [{ type: "logout", version: 1 }]);
+  });
+});
+
+test("[SESSION-LOGOUT-08] authoritative expiry ends presentation without manufacturing DELETE or 204", async () => {
+  const run = await launchAuthoritativeStudy();
+  const { harness, hub, study } = run;
+  const [timerId] = harness.timers.keys();
+  assert.ok(timerId);
+
+  study.advanceMonotonic(4 * 60 * 60 * 1000);
+  harness.runTimer(timerId);
+
+  assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+  assert.equal(harness.navigation.at(-1), "/plataforma/login");
+  assert.equal(harness.guard.requests.some(({ method }) => method === "DELETE"), false);
+  assert.deepEqual(hub.messages, []);
+  assert.equal(harness.timers.size, 0);
+  assert.equal(harness.element("Container-Seções").style.display, "none");
+});
+
+test("[SESSION-LOGOUT-09] session gates storage and route scope keep logout presentation non-authoritative", async () => {
+  for (const harness of [
+    createLearningPlatformHarness({
+      userAgent: "Invented unsupported browser",
+      userAgentData: { brands: [{ brand: "Invented" }], mobile: false, platform: "Linux" }
+    }),
+    createLearningPlatformHarness({ innerWidth: 1024 })
+  ]) {
+    const hub = createBroadcastChannelHub();
+    const presentation = await createBroadcastPresentation(harness, hub);
+    await installStudyApplication(harness, { logoutPresentation: presentation });
+    harness.dispatchWindow("load");
+    await harness.flush(20);
+    assert.equal(hub.channels.length, 0);
+    assert.deepEqual(harness.guard.requests, []);
+  }
+
+  const repositoryRoot = path.join(__dirname, "..", "..");
+  const sessionSource = fs.readFileSync(
+    path.join(repositoryRoot, "apps", "learning-platform", "modules", "session.js"),
+    "utf8"
+  );
+  const applicationSource = fs.readFileSync(
+    path.join(
+      repositoryRoot,
+      "apps",
+      "learning-platform",
+      "modules",
+      "course-content",
+      "application.js"
+    ),
+    "utf8"
+  );
+  const clientSource = fs.readFileSync(
+    path.join(repositoryRoot, "apps", "learning-platform", "modules", "platform-client.js"),
+    "utf8"
+  );
+  const runtimeSources = [sessionSource, applicationSource, clientSource].join("\n");
+
+  assert.match(sessionSource, /AUTHORITATIVE_SESSIONS_ENABLED = false/);
+  assert.match(applicationSource, /client\.delete\('\/sessions\/current'\)/);
+  assert.doesNotMatch(applicationSource, /client\.delete\('\/sessions'\)/);
+  assert.doesNotMatch(runtimeSources, /document\.cookie/);
+  assert.doesNotMatch(runtimeSources, /localStorage/);
+  assert.doesNotMatch(runtimeSources, /addEventListener\(['"]storage['"]/);
+  assert.doesNotMatch(runtimeSources, /pageshow/);
+  assert.match(applicationSource, /document\.getElementById\("Botão-Sair"\)\.addEventListener\("click", \(\) => \{\s+session\.write\('loggedIn', 'Não'\);\s+navigate\('\/plataforma\/login'\);\s+\}\);/);
+
+  const sessionModule = await createLearningPlatformHarness().loadModule(MODULE_PATHS.session);
+  assert.equal(Object.values(sessionModule.SESSION_KEYS).length, 7);
+  assert.deepEqual(Object.keys(sessionModule.LOGOUT_PRESENTATION_MESSAGE), ["type", "version"]);
+  assert.deepEqual(sessionModule.LOGOUT_PRESENTATION_MESSAGE, {
+    type: "logout",
+    version: 1
+  });
 });

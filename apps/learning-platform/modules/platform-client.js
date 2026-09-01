@@ -22,6 +22,13 @@ async function parseActionResponse(response) {
     return parseJsonResponse(response);
 }
 
+function parseNoContentResponse(response) {
+    if (!response || response.status !== 204 || response.ok !== true) {
+        throw { status: response && response.status };
+    }
+    return undefined;
+}
+
 function normalizeRequest(request, parse = parseJsonResponse) {
     return request.catch(error => {
         throw normalizeLearningPlatformTransportError(error);
@@ -55,6 +62,11 @@ export function createPlatformClient({
     }
 
     return {
+        delete(path) {
+            return normalizeRequest(fetch(baseUrl + path, requestOptions({
+                method: 'DELETE'
+            }, sessionRequest)), parseNoContentResponse);
+        },
         getJson(path) {
             return normalizeRequest(fetch(baseUrl + path, requestOptions({
                 method: 'GET',

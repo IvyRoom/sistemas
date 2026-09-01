@@ -4,8 +4,11 @@ export function createStudySessionTimer({
     document,
     navigate,
     session,
-    timers
+    timers,
+    onAuthoritativeExpiry
 }) {
+    let activeTimerId;
+
     function authoritativeSecondsRemaining(status) {
         if (typeof clock.monotonicNow !== 'function') {
             throw new TypeError('A monotonic clock is required for authoritative session presentation');
@@ -41,6 +44,7 @@ export function createStudySessionTimer({
     }
 
     function start(status) {
+        if (authoritativeSessionsEnabled && activeTimerId !== undefined) stop();
         const sessionTime = document.getElementById("Usuário-Tempo-Sessão");
         const readSecondsRemaining = authoritativeSessionsEnabled
             ? authoritativeSecondsRemaining(status)
@@ -56,12 +60,27 @@ export function createStudySessionTimer({
             }
             if (secondsRemaining <= 0) {
                 timers.clearInterval(timerId);
-                session.write('loggedIn', 'Não');
-                navigate('/plataforma/login');
+                if (activeTimerId === timerId) activeTimerId = undefined;
+                if (
+                    authoritativeSessionsEnabled &&
+                    typeof onAuthoritativeExpiry === 'function'
+                ) {
+                    onAuthoritativeExpiry();
+                } else {
+                    session.write('loggedIn', 'Não');
+                    navigate('/plataforma/login');
+                }
             }
         }, 1000);
+        if (authoritativeSessionsEnabled) activeTimerId = timerId;
         return timerId;
     }
 
-    return { start };
+    function stop() {
+        if (activeTimerId === undefined) return;
+        timers.clearInterval(activeTimerId);
+        activeTimerId = undefined;
+    }
+
+    return { start, stop };
 }

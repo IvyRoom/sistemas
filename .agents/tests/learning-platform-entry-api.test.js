@@ -1533,7 +1533,7 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
     TempoSessão_Segundos: [],
     Usuário_Autorização_Cadastro: ["login", "register"],
     Usuário_Foto_Cadastrada: ["login"],
-    Usuário_Logado: ["login", "register", "study"]
+    Usuário_Logado: ["login", "notices", "register", "study"]
   };
   for (const [key, pages] of Object.entries(expectedReaders)) {
     assert.deepEqual(

@@ -1,6 +1,7 @@
 import { createPlatformClient } from '../modules/platform-client.js';
 import {
     AUTHORITATIVE_SESSIONS_ENABLED,
+    createLogoutPresentationChannel,
     createSessionStore
 } from '../modules/session.js';
 import { createStudyApplication } from '../modules/course-content/application.js';
@@ -75,6 +76,9 @@ controller = createStudyApplication({
     loadMedia: player.loadMedia,
     navigate: path => { window.location.href = path; },
     navigator: window.navigator,
+    logoutPresentation: createLogoutPresentationChannel({
+        createChannel: name => new window.BroadcastChannel(name)
+    }),
     replaceNavigation: path => { window.location.replace(path); },
     renderCertificate: createCertificateRenderer(() => window.jspdf.jsPDF),
     session,
