@@ -962,6 +962,11 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
     .filter(({ source }) => source.includes("shared/backend-origin.js"))
     .map(({ relativePath }) => relativePath);
 
+  assert.equal(
+    digestStrings([productionBackendOrigin]),
+    "a61d4b931a2681d219141733c64441ea26ca33d92a51f9eb23710369db6d4c01",
+    "Partitioned-cookie adoption must retain the existing shared App Service origin"
+  );
   assert.deepEqual(consumers, backendOriginConsumers);
   assert.equal(consumers.length, 8);
   for (const { relativePath, source } of javaScriptSources) {
@@ -1011,10 +1016,10 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
       digest: digestStrings(importEdges)
     },
     {
-      count: 77,
-      digest: "672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149"
+      count: 80,
+      digest: "4e5b19225a140479b99ff5677ee62b13ea56be48ebc30ff8d65d15e9e0aee510"
     },
-    "The centralized-origin source graph must retain its exact import aggregate"
+    "The dormant authoritative-session source graph must retain its exact import aggregate"
   );
 });
 
@@ -1538,10 +1543,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20755189,
-      digest: "5a522847ebfe93816d3275c91054d96a875d39ac14bf1a74d4e48edcbaa0cdc7"
+      bytes: 20778045,
+      digest: "fdc443646d6824b9fe7e1790f76a1d5dd73c5b605b990fcb80945409b554f788"
     },
-    "The current manifest must produce the exact centralized-origin modernized platform target"
+    "The current manifest must produce the exact dormant authoritative-session platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -1550,10 +1555,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20755189,
-      digest: "845881e80c7f752585af81d59e6a82dc2534f4b0009eabbcbe0df256836fc00e"
+      bytes: 20778045,
+      digest: "c72b94b45fdff3b2131e32bd2c980187ce87f5c5c39a3e598e2dcbab32be8c23"
     },
-    "The current manifest must produce the exact prefix-omitted centralized-origin modernized target"
+    "The current manifest must produce the exact prefix-omitted dormant-session target"
   );
   const javaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
@@ -1562,10 +1567,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 468051,
-      digest: "c80a20f0c9b49d71da26eedccc348225016b63e65060e92ffe62be3f6249f49c"
+      bytes: 490907,
+      digest: "468dfd45eec83f550cf50ab219f46154c62fd8c3012da95b653314c4939364c3"
     },
-    "The platform JavaScript files must retain their exact modernized identity"
+    "The platform JavaScript files must retain their exact dormant-session identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -1608,10 +1613,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(studyRecords),
     {
       files: 41,
-      bytes: 10022085,
-      digest: "ca7de8c8e30a0b296c24d7fbeebe12dca483c4651490b81503ff253ce3541692"
+      bytes: 10022350,
+      digest: "bcdbc102dd1f54fdd8e6a92ee05132d95ff3bec22ab463aebfd7a9f11bd71932"
     },
-    "The Study entry subtree must retain its modernized mapped identity"
+    "The Study entry subtree must retain its dormant-session mapped identity"
   );
   const backendConsumerApplicationStats = Object.fromEntries(
     backendConsumerApplicationIds.map((applicationId) => [
@@ -1969,7 +1974,7 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact", () => {
+test("[ARTIFACT-01] dormant session adoption advances the historical artifact", () => {
   const historicalPhaseB = {
     files: 257,
     bytes: 27298502,
@@ -1993,10 +1998,10 @@ test("[ARTIFACT-01] centralized origin advances the historical phase-B artifact"
     treeStats(records),
     {
       files: 258,
-      bytes: 27360535,
-      digest: "b81dc69cfdf5284814479c9f252e688c5cd58dca105b27fc6c199b22ba9f945a"
+      bytes: 27383391,
+      digest: "8b6785f85f7677af06fb54719c8279e40d462ee11ccce3882a3dd919f6e9a016"
     },
-    "The current manifest must produce the exact centralized-origin modernized frontend target"
+    "The current manifest must produce the exact dormant authoritative-session frontend target"
   );
   assert.deepEqual(
     treeStats(sharedRuntimeRecords()),
@@ -2076,7 +2081,7 @@ test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform do
   assert.equal(
     completeRecords.length - publicEntryCount - publicDownloadCount,
     243,
-    "The complete centralized-origin artifact must contain 243 support files"
+    "The complete dormant authoritative-session artifact must contain 243 support files"
   );
 });
 

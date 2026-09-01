@@ -8,7 +8,16 @@ import {
     learningPlatformErrorPresentations
 } from '../error-presentation.js';
 
-export function createStudyAssessment({ alert, client, document, dom, navigation, openTopic, state }) {
+export function createStudyAssessment({
+    alert,
+    authoritativeSessionsEnabled = false,
+    client,
+    document,
+    dom,
+    navigation,
+    openTopic,
+    state
+}) {
     function open(selectedTopic) {
         dom.playerElement.pause();
         dom.content.style.display = "none";
@@ -84,7 +93,7 @@ export function createStudyAssessment({ alert, client, document, dom, navigation
 
         client.postJson('/updates', {
             TipoAtualização: 'NúmeroTópicosConcluídos-e-NotaTeste',
-            IndexVerificado: state.verifiedIndex,
+            ...(authoritativeSessionsEnabled ? {} : { IndexVerificado: state.verifiedIndex }),
             NúmeroTópicosConcluídos: state.completedTopics,
             NúmeroMódulo: moduleNumber,
             NotaTeste: score

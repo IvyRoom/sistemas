@@ -386,6 +386,17 @@ function normalizeHeaders(headers = {}) {
   ]));
 }
 
+function captureRequestOptions(options, headers) {
+  const captured = {};
+  if (options.cache !== undefined) captured.cache = options.cache;
+  if (options.credentials !== undefined) captured.credentials = options.credentials;
+  if (Object.keys(headers).length > 0) captured.headers = headers;
+  if (options.mode !== undefined) captured.mode = options.mode;
+  if (options.redirect !== undefined) captured.redirect = options.redirect;
+  if (options.referrerPolicy !== undefined) captured.referrerPolicy = options.referrerPolicy;
+  return captured;
+}
+
 function isSensitiveField(key) {
   return /authorization|credential|indexverificado|password|senha|session(?:id)?|token/i.test(key);
 }
@@ -449,11 +460,14 @@ function createDenyAllNetworkGuard({ routes = [], timeline = [] } = {}) {
 
     const queryKeys = [...new Set(url.searchParams.keys())].sort();
     const path = sanitizePathname(url.pathname);
+    const headers = normalizeHeaders(options.headers);
+    const capturedOptions = captureRequestOptions(options, headers);
     requestMetadata.push({
       hasQuery: url.search.length > 0,
       method,
       path,
-      queryKeys
+      queryKeys,
+      ...capturedOptions
     });
     if (url.search.length > 0 && route.allowQuery !== true) {
       throw new NetworkGuardError("fetch");
@@ -483,15 +497,19 @@ function createDenyAllNetworkGuard({ routes = [], timeline = [] } = {}) {
       jsonBody,
       method,
       pathname: url.pathname,
-      queryKeys
+      queryKeys,
+      ...capturedOptions
     });
 
     const request = {
       body,
       formFields,
-      headers: normalizeHeaders(options.headers),
+      headers,
       method,
-      path
+      path,
+      ...Object.fromEntries(
+        Object.entries(capturedOptions).filter(([key]) => key !== "headers")
+      )
     };
     requests.push(request);
     timeline.push({ method, path: request.path, type: "fetch" });
@@ -560,13 +578,16 @@ function toFixtureResponse(value = {}) {
   if (value && typeof value.json === "function" && "ok" in value) return value;
   const status = value.status ?? 200;
   const data = value.data ?? value.body ?? {};
-  return {
+  const response = {
     ok: value.ok ?? (status >= 200 && status < 300),
-    status,
-    async json() {
-      return data;
-    }
+    status
   };
+  if (status !== 204) {
+    response.json = async function json() {
+      return data;
+    };
+  }
+  return response;
 }
 
 function createClassList(initial = []) {
