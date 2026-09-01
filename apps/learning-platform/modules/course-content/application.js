@@ -71,12 +71,14 @@ export function createStudyApplication({
     let logoutControl;
     let logoutPending = false;
     let authoritativePresentationEnded = false;
+    let legacyPresentationEnded = false;
     const sessionTimer = createStudySessionTimer({
         authoritativeSessionsEnabled,
         clock,
         document,
         navigate,
         onAuthoritativeExpiry: () => endAuthoritativePresentation({ publish: false }),
+        onLegacyExpiry: endLegacyPresentation,
         session,
         timers
     });
@@ -114,6 +116,37 @@ export function createStudyApplication({
         if (publish) logoutPresentation.publish();
         logoutPresentation.close();
         navigate('/plataforma/login');
+    }
+
+    function cleanupLegacyPresentation() {
+        if (legacyPresentationEnded) return false;
+        legacyPresentationEnded = true;
+        const protectedPresentation = document.getElementById('Container-Seções');
+        protectedPresentation.inert = true;
+        protectedPresentation.setAttribute('aria-busy', 'false');
+        protectedPresentation.style.display = 'none';
+        const legacyLogoutControl = logoutControl || document.getElementById("Botão-Sair");
+        legacyLogoutControl.disabled = true;
+        document.body.style.cursor = 'default';
+        sessionTimer.stop();
+        if (dom.playerElement && typeof dom.playerElement.pause === 'function') {
+            dom.playerElement.pause();
+        }
+        session.write('loggedIn', 'Não');
+        session.remove('verifiedIndex');
+        return true;
+    }
+
+    function endLegacyPresentation() {
+        if (!cleanupLegacyPresentation()) return;
+        replaceNavigation('/plataforma/login');
+    }
+
+    function guardLoggedOutLegacyStudy() {
+        if (session.read('loggedIn') === 'Sim') return false;
+        cleanupLegacyPresentation();
+        replaceNavigation('/plataforma/login');
+        return true;
     }
 
     async function logoutAuthoritatively() {
@@ -211,14 +244,11 @@ export function createStudyApplication({
         state.certificateId = data.Usuário_Formação_CertificadoID;
 
         document.getElementById('Container-Seções').style.display = 'flex';
+        logoutControl = document.getElementById("Botão-Sair");
         if (authoritativeSessionsEnabled) {
-            logoutControl = document.getElementById("Botão-Sair");
             logoutControl.addEventListener("click", logoutAuthoritatively);
         } else {
-            document.getElementById("Botão-Sair").addEventListener("click", () => {
-                session.write('loggedIn', 'Não');
-                navigate('/plataforma/login');
-            });
+            logoutControl.addEventListener("click", endLegacyPresentation);
         }
         document.getElementById('Formação-Prazo-Acesso').textContent =
             "Acesso Expira: " + state.accessDeadline;
@@ -302,8 +332,8 @@ export function createStudyApplication({
             replaceNavigation('/plataforma/aviso-dispositivo-navegador');
         } else if (replaceWithViewportWarning({ replaceNavigation, window })) {
             return;
-        } else if (!authoritativeSessionsEnabled && session.read('loggedIn') !== 'Sim') {
-            navigate('/plataforma/login');
+        } else if (!authoritativeSessionsEnabled && guardLoggedOutLegacyStudy()) {
+            return;
         } else {
             const handleViewportWidth = () => replaceWithViewportWarning({
                 replaceNavigation,
@@ -317,6 +347,7 @@ export function createStudyApplication({
                 });
                 if (!authoritativePresentationEnded) loadAuthoritativeStudy();
             } else {
+                window.addEventListener('pageshow', guardLoggedOutLegacyStudy);
                 loadLegacyStudy();
             }
         }

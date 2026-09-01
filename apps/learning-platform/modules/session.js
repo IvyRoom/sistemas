@@ -116,6 +116,9 @@ export function createSessionStore(storage) {
         read(keyName) {
             return storage.getItem(SESSION_KEYS[keyName]);
         },
+        remove(keyName) {
+            storage.removeItem(SESSION_KEYS[keyName]);
+        },
         write(keyName, value) {
             storage.setItem(SESSION_KEYS[keyName], value);
         }

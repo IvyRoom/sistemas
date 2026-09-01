@@ -1260,10 +1260,10 @@ test("[GATE-02] admitted study enforces viewport admission before refresh", asyn
     });
     await installStudyApplication(unauthenticated);
     unauthenticated.dispatchWindow("load");
-    assert.deepEqual(unauthenticated.navigation, width <= 1024 ? [] : [PATHS.login]);
+    assert.deepEqual(unauthenticated.navigation, []);
     assert.deepEqual(
       unauthenticated.replacementNavigation,
-      width <= 1024 ? [viewportWarningTarget(PATHS.study)] : [],
+      width <= 1024 ? [viewportWarningTarget(PATHS.study)] : [PATHS.login],
       `unauthenticated:${width}`
     );
     assert.equal(unauthenticated.guard.requests.length, 0, `unauthenticated:${width}`);
@@ -1473,8 +1473,13 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
     Object.keys(SCRIPT_PATHS).map((page) => [page, readApplicationSource(page)])
   );
   const callsByPage = Object.fromEntries(Object.keys(sourcesByPage).map((page) => [page, []]));
-  const directPattern = /sessionStorage\.(getItem|setItem)\(\s*['"]([^'"]+)['"]/g;
-  const seamPattern = /\bsession\.(read|write)\(\s*['"]([^'"]+)['"]/g;
+  const directPattern = /sessionStorage\.(getItem|removeItem|setItem)\(\s*['"]([^'"]+)['"]/g;
+  const seamPattern = /\bsession\.(read|remove|write)\(\s*['"]([^'"]+)['"]/g;
+  const seamMethods = {
+    read: "getItem",
+    remove: "removeItem",
+    write: "setItem"
+  };
 
   for (const [page, source] of Object.entries(sourcesByPage)) {
     for (const match of source.matchAll(directPattern)) {
@@ -1484,7 +1489,7 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
       assert.ok(SESSION_KEYS[match[2]], `Unknown session-key alias: ${match[2]}`);
       callsByPage[page].push({
         key: SESSION_KEYS[match[2]],
-        method: match[1] === "read" ? "getItem" : "setItem"
+        method: seamMethods[match[1]]
       });
     }
   }
@@ -1513,7 +1518,13 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
     ...Object.values(sourcesByPage),
     readPlatformScript(MODULE_PATHS.session)
   ].join("\n");
-  assert.equal(/(?:sessionStorage|storage)\.(?:removeItem|clear)\s*\(/.test(combined), false);
+  assert.equal(/(?:sessionStorage|storage)\.clear\s*\(/.test(combined), false);
+  assert.deepEqual(
+    Object.entries(callsByPage).flatMap(([page, calls]) => calls
+      .filter(({ method }) => method === "removeItem")
+      .map(({ key }) => ({ key, page }))),
+    [{ key: "IndexVerificado", page: "study" }]
+  );
   assert.equal(combined.includes("clock.now() + (14400 * 1000)"), true);
   for (const value of ["Sim", "Não"]) assert.equal(combined.includes(`'${value}'`), true);
 
@@ -1558,7 +1569,7 @@ test("[STORE-01] exact seven key spellings, readers, writers, and value conventi
   harness.hostGuard.assertUnused();
 });
 
-test("[STORE-02] refresh preserves stored deadline and handle while logout changes only the login flag", async () => {
+test("[STORE-02] refresh retains authority while logout removes only the handle and a fresh login replaces it", async () => {
   const storedDeadline = "2000003600000";
   const harness = createLearningPlatformHarness({
     routes: [{
@@ -1593,17 +1604,44 @@ test("[STORE-02] refresh preserves stored deadline and handle while logout chang
   );
 
   harness.element("Botão-Sair").dispatch("click");
-  const snapshot = harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
+  const snapshot = harness.sessionStorage.snapshot();
   assert.deepEqual(snapshot, {
     "Horário-Encerramento-Sessão": storedDeadline,
-    IndexVerificado: "<redacted>",
     Origem_Aviso_Dispositivo: "Não",
     TempoSessão_Segundos: "legacy-observation",
     Usuário_Autorização_Cadastro: "Não",
     Usuário_Foto_Cadastrada: "Sim",
     Usuário_Logado: "Não"
   });
-  assert.equal(harness.navigation.at(-1), PATHS.login);
+  assert.deepEqual(harness.navigation, []);
+  assert.equal(harness.replacementNavigation.at(-1), PATHS.login);
+  assert.equal(harness.guard.requests.some(({ method }) => method === "DELETE"), false);
+
+  const freshHandle = opaqueValue("fresh-row-handle");
+  const freshLogin = createLearningPlatformHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/login-FaceID",
+      response: {
+        data: loginResponse({
+          IndexVerificado: freshHandle,
+          Usuário_Status_FaceID: "Inativo"
+        })
+      }
+    }],
+    storage: snapshot
+  });
+  await installLoginApplication(freshLogin);
+  freshLogin.dispatchWindow("load");
+  submit(freshLogin.element("Formulário-Login"));
+  await freshLogin.flush(20);
+
+  assert.equal(freshLogin.sessionStorage.getItem("IndexVerificado"), freshHandle);
+  assert.equal(freshLogin.sessionStorage.getItem("Usuário_Logado"), "Sim");
+  assert.equal(freshLogin.navigation.at(-1), PATHS.study);
+  assert.equal(freshLogin.guard.requests.length, 1);
+  assert.equal(freshLogin.guard.requests[0].path, "/plataforma_v2/login-FaceID");
+  assert.equal(freshLogin.guard.requests.some(({ method }) => method === "DELETE"), false);
 });
 
 test("[API-01] login posts untrimmed credentials and preserves active and inactive branches", async () => {

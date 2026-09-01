@@ -2073,7 +2073,7 @@ test("[SESSION-LOGOUT-08] authoritative expiry ends presentation without manufac
   assert.equal(harness.element("Container-Seções").style.display, "none");
 });
 
-test("[SESSION-LOGOUT-09] session gates storage and route scope keep logout presentation non-authoritative", async () => {
+test("[SESSION-LOGOUT-09] session gates storage and route scope keep authoritative logout non-active", async () => {
   for (const harness of [
     createLearningPlatformHarness({
       userAgent: "Invented unsupported browser",
@@ -2118,8 +2118,10 @@ test("[SESSION-LOGOUT-09] session gates storage and route scope keep logout pres
   assert.doesNotMatch(runtimeSources, /document\.cookie/);
   assert.doesNotMatch(runtimeSources, /localStorage/);
   assert.doesNotMatch(runtimeSources, /addEventListener\(['"]storage['"]/);
-  assert.doesNotMatch(runtimeSources, /pageshow/);
-  assert.match(applicationSource, /document\.getElementById\("Botão-Sair"\)\.addEventListener\("click", \(\) => \{\s+session\.write\('loggedIn', 'Não'\);\s+navigate\('\/plataforma\/login'\);\s+\}\);/);
+  assert.match(applicationSource, /window\.addEventListener\('pageshow', guardLoggedOutLegacyStudy\)/);
+  assert.match(applicationSource, /logoutControl\.addEventListener\("click", endLegacyPresentation\)/);
+  assert.match(applicationSource, /session\.remove\('verifiedIndex'\)/);
+  assert.match(applicationSource, /replaceNavigation\('\/plataforma\/login'\)/);
 
   const sessionModule = await createLearningPlatformHarness().loadModule(MODULE_PATHS.session);
   assert.equal(Object.values(sessionModule.SESSION_KEYS).length, 7);
