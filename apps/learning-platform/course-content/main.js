@@ -1,9 +1,5 @@
 import { createPlatformClient } from '../modules/platform-client.js';
-import {
-    AUTHORITATIVE_SESSIONS_ENABLED,
-    createLogoutPresentationChannel,
-    createSessionStore
-} from '../modules/session.js';
+import { createSessionStore } from '../modules/session.js';
 import { createStudyApplication } from '../modules/course-content/application.js';
 import { createCertificateRenderer } from '../modules/course-content/certificate-renderer.js';
 import { createStudyDom } from '../modules/course-content/dom.js';
@@ -33,15 +29,12 @@ const bindWindowFunction = name => typeof window[name] === 'function'
     : window[name];
 let legacySessionSeconds;
 const studyDom = createStudyDom(window.document, () => {
-    if (!AUTHORITATIVE_SESSIONS_ENABLED) {
-        legacySessionSeconds = session.read('legacySessionSeconds');
-    }
+    legacySessionSeconds = session.read('legacySessionSeconds');
 });
 const platformClient = createPlatformClient({
     baseUrl: backendBase,
     fetch: bindWindowFunction('fetch'),
-    FormDataConstructor: window.FormData,
-    sessionRequest: AUTHORITATIVE_SESSIONS_ENABLED
+    FormDataConstructor: window.FormData
 });
 
 let controller;
@@ -63,22 +56,16 @@ const player = createStudyPlayer({
 
 controller = createStudyApplication({
     alert: bindWindowFunction('alert'),
-    authoritativeSessionsEnabled: AUTHORITATIVE_SESSIONS_ENABLED,
     client: platformClient,
     clock: {
         createDate: (...argumentsList) => new window.Date(...argumentsList),
-        monotonicNow: () => window.performance.now(),
         now: () => window.Date.now()
     },
     configureDownloads: createDownloadConfigurator(window.document),
     document: window.document,
     dom: studyDom,
     loadMedia: player.loadMedia,
-    navigate: path => { window.location.href = path; },
     navigator: window.navigator,
-    logoutPresentation: createLogoutPresentationChannel({
-        createChannel: name => new window.BroadcastChannel(name)
-    }),
     replaceNavigation: path => { window.location.replace(path); },
     renderCertificate: createCertificateRenderer(() => window.jspdf.jsPDF),
     session,

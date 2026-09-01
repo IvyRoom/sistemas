@@ -10,7 +10,6 @@ export const STUDY_TOPIC_COUNT = STUDY_MODULE_TOPIC_COUNTS.reduce(
 export function createStudyState(initial = {}) {
     const observers = new Set();
     const values = {
-        authoritativeSessionStatus: undefined,
         openModule: undefined,
         verifiedIndex: undefined,
         fullName: undefined,

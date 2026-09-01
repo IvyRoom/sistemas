@@ -1,9 +1,5 @@
 import { createLoginApplication } from "../modules/login.js";
 import { BACKEND_ORIGIN } from "../../shared/backend-origin.js";
-import {
-    AUTHORITATIVE_SESSIONS_ENABLED,
-    createLogoutPresentationChannel
-} from "../modules/session.js";
 
 const backendBase = `${BACKEND_ORIGIN}/plataforma_v2`;
 
@@ -28,9 +24,5 @@ createLoginApplication({
         window.alert(message);
     },
     console: window.console,
-    backendBase,
-    authoritativeSessions: AUTHORITATIVE_SESSIONS_ENABLED,
-    logoutPresentation: createLogoutPresentationChannel({
-        createChannel: name => new window.BroadcastChannel(name)
-    })
+    backendBase
 });

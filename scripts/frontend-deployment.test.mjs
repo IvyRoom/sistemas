@@ -712,8 +712,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    80,
-    "The authoritative-session source graph must contain exactly 80 JavaScript imports"
+    77,
+    "The lean signed-handle source graph must contain exactly 77 JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -728,7 +728,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
 });
 
-test("generated preview resolves exactly 80 authoritative-session JavaScript imports", async (context) => {
+test("generated preview resolves exactly 77 lean signed-handle JavaScript imports", async (context) => {
   const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-origin-artifact-"));
   context.after(() => rm(artifactRoot, { force: true, recursive: true }));
   const validation = await validateDeploymentManifest(await readDeploymentManifest());
@@ -744,8 +744,8 @@ test("generated preview resolves exactly 80 authoritative-session JavaScript imp
   const references = await assertLocalReferences(artifactRoot);
   assert.equal(
     references.javascriptReferences,
-    80,
-    "The generated authoritative-session module graph must contain exactly 80 resolvable imports"
+    77,
+    "The generated lean signed-handle module graph must contain exactly 77 resolvable imports"
   );
   assert.deepEqual(
     await readFile(join(artifactRoot, "shared", "backend-origin.js")),
