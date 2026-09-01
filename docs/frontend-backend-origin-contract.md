@@ -42,7 +42,7 @@ override, fallback base, or path that can concatenate a relative `/null/` reques
 ## Dormant authoritative-session topology
 
 This section records the implemented consumer alignment for the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/0b09f92009b99280ff348701fede3edaba3f9945/docs/session-authority.md).
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/515a683484ea47586b2858ca0fff79acd64814d2/docs/session-authority.md).
 The target request branches exist in source and generated output, but the
 source-controlled `AUTHORITATIVE_SESSIONS_ENABLED` latch is exactly `false`.
 Browser-controlled URL/query input, Web Storage, cookies, hostname state, and
@@ -51,33 +51,37 @@ window globals cannot enable it. The deployment therefore keeps the current
 it does not create a target cookie, change deployed CORS, or modify DNS, TLS,
 App Service, secrets, SQL, the manifest, or other infrastructure.
 
-The target API origin is exactly `https://api.machadogestao.com`. Before
-adoption, that hostname must be proven under controlled DNS, have valid TLS and
-the intended App Service custom-hostname binding, and pass supported-browser
-first-party-cookie qualification. Session endpoints neither accept nor set the
-target cookie through an Azure default hostname, and credentialed requests do
-not redirect between API hosts. If the custom hostname is not ready, session
-adoption is blocked; a third-party cookie or Web Storage bearer is not a
-fallback.
+The target API origin remains exactly the existing shared
+`https://plataforma-backend-v3.azurewebsites.net` origin. Before adoption, the
+default-TLS endpoint and host-only partitioned cookie must pass the supported
+Edge matrix: Stable, Extended Stable, InPrivate, and the supported tracking-
+prevention configuration with ordinary third-party cookies blocked. The cookie
+must remain scoped by the browser to top-level `https://machadogestao.com` and
+must not be available under an unrelated top-level site. Credentialed requests
+do not redirect or mirror the cookie between hosts. Any failed profile blocks
+adoption; an unpartitioned cross-site cookie or Web Storage bearer is not a
+fallback. This design requires no new custom domain, DNS record, TLS certificate,
+or App Service hostname binding and adds no hosting resource; the existing F1
+plan's capacity limits and lack of SLA remain operational constraints.
 
-Coordinated adoption will replace the value of the one existing shared
-`BACKEND_ORIGIN` export for all eight consumers; it does not create a
-learning-platform-only origin or
-a second runtime configuration source. Quote Request, Client Intake,
-Certificate Validation, Conecta, and the public learning-platform Status Report
-therefore use the verified custom hostname while continuing to omit credentials
-and the session header. Only learning session/protected consumers add the
-credentialed options below. The origin replacement and latch change must ship
-as one reviewed release pair after every topology, store, browser, CORS, ledger,
-privacy, rollback, and authoritative-logout prerequisite passes; neither change
-is active here.
+Coordinated adoption keeps the value of the one existing `BACKEND_ORIGIN`
+export unchanged for all eight consumers; it does not create a learning-
+platform-only origin or a second runtime configuration source. Quote Request,
+Client Intake, Certificate Validation, Conecta, and the public learning-
+platform Status Report continue to omit credentials and the session header.
+Only learning session/protected consumers add the credentialed options below.
+The frontend source latch, backend
+`SESSION_AUTHORITY_PARTITIONED_COOKIE_TOPOLOGY_QUALIFIED` evidence latch, and
+matching backend rollout gates may change only as one reviewed release pair
+after every topology, store, browser, CORS, ledger, privacy, rollback, and
+authoritative-logout prerequisite passes; no latch changes here.
 
 The target session cookie is exactly `__Host-machado-session` with `Path=/`,
-`Secure`, `HttpOnly`, and `SameSite=Strict`, and without `Domain`. Its browser
-expiry is cleanup only; the durable backend record and server time own
-authority. JavaScript never reads or copies the identifier, and no application
-session identifier appears in a URL, body, Web Storage, log, fixture, snapshot,
-or public diagnostic.
+`Secure`, `HttpOnly`, `SameSite=None`, and `Partitioned`, and without `Domain`.
+Its browser expiry is cleanup only; the durable backend record and server time
+own authority. JavaScript never reads or copies the identifier, and no
+application session identifier appears in a URL, body, Web Storage, log,
+fixture, snapshot, or public diagnostic.
 
 Only successful login/rotation emits `Set-Cookie`. Logout, revoke-all,
 definitive Face failure, ineligibility, invalid/terminal/stale credentials,

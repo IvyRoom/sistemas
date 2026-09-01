@@ -962,6 +962,11 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
     .filter(({ source }) => source.includes("shared/backend-origin.js"))
     .map(({ relativePath }) => relativePath);
 
+  assert.equal(
+    digestStrings([productionBackendOrigin]),
+    "a61d4b931a2681d219141733c64441ea26ca33d92a51f9eb23710369db6d4c01",
+    "Partitioned-cookie adoption must retain the existing shared App Service origin"
+  );
   assert.deepEqual(consumers, backendOriginConsumers);
   assert.equal(consumers.length, 8);
   for (const { relativePath, source } of javaScriptSources) {

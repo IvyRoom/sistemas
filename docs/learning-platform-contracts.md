@@ -4,7 +4,8 @@ Status: authoritative current-state compatibility specification. Its frozen
 behavior baseline was characterized from `sistemas` commit
 `c68f361de054a936b7a6871d82d75a1cdb457c97`; source-layout, public-route, and
 artifact sections are maintained against the current repository tree. Companion
-`backend` session-authority evidence is pinned at the verified producer merge
+`backend` session-authority evidence is pinned at verified correction commit
+`515a683484ea47586b2858ca0fff79acd64814d2`, based on producer merge
 `0b09f92009b99280ff348701fede3edaba3f9945`. This document records the completed
 entry-markup modernization, warning-navigation repair, and production-disabled
 authoritative-session consumer. It does not authorize target activation, a
@@ -1982,7 +1983,7 @@ future work, not permission to change compatibility behavior in the baseline.
 ## Dormant session-authority consumer and blocked enablement
 
 The authoritative target is the backend-owned
-[`session-authority.md`](https://github.com/IvyRoom/backend/blob/0b09f92009b99280ff348701fede3edaba3f9945/docs/session-authority.md).
+[`session-authority.md`](https://github.com/IvyRoom/backend/blob/515a683484ea47586b2858ca0fff79acd64814d2/docs/session-authority.md).
 The frontend target consumer is implemented behind the source-controlled
 `AUTHORITATIVE_SESSIONS_ENABLED = false` release latch. URL/query values,
 Web Storage, cookies, hostname inspection, and other browser-controlled input
@@ -2011,9 +2012,9 @@ response but cannot create or preserve authority.
 
 The selected target uses:
 
-- verified first-party API origin `https://api.machadogestao.com`;
+- the existing shared `BACKEND_ORIGIN` used by all eight consumers;
 - one host-only `__Host-machado-session` cookie with `Path=/`, `Secure`,
-  `HttpOnly`, and `SameSite=Strict`, and no `Domain`;
+  `HttpOnly`, `SameSite=None`, and `Partitioned`, and no `Domain`;
 - Azure SQL Database Basic as the shared backend session/revocation store,
   pulled forward as a narrow Topic 12 dependency before production enablement;
 - a 20-minute absolute provisional lifetime, preserving its original deadline
@@ -2040,15 +2041,19 @@ responses `no-store`. The full host, cookie, CORS, CSRF, cache, and response
 contract is also recorded in
 [`frontend-backend-origin-contract.md`](frontend-backend-origin-contract.md#dormant-authoritative-session-topology).
 
-DNS, TLS, the App Service custom-hostname binding, first-party cookie behavior,
-the pulled-forward SQL session slice, multi-instance transactions, and
-five-minute eligibility revalidation are prerequisites. A durable full-handle
-verifier-to-subject compatibility ledger must also seed continuously for one
-complete four-hour handle lifetime before dual-stack enforcement; no
-pre-ledger handle is backfilled from a mutable row. The current separate App
-Service origin and every deployed public/legacy fetch remain unchanged; the
-new credentialed fetch mechanics are present but unreachable while the latch
-is false. There is no third-party-cookie or Web Storage bearer fallback.
+The existing App Service default-TLS endpoint, partitioned-cookie behavior and
+top-level-site isolation across supported Edge profiles, the pulled-forward SQL
+session slice, multi-instance transactions, and five-minute eligibility
+revalidation are prerequisites. A durable full-handle verifier-to-subject
+compatibility ledger must also seed continuously for one complete four-hour
+handle lifetime before dual-stack enforcement; no pre-ledger handle is
+backfilled from a mutable row. The current shared App Service origin and every
+deployed public/legacy fetch remain unchanged; the new credentialed fetch
+mechanics are present but unreachable while the latch is false. There is no
+unpartitioned cross-site cookie or Web Storage bearer fallback. The selected
+transport adds no custom-domain or additional App Service resource, while the
+existing F1 plan's capacity limits and lack of SLA remain operational
+constraints.
 
 ### Target states and page behavior
 
@@ -2197,9 +2202,10 @@ The Topic 05 order is fixed:
 2. **Adopt authoritative sessions** now contains the production-disabled
    consumer for exact backend phases, server time, credentialed session and
    protected requests, registration enrollment/status validation, and
-   session-bound Face completion. Coordinated enablement must atomically replace
-   the one shared origin for all eight consumers with the qualified first-party
-   hostname and turn on the source latch; neither action occurs in this task.
+   session-bound Face completion. Coordinated enablement keeps the one shared
+   App Service origin unchanged and turns on the source latch only with the
+   matching backend partitioned-cookie and rollout gates; no latch changes in
+   this task.
    Legacy issuance can stop only when authoritative logout is ready for that
    same approved release pair.
 3. **Make logout authoritative** makes durable revocation the prerequisite to
@@ -2293,7 +2299,7 @@ injected providers, and denied production networking.
 | `SESSION-TARGET-09` | Current logout revokes only the shared profile session; every successful/repeated/invalid `204` leaves the retained cookie inert and untouched; the subject cutoff prevents legacy resurrection; revoke-all invalidates every subject session/device without cookie mutation |
 | `SESSION-TARGET-10` | Tabs share rotation/logout, concurrent target devices follow the selected allowance, and successful new login preserves other-device sessions; cookie-less login/logout races prove that a delayed successful credential response is a new authentication that may win after current-session logout |
 | `SESSION-TARGET-11` | Store failure and unknown transaction outcome fail closed as availability failures; restore/verifier-key incidents retire target and legacy keys outside restored SQL, advance authority epoch, invalidate backup-era credentials, and wait for every instance before resuming |
-| `SESSION-TARGET-12` | Target hostname, host-only cookie flags, credentialed CORS, exact Origin, custom header, preflight, cache, response, issuance-only cookie mutation, and natural-expiry/overwrite behavior match the ADR |
+| `SESSION-TARGET-12` | Existing shared App Service hostname, host-only partitioned-cookie flags, credentialed CORS, exact Origin, custom header, preflight, cache, response, issuance-only cookie mutation, and natural-expiry/overwrite behavior match the ADR |
 | `SESSION-TARGET-13` | No application session identifier/verifier appears in a URL, body, Web Storage, log, fixture, snapshot, public diagnostic, or client-visible provider session field |
 | `SESSION-TARGET-14` | The browser supplies neither Face verdict nor provider session ID; only the backend-bound provider result can promote; pending is `409`, definitive failure is revoking `403`, provider/store outage is preserving `503`, and the public compatibility lookup cannot promote |
 | `SESSION-TARGET-15` | Direct and BFCache-restored protected pages revalidate before any protected fetch, media, Face runtime, timer, or write; validation outage blocks without false logout |
@@ -2476,7 +2482,7 @@ generated artifact without contacting a hosted preview.
 
 Backend-internal feedback ordering and partial-success boundaries remain
 independently executable in `backend/test/app-platform-routes.test.js` at the
-verified companion commit `0b09f92009b99280ff348701fede3edaba3f9945`.
+verified companion commit `515a683484ea47586b2858ca0fff79acd64814d2`.
 Session-producer verification at that commit also freezes the exact 14-route
 safe-default and 19-route qualified synthetic inventories without starting the
 production backend. The frontend harness models only client-visible behavior.
