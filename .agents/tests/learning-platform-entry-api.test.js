@@ -2113,6 +2113,126 @@ test("[API-02] Face verification creates a protected session then performs exact
   assert.equal(harness.navigation.at(-1), PATHS.study);
 });
 
+test("[PERF] returning-user Face login exposes a deterministic startup critical path", async (t) => {
+  const delays = Object.freeze({
+    engine: 900,
+    faceResult: 80,
+    faceSession: 600,
+    login: 120,
+    runtime: 100
+  });
+  const marks = {};
+  const scheduled = [];
+  let nextScheduleId = 0;
+  let virtualNow = 0;
+
+  function after(delay, label, value) {
+    marks[`${label}Start`] = virtualNow;
+    return new Promise((resolve) => {
+      scheduled.push({
+        at: virtualNow + delay,
+        id: nextScheduleId++,
+        resolve() {
+          marks[`${label}End`] = virtualNow;
+          resolve(value);
+        }
+      });
+    });
+  }
+
+  const harness = createLearningPlatformHarness({
+    faceStartImplementation: async () => {
+      marks.faceComponentStart = virtualNow;
+      await engineReady;
+      marks.faceComponentReady = virtualNow;
+      return {};
+    },
+    routes: [
+      {
+        handler: () => after(
+          delays.login,
+          "loginRequest",
+          { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+        ),
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID"
+      },
+      {
+        handler: () => after(
+          delays.faceSession,
+          "faceSessionRequest",
+          { data: faceSessionResponse() }
+        ),
+        method: "POST",
+        path: "/plataforma_v2/FaceID"
+      },
+      {
+        handler: () => after(
+          delays.faceResult,
+          "faceResultRequest",
+          { data: faceResultResponse() }
+        ),
+        method: "GET",
+        path: FIXTURE_RESULT_PATH
+      }
+    ]
+  });
+  let engineReady;
+  const faceContainer = harness.element("Container-Auxiliar-FaceID");
+  const appendFaceElement = faceContainer.appendChild.bind(faceContainer);
+  faceContainer.appendChild = (element) => {
+    marks.faceElementMounted = virtualNow;
+    engineReady = after(delays.engine, "faceEngine");
+    return appendFaceElement(element);
+  };
+
+  await installLoginApplication(harness, {
+    loadFaceRuntime() {
+      return after(delays.runtime, "faceRuntime");
+    },
+    navigate(target) {
+      marks.studyNavigation = virtualNow;
+      harness.window.location.href = target;
+    }
+  });
+  submit(harness.element("Formulário-Login"));
+
+  while (harness.navigation.length === 0) {
+    await harness.flush(20);
+    if (harness.navigation.length > 0) break;
+    assert.notEqual(scheduled.length, 0, "The virtual timing fixture must keep making progress");
+    const nextTime = Math.min(...scheduled.map(({ at }) => at));
+    virtualNow = nextTime;
+    const ready = scheduled
+      .filter(({ at }) => at === nextTime)
+      .sort((left, right) => left.id - right.id);
+    for (const item of ready) scheduled.splice(scheduled.indexOf(item), 1);
+    for (const item of ready) item.resolve();
+  }
+  await harness.flush(20);
+
+  assert.deepEqual(marks, {
+    faceComponentReady: 1720,
+    faceComponentStart: 820,
+    faceElementMounted: 820,
+    faceEngineEnd: 1720,
+    faceEngineStart: 820,
+    faceResultRequestEnd: 1800,
+    faceResultRequestStart: 1720,
+    faceRuntimeEnd: 820,
+    faceRuntimeStart: 720,
+    faceSessionRequestEnd: 720,
+    faceSessionRequestStart: 120,
+    loginRequestEnd: 120,
+    loginRequestStart: 0,
+    studyNavigation: 1800
+  });
+  assert.equal(harness.guard.requests.length, 3);
+  assert.equal(harness.navigation.at(-1), PATHS.study);
+  assertNoQuery(harness);
+  t.diagnostic(`serialized baseline: ${marks.studyNavigation} virtual ms submit-to-Study`);
+});
+
 test("[API-02] Face decision, SDK rejection, and result error branches remain single-shot", async () => {
   const cases = [
     {
