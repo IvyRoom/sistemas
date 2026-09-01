@@ -5,7 +5,8 @@ export function createStudySessionTimer({
     navigate,
     session,
     timers,
-    onAuthoritativeExpiry
+    onAuthoritativeExpiry,
+    onLegacyExpiry
 }) {
     let activeTimerId;
 
@@ -44,7 +45,7 @@ export function createStudySessionTimer({
     }
 
     function start(status) {
-        if (authoritativeSessionsEnabled && activeTimerId !== undefined) stop();
+        if (activeTimerId !== undefined) stop();
         const sessionTime = document.getElementById("Usuário-Tempo-Sessão");
         const readSecondsRemaining = authoritativeSessionsEnabled
             ? authoritativeSecondsRemaining(status)
@@ -66,13 +67,15 @@ export function createStudySessionTimer({
                     typeof onAuthoritativeExpiry === 'function'
                 ) {
                     onAuthoritativeExpiry();
+                } else if (typeof onLegacyExpiry === 'function') {
+                    onLegacyExpiry();
                 } else {
                     session.write('loggedIn', 'Não');
                     navigate('/plataforma/login');
                 }
             }
         }, 1000);
-        if (authoritativeSessionsEnabled) activeTimerId = timerId;
+        activeTimerId = timerId;
         return timerId;
     }
 

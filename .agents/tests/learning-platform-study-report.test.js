@@ -1409,33 +1409,118 @@ test("[FLOW-06] certificate PDF uses client-held identity, grade branch, ID, val
   assert.ok(recorder.calls.some((call) => call.filename === "CERTIFICADO - Invented Learner.pdf"));
 });
 
-test("[FLOW-06] logout and timer expiry only flip the logged flag and navigate without revoking stored state", async () => {
-  const { harness } = await runRefresh("171");
-  const preservedBefore = harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
+test("[FLOW-06] logout hides and blocks Study, stops local work, removes only the handle, and replaces to Login", async () => {
+  const { harness } = await runRefresh("171", {
+    storage: {
+      Origem_Aviso_Dispositivo: "Sim",
+      TempoSessão_Segundos: "legacy-observation",
+      Usuário_Autorização_Cadastro: "Não",
+      Usuário_Foto_Cadastrada: "Sim"
+    }
+  });
+  const protectedPresentation = harness.element("Container-Seções");
+  const playerElement = harness.element("Container-Interno-Shaka-Player");
+  const pauseCallsBeforeLogout = playerElement.pauseCalls ?? 0;
+  playerElement.paused = false;
+  const beforeLogout = harness.sessionStorage.snapshot();
+  const expectedAfterLogout = { ...beforeLogout, Usuário_Logado: "Não" };
+  delete expectedAfterLogout.IndexVerificado;
+  const requestCountBeforeLogout = harness.guard.requests.length;
 
   harness.element("Botão-Sair").dispatch("click");
-  const afterLogout = harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
-  assert.equal(afterLogout.Usuário_Logado, "Não");
-  for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão"]) {
-    assert.equal(afterLogout[key], preservedBefore[key]);
-  }
-  assert.equal(harness.navigation.at(-1), "/plataforma/login");
+  await harness.flush(10);
 
-  const expiryRun = await runRefresh("171", {
-    storage: { "Horário-Encerramento-Sessão": "1999999999999" }
+  assert.equal(protectedPresentation.inert, true);
+  assert.equal(protectedPresentation.style.display, "none");
+  assert.equal(protectedPresentation.getAttribute("aria-busy"), "false");
+  assert.equal(harness.element("Botão-Sair").disabled, true);
+  assert.equal(playerElement.paused, true);
+  assert.equal(playerElement.pauseCalls, pauseCallsBeforeLogout + 1);
+  assert.equal(harness.timers.size, 0);
+  assert.deepEqual(harness.sessionStorage.snapshot(), expectedAfterLogout);
+  assert.deepEqual(harness.navigation, []);
+  assert.equal(harness.replacementNavigation.at(-1), "/plataforma/login");
+  assert.equal(harness.guard.requests.length, requestCountBeforeLogout);
+  assert.equal(
+    harness.guard.requests.some(({ method, path }) =>
+      method === "DELETE" || path === "/plataforma_v2/sessions/current" ||
+      path === "/plataforma_v2/sessions"
+    ),
+    false
+  );
+});
+
+test("[FLOW-06] timer expiry applies the same browser-local teardown as explicit logout", async () => {
+  const { harness } = await runRefresh("171", {
+    storage: {
+      "Horário-Encerramento-Sessão": "1999999999999",
+      Origem_Aviso_Dispositivo: "Sim",
+      TempoSessão_Segundos: "legacy-observation",
+      Usuário_Autorização_Cadastro: "Não",
+      Usuário_Foto_Cadastrada: "Sim"
+    }
   });
-  const preservedBeforeExpiry = expiryRun.harness.sessionStorage.snapshot({
-    redact: ["IndexVerificado"]
+  const beforeExpiry = harness.sessionStorage.snapshot();
+  const expectedAfterExpiry = { ...beforeExpiry, Usuário_Logado: "Não" };
+  delete expectedAfterExpiry.IndexVerificado;
+  const timerId = [...harness.timers.entries()].find(([, timer]) => timer.interval)[0];
+  const playerElement = harness.element("Container-Interno-Shaka-Player");
+  const pauseCallsBeforeExpiry = playerElement.pauseCalls ?? 0;
+  playerElement.paused = false;
+
+  harness.runTimer(timerId);
+
+  assert.equal(harness.element("Container-Seções").inert, true);
+  assert.equal(harness.element("Container-Seções").style.display, "none");
+  assert.equal(playerElement.paused, true);
+  assert.equal(playerElement.pauseCalls, pauseCallsBeforeExpiry + 1);
+  assert.equal(harness.timers.size, 0);
+  assert.deepEqual(harness.sessionStorage.snapshot(), expectedAfterExpiry);
+  assert.deepEqual(harness.navigation, []);
+  assert.equal(harness.replacementNavigation.at(-1), "/plataforma/login");
+  assert.equal(harness.guard.requests.some(({ method }) => method === "DELETE"), false);
+});
+
+test("[FLOW-06] logged-out direct and BFCache-restored Study pages stay hidden before protected work", async () => {
+  const direct = createStudyHarness({
+    routes: [{
+      method: "POST",
+      path: "/plataforma_v2/refresh",
+      response: { data: fixtureRefreshData("171") }
+    }],
+    storage: { Usuário_Logado: "Não" }
   });
-  const interval = [...expiryRun.harness.timers.values()].find((timer) => timer.interval);
-  assert.ok(interval);
-  interval.callback();
-  const afterExpiry = expiryRun.harness.sessionStorage.snapshot({ redact: ["IndexVerificado"] });
-  assert.equal(afterExpiry.Usuário_Logado, "Não");
-  for (const key of ["IndexVerificado", "Horário-Encerramento-Sessão"]) {
-    assert.equal(afterExpiry[key], preservedBeforeExpiry[key]);
-  }
-  assert.equal(expiryRun.harness.navigation.at(-1), "/plataforma/login");
+  direct.harness.dispatchWindow("load");
+  await direct.harness.flush(10);
+
+  assert.equal(direct.harness.element("Container-Seções").inert, true);
+  assert.equal(direct.harness.element("Container-Seções").style.display, "none");
+  assert.equal(direct.harness.sessionStorage.getItem("IndexVerificado"), null);
+  assert.equal(direct.harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+  assert.equal(direct.harness.timers.size, 0);
+  assert.deepEqual(direct.harness.guard.requests, []);
+  assert.deepEqual(direct.harness.navigation, []);
+  assert.equal(direct.harness.replacementNavigation.at(-1), "/plataforma/login");
+
+  const restored = await runRefresh("171");
+  const requestsBeforeRestore = restored.harness.guard.requests.length;
+  restored.harness.sessionStorage.setItem("Usuário_Logado", "Não");
+  restored.harness.element("Container-Seções").style.display = "flex";
+  restored.harness.element("Container-Seções").inert = false;
+  restored.harness.element("Container-Interno-Shaka-Player").paused = false;
+
+  restored.harness.dispatchWindow("pageshow", { persisted: true });
+  await restored.harness.flush(10);
+
+  assert.equal(restored.harness.element("Container-Seções").inert, true);
+  assert.equal(restored.harness.element("Container-Seções").style.display, "none");
+  assert.equal(restored.harness.element("Container-Interno-Shaka-Player").paused, true);
+  assert.equal(restored.harness.sessionStorage.getItem("IndexVerificado"), null);
+  assert.equal(restored.harness.sessionStorage.getItem("Usuário_Logado"), "Não");
+  assert.equal(restored.harness.timers.size, 0);
+  assert.equal(restored.harness.guard.requests.length, requestsBeforeRestore);
+  assert.deepEqual(restored.harness.navigation, []);
+  assert.equal(restored.harness.replacementNavigation.at(-1), "/plataforma/login");
 });
 
 test("[FLOW-06] timer preserves formatting, warning thresholds, missing expiry, and malformed non-expiry", async () => {

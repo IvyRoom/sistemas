@@ -7,9 +7,10 @@ artifact sections are maintained against the current repository tree. Companion
 `backend` session-authority evidence is pinned at verified producer commit
 `ba286cc0b3d3e67176d46dee84a5ba7d55b7162c`. This document records the completed
 entry-markup modernization, warning-navigation repair, production-disabled
-authoritative-session consumer, and production-disabled authoritative-logout
-consumer. It does not authorize target activation, a production request, data
-migration, infrastructure mutation, or an integration exercise.
+authoritative-session consumer, production-disabled authoritative-logout
+consumer, and browser-final false-latch Study logout/restoration behavior. It
+does not authorize target activation, a production request, data migration,
+infrastructure mutation, or an integration exercise.
 
 ## How to use this specification
 
@@ -565,10 +566,13 @@ platform's slashless internal-navigation table.
 
 There is no History API state, hash router, `popstate`, or client-side route
 normalizer in the platform. Module and topic changes are DOM-only state.
-Admission and viewport-warning recovery use `location.replace`; ordinary login,
-study, registration, logout, and content navigation remain unchanged. The
-canonical destination for every current platform entry is the exact
-trailing-slash path declared by the manifest and README.
+Admission, viewport-warning recovery, and false-latch Study finalization use
+`location.replace`. Explicit legacy logout, legacy timer expiry, and a logged-
+out direct or `pageshow`-restored Study page therefore do not leave Study as an
+ordinary Back destination. Other login, study, registration, and content
+navigation remains normal document navigation. The canonical destination for
+every current platform entry is the exact trailing-slash path declared by the
+manifest and README.
 
 Production serves each current slashless platform entry with the same entry
 bytes and HTTP `200`, without a `Location` header or HTTP redirect. On direct
@@ -677,7 +681,7 @@ selects or overrides the backend base.
 
 | Boundary | Current responsibility |
 | --- | --- |
-| `modules/session.js` | Centralizes the seven exact legacy key constants and raw `getItem`/`setItem` access for extracted modules. The viewport-warning script retains direct raw storage access to the legacy origin marker. The seam adds no validation, normalization, removal, authority, expiry, or revocation semantics. |
+| `modules/session.js` | Centralizes the seven exact legacy key constants and raw `getItem`/`setItem` access plus the one scoped `removeItem` operation used for the stored row handle. The viewport-warning script retains direct raw storage access to the legacy origin marker. The seam adds no validation, normalization, authority, expiry, or revocation semantics. |
 | `modules/platform-client.js` | Owns injected JSON GET/POST and ordered multipart POST mechanics. It normalizes fetch rejection and malformed JSON through the application error seam, still parses JSON before checking `ok`, and for parsed non-OK responses still throws exactly `{ status: response.status, error: data.error }`. It adds no retry, timeout, abort, dedupe, idempotency, or authorization header. |
 | `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, the exact named backend values, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
 | `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
@@ -812,7 +816,11 @@ Study's ordered classic jsPDF/Shaka dependencies are followed by its non-async
 native-module entry. The viewport warning remains an async classic script and
 the device/browser warning remains synchronous classic. Every application factory is installed immediately when
 its entry module evaluates, with no `readyState` or `DOMContentLoaded`
-fallback. No page handles `pageshow`, BFCache restoration, `pagehide`,
+fallback. After Study passes GATE-01, GATE-02, and its false-latch logged flag,
+it installs one `pageshow` listener before refresh. A restored page whose flag
+is no longer exact `Sim` stays inert and hidden, receives the same local
+cleanup, and replace-navigates to Login without protected work. No other page
+handles `pageshow` or BFCache restoration, and no page handles `pagehide`,
 `beforeunload`, or `popstate`.
 
 Current anchors: [login factory](../apps/learning-platform/modules/login.js),
@@ -829,12 +837,13 @@ device/browser diagnostic
 
 There are exactly seven `sessionStorage` key spellings. Accents, hyphens,
 underscores, and capitalization are compatibility data. Values are strings
-because they pass through Web Storage. No platform source calls `removeItem()`
-or `clear()`.
+because they pass through Web Storage. Study has one exact `removeItem()` path
+for `IndexVerificado`; no flow calls `clear()`, adds a key, or removes any of
+the other six keys.
 
 | Exact key | Writers and value convention | Readers and transition use | Lifetime and security implication |
 | --- | --- | --- | --- |
-| `IndexVerificado` | Login unconditionally stores the response value. Active login receives an opaque signed row handle; inactive login has no value and storage receives string `undefined`. | Registration sends it in multipart; study sends it in protected JSON calls. | Backend handle is reusable for exactly four hours, is not rotated by refresh, and is not revoked/removed by logout. Same-origin script or DOM injection can read it until expiry. |
+| `IndexVerificado` | Login unconditionally stores the response value. Active login receives an opaque signed row handle; inactive login has no value and storage receives string `undefined`. | Registration sends it in multipart; study sends it in protected JSON calls. Study removes the stored value during explicit legacy logout, timer expiry, and logged-out direct/BFCache restoration. | Backend handle is reusable for exactly four hours and is not rotated or server-revoked by refresh/logout. Removing this tab's stored copy prevents ordinary reuse from that tab; a previously copied handle can remain technically usable until its original expiry. |
 | `Usuário_Foto_Cadastrada` | Login stores backend `Sim`/`Não`. | No current reader. | Dead mirrored state; registration does not update it and logout leaves it. |
 | `Horário-Encerramento-Sessão` | Active credential login stores `Date.now() + 14,400,000` as decimal epoch milliseconds before registration/Face work. | Study coerces with `Number()` and drives its one-second countdown. | Persists across reload/history/logout. Missing becomes `0` and immediately expires; tampered nonnumeric text becomes `NaN`, breaks the display, and prevents expiry comparisons. Uses mutable browser clock/state. |
 | `Usuário_Logado` | `Sim` after Face-disabled login or successful Face verification/registration; `Não` on explicit logout or timer expiry. | Login redirects exact `Sim` to study; study rejects anything other than exact `Sim`. | UI-only gate and forgeable. Signed handle remains backend authority. Refresh failure does not clear it. |
@@ -842,11 +851,14 @@ or `clear()`.
 | `Origem_Aviso_Dispositivo` | Viewport warning writes `Sim`; notices, registration, and study overwrite `Não` on load; login's history branch writes `Não`. | Login history-back rule. | Documented legacy compatibility key and persistent tab navigation sentinel that can become stale; it is not a return-target store. |
 | `TempoSessão_Segundos` | No writer exists. | Study reads it once into an unused variable. | Dead legacy key; old values have no current effect. |
 
-The client countdown turns red at ten minutes, adds the final-five-minute class
-at five minutes, and at zero writes logged `Não` and navigates to login. The
-backend handle has its own four-hour clock. Refresh neither rotates nor returns
-a handle, and it does not recheck workbook login status as an authorization
-condition. Explicit logout only changes the UI flag.
+The client countdown turns red at ten minutes and adds the final-five-minute
+class at five minutes. At zero it applies the same browser-local finalization
+as explicit logout: make protected presentation inert and hidden, stop the
+timer, pause media, write logged `Não`, remove the stored handle, and replace-
+navigate to Login. The backend handle has its own four-hour clock. Refresh
+neither rotates nor returns a handle, and it does not recheck workbook login
+status as an authorization condition. Neither logout path sends a request,
+calls a session DELETE endpoint, or revokes a copied handle.
 
 Current anchors: exact key spellings and raw access in the shared
 [`session.js`](../apps/learning-platform/modules/session.js); shared production
@@ -1232,9 +1244,15 @@ from client-loaded name/grade/certificate ID and three local images. It embeds
 the canonical certificate-validation URL and saves `CERTIFICADO - <name>.pdf`.
 No certificate-generation backend call occurs.
 
-Explicit logout and timer expiry both set only `Usuário_Logado = Não` and use
-normal navigation to login. They do not remove the row handle, deadline,
-registration authorization, photo mirror, or origin marker.
+Explicit logout and timer expiry make the protected Study presentation inert
+and hidden, disable logout, stop the timer, pause active media, set
+`Usuário_Logado = Não`, remove only `IndexVerificado`, and replace-navigate to
+Login. A logged-out direct or `pageshow`/BFCache-restored Study page applies the
+same local cleanup before refresh or protected work. The deadline,
+registration authorization, photo mirror, origin marker, and dead legacy
+seconds value remain unchanged. No logout request, session DELETE, storage key,
+cross-tab signal, or backend revocation is added, and a later valid login writes
+a fresh handle/deadline/logged state normally.
 
 Current anchors: performance view and grade charts
 [`performance.js`](../apps/learning-platform/modules/course-content/performance.js), certificate
@@ -1679,10 +1697,11 @@ identities:
 | Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
 | All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
 
-The authoritative-logout consumer again retains all 258 paths. Its current
-source-derived identities are:
+The production-disabled authoritative-logout consumer baseline at `sistemas`
+commit `e5f6edf4da162e02535b9dc13f46bbdf295a581b` retained all 258 paths. Its
+source-derived identities were:
 
-| Current dormant-logout scope | Files | Bytes | SHA-256 |
+| Prior dormant-logout baseline scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
 | Complete generated `dist/` artifact | 258 | 27,394,267 | `44dcfac25898ba343e0c4e18d7ddece6e9c655579d91a67ee53e64b49613d517` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
@@ -1696,7 +1715,7 @@ source-derived identities are:
 
 Relative to the 27,383,391-byte authoritative-session baseline, only these 11
 mapped JavaScript outputs change; their `+10,876` bytes exactly account for the
-new total:
+27,394,267-byte dormant-logout baseline:
 
 | Changed mapped output | Byte delta |
 | --- | ---: |
@@ -1712,13 +1731,39 @@ new total:
 | `plataforma/modules/platform-client.js` | +402 |
 | `plataforma/modules/session.js` | +3,677 |
 
-The other 247 outputs are byte-identical. The inventory remains exactly 12
-public pages, 3 downloads, and 243 supporting files across all 258 paths, with
-all 20 mappings and all 64 explicit negative paths unchanged. The source and
-generated module graphs remain exactly 80 logical JavaScript imports with
-unchanged graph SHA-256
+The other 247 outputs in that prior comparison were byte-identical.
+
+Browser-final legacy logout retains the same 258 paths and advances the
+immediate 258-file, 27,394,267-byte baseline to these current identities:
+
+| Current browser-final logout scope | Files | Bytes | SHA-256 |
+| --- | ---: | ---: | --- |
+| Complete generated `dist/` artifact | 258 | 27,395,632 | `08dfdf96411fbc0c239e29c091c689eaa261f4df66d7fb70ff8335926da1dd5b` |
+| Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,790,286 | `e383916ced000039459e19d54eedf9c2c83e83db63c47d2d51fb6bd2069bb08e` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,790,286 | `ba5e3c5c0eafa488c44a24bbfd3d72a0a98e96aa3cf896abb16149ee0c9baccb` |
+| Platform JavaScript, retaining full output paths | 36 | 503,148 | `4bc92f67774b596554e902b5b9f47fa36545288bc20244d5e692d40095296813` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
+| Study entry subtree, retaining full output paths | 41 | 10,022,518 | `412341987b6b7b04029866f5d310124d10c021e75eff00b76a0bb9aafd789ab4` |
+| Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
+| All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
+
+Exactly three mapped JavaScript outputs change against that immediate
+baseline, and their `+1,365` bytes exactly account for the new total:
+
+| Changed mapped output | Byte delta | Intentional delta |
+| --- | ---: | --- |
+| `plataforma/modules/course-content/application.js` | +1,214 | Centralize false-latch local teardown; make presentation inert/hidden; stop its timer; pause media; update/remove only the two scoped storage values; replace-navigate; and guard logged-out direct/`pageshow` restoration before refresh. |
+| `plataforma/modules/course-content/session-timer.js` | +59 | Retain the legacy interval ID so teardown can stop it and delegate legacy expiry to the same application cleanup without changing authoritative expiry. |
+| `plataforma/modules/session.js` | +92 | Add the key-mapped `removeItem` seam used only for `IndexVerificado`; the seven-key inventory is unchanged. |
+
+The other 255 outputs are byte-identical to the immediate baseline. The
+inventory remains exactly 12 public pages, 3 downloads, and 243 supporting
+files across all 258 paths, with all 20 mappings and all 64 explicit negative
+paths unchanged. The source and generated module graphs remain exactly 80
+logical JavaScript imports with unchanged graph SHA-256
 `4e5b19225a140479b99ff5677ee62b13ea56be48ebc30ff8d65d15e9e0aee510`;
-the changed entry imports add names on existing edges rather than new edges.
+this change adds no import edge.
 
 Warning assets retain their source bytes, but moving four warning binary output
 paths changes the binary path-framed digest. The Face, study-download, and
@@ -1870,21 +1915,24 @@ future work, not permission to change compatibility behavior in the baseline.
   remains intentionally unavailable even though warning recovery is now
   deterministic.
 - Several pages perform redirects from asynchronously loaded module scripts.
-  Script-load failure, back/forward cache restoration, and closely spaced
-  navigation events have no explicit state machine or recovery.
+  Study now reduces a logged-out `pageshow`/BFCache restoration before
+  protected work, but script-load failure, restoration on the other entries,
+  and closely spaced navigation events have no broader state machine.
 ### Session and authorization risks
 
 - User identity, photo state, notice progression, deadline, and navigation
   origin are browser-writable UI flags. They must not be interpreted as
   authorization or authoritative progress evidence.
-- `IndexVerificado` is a signed four-hour authorization handle, but logout only
-  changes `Usuário_Logado`; it does not clear, revoke, or rotate the handle.
-  Refresh neither changes the stored client-session deadline nor returns or
-  rotates the handle; it separately returns the workbook access-deadline field
-  for display/state.
-- No flow calls `sessionStorage.removeItem()` or `.clear()`. Stale identity,
-  deadline, URL, and Face flags survive application logout for the rest of the
-  tab session and can affect later navigation.
+- `IndexVerificado` is a signed four-hour authorization handle. Browser-final
+  logout removes this tab's stored copy but does not revoke or rotate the
+  backend handle; a previously copied value can remain usable until its
+  original expiry. Refresh neither changes the stored client-session deadline
+  nor returns or rotates the handle; it separately returns the workbook
+  access-deadline field for display/state.
+- Only `IndexVerificado` has a scoped `sessionStorage.removeItem()` call; no
+  flow calls `clear()`. Stale identity mirror, deadline, registration, URL, and
+  Face flags survive application logout for the rest of the tab session and
+  can affect later navigation.
 - Deadline enforcement trusts the client clock and a parseable stored value.
   A missing key becomes numeric zero and expires on the first timer tick; only
   malformed nonnumeric text produces `NaN` comparisons, a broken display, and
@@ -2009,8 +2057,10 @@ sunset starts after merge.
 
 This implementation does not provision SQL, change the shared backend origin,
 alter deployed CORS, create DNS/TLS/App Service bindings, activate target
-sessions or logout, guard direct/BFCache-restored protected pages, or remediate
-an unrelated risk recorded above. Those changes remain separately gated.
+sessions or authoritative logout, or add authoritative direct/BFCache status
+revalidation. The false-latch legacy branch now has only a browser-local
+logged-out Study guard; it neither consults nor creates server authority. The
+remaining target changes stay separately gated.
 
 The legacy STORE, API, ERROR, FLOW, route, and public-surface contracts remain
 the production-safe compatibility baseline while the latch is false. The
@@ -2223,15 +2273,18 @@ authoritative.
 Authoritative timer expiry is deliberately not logout: at the backend-provided
 expiry instant, presentation stops and navigates without a DELETE or cross-tab
 logout outcome. Likewise, protected-request `401`, logout `204`, and
-availability `503` retain distinct meanings. Direct entry and
-`pageshow`/BFCache revalidation remain the next **Guard restored protected
-pages** task.
+availability `503` retain distinct meanings. Authoritative direct entry and
+`pageshow`/BFCache status revalidation remain the next **Guard
+restored protected pages** task. The active false-latch branch separately
+reduces an already logged-out Study presentation without a backend request.
 
 ### Implemented target-path disposition of the exact seven keys
 
-The false-gate legacy path preserves every spelling, reader, writer, payload,
-and value. No key or replacement credential was added. The dormant target path
-has this implemented disposition:
+The false-gate legacy path preserves every spelling, reader, request payload,
+and ordinary login write. Its only key-disposition change is the scoped
+`IndexVerificado` removal during browser-final Study cleanup described above;
+no key or replacement credential was added. The dormant target path has this
+implemented disposition:
 
 | Exact key | Dormant target-path disposition |
 | --- | --- |
@@ -2400,7 +2453,7 @@ The authoritative-logout subset has direct traceability:
 | `SESSION-LOGOUT-06` | Unavailable or failed `BroadcastChannel` publication records failed cross-tab qualification but cannot undo local success after backend `204`. |
 | `SESSION-LOGOUT-07` | Independent credential response and logout-presentation orders preserve the backend rule that a later successful authentication may win and logout never implies revoke-all or cancellation. |
 | `SESSION-LOGOUT-08` | Backend-returned authoritative expiry stops presentation without issuing DELETE or manufacturing a logout signal or response. |
-| `SESSION-LOGOUT-09` | GATE-01/GATE-02 precede channel/network setup; the latch stays false and browser-uncontrollable; exactly seven storage keys remain; no cookie read/write, local-storage fallback, storage event, revoke-all call, or restored-page guard is introduced; the legacy logout callback remains source-exact. |
+| `SESSION-LOGOUT-09` | GATE-01/GATE-02 precede channel/network setup; the latch stays false and browser-uncontrollable; exactly seven storage keys remain; no cookie read/write, local-storage fallback, storage event, or revoke-all call is introduced. The target branch still has no authoritative restored-page validation; the false-latch branch has the separately tested local Study guard and browser-final cleanup. |
 
 ## Approved future decisions
 
@@ -2482,11 +2535,11 @@ identify the current oracle.
 | ORIGIN-01 | Shared production origin | Exactly one executable production-origin literal is exported from the separate shared mapping and imported by exactly eight consumers; runtime code contains no executable localhost backend URL, hostname-based selection, backend-base storage key, stored override, or relative `/null/` request path. |
 | ROUTE-01 | Seven public entries | The manifest contains exactly the seven canonical `/plataforma/**` trailing-slash entries listed above, including `/plataforma/aviso-viewport/`, `/plataforma/aviso-dispositivo-navegador/`, and `/plataforma/cadastro-foto/` with exact case; every index is emitted under `dist/plataforma/`, and one directory mapping emits the complete canonical module tree within the exact nine learning-platform mappings. |
 | ROUTE-02 | Root, retirement, compatibility, and slash behavior | `/plataforma/`, all three former `/plataforma/cadastro` forms, and all six former current warning forms are intentional 404s without redirect; the independently retired `/plataforma_v2/` root and seven former entries remain 404s; no entry alias or old warning or `dist/plataforma_v2/` subtree exists. All 15 enumerated legacy module URLs are explicit 404s and have no emitted output, alias, or redirect. Internal source navigation remains slashless; production serves each current slashless entry with the same bytes and no HTTP redirect, while the manifest's trailing-slash spellings remain canonical. The complete negative-path contract is exactly 64. |
-| ROUTE-03 | Navigation/history | GATE-01 and GATE-02 use injected replacement navigation, while ordinary login, registration, study, logout, and content navigation retain their existing history-adding behavior. Each viewport transition carries the exact originating path/query/fragment in a bounded encoded `returnTo`; the warning accepts only the six approved relative same-origin path families, preserves accepted slash spelling and suffixes, rejects unsafe input without external navigation, and replaces at most once above 1024 with canonical login as fallback. Login's separate registration `history.back()` rule and the exact legacy origin marker remain unchanged. |
+| ROUTE-03 | Navigation/history | GATE-01, GATE-02, false-latch explicit logout, legacy timer expiry, and the logged-out Study direct/`pageshow` guard use injected replacement navigation; other ordinary login, registration, study, and content navigation retains its existing history-adding behavior. Each viewport transition carries the exact originating path/query/fragment in a bounded encoded `returnTo`; the warning accepts only the six approved relative same-origin path families, preserves accepted slash spelling and suffixes, rejects unsafe input without external navigation, and replaces at most once above 1024 with canonical login as fallback. Login's separate registration `history.back()` rule and the exact legacy origin marker remain unchanged. |
 | GATE-01 | Device/browser admission | One centralized classifier gives login/notices/registration/study stable candidate, unsupported, or unverified results from consistent browser/platform evidence and side-effect-free entry API shapes. Usable Windows/Edge hints or fallback can produce only a candidate; missing or conflicting evidence stays unverified; explicit excluded families/platforms and missing mandatory APIs stay unsupported. Rejected and unverified profiles replace to `/plataforma/aviso-dispositivo-navegador` before GATE-02 and never load Face. Status report, client intake, and both warning entries remain ungated, and the device/browser diagnostic handles absent or partial `userAgentData`. |
 | GATE-02 | Minimum-viewport admission | After GATE-01 precedence on protected entries, qualifying login, notices, registration, study, public status report, and public client intake replace to the viewport warning at 1023 and the inclusive 1024 boundary, admit 1025, and replace on a later resize down without starting protected work or narrow report requests. Platform entries use slashless `/plataforma/aviso-viewport`; client intake uses trailing-slash `/plataforma/aviso-viewport/`. No alternate device classifier is introduced. Direct narrow warning entry remains; direct wide entry uses the canonical login fallback. |
-| STORE-01 | Key inventory | The exact seven accented/cased keys, all readers/writers, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented; no backend base is stored or read. |
-| STORE-02 | Lifetime/reset | No flow clears storage; logout changes only `Usuário_Logado`; refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. |
+| STORE-01 | Key inventory | The exact seven accented/cased keys, all readers/writers, the Study-only `IndexVerificado` remover, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented; no backend base or new key is stored or read. |
+| STORE-02 | Lifetime/reset | No flow clears storage. Refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. False-latch explicit logout, timer expiry, and logged-out direct/BFCache restoration set `Usuário_Logado=Não`, remove only `IndexVerificado`, and leave the other five legacy values unchanged; a later valid login writes fresh state. |
 | API-01 | Login and Face registration | Methods, exact paths—including unchanged `POST /plataforma_v2/CadastroFoto_e_FaceID`—JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
 | API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, named request-error, and backend-retry-visible branches with no client polling. |
 | API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, named semantic mapping, and optimistic update/rollback behavior match current transitions. |
@@ -2498,7 +2551,7 @@ identify the current oracle.
 | FLOW-03 | Content completion | Manual and `ended` completion both exercise optimistic increment, protected update, success advance, and local failure rollback. |
 | FLOW-04 | Assessment | Synthetic DOM answers reproduce current client score and update behavior, including absence of a source-defined time limit or dedupe identity. |
 | FLOW-05 | Feedback | Synthetic submission records current client-controlled fields, update-before-append ordering, failure positions, and duplicate-visible retry behavior. |
-| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, validation text, and the false-latch legacy logout's source-exact non-revoking redirect behavior remain observable. The dormant target logout is covered separately by `SESSION-LOGOUT-*`. |
+| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, and validation text remain exact. False-latch explicit logout and timer expiry make Study inert/hidden, stop its timer, pause media, update/remove only the scoped storage values, and replace to Login without DELETE or cross-tab signaling; logged-out direct/BFCache restoration does the same before protected work, and fresh login restores new browser state. The copied-handle limitation remains. Dormant target logout is covered separately by `SESSION-LOGOUT-*`. |
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
@@ -2507,7 +2560,7 @@ identify the current oracle.
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The current dormant authoritative-logout artifact has 258 files and matches its recalculated identity. Relative to the authoritative-session baseline, exactly 11 mapped platform JavaScript outputs change while the other 247 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
+| ARTIFACT-01 | Full frontend artifact | The current browser-final logout artifact has 258 files and matches its recalculated 27,395,632-byte identity. Relative to the immediate 258-file, 27,394,267-byte dormant authoritative-logout baseline, exactly three mapped platform JavaScript outputs add 1,365 bytes while the other 255 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
 | ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 64 negative paths, and exactly 80 JavaScript imports in both source and generated previews. |
 
 ### Automated traceability
@@ -2537,13 +2590,15 @@ by execution seam rather than by future source location:
   normalization, presentation catalog, and source confinement;
 - `.agents/tests/learning-platform-entry-api.test.js` covers entry gates,
   navigation, storage, login, Face, named request behavior, ownership,
-  operation isolation, malformed JSON, and denied networking;
+  operation isolation, malformed JSON, denied networking, exact logout storage
+  removal, and fresh-login state replacement;
 - `.agents/tests/learning-platform-module-seams.test.js` covers the real module
   loader and host deny-all guard, bootstrap modes, initial-notices seam, and
   status-report query/request/render seams;
 - `.agents/tests/learning-platform-study-report.test.js` covers study progress,
   assessment, feedback, named write transitions, certificate,
-  logout/expiry, and status-report behavior;
+  browser-final logout/expiry teardown, direct and BFCache restoration, absence
+  of logout DELETE requests, and status-report behavior;
 - `.agents/tests/learning-platform-traceability.test.js` derives the acceptance
   IDs from this matrix, requires every ID to remain in a named test, and audits
   the suite for sensitive source literals and complete network URL literals.

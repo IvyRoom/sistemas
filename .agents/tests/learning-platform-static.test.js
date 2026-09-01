@@ -1232,7 +1232,8 @@ test("[ROUTE-02] current root and retired routes remain 404 while source navigat
     }
   }
   assert.deepEqual([...replacementDestinations].sort(compareText), [
-    "/plataforma/aviso-dispositivo-navegador"
+    "/plataforma/aviso-dispositivo-navegador",
+    "/plataforma/login"
   ]);
   assert.match(combinedPageSource, /VIEWPORT_WARNING_PATH\s*=\s*["']\/plataforma\/aviso-viewport["']/);
   assert.ok(
@@ -1543,10 +1544,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20788921,
-      digest: "d9a1bc2c047def79de171f46573772c3b26bd4e06a81650c4d00d10ba5b815e5"
+      bytes: 20790286,
+      digest: "e383916ced000039459e19d54eedf9c2c83e83db63c47d2d51fb6bd2069bb08e"
     },
-    "The current manifest must produce the exact dormant authoritative-logout platform target"
+    "The current manifest must produce the exact browser-final logout platform target"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -1555,10 +1556,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20788921,
-      digest: "b8314bbfe4407ecc81f077c1fc1ee86a307c9097def1240af7f52353696c8712"
+      bytes: 20790286,
+      digest: "ba5e3c5c0eafa488c44a24bbfd3d72a0a98e96aa3cf896abb16149ee0c9baccb"
     },
-    "The current manifest must produce the exact prefix-omitted dormant-logout target"
+    "The current manifest must produce the exact prefix-omitted browser-final logout target"
   );
   const javaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
@@ -1567,10 +1568,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 501783,
-      digest: "0dc1f85e3fef0b943e3e291e18b768b0bc61d082721de5b0a318c42d40afe6e3"
+      bytes: 503148,
+      digest: "4bc92f67774b596554e902b5b9f47fa36545288bc20244d5e692d40095296813"
     },
-    "The platform JavaScript files must retain their exact dormant-logout identity"
+    "The platform JavaScript files must retain their exact browser-final logout identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -1939,8 +1940,8 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
   assert.equal(
     (studySource.match(/(?:ContainerInternoShakaPlayer|dom\.playerElement)\.pause\(\)/g) ?? []).length,
-    4,
-    "Assessment, feedback, certificate, and committed authoritative logout must pause presentation"
+    5,
+    "Assessment, feedback, certificate, and both logout paths must pause presentation"
   );
   assert.equal(
     (studySource.match(/dom\.playerElement\.onended\s*=/g) ?? []).length,
@@ -1974,7 +1975,7 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] dormant authoritative logout advances the historical artifact", () => {
+test("[ARTIFACT-01] browser-final logout advances the dormant authoritative-logout baseline", () => {
   const historicalPhaseB = {
     files: 257,
     bytes: 27298502,
@@ -1998,10 +1999,10 @@ test("[ARTIFACT-01] dormant authoritative logout advances the historical artifac
     treeStats(records),
     {
       files: 258,
-      bytes: 27394267,
-      digest: "44dcfac25898ba343e0c4e18d7ddece6e9c655579d91a67ee53e64b49613d517"
+      bytes: 27395632,
+      digest: "08dfdf96411fbc0c239e29c091c689eaa261f4df66d7fb70ff8335926da1dd5b"
     },
-    "The current manifest must produce the exact dormant authoritative-logout frontend target"
+    "The current manifest must produce the exact browser-final logout frontend target"
   );
   assert.deepEqual(
     treeStats(sharedRuntimeRecords()),
