@@ -1104,6 +1104,59 @@ test("[FACE-01] Face startup themes the closed shadow root without changing star
   harness.hostGuard.assertUnused();
 });
 
+test("[FACE-01] Face preparation mounts once without a token and preserves startup single-flight", async () => {
+  const harness = createLearningPlatformHarness();
+  const { createFaceStartup } = await harness.loadModule(MODULE_PATHS.faceStartup);
+  const events = [];
+  const faceStartup = createFaceStartup({
+    createElement() {
+      events.push("create");
+      return {
+        attachShadow() {
+          return { adoptedStyleSheets: [] };
+        },
+        start(token) {
+          events.push(`start:${token}`);
+          return Promise.resolve("synthetic-face-result");
+        }
+      };
+    },
+    createStyleSheet() {
+      return { replaceSync() {} };
+    },
+    async loadRuntime() {
+      events.push("load-runtime");
+    },
+    mount() {
+      events.push("mount");
+    }
+  });
+
+  const firstAttempt = faceStartup.prepare();
+  assert.equal(faceStartup.prepare(), firstAttempt);
+  await harness.flush(8);
+  assert.deepEqual(events, ["load-runtime", "create", "mount"]);
+
+  const firstStart = firstAttempt.start("first-token");
+  assert.equal(firstAttempt.start("second-token"), firstStart);
+  assert.equal(await firstStart, "synthetic-face-result");
+  assert.deepEqual(events, ["load-runtime", "create", "mount", "start:first-token"]);
+
+  const retryAttempt = faceStartup.prepare();
+  assert.notEqual(retryAttempt, firstAttempt);
+  assert.equal(await retryAttempt.start("retry-token"), "synthetic-face-result");
+  assert.deepEqual(events, [
+    "load-runtime",
+    "create",
+    "mount",
+    "start:first-token",
+    "create",
+    "mount",
+    "start:retry-token"
+  ]);
+  harness.hostGuard.assertUnused();
+});
+
 test("[FACE-01] deferred Face loading and startup are single-flight but allow later retries", async () => {
   const harness = createLearningPlatformHarness();
   const { createFaceStartup } = await harness.loadModule(MODULE_PATHS.faceStartup);
@@ -2113,6 +2166,139 @@ test("[API-02] Face verification creates a protected session then performs exact
   assert.equal(harness.navigation.at(-1), PATHS.study);
 });
 
+test("[PERF] returning-user Face login exposes a deterministic startup critical path", async (t) => {
+  const delays = Object.freeze({
+    engine: 900,
+    faceResult: 80,
+    faceSession: 600,
+    login: 120,
+    runtime: 100
+  });
+  const marks = {};
+  const phaseStarts = [];
+  const scheduled = [];
+  let nextScheduleId = 0;
+  let virtualNow = 0;
+
+  function after(delay, label, value) {
+    marks[`${label}Start`] = virtualNow;
+    phaseStarts.push({ at: virtualNow, label });
+    return new Promise((resolve) => {
+      scheduled.push({
+        at: virtualNow + delay,
+        id: nextScheduleId++,
+        resolve() {
+          marks[`${label}End`] = virtualNow;
+          resolve(value);
+        }
+      });
+    });
+  }
+
+  const harness = createLearningPlatformHarness({
+    faceStartImplementation: async () => {
+      marks.faceComponentStart = virtualNow;
+      await engineReady;
+      marks.faceComponentReady = virtualNow;
+      return {};
+    },
+    routes: [
+      {
+        handler: () => after(
+          delays.login,
+          "loginRequest",
+          { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+        ),
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID"
+      },
+      {
+        handler: () => after(
+          delays.faceSession,
+          "faceSessionRequest",
+          { data: faceSessionResponse() }
+        ),
+        method: "POST",
+        path: "/plataforma_v2/FaceID"
+      },
+      {
+        handler: () => after(
+          delays.faceResult,
+          "faceResultRequest",
+          { data: faceResultResponse() }
+        ),
+        method: "GET",
+        path: FIXTURE_RESULT_PATH
+      }
+    ]
+  });
+  let engineReady;
+  const faceContainer = harness.element("Container-Auxiliar-FaceID");
+  const appendFaceElement = faceContainer.appendChild.bind(faceContainer);
+  faceContainer.appendChild = (element) => {
+    marks.faceElementMounted = virtualNow;
+    engineReady = after(delays.engine, "faceEngine");
+    return appendFaceElement(element);
+  };
+
+  await installLoginApplication(harness, {
+    loadFaceRuntime() {
+      return after(delays.runtime, "faceRuntime");
+    },
+    navigate(target) {
+      marks.studyNavigation = virtualNow;
+      harness.window.location.href = target;
+    }
+  });
+  submit(harness.element("Formulário-Login"));
+
+  while (harness.navigation.length === 0) {
+    await harness.flush(20);
+    if (harness.navigation.length > 0) break;
+    assert.notEqual(scheduled.length, 0, "The virtual timing fixture must keep making progress");
+    const nextTime = Math.min(...scheduled.map(({ at }) => at));
+    virtualNow = nextTime;
+    const ready = scheduled
+      .filter(({ at }) => at === nextTime)
+      .sort((left, right) => left.id - right.id);
+    for (const item of ready) scheduled.splice(scheduled.indexOf(item), 1);
+    for (const item of ready) item.resolve();
+  }
+  await harness.flush(20);
+
+  assert.deepEqual(marks, {
+    faceComponentReady: 1120,
+    faceComponentStart: 720,
+    faceElementMounted: 220,
+    faceEngineEnd: 1120,
+    faceEngineStart: 220,
+    faceResultRequestEnd: 1200,
+    faceResultRequestStart: 1120,
+    faceRuntimeEnd: 220,
+    faceRuntimeStart: 120,
+    faceSessionRequestEnd: 720,
+    faceSessionRequestStart: 120,
+    loginRequestEnd: 120,
+    loginRequestStart: 0,
+    studyNavigation: 1200
+  });
+  const serializedBaseline = 1800;
+  assert.equal(serializedBaseline - marks.studyNavigation, 600);
+  assert.deepEqual(phaseStarts, [
+    { at: 0, label: "loginRequest" },
+    { at: 120, label: "faceSessionRequest" },
+    { at: 120, label: "faceRuntime" },
+    { at: 220, label: "faceEngine" },
+    { at: 1120, label: "faceResultRequest" }
+  ]);
+  assert.equal(harness.guard.requests.length, 3);
+  assert.equal(harness.navigation.at(-1), PATHS.study);
+  assertNoQuery(harness);
+  t.diagnostic(
+    `submit-to-Study: ${serializedBaseline} → ${marks.studyNavigation} virtual ms (-600, -33.3%)`
+  );
+});
+
 test("[API-02] Face decision, SDK rejection, and result error branches remain single-shot", async () => {
   const cases = [
     {
@@ -2244,6 +2430,182 @@ test("[API-02] Face start and result retain exact specific and generic mappings"
     result401.guard.requests.filter(({ path }) => path.endsWith(":sessionId")).length,
     1
   );
+});
+
+test("[API-02] Face-session errors retain precedence over concurrent preparation failure", async () => {
+  const machineValue = "learning_platform.read_reference_photo_failed";
+  let runtimeLoads = 0;
+  const harness = createLearningPlatformHarness({
+    routes: [
+      {
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID",
+        response: { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+      },
+      {
+        method: "POST",
+        path: "/plataforma_v2/FaceID",
+        response: { data: { error: machineValue }, status: 500 }
+      }
+    ]
+  });
+  await installLoginApplication(harness, {
+    async loadFaceRuntime() {
+      runtimeLoads += 1;
+      throw new Error("Synthetic concurrent Face preparation failure");
+    }
+  });
+  submit(harness.element("Formulário-Login"));
+  await harness.flush(30);
+
+  assert.equal(runtimeLoads, 1);
+  assertOnlyErrorCode(harness.alerts, "Erro_005");
+  assertMachineValueHidden(harness, machineValue);
+  assert.deepEqual(
+    harness.guard.requests.map(({ method, path }) => ({ method, path })),
+    [
+      { method: "POST", path: "/plataforma_v2/login-FaceID" },
+      { method: "POST", path: "/plataforma_v2/FaceID" }
+    ]
+  );
+  assert.equal(harness.element("Container-Auxiliar-FaceID").children.length, 0);
+  assertNoQuery(harness);
+});
+
+test("[API-02] successful Face session maps preparation failure and retries with a fresh loader", async () => {
+  let runtimeLoads = 0;
+  const startedTokens = [];
+  const harness = createLearningPlatformHarness({
+    faceStartImplementation: async (token) => {
+      startedTokens.push(token);
+      return {};
+    },
+    routes: [
+      {
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID",
+        response: { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+      },
+      {
+        method: "POST",
+        path: "/plataforma_v2/FaceID",
+        response: { data: faceSessionResponse() }
+      },
+      {
+        method: "GET",
+        path: FIXTURE_RESULT_PATH,
+        response: { data: faceResultResponse() }
+      }
+    ]
+  });
+  await installLoginApplication(harness, {
+    async loadFaceRuntime() {
+      runtimeLoads += 1;
+      if (runtimeLoads === 1) {
+        throw new Error("Synthetic transient Face preparation failure");
+      }
+    }
+  });
+
+  submit(harness.element("Formulário-Login"));
+  await harness.flush(30);
+
+  assert.equal(runtimeLoads, 1);
+  assert.deepEqual(startedTokens, []);
+  assertOnlyErrorCode(harness.alerts, "Erro_006");
+  assert.deepEqual(harness.consoleCalls, [{ level: "log", size: 1 }]);
+  assert.equal(harness.element("Entrar").disabled, false);
+  assert.equal(harness.element("Container-Auxiliar-FaceID").children.length, 0);
+  assert.equal(harness.navigation.length, 0);
+
+  submit(harness.element("Formulário-Login"));
+  await harness.flush(30);
+
+  assert.equal(runtimeLoads, 2);
+  assert.deepEqual(startedTokens, [FIXTURE_FACE_TOKEN]);
+  assert.equal(harness.element("Container-Auxiliar-FaceID").children.length, 1);
+  assert.deepEqual(
+    harness.guard.requests.map(({ method, path }) => ({ method, path })),
+    [
+      { method: "POST", path: "/plataforma_v2/login-FaceID" },
+      { method: "POST", path: "/plataforma_v2/FaceID" },
+      { method: "POST", path: "/plataforma_v2/login-FaceID" },
+      { method: "POST", path: "/plataforma_v2/FaceID" },
+      { method: "GET", path: "/plataforma_v2/FaceID_resultado/:sessionId" }
+    ]
+  );
+  assert.equal(harness.timeline.filter(({ type }) => type === "face-start").length, 1);
+  assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Sim");
+  assert.equal(harness.navigation.at(-1), PATHS.study);
+  assertNoQuery(harness);
+});
+
+test("[API-02] a prepared attempt survives a Face-session failure and starts once on retry", async () => {
+  const machineValue = "learning_platform.read_reference_photo_failed";
+  let faceSessionRequests = 0;
+  let runtimeLoads = 0;
+  const startedTokens = [];
+  const harness = createLearningPlatformHarness({
+    faceStartImplementation: async (token) => {
+      startedTokens.push(token);
+      return {};
+    },
+    routes: [
+      {
+        method: "POST",
+        path: "/plataforma_v2/login-FaceID",
+        response: { data: loginResponse({ Usuário_Foto_Cadastrada: "Sim" }) }
+      },
+      {
+        handler() {
+          faceSessionRequests += 1;
+          if (faceSessionRequests === 1) {
+            return { data: { error: machineValue }, status: 500 };
+          }
+          return { data: faceSessionResponse() };
+        },
+        method: "POST",
+        path: "/plataforma_v2/FaceID"
+      },
+      {
+        method: "GET",
+        path: FIXTURE_RESULT_PATH,
+        response: { data: faceResultResponse() }
+      }
+    ]
+  });
+  await installLoginApplication(harness, {
+    async loadFaceRuntime() {
+      runtimeLoads += 1;
+    }
+  });
+
+  submit(harness.element("Formulário-Login"));
+  await harness.flush(30);
+
+  assert.equal(runtimeLoads, 1);
+  assert.deepEqual(startedTokens, []);
+  assertOnlyErrorCode(harness.alerts, "Erro_005");
+  assertMachineValueHidden(harness, machineValue);
+  assert.equal(harness.element("Container-Auxiliar-FaceID").children.length, 1);
+  assert.equal(harness.element("Entrar").disabled, false);
+
+  submit(harness.element("Formulário-Login"));
+  await harness.flush(30);
+
+  assert.equal(faceSessionRequests, 2);
+  assert.equal(runtimeLoads, 1);
+  assert.deepEqual(startedTokens, [FIXTURE_FACE_TOKEN]);
+  assert.equal(harness.element("Container-Auxiliar-FaceID").children.length, 1);
+  assert.equal(harness.timeline.filter(({ type }) => type === "append").length, 1);
+  assert.equal(harness.timeline.filter(({ type }) => type === "face-start").length, 1);
+  assert.equal(
+    harness.guard.requests.filter(({ path }) => path.endsWith(":sessionId")).length,
+    1
+  );
+  assert.equal(harness.sessionStorage.getItem("Usuário_Logado"), "Sim");
+  assert.equal(harness.navigation.at(-1), PATHS.study);
+  assertNoQuery(harness);
 });
 
 test("[ERROR-02] named backend values preserve exact entry failure effects", async () => {
@@ -2482,7 +2844,8 @@ test("[ERROR-02] named backend values preserve exact entry failure effects", asy
         { key: "IndexVerificado", type: "storage-set" },
         { key: "Usuário_Foto_Cadastrada", type: "storage-set" },
         { key: "Horário-Encerramento-Sessão", type: "storage-set" },
-        { method: "POST", path: "/plataforma_v2/FaceID", type: "fetch" }
+        { method: "POST", path: "/plataforma_v2/FaceID", type: "fetch" },
+        { tagName: "AZURE-AI-VISION-FACE-UI", type: "append" }
       ]
     }],
     [runFaceResultFailure, {
@@ -2896,6 +3259,7 @@ test("[FLOW-01] credential, first-access, notice, and Face branches preserve sto
     }
   ];
   for (const scenario of scenarios) {
+    let loaderCalls = 0;
     const harness = createLearningPlatformHarness({
       routes: [{
         method: "POST",
@@ -2903,9 +3267,14 @@ test("[FLOW-01] credential, first-access, notice, and Face branches preserve sto
         response: { data: scenario.response }
       }]
     });
-    await installLoginApplication(harness);
+    await installLoginApplication(harness, {
+      async loadFaceRuntime() {
+        loaderCalls += 1;
+      }
+    });
     submit(harness.element("Formulário-Login"));
     await harness.flush(20);
+    assert.equal(loaderCalls, 0);
     assert.equal(harness.navigation.at(-1), scenario.expectedPath);
     for (const [key, value] of Object.entries(scenario.expectedStorage)) {
       assert.equal(harness.sessionStorage.getItem(key), value);

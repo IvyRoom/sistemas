@@ -6,10 +6,10 @@ behavior baseline was characterized from `sistemas` commit
 artifact sections are maintained against the current repository tree. Companion
 `backend` signed-handle evidence is pinned at verified producer commit
 `ba286cc0b3d3e67176d46dee84a5ba7d55b7162c`. This document records the completed
-entry-markup modernization, warning-navigation repair, and lean signed-handle
-access model with browser-final Study logout/restoration behavior. It does not
-authorize a production request, data migration, infrastructure mutation, or an
-integration exercise.
+entry-markup modernization, warning-navigation repair, lean signed-handle access
+model with browser-final Study logout/restoration behavior, and returning-user
+Face startup overlap. It does not authorize a production request, data
+migration, infrastructure mutation, or an integration exercise.
 
 ## How to use this specification
 
@@ -297,11 +297,15 @@ bypasses protected playback only after candidate entry.
 
 Login and registration provide the vendored Face bundle through a literal lazy
 module loader. Unsupported and unverified profiles cannot call that loader;
-candidate profiles load it only when an admitted Face flow actually reaches
-component startup. The loader and each active startup are single-flight, while
-a settled login failure may still be retried. Status report and both warning
-entries remain outside browser admission, and the device/browser diagnostic reads
-absent or partial client hints defensively.
+candidate profiles load it only after an admitted Face flow has also received
+an exact active login result. Returning-user Login begins one tokenless,
+single-flight preparation after its protected Face-session request starts; that
+preparation mounts the component so its unchanged selected engine/WASM path can
+load during the request, but it cannot start the component or camera before the
+token arrives. Registration retains post-response lazy startup. Each actual
+startup is single-flight, while a settled startup failure may still be retried.
+Status report and both warning entries remain outside browser admission, and the
+device/browser diagnostic reads absent or partial client hints defensively.
 
 ### Verification matrix and maintenance
 
@@ -683,7 +687,7 @@ selects or overrides the backend base.
 | `modules/error-adapter.js` | Owns learning-platform semantic kinds, owner labels, operation allowlists, the exact named backend values, and transport/malformed/HTTP/unknown/application-local normalization. Feature modules branch only on its semantic kinds. |
 | `modules/error-presentation.js` | Owns the reviewed Brazilian-Portuguese presentation catalog. It is the only production source containing visible `Erro_XXX` prefixes; machine values are never interpolated into alerts, logs, or rendered HTML. |
 | `modules/lifecycle.js` | Owns the structured browser-admission outcomes, normalized Windows/Edge evidence, side-effect-free entry API-shape checks, and the exact inclusive `<= 1024` minimum-viewport admission decision. Entry factories retain replacement-navigation injection, listener installation, and gate order. |
-| `modules/face-startup.js` | Loads the injected Face runtime lazily and single-flight, then constructs one custom element per active start, applies the frozen `pt-BR`, font, and button properties, mounts it, and starts it once. Result lookup remains the caller's single backend GET. |
+| `modules/face-startup.js` | Owns one tokenless preparation attempt at a time: it loads the injected Face runtime lazily, constructs one custom element, applies the frozen `pt-BR`, font, and button properties, and mounts it once so the unchanged vendor engine path can begin. The captured attempt starts once when its caller later supplies a token; concurrent preparation/start calls remain single-flight, a settled actual start is not reused, and result lookup remains the caller's single backend GET. |
 | `modules/login.js`, `modules/photo-registration.js`, `modules/initial-notices.js` | Own their existing credential, upload, Face, notice, form-reset, gate, storage, request, and navigation branches. Production configuration stays at the existing entry edge and is injected without being copied into tests or documentation. |
 | `modules/status-report/query.js` | Parses the nine legacy query keys, including all current coercion and missing-value behavior. |
 | `modules/status-report/charts.js` | Constructs chart markup/targets, applies the module range, independently sorts each metric, and renders the existing 15-slot layout and label quirks. |
@@ -1070,8 +1074,8 @@ registration-history rules in that order. Non-candidate submission is inert.
 Candidate
 submission disables and hides the button, shows the initialization message,
 and captures the untrimmed credentials. A matched response is stored before
-branch selection. The lazy Face runtime loads only after an admitted flow has
-created a Face session and is ready to start the component.
+branch selection. The lazy Face runtime remains absent for invalid, inactive,
+Face-disabled, and photo-registration branches.
 
 - Inactive login resets the form and displays the backend-projected access
   deadline. It is a successful HTTP response without a row handle.
@@ -1079,9 +1083,11 @@ created a Face session and is ready to start the component.
 - Exact Face status `Inativo` sets logged `Sim` and opens study.
 - Otherwise exact photo status `Não` sets registration authorization `Sim` and
   opens initial notices.
-- Otherwise exact photo status `Sim` creates a Face session, mounts a new Face
-  element, starts it, reads the result once, and accepts only exact liveness
-  `realface` plus boolean match `true`.
+- Otherwise exact photo status `Sim` starts the protected Face-session request,
+  then prepares and mounts one tokenless Face element while that request is
+  pending. The returned token starts that captured element exactly once; the
+  result is read once and only exact liveness `realface` plus boolean match
+  `true` is accepted.
 - A rejected Face decision resets the form and shows an inline rejection. SDK,
   Face, workbook, and unexpected failures follow the error mapping above.
 
@@ -1120,12 +1126,39 @@ flag, or a created Face session. A failure after the combined operation's
 success forces a fresh credential-login path because registration authorization
 has already become `Não`.
 
-`LP-STATE-FACE-VERIFY` follows the same local component/result sequence for an
-existing reference photo. It ignores the value resolved by the component,
-does not poll the result, and uses only the backend result fields. The Face
-component's vendored loader waits for its engine, exposes a cancel path after a
-long-load delay, and rejects on its own timeout/failure states; those failures
-map to frontend `Erro_006`.
+`LP-STATE-FACE-VERIFY` overlaps only tokenless local preparation with the
+already-required protected session request for an existing reference photo.
+The request still starts first. Preparation uses the same literal wrapper,
+mount, base resolution, engine selection, and assets; it performs no backend
+request, accepts no token, and cannot start the camera. After the token-bearing
+response, the flow keeps the same component/result sequence. It ignores the
+value resolved by the component, does not poll the result, and uses only the
+backend result fields. The Face component's vendored loader waits for its
+engine, exposes a cancel path after a long-load delay, and rejects on its own
+timeout/failure states; those failures map to frontend `Erro_006`. A protected
+session failure keeps its existing error precedence even if concurrent
+preparation also fails.
+
+#### Returning-user Face startup timing evidence
+
+The production-network-denied entry harness now records the returning-user
+critical path with deterministic virtual delays. The fixed profile assigns 120
+virtual milliseconds to Login, 600 to the protected Face-session request, 100
+to the wrapper import, 900 from element mount to synthetic engine readiness,
+and 80 to the single result request. At test-only baseline commit `c51f979`,
+whose production sources still match `ff83ea0`, the serialized path reaches
+Study at 1,800 virtual milliseconds. The current overlap reaches the same
+navigation at 1,200: a 600-unit or 33.3% synthetic critical-path reduction.
+
+These are logical fixture milliseconds, not measured production latency. The
+evidence proves the removed dependency edge and exact makespan under one
+repeatable profile. It makes no claim about real network throughput, WASM
+compilation contention, camera/liveness duration, or Study document/refresh
+time. The successful flow retains three exact browser API requests, one selected
+engine path, one component start, one result GET, and no polling. Relative to
+the serialized baseline, successful asset count and bytes are unchanged; a
+valid returning-user attempt whose protected session later fails may now spend
+bandwidth on the same public Face assets speculatively.
 
 Current anchors: registration HTML
 [`index.html` lines 25-59](../apps/learning-platform/photo-registration/index.html#L25-L59),
@@ -1676,28 +1709,29 @@ reflow corrections again preserve the same 258 paths while changing scoped
 JavaScript and CSS bytes. Warning-navigation repair retains the 258-file count
 while replacing exactly ten former warning paths with ten renamed paths and
 changing the approved warning HTML, lifecycle, entry, and client-intake bytes.
-Retiring the production-disabled session-authority consumer preserves every
+Retiring the production-disabled session-authority consumer preserved every
 generated output path while simplifying exactly 15 mapped platform JavaScript
-files. Relative to the immediate browser-final baseline at `sistemas` commit
-`e543dc6cf72d7c8b077b07e4f7dc79b3453054cc`, the complete artifact changes
-from 258 files, 27,395,632 bytes, and
-`sha256:08dfdf96411fbc0c239e29c091c689eaa261f4df66d7fb70ff8335926da1dd5b`
-to these lean signed-handle identities:
+files. The returning-user Face startup overlap then retained the same paths and
+imports while changing only `plataforma/modules/face-startup.js` by +623 bytes
+and `plataforma/modules/login.js` by +175 bytes relative to `ff83ea0`. That base
+artifact was 258 files, 27,362,565 bytes, and
+`sha256:a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6`;
+the current identities are:
 
 | Current lean signed-handle scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,362,565 | `a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6` |
+| Complete generated `dist/` artifact | 258 | 27,363,363 | `31f0e0641c40e51c8a6bb30b43e532176f821b894a2bd372b203dcb7c8276bb8` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,757,219 | `c6c6b7c4968757bc3bd8f6b782f8c674815eadf8eba5d87cc7b8e653e1088cb1` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,757,219 | `13b91e0489a619b6052d7fb6f841d6ed9c778fdbc5faacc8a76a8cf0c5233284` |
-| Platform JavaScript, retaining full output paths | 36 | 470,081 | `bb7977e91adf64324a27bb1bc0faf23bf081e31637b416c490a05747858a0dfb` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,758,017 | `bb071712d59e1d49d13615fe6e4aa2482bbddf2667843bc39394b37e788aa88e` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,758,017 | `2f7ddc5ab3b6a71acb0cd5568ab3d03f23ed01198b303c29ca824afa1e0e4236` |
+| Platform JavaScript, retaining full output paths | 36 | 470,879 | `0198ae883811b585120290f1d4596e91ec79280aa5f889c189cdf9242cb79178` |
 | Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
 | Study entry subtree, retaining full output paths | 41 | 10,022,029 | `19cbf0067226f54e1ea521d606762ad9f1acc0b8acd2ff7d5129a1c9e413a44c` |
 | Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
 | All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
 
-All 258 paths remain. The 33,067-byte reduction is exactly the sum of these
-15 mapped-output deltas; the other 243 outputs are byte-identical:
+Before the current overlap, the dormant-session cleanup's 33,067-byte reduction
+was exactly the sum of these 15 mapped-output deltas:
 
 | Changed mapped output | Byte delta | Intentional simplification |
 | --- | ---: | --- |
@@ -1725,6 +1759,10 @@ imports; their new graph SHA-256 is
 `672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149`.
 The removed edges are Login entry to `modules/session.js`, Registration entry
 to `modules/session.js`, and Study application to `../session.js`.
+The current Face overlap adds no import edge, request path, or output path, so
+that 77-edge graph and digest remain exact. Relative to `ff83ea0`, exactly the
+two mapped JavaScript outputs named above add 798 bytes in total; the other 256
+generated outputs are byte-identical.
 Warning assets retain their source bytes, but moving four warning binary output
 paths changes the binary path-framed digest. The Face, study-download, and
 certificate-input scopes retain both their paths and bytes:
@@ -1921,6 +1959,10 @@ future work, not permission to change compatibility behavior in the baseline.
   is public to anyone who knows a session identifier. User repeats plus backend
   application/SDK retries can span non-idempotent external work and expose
   long, retry-visible waits without a user-controlled request cancel operation.
+- Returning-user tokenless preparation starts only after exact active login and
+  after the protected Face-session request begins. A later session-request
+  failure keeps its established visible error but may spend bandwidth loading
+  the same public engine/WASM assets that a successful attempt would use.
 - The Face bundle, locale, engine, WASM, and image resolution depends on the
   current `<base>` contract. A source move that changes that resolution can
   break Face startup without changing import text.
@@ -2115,7 +2157,7 @@ identify the current oracle.
 | STORE-01 | Key inventory | The exact seven accented/cased keys, all readers/writers, the Study-only `IndexVerificado` remover, value shapes, and the read-only `TempoSessão_Segundos` observation remain represented; no backend base or new key is stored or read. |
 | STORE-02 | Lifetime/reset | No flow clears storage. Refresh leaves both the stored client deadline and `IndexVerificado` unchanged while returning the separate workbook access-deadline field. Browser-final explicit logout, timer expiry, and logged-out direct/BFCache restoration set `Usuário_Logado=Não`, remove only `IndexVerificado`, and leave the other five legacy values unchanged; a later valid login writes fresh state. |
 | API-01 | Login and Face registration | Methods, exact paths—including unchanged `POST /plataforma_v2/CadastroFoto_e_FaceID`—JSON/multipart fields, response fields, status branches, and call order remain exact; each allowed named value reaches the same reviewed semantic kind, visible outcome, storage state, and navigation branch. |
-| API-02 | Face verification/result | Session creation carries the handle in JSON; exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, named request-error, and backend-retry-visible branches with no client polling. |
+| API-02 | Face verification/result | Session creation carries the handle in JSON and begins before one tokenless preparation attempt. That attempt can load and mount only after exact active login and both gates; it cannot start before the token-bearing response. Exactly one public path-parameter result GET follows component resolution and reproduces success, failed-decision, local-component, named request-error, concurrent-preparation/request-error precedence, and backend-retry-visible branches with no client polling. |
 | API-03 | Refresh and progress | Both protected POST bodies carry `IndexVerificado`; refresh response/access-deadline display, unchanged stored deadline, named semantic mapping, and optimistic update/rollback behavior match current transitions. |
 | API-04 | Assessment and feedback | `/updates` preserves client-supplied grade fields; named write and append failures preserve update-before-append ordering, partial success, retry duplication exposure, rollback, and the Module 3/module 2 mismatch. |
 | API-05 | Status report | The public POST carries only exact JSON fields `linha_inicial` and `linha_final`; query/display labels remain client-side. It has no authorization header/body handle, keeps JSON-before-status ordering, and maps the named read failure to its semantic/presentation outcome. |
@@ -2129,12 +2171,12 @@ identify the current oracle.
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
-| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport, host-color, and closed-root non-selection overrides remain exact without loading production Face. |
+| FACE-01 | SDK resolution and presentation hooks | Version 1.5.0, `<base>` resolution, `pt-BR`, 75 dictionaries, five images, regular/SIMD JS+WASM branch paths, the body-mounted loader, Shadow-DOM native brightness checkbox, and application-owned viewport, host-color, and closed-root non-selection overrides remain exact without loading production Face. Tokenless preparation and actual startup are independently single-flight; preparation mounts once without a token, and a settled actual startup receives a fresh element on retry. |
 | ASSET-01 | File identity and isolation | The exact current 182-file platform set and its JavaScript and Study subscopes match their recalculated byte totals and digests; all current paths are NFC, 34 contain non-ASCII, and the non-JavaScript, binary, public-application, Face, download, and certificate scoped digests remain exact. The two five-file warning subtrees move ten-for-ten without duplicate outputs. Historical phase-A and phase-B/pre-markup identities remain documentation-only comparisons. |
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The lean signed-handle artifact has 258 files and matches its recalculated 27,362,565-byte identity. Relative to the immediate 27,395,632-byte browser-final baseline, exactly 15 mapped platform JavaScript outputs remove 33,067 bytes while the other 243 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
+| ARTIFACT-01 | Full frontend artifact | The Face-warmed lean signed-handle artifact has 258 files and matches its recalculated 27,363,363-byte identity. Relative to `ff83ea0`, exactly `modules/face-startup.js` and `modules/login.js` add 798 bytes while the other 256 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
 | ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 64 negative paths, and exactly 77 JavaScript imports in both source and generated previews. |
 
 ### Automated traceability
@@ -2207,10 +2249,14 @@ failure before any application script executes.
    failure statuses, delayed responses, and multipart inspection. Control the
    single Face-result resolution/rejection with a synthetic promise. Use fake
    timers for the session deadline and documented backend retry schedule; do
-   not wait in wall-clock time.
+   not wait in wall-clock time. The returning-user performance oracle assigns
+   fixed virtual durations to Login, Face-session, wrapper, mounted-engine, and
+   result phases, drains them in due-time order, and asserts both dependency
+   edges and the exact synthetic makespan.
 5. Stub the injected lazy Face loader, Face custom element, Shaka Player/UI,
    video element, and jsPDF. Assert loading, construction, configuration, path
-   resolution, single-flight behavior, and lifecycle calls. Behavior tests
+   resolution, tokenless preparation, single-flight behavior, and lifecycle
+   calls. Behavior tests
    never import a production Face entry or execute the vendored Face engine or
    either WASM file.
 6. Use invented participant, workbook, company, assessment, and feedback data.
@@ -2263,8 +2309,11 @@ modernization kept those 182 platform files and application paths while changing
 reviewed HTML, CSS, and application JavaScript bytes. The centralized-origin
 mapping then added only `shared/backend-origin.js`. Warning-navigation repair
 replaces ten warning paths with ten renamed paths and retains the 258-file
-count, so the current executable tests assert the warning-navigation identities
-above.
+count. Dormant-session retirement retained that graph, and the Face startup
+overlap changes only the two mapped JavaScript bytes recorded above. The current
+executable tests assert the resulting identities and reproduce the deterministic
+1,800 → 1,200 virtual-millisecond critical-path evidence without production
+network access.
 Historical phase-A and phase-B identities remain documentation-only comparisons.
 
 Commit `19dacfa870d691e5869a022652fb24f2a8ba8e5f` is the exact pre-alignment

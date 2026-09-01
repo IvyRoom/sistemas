@@ -134,11 +134,16 @@ export function createLoginApplication({
                     navigate('/plataforma/avisos-iniciais');
                 }
                 else if (registeredPhoto === 'Sim') {
-                    client.postJson('/FaceID', { IndexVerificado: verifiedIndex })
+                    const faceSessionRequest = client.postJson('/FaceID', {
+                        IndexVerificado: verifiedIndex
+                    });
+                    const faceAttempt = faceStartup.prepare();
+
+                    faceSessionRequest
                     .then(async data => {
                         document.body.style.cursor = 'default';
 
-                        faceStartup.start(data.Azure_Face_API_LivenessSession_authToken).then(resultData => {
+                        faceAttempt.start(data.Azure_Face_API_LivenessSession_authToken).then(resultData => {
                             client.getJson('/FaceID_resultado/' + data.Azure_Face_API_LivenessSession_sessionID)
                             .then(data => {
                                 if (
