@@ -1,0 +1,28 @@
+name: Validate Dependabot updates
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    name: Validate dependency update
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Test frontend applications
+        run: node --test .agents/tests/*.test.js
+      - name: Test deployment contract
+        run: node --test scripts/frontend-deployment.test.mjs
+      - name: Build frontend artifact
+        run: node scripts/build-frontend.mjs
+      - name: Validate frontend artifact
+        run: node scripts/check-frontend.mjs
