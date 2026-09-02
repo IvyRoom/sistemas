@@ -2031,3 +2031,137 @@ test("generated certificates print the canonical validation URL", async () => {
     "https://machadogestao.com/validacao-certificados/"
   ]);
 });
+
+function yamlMappingBlock(source, indentation, key) {
+  const lines = source.replace(/\r\n/g, "\n").split("\n");
+  const header = `${" ".repeat(indentation)}${key}:`;
+  const start = lines.findIndex((line) => line === header);
+  assert.notEqual(start, -1, `${key} must use block mapping syntax`);
+
+  let end = start + 1;
+  while (end < lines.length) {
+    const line = lines[end];
+    const leadingSpaces = line.match(/^ */)[0].length;
+    if (line.trim() && leadingSpaces <= indentation) break;
+    end += 1;
+  }
+
+  return lines.slice(start, end).join("\n");
+}
+
+function yamlDirectKeys(block, indentation) {
+  const matcher = new RegExp(`^ {${indentation}}([A-Za-z0-9_-]+):(?:\\s|$)`);
+  return block
+    .split("\n")
+    .map((line) => line.match(matcher)?.[1])
+    .filter(Boolean);
+}
+
+test("Dependabot validation is isolated from Azure deployment", async () => {
+  const [validationWorkflow, deploymentWorkflow] = await Promise.all([
+    readFile(
+      new URL("../.github/workflows/dependabot-validation.yml", import.meta.url),
+      "utf8"
+    ),
+    readFile(
+      new URL(
+        "../.github/workflows/azure-static-web-apps-red-cliff-0b4173b0f.yml",
+        import.meta.url
+      ),
+      "utf8"
+    )
+  ]);
+
+  const eventBlock = yamlMappingBlock(validationWorkflow, 0, "on");
+  const jobsBlock = yamlMappingBlock(validationWorkflow, 0, "jobs");
+  const validationJob = yamlMappingBlock(validationWorkflow, 2, "validate");
+  const buildAndDeployJob = yamlMappingBlock(
+    deploymentWorkflow,
+    2,
+    "build_and_deploy_job"
+  );
+  const closePullRequestJob = yamlMappingBlock(
+    deploymentWorkflow,
+    2,
+    "close_pull_request_job"
+  );
+
+  assert.deepEqual(yamlDirectKeys(eventBlock, 2), ["pull_request"]);
+  assert.deepEqual(yamlDirectKeys(jobsBlock, 2), ["validate"]);
+  assert.doesNotMatch(validationWorkflow, /\bpull_request_target\b/);
+  assert.doesNotMatch(validationWorkflow, /\bworkflow_dispatch\b/);
+  assert.match(
+    validationWorkflow,
+    /^permissions:\r?\n  contents: read\r?\n\r?\njobs:/m
+  );
+  assert.equal((validationWorkflow.match(/^permissions:/gm) ?? []).length, 1);
+  assert.equal((validationWorkflow.match(/^[ \t]+permissions:/gm) ?? []).length, 0);
+  assert.match(
+    validationJob,
+    /^\s*if: github\.event\.pull_request\.user\.login == 'dependabot\[bot\]'$/m
+  );
+  assert.ok(
+    validationJob.split("\n").some((line) => line.trim() === "persist-credentials: false")
+  );
+  const validationActions = Array.from(
+    validationJob.matchAll(/^\s*(?:-\s*)?uses:\s*(\S+)$/gm),
+    ([, action]) => action
+  );
+  assert.equal(validationActions.length, 1);
+  assert.match(
+    validationActions[0],
+    /^actions\/checkout@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/,
+    "Bot validation may execute only a reviewed checkout release or commit"
+  );
+  assert.deepEqual(
+    Array.from(
+      validationActions,
+      (action) => action.slice(0, action.lastIndexOf("@"))
+    ),
+    ["actions/checkout"],
+    "Bot validation may execute only the credential-free checkout action"
+  );
+
+  for (const command of [
+    "node --test .agents/tests/*.test.js",
+    "node --test scripts/frontend-deployment.test.mjs",
+    "node scripts/build-frontend.mjs",
+    "node scripts/check-frontend.mjs"
+  ]) {
+    assert.ok(
+      validationJob.split("\n").some((line) => line.trim() === `run: ${command}`),
+      `${command} must run for bot PRs`
+    );
+  }
+
+  for (const forbidden of [
+    /\bsecrets\b/,
+    /\bwrite-all\b/,
+    /\bAzure\//i,
+    /actions\/upload-artifact@/,
+    /scripts\/check-deployment\.mjs/,
+    /^\s*environment:/m,
+    /^\s*id-token:/m,
+    /^\s*uses:\s*\.\/\.github\/workflows\//m,
+    /^\s*action:\s*["']?(?:upload|close)["']?\s*$/m
+  ]) {
+    assert.doesNotMatch(validationWorkflow, forbidden);
+  }
+
+  assert.match(
+    buildAndDeployJob,
+    /^\s*if: github\.event_name == 'push' \|\| \(github\.event_name == 'pull_request' && github\.event\.action != 'closed' && github\.event\.pull_request\.user\.login != 'dependabot\[bot\]'\)$/m
+  );
+  assert.match(
+    closePullRequestJob,
+    /^\s*if: github\.event_name == 'pull_request' && github\.event\.action == 'closed' && github\.event\.pull_request\.user\.login != 'dependabot\[bot\]'$/m
+  );
+  assert.match(
+    buildAndDeployJob,
+    /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/m
+  );
+  assert.match(
+    closePullRequestJob,
+    /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/m
+  );
+});
