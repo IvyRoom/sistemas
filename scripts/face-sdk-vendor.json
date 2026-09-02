@@ -1,0 +1,475 @@
+{
+  "schemaVersion": 1,
+  "version": "1.5.0",
+  "vendorRoot": "apps/learning-platform/azure-ai-vision-face-ui",
+  "packages": [
+    {
+      "role": "component",
+      "name": "@azure/ai-vision-face-ui",
+      "packageRoot": "node_modules/@azure/ai-vision-face-ui",
+      "copies": [
+        {
+          "source": "FaceLivenessDetector.js",
+          "destination": "FaceLivenessDetector.js"
+        }
+      ],
+      "version": "1.5.0"
+    },
+    {
+      "role": "assets",
+      "name": "@azure-ai-vision-face/ui-assets",
+      "packageRoot": "node_modules/@azure-ai-vision-face/ui-assets",
+      "copies": [
+        {
+          "source": "facelivenessdetector-assets",
+          "destination": "facelivenessdetector-assets"
+        }
+      ],
+      "version": "1.5.0"
+    }
+  ],
+  "overrides": {
+    "brightnessSource": "apps/learning-platform/login/img/Brightness.svg",
+    "brightnessDestination": "facelivenessdetector-assets/images/Brightness.svg",
+    "portugueseDictionary": "facelivenessdetector-assets/i18n/pt-BR/en.json",
+    "strings": {
+      "AZAIF_IncreaseBrightness": "Coloque o brilho da tela no máximo e afaste-se de janelas muito iluminadas.",
+      "AZAIF_IncreaseBrightnessHighestSetting": "A tela piscará algumas vezes para processar o FaceID.",
+      "AZAIF_IncreaseBrightnessTurnedUp": "Coloquei o brilho no máximo e me afastei de janelas muito iluminadas."
+    }
+  },
+  "files": [
+    {
+      "path": "FaceLivenessDetector.js",
+      "bytes": 24604,
+      "sha256": "f1d01d3019e916ca3ab7932b1b01f61455a7fcea3915f46d213656cac6c3f476"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/af-ZA/en.json",
+      "bytes": 3636,
+      "sha256": "5409d143a94d118e3c3d62b89e843927ea08081db7919e0e2294481587d27c75"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/am-ET/en.json",
+      "bytes": 4756,
+      "sha256": "0788e7663ce7853fe6c3bb45d0069444d25f771d4ee5d4ca3d25ea22d37f10c2"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ar-SA/en.json",
+      "bytes": 4256,
+      "sha256": "81c14d4b8b1ab9bb70ba7faf6de7e49206400d6225d2465b81d782a45eb4543f"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/as-IN/en.json",
+      "bytes": 6336,
+      "sha256": "e9f9838da44390aeec80c023fb80eb1cd8516b563cfd69e3589b016a80114576"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/az-Latn-AZ/en.json",
+      "bytes": 3806,
+      "sha256": "0e18647b8809aa6c36cbb0ba809f0120eb32c28109be859cdc6de01ad6e464ab"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/bg-BG/en.json",
+      "bytes": 5190,
+      "sha256": "972f7f4466b56b58cf5adf03a57e4bbc08b4bacef3cda30f2951a911077ddb25"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/bn-IN/en.json",
+      "bytes": 6250,
+      "sha256": "3b87f64bfe89f1ae827582d7e7e70f99c98726a41005f555bea6e5039617f8a1"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/bs-Latn-BA/en.json",
+      "bytes": 3568,
+      "sha256": "c5c30e1f37496fc0100979bed9efe85376a21672970612588d61afeb5c3607e0"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ca-ES/en.json",
+      "bytes": 3752,
+      "sha256": "1f922f5508a73ea448d1375587de55740e371ad37eb1f2753c0f04299a026ff2"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/cs-CZ/en.json",
+      "bytes": 3675,
+      "sha256": "0a46cefd0509e7ed3169cb5868a15397b0195229be5a544050e9037ba50fcbec"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/da-DK/en.json",
+      "bytes": 3539,
+      "sha256": "bbf93bccde0db8a2c653daa38f932e08cdfc4a8a2084f3032b83824b147acc65"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/de-DE/en.json",
+      "bytes": 3899,
+      "sha256": "6aa33e22f16718b51c2ba99b5dcba0d6aed0535b614dec852d1cf1c396ab0bca"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/el-GR/en.json",
+      "bytes": 5641,
+      "sha256": "565232a553f8e2fd5f80fc21f65de787ca6203a248897ce7d39ba543e4e95385"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/en-GB/en.json",
+      "bytes": 3454,
+      "sha256": "08dc0bd4414e2bd9acc375a3dc1a172aaf0f57a913d14a59edc78cd348ab7178"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/en-US/en.json",
+      "bytes": 3570,
+      "sha256": "4d902f399a4a74249f30494a12c2cf977da7da0cf52cb1a8131f1c279db3367e"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/en.json",
+      "bytes": 3570,
+      "sha256": "4d902f399a4a74249f30494a12c2cf977da7da0cf52cb1a8131f1c279db3367e"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/es-ES/en.json",
+      "bytes": 3696,
+      "sha256": "fe4b6dda46caf21c1e7b954b26f730e34cb382590fccc517884ff79f0ab63970"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/es-MX/en.json",
+      "bytes": 3693,
+      "sha256": "da823821616fdf650b608d6bbecb667047ce826764eac1f4a8600e98c48cc57b"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/et-EE/en.json",
+      "bytes": 3600,
+      "sha256": "a403287c8118a9e550e4c9af08b893a7aa91fae66ae659954feb8c4963622e33"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/eu-ES/en.json",
+      "bytes": 3517,
+      "sha256": "ae0b89b35fecc1e762599ac68127351bb3dd0361548b61dd17a8dd9a83088d74"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/fa-IR/en.json",
+      "bytes": 4886,
+      "sha256": "1b4e3574a43a2b4868ebe4d98cc982445127b45f29b67be551b56dfcec67af82"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/fi-FI/en.json",
+      "bytes": 3576,
+      "sha256": "0826b3943765192d9004be2ca880753c02ee7862f1d5af05eab38d3a81e69368"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/fil-PH/en.json",
+      "bytes": 3662,
+      "sha256": "f8c29a3349a9a5909ec0887a1aaf499fcdabe2ba5d60b833ca8c921652e7eeba"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/fr-CA/en.json",
+      "bytes": 3955,
+      "sha256": "f8c8a4c1666f6d1642ef4f4237d09e63ce8e5610857d580360cccc37285cd908"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/fr-FR/en.json",
+      "bytes": 3949,
+      "sha256": "9f02a71fa24381e8b1ecb9b1f5a13a950e3322acdbeb60fc57cfaa0752522b3c"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ga-IE/en.json",
+      "bytes": 3818,
+      "sha256": "d084296750e59fb3c72165f687a2fdf18950a0914cddd0437cf8a19f9e1db0ca"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/gl-ES/en.json",
+      "bytes": 3601,
+      "sha256": "283a68e47f8257ee949d4510035fecf2744184c6199f7347f9dd86dea2e1881b"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/gu-IN/en.json",
+      "bytes": 6148,
+      "sha256": "981800252a33887187dc3f458997b7657a0ad7a1b9194101187fd397ee49d4dd"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/he-IL/en.json",
+      "bytes": 4146,
+      "sha256": "b28f2b72fe2e9359db9ada7e34d09a899357989a5ba8afa0d8af59394e2b8bcd"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/hi-IN/en.json",
+      "bytes": 6198,
+      "sha256": "2f900e2c7f1bf72f22323b40e8e4cc46932a78acc8b3c64e33d8b9bed11ad3fe"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/hr-HR/en.json",
+      "bytes": 3587,
+      "sha256": "04fbb3fba52951e58dfcc10836c4e80761d4c00f30f13f2558a8d79781078fee"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/hu-HU/en.json",
+      "bytes": 3847,
+      "sha256": "c24b4f8aed454618d84fbb8183b266b49c7508069d28070034f04b1490d37a6a"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/id-ID/en.json",
+      "bytes": 3632,
+      "sha256": "b7637f8a6097b6eaf807b1d19c71fa880f5989fc5f14d18b5985c313342288f9"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/is-IS/en.json",
+      "bytes": 3746,
+      "sha256": "36128bc4f6e5b8688e0b31978b12675f362392f17174a89f5a5001b679b435df"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/it-IT/en.json",
+      "bytes": 3855,
+      "sha256": "6e9a4be8d284c942c041702689453ec961520a4352cfcf0f3220aa234df62941"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ja-JP/en.json",
+      "bytes": 4282,
+      "sha256": "6567e131dfd5633d41e05195eecac63b4b19052ce9b0e3ef4f80935b423dfc55"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ka-GE/en.json",
+      "bytes": 6489,
+      "sha256": "b925c58c0b152c2879197ce4abc74c70976fce846a82b0a00f6d9e62ae0e8df0"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/kk-KZ/en.json",
+      "bytes": 4968,
+      "sha256": "93505ed47701cd98ce024bbd2fcbf420d53ac804b3cb84f27fafe461f8ac77fd"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/km-KH/en.json",
+      "bytes": 6146,
+      "sha256": "0087f2ee307b074b88e8361a8c661f4f61220d9e6ec444019e60b1cd9e20165e"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/kn-IN/en.json",
+      "bytes": 6926,
+      "sha256": "3497d4b0edb8c8f2ba4a4b713ec6004400492b606f29c9c9904b2b2646b47156"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ko-KR/en.json",
+      "bytes": 3855,
+      "sha256": "ae633ab963f4b42d844196d3475c63f17bec976e1f9fca273842ff0564e57c89"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/lo-LA/en.json",
+      "bytes": 6080,
+      "sha256": "561dc1bc722cb9ad57c333b7dfbc4a07edabb77e4b32dc57cb491a95654257bd"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/lt-LT/en.json",
+      "bytes": 3711,
+      "sha256": "7170b8a50be8ffc22dc42319a68dab3d53a22deb0ece58bd8843df6905b27f42"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/lv-LV/en.json",
+      "bytes": 3700,
+      "sha256": "5e8d8e459559a562ce68bb51ddbc7cc7c33898924e68d9401c2940da3702729a"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/mk-MK/en.json",
+      "bytes": 5184,
+      "sha256": "ea4a233ec5fc9c18073bb73be344afb35b36e5779d2580fa27045e4e716cf501"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ml-IN/en.json",
+      "bytes": 7260,
+      "sha256": "8c019066899d864c0a6787e3b857cf5cf9c54ab25950af2525ebf5e6d830a990"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/mr-IN/en.json",
+      "bytes": 6060,
+      "sha256": "20d9757fdb7ac74448b836ee920b54517f4e9fa7686d357c11f664e5f0c9dcb5"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ms-MY/en.json",
+      "bytes": 3675,
+      "sha256": "b45f752cc1c50c7d65030c2cab9c05f0c30399eaa926ac409f1c610602942978"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/nb-NO/en.json",
+      "bytes": 3462,
+      "sha256": "386700279e92cfa94ba3d8af27a86a81eb751c9f521f7cbd8f631c9dece21afb"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ne-NP/en.json",
+      "bytes": 6859,
+      "sha256": "b35aa9905dc9f1d1c8f8b32c30344038a01d86d3988472a03f5704da717544ac"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/nl-NL/en.json",
+      "bytes": 3717,
+      "sha256": "e4da9f1c08b0a1094a13ffe2f0dc93e72a9d26cd222800124f99ee7f11fdd09e"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/nn-NO/en.json",
+      "bytes": 3546,
+      "sha256": "32d1ec30003899056e9557a189ed8d83b68317f4875292ce9eb610da451dd09a"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/or-IN/en.json",
+      "bytes": 6880,
+      "sha256": "42ba9459a68a02136f09cfae757d49bcf52c6b8db9d0a1e648fab25bd46a3feb"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/pa-IN/en.json",
+      "bytes": 6165,
+      "sha256": "da5f9a4c474b8912f28d40a9ef270d689c83e39e5986ba187776ff9b35503272"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/pl-PL/en.json",
+      "bytes": 3658,
+      "sha256": "71d5e05999d50d728e5b0598958040c0a482da05733d9fa9a79b31ec0143f762"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/pt-BR/en.json",
+      "bytes": 3737,
+      "sha256": "9ec8b1c62411d629de23488e2be0e4dbf2bc550ecac0df1799e522e1605d991b"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/pt-PT/en.json",
+      "bytes": 3683,
+      "sha256": "a295927f41f309999f5d1f9df8d55711e91eb4d2eabf51ae62c0e781535cf37c"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ro-RO/en.json",
+      "bytes": 3781,
+      "sha256": "a99ef0b21d8627009ba5c6a85b401bf95d6717972d1011cedc2c4afeebe8b83c"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ru-RU/en.json",
+      "bytes": 4977,
+      "sha256": "2151827d282336ed0329e25754ab5f616b51edc9d7ce73f4125d37ff178698e9"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/sk-SK/en.json",
+      "bytes": 3661,
+      "sha256": "d35a3032d5b255d5f6e9c1658cc9e28b17db36bbf084b9ec9bdc5ac831293377"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/sl-SI/en.json",
+      "bytes": 3545,
+      "sha256": "c66bdabdc9fbae2794f3b0d63ad4c6dc22a3aba584ab4afa5ef2e639a0e3b15d"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/sq-AL/en.json",
+      "bytes": 3651,
+      "sha256": "68778c3a9408cd95ea07b480f31730fe9af1ca7628bf8290440d3e6d35b48dac"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/sr-Cyrl-RS/en.json",
+      "bytes": 4869,
+      "sha256": "a81444e2b595bb5f8ad8cbeeebb2ff01076b921897f06a5d665abd458f246473"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/sr-Latn-RS/en.json",
+      "bytes": 3611,
+      "sha256": "7e479bbf664f2b16a86ab1a949cbfd856c258c06d2876faa881622202dad0b1a"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/sv-SE/en.json",
+      "bytes": 3556,
+      "sha256": "b28bc8158f980fbcec74ecc5080bdbd48c46c83e127834d463ea5288a2878d7f"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ta-IN/en.json",
+      "bytes": 7572,
+      "sha256": "a417765d879b5b4b55d1a3442a2effe90dd56bc64092ea78cb1be5634ff11c5b"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/te-IN/en.json",
+      "bytes": 6702,
+      "sha256": "08eb3b4935e42a60df3f4e101f7a5f2358c5502888f7f822227bf439b3b8b461"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/th-TH/en.json",
+      "bytes": 5862,
+      "sha256": "e3fa7b519ccda37cf5cb62029c624e897b08848f49172bd9aeb648d166d08c9f"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/tr-TR/en.json",
+      "bytes": 3680,
+      "sha256": "b2ea31c585f27a77b5fd87cc5809fcb0968ede97b5be6fdbfc154d9bfc53d0d8"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ug-CN/en.json",
+      "bytes": 5168,
+      "sha256": "74ff6565e5702cc4c5dd911eda6ebfcae6ed82187776ea61384d3d8d00ae385a"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/uk-UA/en.json",
+      "bytes": 5074,
+      "sha256": "2cab0ff80f20f3b2e549e4d5fb9e04169afe37af1025db90006e7d9c7459d0ad"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/ur-PK/en.json",
+      "bytes": 4930,
+      "sha256": "98068d33386723854587c8065a18cf1390e2b08ee7eac68b7b2a036a8f53c7bc"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/vi-VN/en.json",
+      "bytes": 3941,
+      "sha256": "2b98f86f2ac93449d2faa11399c665c21d582b7d407084d71436a75b4a17bbd0"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/zh-CN/en.json",
+      "bytes": 3183,
+      "sha256": "9b205a26ea7336be02dffd5dc11e7b0b04c6f5c66fe237221c3715cd3130944d"
+    },
+    {
+      "path": "facelivenessdetector-assets/i18n/zh-TW/en.json",
+      "bytes": 3367,
+      "sha256": "33174975f69a29ac3fd9c0b6a097795766a2b8005375c3ac827dd3b0ac6a910f"
+    },
+    {
+      "path": "facelivenessdetector-assets/images/Brightness.svg",
+      "bytes": 2382,
+      "sha256": "35066018a44a819f5faf198e7fda6771bfad496e956a415c87a83281bdac1afb"
+    },
+    {
+      "path": "facelivenessdetector-assets/images/FaceId.svg",
+      "bytes": 1890,
+      "sha256": "e312897a697c82cbc4b6e7dd93958d9e4795553853933884cc734a52fd1d68db"
+    },
+    {
+      "path": "facelivenessdetector-assets/images/Smile.svg",
+      "bytes": 8961,
+      "sha256": "40cc567c4e67eb7949538a101b65b67c90091913751ca25469fa012bfaf36913"
+    },
+    {
+      "path": "facelivenessdetector-assets/images/activeMotionVisualHint.png",
+      "bytes": 31419,
+      "sha256": "ee55b5bc6dcf343d3a5aed34f27df44fdcaf09ff350aa829874304462613e82b"
+    },
+    {
+      "path": "facelivenessdetector-assets/images/logo.svg",
+      "bytes": 416,
+      "sha256": "d19ac3c619fea5fef10053b774704e95a857f697f414511aed3d7e4cbd214d90"
+    },
+    {
+      "path": "facelivenessdetector-assets/js/AzureAIVisionFace.js",
+      "bytes": 149366,
+      "sha256": "fce15e73ac431242c7c41a58790308980716a7044668a112daa5b0c90f54801b"
+    },
+    {
+      "path": "facelivenessdetector-assets/js/AzureAIVisionFace.wasm",
+      "bytes": 4365378,
+      "sha256": "d8871f44196e4576acd6750b631ef9e48614d79328b72b5557360d37c670a4df"
+    },
+    {
+      "path": "facelivenessdetector-assets/js/AzureAIVisionFace_SIMD.js",
+      "bytes": 149873,
+      "sha256": "7966aac51dabfb7a65fc35a873643cbeb5bcbe9fc5674ed3a0f0f91102b0e6b7"
+    },
+    {
+      "path": "facelivenessdetector-assets/js/AzureAIVisionFace_SIMD.wasm",
+      "bytes": 4455257,
+      "sha256": "cdc0906e7d877922e5610c2153336962bcad54fd774d5dfdc0aa21f909164dcb"
+    }
+  ],
+  "tree": {
+    "algorithm": "sha256",
+    "framing": "<utf8-path-byte-length>:<path>:<content-byte-length>:<content>",
+    "files": 85,
+    "bytes": 9526729,
+    "digest": "56da181049f18302b00fdbf04851d1433adf819341564a326e652c75145576e3"
+  }
+}

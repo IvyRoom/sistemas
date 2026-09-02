@@ -2150,15 +2150,26 @@ test("Dependabot validation is isolated from Azure deployment", async () => {
 
   assert.match(
     buildAndDeployJob,
-    /^\s*if: github\.event_name == 'push' \|\| \(github\.event_name == 'pull_request' && github\.event\.action != 'closed' && github\.event\.pull_request\.user\.login != 'dependabot\[bot\]'\)$/m
+    /^\s*if: github\.event_name == 'push' \|\| \(github\.event_name == 'pull_request' && github\.event\.action != 'closed' && github\.event\.pull_request\.user\.login != 'dependabot\[bot\]' && !startsWith\(github\.event\.pull_request\.head\.ref, 'chore\/update-face-liveness-sdk-'\)\)$/m
   );
   assert.match(
     closePullRequestJob,
-    /^\s*if: github\.event_name == 'pull_request' && github\.event\.action == 'closed' && github\.event\.pull_request\.user\.login != 'dependabot\[bot\]'$/m
+    /^\s*if: github\.event_name == 'pull_request' && github\.event\.action == 'closed' && github\.event\.pull_request\.user\.login != 'dependabot\[bot\]' && !startsWith\(github\.event\.pull_request\.head\.ref, 'chore\/update-face-liveness-sdk-'\)$/m
   );
   assert.match(
     buildAndDeployJob,
     /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/m
+  );
+  assert.ok(
+    buildAndDeployJob.split("\n").some(
+      (line) => line.trim() === "run: node scripts/check-face-sdk-vendor.mjs"
+    ),
+    "the deployment build must validate the vendored Face SDK"
+  );
+  assert.ok(
+    buildAndDeployJob.indexOf("run: node scripts/check-face-sdk-vendor.mjs")
+      < buildAndDeployJob.indexOf("run: node scripts/build-frontend.mjs"),
+    "the vendored Face SDK must be validated before building the artifact"
   );
   assert.match(
     closePullRequestJob,

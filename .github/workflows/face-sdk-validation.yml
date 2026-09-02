@@ -1,0 +1,34 @@
+name: Validate Face SDK update
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'chore/update-face-liveness-sdk-')
+    runs-on: ubuntu-latest
+    name: Validate vendored Face SDK update
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Check vendored Face SDK
+        run: node scripts/check-face-sdk-vendor.mjs
+      - name: Test Face SDK automation
+        run: node --test scripts/face-sdk-automation.test.mjs
+      - name: Test frontend applications
+        run: node --test .agents/tests/*.test.js
+      - name: Test deployment contract
+        run: node --test scripts/frontend-deployment.test.mjs
+      - name: Build frontend artifact
+        run: node scripts/build-frontend.mjs
+      - name: Validate frontend artifact
+        run: node scripts/check-frontend.mjs
+      - name: Check whitespace
+        run: git diff --check
