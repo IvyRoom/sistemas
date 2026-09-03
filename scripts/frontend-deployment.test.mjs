@@ -2165,3 +2165,329 @@ test("Dependabot validation is isolated from Azure deployment", async () => {
     /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/m
   );
 });
+
+test("browser dependency checker only opens deduplicated review issues", async () => {
+  const [workflow, deploymentWorkflow, marketingHtml, learningHtml] =
+    await Promise.all([
+      readFile(
+        new URL(
+          "../.github/workflows/browser-dependency-version-check.yml",
+          import.meta.url
+        ),
+        "utf8"
+      ),
+      readFile(
+        new URL(
+          "../.github/workflows/azure-static-web-apps-red-cliff-0b4173b0f.yml",
+          import.meta.url
+        ),
+        "utf8"
+      ),
+      readFile(new URL("../apps/marketing-site/index.html", import.meta.url), "utf8"),
+      readFile(
+        new URL("../apps/learning-platform/course-content/index.html", import.meta.url),
+        "utf8"
+      )
+    ]);
+
+  const eventBlock = yamlMappingBlock(workflow, 0, "on");
+  const jobsBlock = yamlMappingBlock(workflow, 0, "jobs");
+  const concurrencyBlock = yamlMappingBlock(workflow, 0, "concurrency");
+  const checkJob = yamlMappingBlock(workflow, 2, "check");
+  const notifyJob = yamlMappingBlock(workflow, 2, "notify");
+  const checkPermissions = yamlMappingBlock(checkJob, 4, "permissions");
+  const notifyPermissions = yamlMappingBlock(notifyJob, 4, "permissions");
+  const deploymentPush = yamlMappingBlock(deploymentWorkflow, 2, "push");
+  const deploymentPathsIgnore = yamlMappingBlock(
+    deploymentPush,
+    4,
+    "paths-ignore"
+  );
+
+  assert.deepEqual(yamlDirectKeys(eventBlock, 2), ["schedule", "workflow_dispatch"]);
+  assert.match(eventBlock, /^    - cron: '41 12 \* \* 4'$/m);
+  assert.deepEqual(yamlDirectKeys(jobsBlock, 2), ["check", "notify"]);
+  assert.match(workflow, /^permissions: \{\}$/m);
+  assert.deepEqual(yamlDirectKeys(concurrencyBlock, 2), [
+    "group",
+    "cancel-in-progress"
+  ]);
+  assert.match(concurrencyBlock, /^  group: browser-dependency-version-check$/m);
+  assert.match(concurrencyBlock, /^  cancel-in-progress: false$/m);
+  assert.deepEqual(yamlDirectKeys(checkPermissions, 6), ["contents"]);
+  assert.match(checkPermissions, /^      contents: read$/m);
+  assert.deepEqual(yamlDirectKeys(notifyPermissions, 6), ["issues"]);
+  assert.match(notifyPermissions, /^      issues: write$/m);
+
+  assert.match(checkJob, /github\.repository == 'IvyRoom\/sistemas'/);
+  assert.match(checkJob, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(checkJob, /github\.event_name == 'schedule'/);
+  assert.match(checkJob, /github\.event_name == 'workflow_dispatch'/);
+  for (const requiredLine of [
+    "ref: main",
+    "persist-credentials: false",
+    "node-version: '24.x'",
+    "package-manager-cache: false"
+  ]) {
+    assert.ok(checkJob.split("\n").some((line) => line.trim() === requiredLine));
+  }
+
+  const actions = Array.from(
+    workflow.matchAll(/^\s*(?:-\s*)?uses:\s*(\S+)$/gm),
+    ([, action]) => action
+  );
+  assert.deepEqual(
+    actions.map((action) => action.slice(0, action.lastIndexOf("@"))),
+    ["actions/checkout", "actions/setup-node"]
+  );
+  for (const action of actions) {
+    assert.match(
+      action,
+      /^(?:actions\/checkout|actions\/setup-node)@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/
+    );
+  }
+
+  const sourceVersions = {
+    marketingShakaCss: Array.from(
+      marketingHtml.matchAll(
+        /<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/shaka-player@([0-9]+\.[0-9]+\.[0-9]+)\/dist\/controls\.css">/g
+      ),
+      ([, version]) => version
+    ),
+    marketingShakaJavaScript: Array.from(
+      marketingHtml.matchAll(
+        /<script defer src="https:\/\/cdn\.jsdelivr\.net\/npm\/shaka-player@([0-9]+\.[0-9]+\.[0-9]+)\/dist\/shaka-player\.ui\.js"><\/script>/g
+      ),
+      ([, version]) => version
+    ),
+    learningShakaCss: Array.from(
+      learningHtml.matchAll(
+        /<link rel="stylesheet" href="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/shaka-player\/([0-9]+\.[0-9]+\.[0-9]+)\/controls\.css">/g
+      ),
+      ([, version]) => version
+    ),
+    learningShakaJavaScript: Array.from(
+      learningHtml.matchAll(
+        /<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/shaka-player\/([0-9]+\.[0-9]+\.[0-9]+)\/shaka-player\.ui\.js"><\/script>/g
+      ),
+      ([, version]) => version
+    ),
+    learningJspdfJavaScript: Array.from(
+      learningHtml.matchAll(
+        /<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/jspdf\/([0-9]+\.[0-9]+\.[0-9]+)\/jspdf\.umd\.min\.js"><\/script>/g
+      ),
+      ([, version]) => version
+    )
+  };
+  assert.deepEqual(sourceVersions, {
+    marketingShakaCss: ["4.3.5"],
+    marketingShakaJavaScript: ["4.3.5"],
+    learningShakaCss: ["4.6.0"],
+    learningShakaJavaScript: ["4.6.0"],
+    learningJspdfJavaScript: ["2.5.1"]
+  });
+  assert.match(
+    checkJob,
+    /\[\[ "\$marketing_shaka_css_version" == "\$marketing_shaka_js_version" \]\]/
+  );
+  assert.match(
+    checkJob,
+    /\[\[ "\$learning_shaka_css_version" == "\$learning_shaka_js_version" \]\]/
+  );
+  assert.match(
+    checkJob,
+    /\[\[ "\$marketing_shaka_css_version" != "\$learning_shaka_css_version" \]\]/
+  );
+
+  const parsedSourceVariables = Array.from(
+    checkJob.matchAll(/^\s*([a-z_]+)="\$\(\s*$/gm),
+    ([, variable]) => variable
+  ).slice(0, 5);
+  assert.deepEqual(parsedSourceVariables, [
+    "marketing_shaka_css_version",
+    "marketing_shaka_js_version",
+    "learning_shaka_css_version",
+    "learning_shaka_js_version",
+    "current_jspdf_version"
+  ]);
+  const sourceParsingCommands = checkJob
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("sed -nE "));
+  assert.equal(sourceParsingCommands.length, 5);
+  for (const requiredUrlPattern of [
+    "https://cdn\\.jsdelivr\\.net/npm/shaka-player@",
+    "https://cdnjs\\.cloudflare\\.com/ajax/libs/shaka-player/",
+    "https://cdnjs\\.cloudflare\\.com/ajax/libs/jspdf/"
+  ]) {
+    assert.ok(
+      sourceParsingCommands.some((command) => command.includes(requiredUrlPattern))
+    );
+  }
+
+  const validatedVersionVariables = Array.from(
+    checkJob.matchAll(
+      /^\s*require_stable_version '[^']+' "\$([a-z0-9_]+)"$/gm
+    ),
+    ([, variable]) => variable
+  );
+  assert.deepEqual(validatedVersionVariables, [
+    "marketing_shaka_css_version",
+    "marketing_shaka_js_version",
+    "learning_shaka_css_version",
+    "learning_shaka_js_version",
+    "current_jspdf_version",
+    "latest_shaka_version",
+    "latest_shaka_v4_version",
+    "latest_jspdf_version"
+  ]);
+  const versionPatternSource = checkJob.match(/version_pattern='([^']+)'/)?.[1];
+  assert.ok(versionPatternSource);
+  const stableSemver = new RegExp(versionPatternSource);
+  for (const accepted of ["0.0.0", "4.16.47", "5.2.8"]) {
+    assert.match(accepted, stableSemver);
+  }
+  for (const rejected of [
+    "v5.2.8",
+    "5.2",
+    "05.2.8",
+    "5.02.8",
+    "5.2.08",
+    "5.2.8-beta.1",
+    "5.2.8+build"
+  ]) {
+    assert.doesNotMatch(rejected, stableSemver);
+  }
+  assert.match(checkJob, /\[\[ "\$version" =~ \$version_pattern \]\]/);
+  assert.match(checkJob, /\[\[ "\$latest_shaka_v4_version" =~ \^4\\\.16\\\. \]\]/);
+
+  const npmViewLines = checkJob
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.includes("npm view"));
+  assert.deepEqual(npmViewLines, [
+    "latest_shaka_version=\"$(npm view 'shaka-player@latest' version --userconfig=/dev/null --registry=https://registry.npmjs.org/ --ignore-scripts --silent)\"",
+    "shaka_v4_versions_json=\"$(npm view 'shaka-player@4.16' version --json --userconfig=/dev/null --registry=https://registry.npmjs.org/ --ignore-scripts --silent)\"",
+    "latest_jspdf_version=\"$(npm view 'jspdf@latest' version --userconfig=/dev/null --registry=https://registry.npmjs.org/ --ignore-scripts --silent)\""
+  ]);
+  assert.ok(checkJob.indexOf('cd "$RUNNER_TEMP"') < checkJob.indexOf("npm view"));
+
+  const shakaV4Parser = checkJob.match(
+    /latest_shaka_v4_version="\$\(\r?\n\s*printf '%s' "\$shaka_v4_versions_json" \|\r?\n\s*node -e '\r?\n([\s\S]*?)\r?\n\s*'\r?\n\s*\)"/
+  )?.[1];
+  assert.ok(shakaV4Parser);
+  const runShakaV4Parser = (metadata) =>
+    execFileSync(process.execPath, ["-e", shakaV4Parser], {
+      encoding: "utf8",
+      input: JSON.stringify(metadata),
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+  assert.equal(
+    runShakaV4Parser(["4.16.9", "4.16.47", "4.16.10"]),
+    "4.16.47"
+  );
+  assert.equal(runShakaV4Parser("4.16.47"), "4.16.47");
+  for (const rejectedMetadata of [
+    [],
+    ["4.16.47", "4.16.48-beta.1"],
+    ["4.16.47", "4.17.0"],
+    ["4.16.047"],
+    ["not-a-version"],
+    { version: "4.16.47" }
+  ]) {
+    assert.throws(() => runShakaV4Parser(rejectedMetadata));
+  }
+
+  assert.match(notifyJob, /^    needs: check$/m);
+  assert.match(notifyJob, /needs\.check\.outputs\.shaka_update_available/);
+  assert.match(notifyJob, /needs\.check\.outputs\.jspdf_update_available/);
+  assert.match(notifyJob, /^          GH_TOKEN: \$\{\{ github\.token \}\}$/m);
+  assert.match(notifyJob, /^          ISSUE_ASSIGNEE: IvyRoom$/m);
+  assert.doesNotMatch(notifyJob, /github\.actor/);
+  assert.match(
+    notifyJob,
+    /gh api --paginate --method GET[\s\S]*repos\/\$GITHUB_REPOSITORY\/issues[\s\S]*-f state=all[\s\S]*-f per_page=100/
+  );
+  assert.match(notifyJob, /select\(\.pull_request == null and \.title ==/);
+  assert.doesNotMatch(notifyJob, /gh issue list/);
+  assert.match(notifyJob, /gh issue create[\s\S]*--assignee "\$ISSUE_ASSIGNEE"/);
+  assert.match(
+    notifyJob,
+    /shaka_title="Shaka Player \$LATEST_SHAKA_VERSION \(v4 LTS \$LATEST_SHAKA_V4_VERSION\) is available"/
+  );
+  assert.match(
+    notifyJob,
+    /jspdf_title="jsPDF \$LATEST_JSPDF_VERSION is available"/
+  );
+  assert.equal(
+    (notifyJob.match(/^\s*open_review_issue "\$(?:shaka|jspdf)_title"/gm) ?? [])
+      .length,
+    2
+  );
+  for (const requiredShakaContent of [
+    "$MARKETING_SHAKA_VERSION",
+    "$LEARNING_SHAKA_VERSION",
+    "$LATEST_SHAKA_VERSION",
+    "$LATEST_SHAKA_V4_VERSION",
+    "https://github.com/shaka-project/shaka-player/blob/main/maintained-branches.md",
+    "playback and DRM",
+    "Windows 11, Edge, and PlayReady"
+  ]) {
+    assert.ok(notifyJob.includes(requiredShakaContent));
+  }
+  for (const requiredJspdfContent of [
+    "$CURRENT_JSPDF_VERSION",
+    "$LATEST_JSPDF_VERSION",
+    "https://github.com/parallax/jsPDF/releases/tag/v$LATEST_JSPDF_VERSION",
+    "https://github.com/parallax/jsPDF/security",
+    "Qualify jsPDF 4.2.1 upgrade",
+    "Prioritize a qualified jsPDF 4.2.1 upgrade",
+    "Monitoring alone does not resolve the advisory-affected"
+  ]) {
+    assert.ok(notifyJob.includes(requiredJspdfContent));
+  }
+  assert.equal(
+    (
+      notifyJob.match(
+        /No source file, CDN URL, or pull request was changed automatically\./g
+      ) ?? []
+    ).length,
+    2
+  );
+
+  for (const forbidden of [
+    /\bsecrets\b/,
+    /\bvars\b/,
+    /^\s*pull_request(?:_target)?:/m,
+    /^\s*environment:/m,
+    /^\s*id-token:/m,
+    /^\s*contents: write$/m,
+    /^\s*pull-requests: write$/m,
+    /^\s*(?:-\s*)?uses:\s*azure\//im,
+    /actions\/(?:upload|download)-artifact@/,
+    /^\s*uses:\s*\.\/\.github\/workflows\//m,
+    /\bnpm\s+(?:ci|install|i|add|pack|update|publish)\b/,
+    /\bnpx\b/,
+    /\bcurl\b/,
+    /\bwget\b/,
+    /\bgit\s+(?:add|commit|push)\b/,
+    /\bgh pr\b/,
+    /create-pull-request/i,
+    /\bauto-merge\b/i
+  ]) {
+    assert.doesNotMatch(workflow, forbidden);
+  }
+
+  assert.match(
+    deploymentPathsIgnore,
+    /^      - '\.github\/workflows\/browser-dependency-version-check\.yml'$/m
+  );
+  assert.equal(
+    (
+      deploymentWorkflow.match(
+        /^      - '\.github\/workflows\/browser-dependency-version-check\.yml'$/gm
+      ) ?? []
+    ).length,
+    1
+  );
+});

@@ -1,0 +1,258 @@
+name: Check browser dependency versions
+
+on:
+  schedule:
+    - cron: '41 12 * * 4'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: browser-dependency-version-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    if: >-
+      github.repository == 'IvyRoom/sistemas' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      marketing_shaka_version: ${{ steps.versions.outputs.marketing_shaka_version }}
+      learning_shaka_version: ${{ steps.versions.outputs.learning_shaka_version }}
+      current_jspdf_version: ${{ steps.versions.outputs.current_jspdf_version }}
+      latest_shaka_version: ${{ steps.versions.outputs.latest_shaka_version }}
+      latest_shaka_v4_version: ${{ steps.versions.outputs.latest_shaka_v4_version }}
+      latest_jspdf_version: ${{ steps.versions.outputs.latest_jspdf_version }}
+      shaka_update_available: ${{ steps.versions.outputs.shaka_update_available }}
+      jspdf_update_available: ${{ steps.versions.outputs.jspdf_update_available }}
+    steps:
+      - name: Check out Sistemas main without persisted credentials
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          package-manager-cache: false
+      - name: Compare deployed and published versions
+        id: versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          marketing_html="$GITHUB_WORKSPACE/apps/marketing-site/index.html"
+          learning_html="$GITHUB_WORKSPACE/apps/learning-platform/course-content/index.html"
+
+          marketing_shaka_css_version="$(
+            sed -nE 's#^[[:space:]]*<link rel="stylesheet" href="https://cdn\.jsdelivr\.net/npm/shaka-player@([0-9]+\.[0-9]+\.[0-9]+)/dist/controls\.css">[[:space:]]*$#\1#p' "$marketing_html"
+          )"
+          marketing_shaka_js_version="$(
+            sed -nE 's#^[[:space:]]*<script defer src="https://cdn\.jsdelivr\.net/npm/shaka-player@([0-9]+\.[0-9]+\.[0-9]+)/dist/shaka-player\.ui\.js"></script>[[:space:]]*$#\1#p' "$marketing_html"
+          )"
+          learning_shaka_css_version="$(
+            sed -nE 's#^[[:space:]]*<link rel="stylesheet" href="https://cdnjs\.cloudflare\.com/ajax/libs/shaka-player/([0-9]+\.[0-9]+\.[0-9]+)/controls\.css">[[:space:]]*$#\1#p' "$learning_html"
+          )"
+          learning_shaka_js_version="$(
+            sed -nE 's#^[[:space:]]*<script src="https://cdnjs\.cloudflare\.com/ajax/libs/shaka-player/([0-9]+\.[0-9]+\.[0-9]+)/shaka-player\.ui\.js"></script>[[:space:]]*$#\1#p' "$learning_html"
+          )"
+          current_jspdf_version="$(
+            sed -nE 's#^[[:space:]]*<script src="https://cdnjs\.cloudflare\.com/ajax/libs/jspdf/([0-9]+\.[0-9]+\.[0-9]+)/jspdf\.umd\.min\.js"></script>[[:space:]]*$#\1#p' "$learning_html"
+          )"
+
+          version_pattern='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'
+          require_stable_version() {
+            local label="$1"
+            local version="$2"
+            [[ "$version" =~ $version_pattern ]] || {
+              echo "$label must resolve to exactly one stable version." >&2
+              exit 1
+            }
+          }
+
+          require_stable_version 'Marketing Shaka CSS' "$marketing_shaka_css_version"
+          require_stable_version 'Marketing Shaka JavaScript' "$marketing_shaka_js_version"
+          require_stable_version 'Learning Shaka CSS' "$learning_shaka_css_version"
+          require_stable_version 'Learning Shaka JavaScript' "$learning_shaka_js_version"
+          require_stable_version 'Learning jsPDF JavaScript' "$current_jspdf_version"
+
+          [[ "$marketing_shaka_css_version" == "$marketing_shaka_js_version" ]] || {
+            echo 'Marketing Shaka CSS and JavaScript versions must agree.' >&2
+            exit 1
+          }
+          [[ "$learning_shaka_css_version" == "$learning_shaka_js_version" ]] || {
+            echo 'Learning Shaka CSS and JavaScript versions must agree.' >&2
+            exit 1
+          }
+          [[ "$marketing_shaka_css_version" != "$learning_shaka_css_version" ]] || {
+            echo 'Marketing and Learning Shaka baselines must remain intentionally distinct.' >&2
+            exit 1
+          }
+
+          marketing_shaka_version="$marketing_shaka_css_version"
+          learning_shaka_version="$learning_shaka_css_version"
+
+          cd "$RUNNER_TEMP"
+          latest_shaka_version="$(npm view 'shaka-player@latest' version --userconfig=/dev/null --registry=https://registry.npmjs.org/ --ignore-scripts --silent)"
+          shaka_v4_versions_json="$(npm view 'shaka-player@4.16' version --json --userconfig=/dev/null --registry=https://registry.npmjs.org/ --ignore-scripts --silent)"
+          latest_shaka_v4_version="$(
+            printf '%s' "$shaka_v4_versions_json" |
+              node -e '
+                const { readFileSync } = require("node:fs");
+                const metadata = JSON.parse(readFileSync(0, "utf8"));
+                const versions = Array.isArray(metadata) ? metadata : [metadata];
+                const stablePattern = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
+                if (
+                  versions.length === 0 ||
+                  versions.some(
+                    (version) =>
+                      typeof version !== "string" ||
+                      !stablePattern.test(version) ||
+                      !version.startsWith("4.16.")
+                  )
+                ) {
+                  process.stderr.write("Shaka 4.16 metadata must contain only stable 4.16 releases.\n");
+                  process.exit(1);
+                }
+                versions.sort((left, right) => {
+                  const leftParts = left.split(".").map(Number);
+                  const rightParts = right.split(".").map(Number);
+                  return (
+                    leftParts[0] - rightParts[0] ||
+                    leftParts[1] - rightParts[1] ||
+                    leftParts[2] - rightParts[2]
+                  );
+                });
+                process.stdout.write(versions.at(-1));
+              '
+          )"
+          latest_jspdf_version="$(npm view 'jspdf@latest' version --userconfig=/dev/null --registry=https://registry.npmjs.org/ --ignore-scripts --silent)"
+
+          require_stable_version 'Published Shaka latest' "$latest_shaka_version"
+          require_stable_version 'Published Shaka v4 LTS' "$latest_shaka_v4_version"
+          require_stable_version 'Published jsPDF latest' "$latest_jspdf_version"
+          [[ "$latest_shaka_v4_version" =~ ^4\.16\. ]] || {
+            echo 'The public registry did not return a Shaka 4.16 release.' >&2
+            exit 1
+          }
+
+          version_is_newer() {
+            local candidate_major candidate_minor candidate_patch
+            local current_major current_minor current_patch
+            IFS=. read -r candidate_major candidate_minor candidate_patch <<< "$1"
+            IFS=. read -r current_major current_minor current_patch <<< "$2"
+            ((
+              candidate_major > current_major ||
+              (candidate_major == current_major && candidate_minor > current_minor) ||
+              (candidate_major == current_major && candidate_minor == current_minor && candidate_patch > current_patch)
+            ))
+          }
+
+          shaka_update_available=false
+          for current_shaka_version in "$marketing_shaka_version" "$learning_shaka_version"; do
+            if version_is_newer "$latest_shaka_version" "$current_shaka_version" ||
+              version_is_newer "$latest_shaka_v4_version" "$current_shaka_version"; then
+              shaka_update_available=true
+            fi
+          done
+
+          if version_is_newer "$latest_jspdf_version" "$current_jspdf_version"; then
+            jspdf_update_available=true
+          elif [[ "$latest_jspdf_version" == "$current_jspdf_version" ]]; then
+            jspdf_update_available=false
+          else
+            echo "Public latest jsPDF $latest_jspdf_version is older than deployed $current_jspdf_version." >&2
+            exit 1
+          fi
+
+          {
+            echo "marketing_shaka_version=$marketing_shaka_version"
+            echo "learning_shaka_version=$learning_shaka_version"
+            echo "current_jspdf_version=$current_jspdf_version"
+            echo "latest_shaka_version=$latest_shaka_version"
+            echo "latest_shaka_v4_version=$latest_shaka_v4_version"
+            echo "latest_jspdf_version=$latest_jspdf_version"
+            echo "shaka_update_available=$shaka_update_available"
+            echo "jspdf_update_available=$jspdf_update_available"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Shaka pins: Marketing $marketing_shaka_version; Learning $learning_shaka_version."
+          echo "Published Shaka: latest $latest_shaka_version; v4 LTS $latest_shaka_v4_version."
+          echo "jsPDF pin: $current_jspdf_version; published latest: $latest_jspdf_version."
+
+  notify:
+    needs: check
+    if: >-
+      needs.check.outputs.shaka_update_available == 'true' ||
+      needs.check.outputs.jspdf_update_available == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - name: Open deduplicated dependency review issues
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_ASSIGNEE: IvyRoom
+          MARKETING_SHAKA_VERSION: ${{ needs.check.outputs.marketing_shaka_version }}
+          LEARNING_SHAKA_VERSION: ${{ needs.check.outputs.learning_shaka_version }}
+          CURRENT_JSPDF_VERSION: ${{ needs.check.outputs.current_jspdf_version }}
+          LATEST_SHAKA_VERSION: ${{ needs.check.outputs.latest_shaka_version }}
+          LATEST_SHAKA_V4_VERSION: ${{ needs.check.outputs.latest_shaka_v4_version }}
+          LATEST_JSPDF_VERSION: ${{ needs.check.outputs.latest_jspdf_version }}
+          SHAKA_UPDATE_AVAILABLE: ${{ needs.check.outputs.shaka_update_available }}
+          JSPDF_UPDATE_AVAILABLE: ${{ needs.check.outputs.jspdf_update_available }}
+        run: |
+          set -euo pipefail
+          open_review_issue() {
+            local issue_title="$1"
+            local issue_body="$2"
+            local existing_issue
+            existing_issue="$(
+              gh api --paginate --method GET \
+                "repos/$GITHUB_REPOSITORY/issues" \
+                -f state=all \
+                -f per_page=100 \
+                --jq ".[] | select(.pull_request == null and .title == \"$issue_title\") | .number"
+            )"
+            if [[ -n "$existing_issue" ]]; then
+              echo "An issue already records $issue_title."
+              return
+            fi
+
+            gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$issue_title" \
+              --body "$issue_body" \
+              --assignee "$ISSUE_ASSIGNEE"
+          }
+
+          if [[ "$SHAKA_UPDATE_AVAILABLE" == 'true' ]]; then
+            shaka_title="Shaka Player $LATEST_SHAKA_VERSION (v4 LTS $LATEST_SHAKA_V4_VERSION) is available"
+            shaka_body="$(printf '%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n' \
+              "Public npm metadata reports Shaka Player $LATEST_SHAKA_VERSION as latest stable and $LATEST_SHAKA_V4_VERSION as the maintained v4 LTS release." \
+              "Sistemas currently deploys Marketing Shaka $MARKETING_SHAKA_VERSION and Learning Shaka $LEARNING_SHAKA_VERSION as intentionally distinct CDN pins." \
+              "Review the stable release: https://github.com/shaka-project/shaka-player/releases/tag/v$LATEST_SHAKA_VERSION" \
+              "Review the v4 LTS release and maintenance policy: https://github.com/shaka-project/shaka-player/releases/tag/v$LATEST_SHAKA_V4_VERSION and https://github.com/shaka-project/shaka-player/blob/main/maintained-branches.md" \
+              'Qualify any change deliberately for playback and DRM, including controlled Windows 11, Edge, and PlayReady evidence for Learning.' \
+              'No source file, CDN URL, or pull request was changed automatically.')"
+            open_review_issue "$shaka_title" "$shaka_body"
+          fi
+
+          if [[ "$JSPDF_UPDATE_AVAILABLE" == 'true' ]]; then
+            jspdf_title="jsPDF $LATEST_JSPDF_VERSION is available"
+            jspdf_body="$(printf '%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n' \
+              "Public npm metadata reports jsPDF $LATEST_JSPDF_VERSION; Learning currently deploys jsPDF $CURRENT_JSPDF_VERSION from its frozen CDN pin." \
+              "Monitoring alone does not resolve the advisory-affected jsPDF $CURRENT_JSPDF_VERSION baseline." \
+              "Review the release: https://github.com/parallax/jsPDF/releases/tag/v$LATEST_JSPDF_VERSION" \
+              'Review the security policy and published advisories: https://github.com/parallax/jsPDF/security' \
+              "Prioritize a qualified jsPDF 4.2.1 upgrade through the separate \"Qualify jsPDF 4.2.1 upgrade\" task before returning to routine maintenance." \
+              'No source file, CDN URL, or pull request was changed automatically.')"
+            open_review_issue "$jspdf_title" "$jspdf_body"
+          fi

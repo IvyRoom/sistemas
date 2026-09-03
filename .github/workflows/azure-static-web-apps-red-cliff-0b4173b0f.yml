@@ -8,6 +8,7 @@ on:
       - '**/*.md'
       - '.agents/**'
       - '.github/dependabot.yml'
+      - '.github/workflows/browser-dependency-version-check.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
