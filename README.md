@@ -256,3 +256,7 @@ The repository has no root-level `staticwebapp.config.json`, `routes.json`, or
 `CNAME`. Routes come from the directory entry points listed above; DNS, custom
 domain, Azure redirect, and Static Web App settings are managed outside this
 repository.
+
+Actions hardening, reviewed action pins, separate Node/runtime layers, lifecycle
+dates, and the maintenance review policy are recorded in
+[Actions and Node lifecycle](docs/actions-node-lifecycle.md).
