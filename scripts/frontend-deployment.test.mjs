@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { request as httpRequest } from "node:http";
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, extname, join } from "node:path";
 import test from "node:test";
@@ -2057,6 +2057,107 @@ function yamlDirectKeys(block, indentation) {
     .filter(Boolean);
 }
 
+function workflowActions(source) {
+  return Array.from(
+    source.matchAll(/^[ \t]*(?:-[ \t]*)?uses:[ \t]*(\S+)(?:[ \t]+#.*)?$/gm),
+    ([, action]) => action
+  );
+}
+
+test("repository workflows pin actions and bound credential-free Node jobs", async () => {
+  const workflowDirectory = new URL("../.github/workflows/", import.meta.url);
+  const filenames = (await readdir(workflowDirectory)).filter((name) => /\.ya?ml$/.test(name));
+  assert.equal(filenames.length, 3);
+
+  for (const filename of filenames) {
+    const workflow = (await readFile(new URL(filename, workflowDirectory), "utf8"))
+      .replace(/\r\n/g, "\n");
+    assert.match(workflow, /^permissions: \{\}$/m, filename);
+    assert.doesNotMatch(workflow, /\bpull_request_target\b|\bwrite-all\b/, filename);
+
+    const actionLines = workflow.split("\n").filter((line) => /\buses:/.test(line));
+    assert.ok(actionLines.length > 0, filename);
+    for (const line of actionLines) {
+      assert.match(line, /^\s*(?:-\s*)?uses: [\w-]+\/[\w-]+@[0-9a-f]{40} # v\d+(?:\.\d+\.\d+)?$/, filename);
+    }
+
+    const jobs = yamlMappingBlock(workflow, 0, "jobs");
+    for (const jobName of yamlDirectKeys(jobs, 2)) {
+      const job = yamlMappingBlock(jobs, 2, jobName);
+      assert.match(job, /^    permissions:/m, `${filename}: ${jobName}`);
+      const timeout = Number(job.match(/^    timeout-minutes: (\d+)$/m)?.[1]);
+      assert.ok(timeout > 0 && timeout <= 20, `${filename}: ${jobName} must be bounded`);
+      for (const step of job.split(/^      - /m).slice(1)) {
+        if (step.includes("uses: actions/checkout@")) {
+          assert.match(step, /^          persist-credentials: false$/m);
+        }
+        if (step.includes("uses: actions/setup-node@")) {
+          assert.match(step, /^          node-version: '24.x'$/m);
+          assert.match(step, /^          package-manager-cache: false$/m);
+          assert.doesNotMatch(step, /^          cache:/m);
+        }
+      }
+      if (workflowActions(job).some((action) => action.startsWith("actions/checkout@"))) {
+        assert.ok(job.indexOf("uses: actions/setup-node@") > job.indexOf("uses: actions/checkout@"));
+        assert.ok(job.indexOf("uses: actions/setup-node@") < job.indexOf("run:"));
+      }
+    }
+  }
+
+  const dependabot = await readFile(new URL("../.github/dependabot.yml", import.meta.url), "utf8");
+  assert.match(dependabot, /package-ecosystem: "github-actions"[\s\S]*interval: "weekly"/);
+});
+
+test("Azure deployment serializes uploads and cleanup with minimal authority", async () => {
+  const workflow = await readFile(
+    new URL("../.github/workflows/azure-static-web-apps-red-cliff-0b4173b0f.yml", import.meta.url),
+    "utf8"
+  );
+  const concurrency = yamlMappingBlock(workflow, 0, "concurrency");
+  assert.match(concurrency, /^  group: swa-deployment-\$\{\{ github\.event\.pull_request\.number \|\| github\.ref \}\}$/m);
+  assert.match(concurrency, /^  queue: max #/m);
+  assert.match(concurrency, /^  cancel-in-progress: false$/m);
+  assert.equal((workflow.match(/concurrency:/g) ?? []).length, 1);
+
+  const build = yamlMappingBlock(workflow, 2, "build_and_deploy_job");
+  const permissions = yamlMappingBlock(build, 4, "permissions");
+  assert.deepEqual(yamlDirectKeys(permissions, 6), ["contents", "pull-requests"]);
+  assert.match(permissions, /^      contents: read$/m);
+  assert.match(permissions, /^      pull-requests: write #/m);
+  assert.deepEqual(workflowActions(build).map((action) => action.split("@")[0]), [
+    "actions/checkout", "actions/setup-node", "actions/upload-artifact", "Azure/static-web-apps-deploy"
+  ]);
+  assert.match(build, /^          submodules: true$/m);
+  assert.match(build, /^          lfs: false$/m);
+  assert.match(build, /^          app_location: "dist" #/m);
+  assert.match(build, /^          skip_app_build: true$/m);
+  assert.match(build, /^          include-hidden-files: true$/m);
+  assert.match(build, /^          if-no-files-found: error$/m);
+  assert.match(build, /^          PREVIEW_URL: \$\{\{ steps\.builddeploy\.outputs\.static_web_app_url \}\}$/m);
+  assert.match(build, /^        run: node scripts\/check-deployment\.mjs --base-url "\$PREVIEW_URL"$/m);
+  assert.doesNotMatch(build, /run:.*\$\{\{/);
+
+  const close = yamlMappingBlock(workflow, 2, "close_pull_request_job");
+  const closePermissions = yamlMappingBlock(close, 4, "permissions");
+  assert.deepEqual(yamlDirectKeys(closePermissions, 6), ["pull-requests"]);
+  assert.match(closePermissions, /^      pull-requests: read$/m);
+  assert.deepEqual(workflowActions(close), workflowActions(build).slice(-1));
+  assert.doesNotMatch(close, /repo_token:|checkout@/);
+  assert.match(close, /^          action: "close"$/m);
+  for (const job of [build, close]) {
+    assert.match(job, /^          GH_TOKEN: \$\{\{ github\.token \}\}$/m);
+    assert.match(job, /^          PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}$/m);
+    assert.match(job, /set -euo pipefail\n\s+state="\$\(gh api "repos\/\$GITHUB_REPOSITORY\/pulls\/\$PR_NUMBER" --jq '\.state'\)"/);
+    assert.match(job, /open\|closed\) echo "state=\$state" >> "\$GITHUB_OUTPUT"/);
+    assert.match(job, /\*\) echo 'Unexpected pull request state\.' >&2; exit 1/);
+    assert.ok(job.indexOf('state="$(gh api') < job.indexOf("uses: Azure/static-web-apps-deploy@"));
+    assert.doesNotMatch(job, /gh (?:pr|issue)|gh api.*(?:--method|-X)/);
+  }
+  assert.match(build, /name: Build And Deploy\n\s+if: github\.event_name == 'push' \|\| steps\.preview_state\.outputs\.state == 'open'/);
+  assert.match(build, /name: Validate Azure preview\n\s+if: github\.event_name == 'pull_request' && steps\.preview_state\.outputs\.state == 'open'/);
+  assert.match(close, /name: Close Pull Request\n\s+if: steps\.preview_state\.outputs\.state == 'closed'/);
+});
+
 test("Dependabot validation is isolated from Azure deployment", async () => {
   const [validationWorkflow, deploymentWorkflow] = await Promise.all([
     readFile(
@@ -2090,12 +2191,14 @@ test("Dependabot validation is isolated from Azure deployment", async () => {
   assert.deepEqual(yamlDirectKeys(jobsBlock, 2), ["validate"]);
   assert.doesNotMatch(validationWorkflow, /\bpull_request_target\b/);
   assert.doesNotMatch(validationWorkflow, /\bworkflow_dispatch\b/);
-  assert.match(
-    validationWorkflow,
-    /^permissions:\r?\n  contents: read\r?\n\r?\njobs:/m
-  );
+  assert.match(validationWorkflow, /^permissions: \{\}$/m);
   assert.equal((validationWorkflow.match(/^permissions:/gm) ?? []).length, 1);
-  assert.equal((validationWorkflow.match(/^[ \t]+permissions:/gm) ?? []).length, 0);
+  const validationPermissions = yamlMappingBlock(validationJob, 4, "permissions");
+  assert.deepEqual(yamlDirectKeys(validationPermissions, 6), ["contents"]);
+  assert.match(validationPermissions, /^      contents: read$/m);
+  const concurrency = yamlMappingBlock(validationWorkflow, 0, "concurrency");
+  assert.match(concurrency, /^  group: dependabot-validation-\$\{\{ github\.event\.pull_request\.number \}\}$/m);
+  assert.match(concurrency, /^  cancel-in-progress: true$/m);
   assert.match(
     validationJob,
     /^\s*if: github\.event\.pull_request\.user\.login == 'dependabot\[bot\]'$/m
@@ -2103,23 +2206,15 @@ test("Dependabot validation is isolated from Azure deployment", async () => {
   assert.ok(
     validationJob.split("\n").some((line) => line.trim() === "persist-credentials: false")
   );
-  const validationActions = Array.from(
-    validationJob.matchAll(/^\s*(?:-\s*)?uses:\s*(\S+)$/gm),
-    ([, action]) => action
-  );
-  assert.equal(validationActions.length, 1);
-  assert.match(
-    validationActions[0],
-    /^actions\/checkout@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/,
-    "Bot validation may execute only a reviewed checkout release or commit"
-  );
+  const validationActions = workflowActions(validationJob);
+  assert.equal(validationActions.length, 2);
   assert.deepEqual(
     Array.from(
       validationActions,
       (action) => action.slice(0, action.lastIndexOf("@"))
     ),
-    ["actions/checkout"],
-    "Bot validation may execute only the credential-free checkout action"
+    ["actions/checkout", "actions/setup-node"],
+    "Bot validation may execute only credential-free checkout and uncached Node setup"
   );
 
   for (const command of [
@@ -2158,11 +2253,11 @@ test("Dependabot validation is isolated from Azure deployment", async () => {
   );
   assert.match(
     buildAndDeployJob,
-    /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/m
+    /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@[0-9a-f]{40} # v1$/m
   );
   assert.match(
     closePullRequestJob,
-    /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/m
+    /^[ \t]*(?:-[ \t]*)?uses: Azure\/static-web-apps-deploy@[0-9a-f]{40} # v1$/m
   );
 });
 
@@ -2232,10 +2327,7 @@ test("browser dependency checker only opens deduplicated review issues", async (
     assert.ok(checkJob.split("\n").some((line) => line.trim() === requiredLine));
   }
 
-  const actions = Array.from(
-    workflow.matchAll(/^\s*(?:-\s*)?uses:\s*(\S+)$/gm),
-    ([, action]) => action
-  );
+  const actions = workflowActions(workflow);
   assert.deepEqual(
     actions.map((action) => action.slice(0, action.lastIndexOf("@"))),
     ["actions/checkout", "actions/setup-node"]
@@ -2243,7 +2335,7 @@ test("browser dependency checker only opens deduplicated review issues", async (
   for (const action of actions) {
     assert.match(
       action,
-      /^(?:actions\/checkout|actions\/setup-node)@(?:v\d+(?:\.\d+\.\d+)?|[0-9a-f]{40})$/
+      /^(?:actions\/checkout|actions\/setup-node)@[0-9a-f]{40}$/
     );
   }
 
