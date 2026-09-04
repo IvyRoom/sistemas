@@ -13,27 +13,27 @@ export function createCertificateRenderer(getJsPdfConstructor) {
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(14);
         doc.setFont('Helvetica','normal');
-        doc.text('Certificamos que', 105, 60, null, null, 'center');
+        doc.text('Certificamos que', 105, 60, { align: 'center' });
 
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(20);
         doc.setFont('Helvetica','bold');
-        doc.text(fullName, 105, 80, null, null, 'center');
+        doc.text(fullName, 105, 80, { align: 'center' });
 
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(14);
         doc.setFont('Helvetica','normal');
-        doc.text('foi aprovado(a) na', 105, 100, null, null, 'center');
+        doc.text('foi aprovado(a) na', 105, 100, { align: 'center' });
 
         doc.setTextColor(74, 8, 22);
         doc.setFontSize(20);
         doc.setFont('Helvetica','bold');
-        doc.text('Formação em Método Gerencial', 105, 120, null, null, 'center');
+        doc.text('Formação em Método Gerencial', 105, 120, { align: 'center' });
 
         doc.setTextColor(74, 8, 22);
         doc.setFontSize(18);
         doc.setFont('Helvetica','bold');
-        doc.text('(Competências Técnicas)', 105, 128, null, null, 'center');
+        doc.text('(Competências Técnicas)', 105, 128, { align: 'center' });
 
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(13);
@@ -41,16 +41,16 @@ export function createCertificateRenderer(getJsPdfConstructor) {
 
         if (accumulatedGrade >=0.95){
 
-            doc.text(doc.splitTextToSize('Esta formação capacita profissionais na implementação de soluções gerenciais científicas, passando por inúmeros conceitos e ferramentas do Método Gerencial e do Sistema de Gestão, com ênfase na aplicação da Equação Fundamental da Gestão, dos Princípios Basilares, do Ger. Diretrizes e do Ger. Rotina à solução de problemas reais.', 160), 105, 145, null, null, 'center');
+            doc.text(doc.splitTextToSize('Esta formação capacita profissionais na implementação de soluções gerenciais científicas, passando por inúmeros conceitos e ferramentas do Método Gerencial e do Sistema de Gestão, com ênfase na aplicação da Equação Fundamental da Gestão, dos Princípios Basilares, do Ger. Diretrizes e do Ger. Rotina à solução de problemas reais.', 160), 105, 145, { align: 'center' });
 
             doc.setTextColor(164, 16, 52);
             doc.setFontSize(18);
             doc.setFont('Helvetica','bold');
-            doc.text('Aprovação com Honra', 105, 180, null, null, 'center');
+            doc.text('Aprovação com Honra', 105, 180, { align: 'center' });
 
         } else {
 
-            doc.text(doc.splitTextToSize('Esta formação capacita profissionais na implementação de soluções gerenciais científicas, passando por inúmeros conceitos e ferramentas do Método Gerencial e do Sistema de Gestão, com ênfase na aplicação da Equação Fundamental da Gestão, dos Princípios Basilares, do Ger. Diretrizes e do Ger. Rotina à solução de problemas reais.', 160), 105, 150, null, null, 'center');
+            doc.text(doc.splitTextToSize('Esta formação capacita profissionais na implementação de soluções gerenciais científicas, passando por inúmeros conceitos e ferramentas do Método Gerencial e do Sistema de Gestão, com ênfase na aplicação da Equação Fundamental da Gestão, dos Princípios Basilares, do Ger. Diretrizes e do Ger. Rotina à solução de problemas reais.', 160), 105, 150, { align: 'center' });
 
         }
 
@@ -72,13 +72,13 @@ export function createCertificateRenderer(getJsPdfConstructor) {
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(15);
         doc.setFont('Helvetica','bold');
-        doc.text('CERTIFICADO DE CONCLUSÃO', 105, 252, null, null, 'center');
+        doc.text('CERTIFICADO DE CONCLUSÃO', 105, 252, { align: 'center' });
 
         doc.setTextColor(130, 130, 130);
         doc.setFontSize(10);
         doc.setFont('Helvetica','normal');
-        doc.text('Certificado ID#: ' + certificateId, 105, 260, null, null, 'center');
-        doc.text('Validação via: https://machadogestao.com/validacao-certificados/', 105, 265, null, null, 'center');
+        doc.text('Certificado ID#: ' + certificateId, 105, 260, { align: 'center' });
+        doc.text('Validação via: https://machadogestao.com/validacao-certificados/', 105, 265, { align: 'center' });
 
         doc.save('CERTIFICADO - ' + fullName + '.pdf');
 
