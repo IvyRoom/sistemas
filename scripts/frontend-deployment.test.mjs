@@ -2284,8 +2284,19 @@ test("browser dependency checker only opens deduplicated review issues", async (
     marketingShakaJavaScript: ["4.3.5"],
     learningShakaCss: ["4.6.0"],
     learningShakaJavaScript: ["4.6.0"],
-    learningJspdfJavaScript: ["2.5.1"]
+    learningJspdfJavaScript: ["4.2.1"]
   });
+  assert.deepEqual(
+    Array.from(
+      learningHtml.matchAll(/<script\b[^>]*>[\s\S]*?<\/script>/g),
+      ([script]) => script
+    ).slice(-3),
+    [
+      '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js"></script>',
+      '<script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js"></script>',
+      '<script type="module" src="/plataforma/estudo/main.js"></script>'
+    ]
+  );
   assert.match(
     checkJob,
     /\[\[ "\$marketing_shaka_css_version" == "\$marketing_shaka_js_version" \]\]/
@@ -2440,12 +2451,17 @@ test("browser dependency checker only opens deduplicated review issues", async (
     "$LATEST_JSPDF_VERSION",
     "https://github.com/parallax/jsPDF/releases/tag/v$LATEST_JSPDF_VERSION",
     "https://github.com/parallax/jsPDF/security",
-    "Qualify jsPDF 4.2.1 upgrade",
-    "Prioritize a qualified jsPDF 4.2.1 upgrade",
-    "Monitoring alone does not resolve the advisory-affected"
+    "Qualify jsPDF $LATEST_JSPDF_VERSION upgrade",
+    "Prioritize a qualified jsPDF $LATEST_JSPDF_VERSION upgrade",
+    "Monitoring is not remediation; qualify security and certificate compatibility"
   ]) {
     assert.ok(notifyJob.includes(requiredJspdfContent));
   }
+  assert.doesNotMatch(
+    notifyJob,
+    /(?:Qualify|qualified) jsPDF [0-9]+\.[0-9]+\.[0-9]+ upgrade/
+  );
+  assert.doesNotMatch(notifyJob, /advisory-affected jsPDF/);
   assert.equal(
     (
       notifyJob.match(

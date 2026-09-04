@@ -270,6 +270,7 @@ function installShaka() {
 
 function createStudyHarness({
   configureDrm,
+  getJsPdfConstructor = () => class {},
   includeDefaultDeadline = true,
   installTopics = false,
   isDrmEnabled = () => true,
@@ -306,7 +307,6 @@ function createStudyHarness({
   });
   const dom = createStudyDom(dependencies.document);
   const shaka = installShaka();
-  let PdfConstructor = class {};
   const player = createStudyPlayer({
     alert: dependencies.alert,
     configureDrm: configureDrm ?? ((shakaPlayer) => {
@@ -341,7 +341,7 @@ function createStudyHarness({
     navigate: dependencies.navigate,
     navigator: dependencies.navigator,
     replaceNavigation: dependencies.replaceNavigation,
-    renderCertificate: createCertificateRenderer(() => PdfConstructor),
+    renderCertificate: createCertificateRenderer(getJsPdfConstructor),
     session,
     timers: {
       clearInterval: dependencies.clearInterval,
@@ -357,7 +357,6 @@ function createStudyHarness({
     harness,
     player,
     requestTargets,
-    setPdfConstructor(value) { PdfConstructor = value; },
     shaka: shaka.observations,
     topics
   };
@@ -1272,37 +1271,122 @@ test("[ERROR-01] every protected study mutation maps synthetic 401 to generic Er
 
 function createPdfRecorder() {
   const calls = [];
+  const textFonts = [];
+  const splitLines = Object.freeze([
+    "Linha sintética 1: formação e gestão.",
+    "Linha sintética 2: soluções científicas."
+  ]);
+  let currentFont;
+  const record = (method, args) => calls.push({ method, args });
   class Pdf {
-    addImage(target, format) {
-      calls.push({ format, path: String(target) });
+    constructor(...args) { record("constructor", args); }
+    addImage(...args) { record("addImage", args); }
+    save(...args) { record("save", args); }
+    setFont(...args) {
+      record("setFont", args);
+      currentFont = args;
     }
-    save(filename) { calls.push({ filename, type: "save" }); }
-    setFont() {}
-    setFontSize() {}
-    setTextColor() {}
-    splitTextToSize(value) { return value; }
-    text(value) {
-      const rendered = String(value);
-      if (rendered.startsWith("Validação via: ")) {
-        calls.push({
-          ...safeNetworkPath(rendered.slice("Validação via: ".length)),
-          type: "external-text"
-        });
-      } else {
-        calls.push({ text: rendered, type: "text" });
-      }
+    setFontSize(...args) { record("setFontSize", args); }
+    setTextColor(...args) { record("setTextColor", args); }
+    splitTextToSize(...args) {
+      record("splitTextToSize", args);
+      return splitLines;
+    }
+    text(...args) {
+      record("text", args);
+      textFonts.push({ text: args[0], font: currentFont });
     }
   }
-  return { calls, Pdf };
+  return {
+    calls,
+    event: {
+      preventDefault(...args) { record("preventDefault", args); }
+    },
+    getJsPdfConstructor(...args) {
+      record("getJsPdfConstructor", args);
+      return Pdf;
+    },
+    splitLines,
+    textFonts
+  };
 }
 
-function certificateRun({ completed = 171, grade }) {
-  const { controller, harness, setPdfConstructor } = createStudyHarness();
-  setStudyState(controller, { accumulatedGrade: grade, completed });
+function expectedCertificateTrace({ certificateId, fullName, honor, splitLines }) {
+  const call = (method, ...args) => ({ method, args });
+  const validationUrl = ["https:", "", "machadogestao.com", "validacao-certificados", ""].join("/");
+  return [
+    call("preventDefault"),
+    call("getJsPdfConstructor"),
+    call("constructor"),
+    call("addImage", "/plataforma/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg", "PNG", 20, 20, 17, 17),
+    call("setTextColor", 130, 130, 130),
+    call("setFontSize", 14),
+    call("setFont", "Helvetica", "normal"),
+    call("text", "Certificamos que", 105, 60, { align: "center" }),
+    call("setTextColor", 0, 0, 0),
+    call("setFontSize", 20),
+    call("setFont", "Helvetica", "bold"),
+    call("text", fullName, 105, 80, { align: "center" }),
+    call("setTextColor", 130, 130, 130),
+    call("setFontSize", 14),
+    call("setFont", "Helvetica", "normal"),
+    call("text", "foi aprovado(a) na", 105, 100, { align: "center" }),
+    call("setTextColor", 74, 8, 22),
+    call("setFontSize", 20),
+    call("setFont", "Helvetica", "bold"),
+    call("text", "Formação em Método Gerencial", 105, 120, { align: "center" }),
+    call("setTextColor", 74, 8, 22),
+    call("setFontSize", 18),
+    call("setFont", "Helvetica", "bold"),
+    call("text", "(Competências Técnicas)", 105, 128, { align: "center" }),
+    call("setTextColor", 130, 130, 130),
+    call("setFontSize", 13),
+    call("setFont", "Helvetica", "normal"),
+    call("splitTextToSize", "Esta formação capacita profissionais na implementação de soluções gerenciais científicas, passando por inúmeros conceitos e ferramentas do Método Gerencial e do Sistema de Gestão, com ênfase na aplicação da Equação Fundamental da Gestão, dos Princípios Basilares, do Ger. Diretrizes e do Ger. Rotina à solução de problemas reais.", 160),
+    call("text", splitLines, 105, honor ? 145 : 150, { align: "center" }),
+    ...(honor ? [
+      call("setTextColor", 164, 16, 52),
+      call("setFontSize", 18),
+      call("setFont", "Helvetica", "bold"),
+      call("text", "Aprovação com Honra", 105, 180, { align: "center" })
+    ] : []),
+    call("setTextColor", 130, 130, 130),
+    call("setFontSize", 12),
+    call("text", "CURITIBA, PARANÁ", 20, 200),
+    call("text", "____________________________", 20, 210),
+    call("addImage", "/plataforma/estudo/img/ASSINATURA.png", "PNG", 20, 203, 55, 8),
+    call("setFontSize", 10),
+    call("text", "L. B. MACHADO", 20, 215),
+    call("text", "Fundador e Instrutor Titular:", 20, 220),
+    call("text", "Formação em Método Gerencial (Competências Técnicas)", 20, 225),
+    call("text", "Machado | Método Gerencial para Empresas", 20, 230),
+    call("addImage", "/plataforma/estudo/img/ATLAS.png", "PNG", 140, 187, 50, 50),
+    call("setTextColor", 0, 0, 0),
+    call("setFontSize", 15),
+    call("setFont", "Helvetica", "bold"),
+    call("text", "CERTIFICADO DE CONCLUSÃO", 105, 252, { align: "center" }),
+    call("setTextColor", 130, 130, 130),
+    call("setFontSize", 10),
+    call("setFont", "Helvetica", "normal"),
+    call("text", `Certificado ID#: ${certificateId}`, 105, 260, { align: "center" }),
+    call("text", `Validação via: ${validationUrl}`, 105, 265, { align: "center" }),
+    call("save", `CERTIFICADO - ${fullName}.pdf`)
+  ];
+}
+
+function certificateRun({
+  certificateId = "CERT-FIXTURE-001",
+  completed = 171,
+  fullName = "Invented Learner",
+  grade
+}) {
   const recorder = createPdfRecorder();
-  setPdfConstructor(recorder.Pdf);
+  const { controller, harness, requestTargets } = createStudyHarness({
+    getJsPdfConstructor: recorder.getJsPdfConstructor
+  });
+  setStudyState(controller, { accumulatedGrade: grade, certificateId, completed, fullName });
   controller.openPerformance();
-  return { harness, recorder };
+  return { harness, recorder, requestTargets };
 }
 
 test("[FLOW-06] performance view keeps exact chart scale, colors, percentages, and layout changes", () => {
@@ -1373,40 +1457,62 @@ test("[FLOW-06] certificate eligibility keeps exact completion and grade thresho
   assert.notEqual(incomplete.element("Container-Interno-Orientações-Certificado").style.display, "block");
 });
 
-test("[FLOW-06] certificate PDF uses client-held identity, grade branch, ID, validation path, and three local images", () => {
-  const { harness, recorder } = certificateRun({ grade: 0.95 });
-  const ordinary = certificateRun({ grade: 0.7 });
-  let prevented = false;
-  harness.element("Botão-Download-Certificado-Impresso").onclick({
-    preventDefault() { prevented = true; }
-  });
-  ordinary.harness.element("Botão-Download-Certificado-Impresso").onclick({
-    preventDefault() {}
-  });
+test("[FLOW-06] Study injects the exact lazy jsPDF UMD constructor", () => {
+  assert.match(
+    studyMainSource,
+    /^\s*renderCertificate: createCertificateRenderer\(\(\) => window\.jspdf\.jsPDF\),$/m
+  );
+});
 
-  assert.equal(prevented, true);
-  assert.equal(
-    recorder.calls.some((call) => call.text === "Aprovação com Honra"),
-    true
-  );
-  assert.equal(
-    ordinary.recorder.calls.some((call) => call.text === "Aprovação com Honra"),
-    false
-  );
-  const images = recorder.calls.filter((call) => call.format);
-  assert.deepEqual(images, [
-    { format: "PNG", path: "/plataforma/estudo/img/LOGO_MACHADO_CERTIFICADO.jpg" },
-    { format: "PNG", path: "/plataforma/estudo/img/ASSINATURA.png" },
-    { format: "PNG", path: "/plataforma/estudo/img/ATLAS.png" }
-  ]);
-  assert.ok(recorder.calls.some((call) => call.text === "Invented Learner"));
-  assert.ok(recorder.calls.some((call) => call.text === "Certificado ID#: CERT-FIXTURE-001"));
-  assert.ok(recorder.calls.some((call) =>
-    call.type === "external-text" &&
-    call.valid === true &&
-    call.pathname === "/validacao-certificados/"
-  ));
-  assert.ok(recorder.calls.some((call) => call.filename === "CERTIFICADO - Invented Learner.pdf"));
+test("[FLOW-06] certificate PDF keeps options-based centering and complete ordinary/honor traces", () => {
+  const certificateId = "CERT-ÁGATA-0421";
+  const fullName = "Ágata Invenção";
+  const footerText = [
+    "CURITIBA, PARANÁ",
+    "____________________________",
+    "L. B. MACHADO",
+    "Fundador e Instrutor Titular:",
+    "Formação em Método Gerencial (Competências Técnicas)",
+    "Machado | Método Gerencial para Empresas"
+  ];
+  for (const fixture of [
+    { grade: 0.70, honor: false, traceLength: 50 },
+    { grade: 0.95, honor: true, traceLength: 54 }
+  ]) {
+    const { harness, recorder, requestTargets } = certificateRun({
+      certificateId,
+      fullName,
+      grade: fixture.grade
+    });
+    assert.deepEqual(recorder.calls, [], "The constructor must remain lazy until download");
+    harness.element("Botão-Download-Certificado-Impresso").onclick(recorder.event);
+
+    assert.equal(recorder.calls.length, fixture.traceLength);
+    assert.deepEqual(recorder.calls, expectedCertificateTrace({
+      certificateId,
+      fullName,
+      honor: fixture.honor,
+      splitLines: recorder.splitLines
+    }));
+    const wrappedTextCalls = recorder.calls.filter(
+      ({ method, args }) => method === "text" && Array.isArray(args[0])
+    );
+    assert.equal(wrappedTextCalls.length, 1);
+    assert.strictEqual(
+      wrappedTextCalls[0].args[0],
+      recorder.splitLines,
+      "Description rendering must receive the exact splitTextToSize return array"
+    );
+    assert.deepEqual(
+      recorder.textFonts.filter(({ text }) => footerText.includes(text)),
+      footerText.map((text) => ({
+        text,
+        font: ["Helvetica", fixture.honor ? "bold" : "normal"]
+      })),
+      "The footer must inherit bold only from the honor branch, without a font reset"
+    );
+    assert.deepEqual(requestTargets, [], "Certificate download must not request the backend");
+  }
 });
 
 test("[FLOW-06] logout hides and blocks Study, stops local work, removes only the handle, and replaces to Login", async () => {

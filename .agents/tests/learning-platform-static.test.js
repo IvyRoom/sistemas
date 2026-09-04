@@ -1549,10 +1549,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(records),
     {
       files: 182,
-      bytes: 20758017,
-      digest: "bb071712d59e1d49d13615fe6e4aa2482bbddf2667843bc39394b37e788aa88e"
+      bytes: 20758006,
+      digest: "6b021520980a656a7c89d821c624ab19363e116971b9f1d143a3912401a21c3c"
     },
-    "The current manifest must produce the exact lean signed-handle platform target"
+    "The current manifest must produce the exact platform artifact"
   );
   assert.deepEqual(
     treeStats(records.map((record) => ({
@@ -1561,10 +1561,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     }))),
     {
       files: 182,
-      bytes: 20758017,
-      digest: "2f7ddc5ab3b6a71acb0cd5568ab3d03f23ed01198b303c29ca824afa1e0e4236"
+      bytes: 20758006,
+      digest: "5f318212c1d985df7c26274c71ae233aff1cb3b234ca0c756624296885bdea81"
     },
-    "The current manifest must produce the exact prefix-omitted lean signed-handle target"
+    "The current manifest must produce the exact prefix-omitted platform identity"
   );
   const javaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() === ".js"
@@ -1573,10 +1573,10 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     treeStats(javaScriptRecords),
     {
       files: 36,
-      bytes: 470879,
-      digest: "0198ae883811b585120290f1d4596e91ec79280aa5f889c189cdf9242cb79178"
+      bytes: 470868,
+      digest: "cfa9c8c8404e2af024fe798a0e2472d7e7f0f0848b12c655dae92c7dc21a4869"
     },
-    "The platform JavaScript files must retain their exact lean signed-handle identity"
+    "The platform JavaScript files must retain their exact current identity"
   );
   const nonJavaScriptRecords = records.filter(
     ({ output }) => path.posix.extname(output).toLowerCase() !== ".js"
@@ -1586,9 +1586,9 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     {
       files: 146,
       bytes: 20287138,
-      digest: "f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357"
+      digest: "fe6bd4d3b5a0e5deae66c6082a7e66166452a6d2468339b6c3d128442a6bcc72"
     },
-    "The platform non-JavaScript paths and bytes must match the deployed-path alignment"
+    "The platform non-JavaScript paths and bytes must match the current jsPDF pin"
   );
   const binaryExtensions = new Set([
     ".ico",
@@ -1620,9 +1620,9 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     {
       files: 41,
       bytes: 10022029,
-      digest: "19cbf0067226f54e1ea521d606762ad9f1acc0b8acd2ff7d5129a1c9e413a44c"
+      digest: "1ab33e83f59f9fdbc27829e50f80e2b347f007b41c0c2ac84ef3e6bc94b2cd60"
     },
-    "The Study entry subtree must retain its lean signed-handle mapped identity"
+    "The Study entry subtree must retain its current mapped identity"
   );
   const backendConsumerApplicationStats = Object.fromEntries(
     backendConsumerApplicationIds.map((applicationId) => [
@@ -1980,7 +1980,7 @@ test("[VIDEO-02] DRM selection, retained player, controls, and completion wiring
   );
 });
 
-test("[ARTIFACT-01] lean signed-handle artifact retains the complete output graph", () => {
+test("[ARTIFACT-01] current frontend artifact retains the complete output graph", () => {
   const historicalPhaseB = {
     files: 257,
     bytes: 27298502,
@@ -2004,10 +2004,10 @@ test("[ARTIFACT-01] lean signed-handle artifact retains the complete output grap
     treeStats(records),
     {
       files: 258,
-      bytes: 27363363,
-      digest: "31f0e0641c40e51c8a6bb30b43e532176f821b894a2bd372b203dcb7c8276bb8"
+      bytes: 27363352,
+      digest: "3a2043dd91ca42aa45ffa5f5f4380dc0947f04e1256efbc25e3223641aba24a0"
     },
-    "The current manifest must produce the exact lean signed-handle frontend artifact"
+    "The current manifest must produce the exact frontend artifact"
   );
   assert.deepEqual(
     treeStats(sharedRuntimeRecords()),

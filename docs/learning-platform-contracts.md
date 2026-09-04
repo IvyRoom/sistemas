@@ -407,7 +407,7 @@ includes a trailing slash and must return its listed `index.html` with HTTP
 | `LP-ENTRY-DEVICE-BROWSER` | `/plataforma/aviso-dispositivo-navegador/` | `apps/learning-platform/device-browser-warning/index.html` | Login favicon; own CSS, logo, and synchronous classic script |
 | `LP-ENTRY-NOTICES` | `/plataforma/avisos-iniciais/` | `apps/learning-platform/initial-notices/index.html` | Login favicon; own CSS/logo; async module; registration storage state |
 | `LP-ENTRY-REGISTER` | `/plataforma/cadastro-foto/` | `apps/learning-platform/photo-registration/index.html` | Login favicon; own CSS/logo/reference image; Face `<base>`; async module; vendored Face component; injected production platform base and stored row handle |
-| `LP-ENTRY-STUDY` | `/plataforma/estudo/` | `apps/learning-platform/course-content/index.html` | Own favicon/CSS/logo; ordered classic Shaka Player 4.6.0 and jsPDF 2.5.1 dependencies; native-module bootstrap; injected production platform base; stored session state; remote DASH media |
+| `LP-ENTRY-STUDY` | `/plataforma/estudo/` | `apps/learning-platform/course-content/index.html` | Own favicon/CSS/logo; ordered classic jsPDF 4.2.1 and Shaka Player 4.6.0 dependencies; native-module bootstrap; injected production platform base; stored session state; remote DASH media |
 | `LP-ENTRY-LOGIN` | `/plataforma/login/` | `apps/learning-platform/login/index.html` | Own favicon/CSS/logo; Face `<base>`; async module; vendored Face component; shared production backend origin |
 | `LP-ENTRY-REPORT` | `/plataforma/statusreport/` | `apps/learning-platform/status-report/index.html` | Own favicon/CSS/logo; async module; query string; shared production backend origin |
 
@@ -421,7 +421,7 @@ sections below:
 | Device/browser warning | `/plataforma/login/img/FAVICON.ico`; `/plataforma/aviso-dispositivo-navegador/style.css`; `/plataforma/aviso-dispositivo-navegador/img/LOGO_MACHADO.png`; `/plataforma/aviso-dispositivo-navegador/main.js` |
 | Initial notices | `/plataforma/login/img/FAVICON.ico`; `/plataforma/avisos-iniciais/style.css`; `/plataforma/avisos-iniciais/img/LOGO_MACHADO.png`; `/plataforma/avisos-iniciais/main.js` |
 | Registration | `/plataforma/login/img/FAVICON.ico`; `/plataforma/cadastro-foto/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/cadastro-foto/img/LOGO_MACHADO.png`; `/plataforma/cadastro-foto/img/REFERÊNCIAS_FOTOS.png`; `/plataforma/cadastro-foto/main.js`; user-invoked `https://www.resizepixel.com/` and `https://cloudconvert.com/` links |
-| Study | `/plataforma/estudo/img/FAVICON.ico`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.css`; `/plataforma/estudo/style.css`; `/plataforma/estudo/img/LOGO_MACHADO.png`; `https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js`; `/plataforma/estudo/main.js` |
+| Study | `/plataforma/estudo/img/FAVICON.ico`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/controls.css`; `/plataforma/estudo/style.css`; `/plataforma/estudo/img/LOGO_MACHADO.png`; `https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js`; `https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.6.0/shaka-player.ui.js`; `/plataforma/estudo/main.js` |
 | Login | `/plataforma/login/img/FAVICON.ico`; `/plataforma/login/style.css`; `/plataforma/azure-ai-vision-face-ui/` as `<base>`; `/plataforma/login/img/LOGO_MACHADO.png`; `/plataforma/login/main.js` |
 | Status report | `/plataforma/statusreport/img/FAVICON.ico`; `/plataforma/statusreport/style.css`; `/plataforma/statusreport/img/LOGO_MACHADO.png`; `/plataforma/statusreport/main.js` |
 
@@ -1574,6 +1574,15 @@ No certificate PDF/template file is stored. jsPDF builds it in the browser from
 legacy format label `PNG`. Study also uses `FAVICON.ico` and
 `LOGO_MACHADO.png`.
 
+jsPDF 4.2.1 retains the UMD global `window.jspdf.jsPDF` and default portrait A4
+construction. Centered `text()` calls use the fourth-argument
+`{ align: 'center' }` options form: the legacy six-argument form no longer centers
+in 4.2.1. This compatibility-only adjustment preserves the original coordinates,
+160-mm wrapping width, font/color sequence, and the honor branch's inherited bold
+footer. FLOW-06 locks the complete ordinary/honor call traces. The passing
+real-build/Edge checks and separate deployment gates are recorded in the
+[jsPDF 4.2.1 qualification evidence](jspdf-4.2.1-qualification.md).
+
 Current anchors: download placeholders
 [`index.html` lines 1348-1378](../apps/learning-platform/course-content/index.html#L1348-L1378),
 assignment matrix
@@ -1715,22 +1724,26 @@ files. The returning-user Face startup overlap then retained the same paths and
 imports while changing only `plataforma/modules/face-startup.js` by +623 bytes
 and `plataforma/modules/login.js` by +175 bytes relative to `ff83ea0`. That base
 artifact was 258 files, 27,362,565 bytes, and
-`sha256:a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6`;
-the current identities are:
+`sha256:a0be995c6701c76a1c134db2a623622c2f102b23255bb0f2438702419fb757c6`.
+The jsPDF 4.2.1 change then replaces only the equal-length Study CDN version and
+the certificate renderer's 11 centered-call argument tails, reducing the latter
+by 11 bytes without changing rendered output. Relative to the pre-upgrade
+`6a788bb` artifact, the other 256 output files remain byte-identical. The current
+identities are:
 
 | Current lean signed-handle scope | Files | Bytes | SHA-256 |
 | --- | ---: | ---: | --- |
-| Complete generated `dist/` artifact | 258 | 27,363,363 | `31f0e0641c40e51c8a6bb30b43e532176f821b894a2bd372b203dcb7c8276bb8` |
+| Complete generated `dist/` artifact | 258 | 27,363,352 | `3a2043dd91ca42aa45ffa5f5f4380dc0947f04e1256efbc25e3223641aba24a0` |
 | Shared runtime mapping | 1 | 81 | `c38658b6f2c16b3980f1bd8f739a91e873e652e32c74d122fd4c944c129c3f1d` |
-| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,758,017 | `bb071712d59e1d49d13615fe6e4aa2482bbddf2667843bc39394b37e788aa88e` |
-| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,758,017 | `2f7ddc5ab3b6a71acb0cd5568ab3d03f23ed01198b303c29ca824afa1e0e4236` |
-| Platform JavaScript, retaining full output paths | 36 | 470,879 | `0198ae883811b585120290f1d4596e91ec79280aa5f889c189cdf9242cb79178` |
-| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `f184c686c13dd24a98c07219446a4fa02cfa7a7b9a477b75606ac4e153d53357` |
-| Study entry subtree, retaining full output paths | 41 | 10,022,029 | `19cbf0067226f54e1ea521d606762ad9f1acc0b8acd2ff7d5129a1c9e413a44c` |
+| Platform subset, retaining full output paths `plataforma/...` | 182 | 20,758,006 | `6b021520980a656a7c89d821c624ab19363e116971b9f1d143a3912401a21c3c` |
+| Platform subtree rooted at `dist/plataforma` (prefix omitted; diagnostic only) | 182 | 20,758,006 | `5f318212c1d985df7c26274c71ae233aff1cb3b234ca0c756624296885bdea81` |
+| Platform JavaScript, retaining full output paths | 36 | 470,868 | `cfa9c8c8404e2af024fe798a0e2472d7e7f0f0848b12c655dae92c7dc21a4869` |
+| Platform non-JavaScript files, retaining full output paths | 146 | 20,287,138 | `fe6bd4d3b5a0e5deae66c6082a7e66166452a6d2468339b6c3d128442a6bcc72` |
+| Study entry subtree, retaining full output paths | 41 | 10,022,029 | `1ab33e83f59f9fdbc27829e50f80e2b347f007b41c0c2ac84ef3e6bc94b2cd60` |
 | Four public API applications, retaining full output paths | 20 | 737,209 | `a270d13916c0ffb350dfe0c777e07776ec9c9ea9e8baeb9724c2bb72f6f17b1b` |
 | All non-platform applications, retaining full output paths | 75 | 6,605,265 | `b14bae0503870a00f9f013999131070b78552fbf0e76c69e1643d96d843cc091` |
 
-Before the current overlap, the dormant-session cleanup's 33,067-byte reduction
+Before the Face overlap, the dormant-session cleanup's 33,067-byte reduction
 was exactly the sum of these 15 mapped-output deltas:
 
 | Changed mapped output | Byte delta | Intentional simplification |
@@ -1759,10 +1772,11 @@ imports; their new graph SHA-256 is
 `672f0f5205c1e70be7aa918986ad36e47b69511abb0ec422249a1f792e029149`.
 The removed edges are Login entry to `modules/session.js`, Registration entry
 to `modules/session.js`, and Study application to `../session.js`.
-The current Face overlap adds no import edge, request path, or output path, so
-that 77-edge graph and digest remain exact. Relative to `ff83ea0`, exactly the
-two mapped JavaScript outputs named above add 798 bytes in total; the other 256
-generated outputs are byte-identical.
+The Face overlap and jsPDF compatibility change add no import edge, request path,
+or output path, so that 77-edge graph and digest remain exact. Relative to
+`ff83ea0`, the two Face JavaScript outputs add 798 bytes, the certificate renderer
+removes 11 bytes, and Study's HTML contains the equal-length CDN pin change;
+the other 254 generated outputs are byte-identical.
 Warning assets retain their source bytes, but moving four warning binary output
 paths changes the binary path-framed digest. The Face, study-download, and
 certificate-input scopes retain both their paths and bytes:
@@ -2167,7 +2181,7 @@ identify the current oracle.
 | FLOW-03 | Content completion | Manual and `ended` completion both exercise optimistic increment, protected update, success advance, and local failure rollback. |
 | FLOW-04 | Assessment | Synthetic DOM answers reproduce current client score and update behavior, including absence of a source-defined time limit or dedupe identity. |
 | FLOW-05 | Feedback | Synthetic submission records current client-controlled fields, update-before-append ordering, failure positions, and duplicate-visible retry behavior. |
-| FLOW-06 | Certificate/logout | Eligibility thresholds, client-side PDF inputs/name, and validation text remain exact. Browser-final explicit logout and timer expiry make Study inert/hidden, stop its timer, pause media, update/remove only the scoped storage values, and replace to Login without DELETE or cross-tab signaling; logged-out direct/BFCache restoration does the same before protected work, and fresh login restores new browser state. The copied-handle limitation remains. |
+| FLOW-06 | Certificate/logout | Eligibility thresholds and complete 0.70/0.95 PDF call traces remain exact, including client-held name/ID, all image geometry, options-based centering, wrapping, fonts/colors, inherited honor-footer font, validation text, and filename. Browser-final explicit logout and timer expiry make Study inert/hidden, stop its timer, pause media, update/remove only the scoped storage values, and replace to Login without DELETE or cross-tab signaling; logged-out direct/BFCache restoration does the same before protected work, and fresh login restores new browser state. The copied-handle limitation remains. |
 | REPORT-01 | Nine query keys | Each of `ne`, `nt`, `li`, `lf`, `dua`, `idsr`, `mi`, `mf`, and `mrm` has an isolated display/request effect and exact default/coercion behavior. |
 | REPORT-02 | Public disclosure/rendering | Synthetic rows demonstrate all API-returned fields, the UI's ignored certificate IDs, 15-column assumption, forwarding, and the current `innerHTML` sinks without using real participant data. |
 | REPORT-03 | Mode contradiction | Only exact `mrm=consolidado` selects consolidated behavior; the contradictory short-code comment remains documentary evidence, not runtime truth. |
@@ -2176,7 +2190,7 @@ identify the current oracle.
 | ASSET-02 | Downloads/certificate | All 33 exact download paths emit with their frozen aggregate digest; 31 are reachable, two remain unreferenced, and the three browser-generated certificate inputs retain exact case and bytes. |
 | VIDEO-01 | Topic/manifests | Module video counts total 151 unique exact `(Módulo N, name)` keys and derive `_dash.mpd` paths under both current namespaces without requesting them. |
 | VIDEO-02 | DRM/player lifecycle | Default protected and five-name bypass selection, PlayReady-only configuration role, one retained player, controls, load/play behavior, and completion handlers match source without exposing credentials or personal names. |
-| ARTIFACT-01 | Full frontend artifact | The Face-warmed lean signed-handle artifact has 258 files and matches its recalculated 27,363,363-byte identity. Relative to `ff83ea0`, exactly `modules/face-startup.js` and `modules/login.js` add 798 bytes while the other 256 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
+| ARTIFACT-01 | Full frontend artifact | The current artifact has 258 files and matches its recalculated 27,363,352-byte identity. Relative to `ff83ea0`, the two Face modules add 798 bytes, the certificate renderer removes 11 bytes, and Study HTML has the equal-length jsPDF pin change; the other 254 outputs, every path, the 15 absent compatibility outputs, and the separate `shared/backend-origin.js` mapping remain fixed. |
 | ARTIFACT-02 | Manifest coverage | Tests require seven platform `publicEntries`, zero platform `publicDownloads`, 175 platform support files, nine exact platform mappings, and one separate shared mapping; the complete frontend requires 12 entries, 3 public downloads, 243 support files, 64 negative paths, and exactly 77 JavaScript imports in both source and generated previews. |
 
 ### Automated traceability

@@ -249,10 +249,10 @@ jobs:
             jspdf_title="jsPDF $LATEST_JSPDF_VERSION is available"
             jspdf_body="$(printf '%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n' \
               "Public npm metadata reports jsPDF $LATEST_JSPDF_VERSION; Learning currently deploys jsPDF $CURRENT_JSPDF_VERSION from its frozen CDN pin." \
-              "Monitoring alone does not resolve the advisory-affected jsPDF $CURRENT_JSPDF_VERSION baseline." \
+              'Monitoring is not remediation; qualify security and certificate compatibility before changing the deployed jsPDF baseline.' \
               "Review the release: https://github.com/parallax/jsPDF/releases/tag/v$LATEST_JSPDF_VERSION" \
               'Review the security policy and published advisories: https://github.com/parallax/jsPDF/security' \
-              "Prioritize a qualified jsPDF 4.2.1 upgrade through the separate \"Qualify jsPDF 4.2.1 upgrade\" task before returning to routine maintenance." \
+              "Prioritize a qualified jsPDF $LATEST_JSPDF_VERSION upgrade through the separate \"Qualify jsPDF $LATEST_JSPDF_VERSION upgrade\" task before returning to routine maintenance." \
               'No source file, CDN URL, or pull request was changed automatically.')"
             open_review_issue "$jspdf_title" "$jspdf_body"
           fi
