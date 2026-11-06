@@ -50,6 +50,8 @@ points. The deployment contract requires every listed route to return HTTP
 | Platform course content | [apps/learning-platform/course-content/index.html](apps/learning-platform/course-content/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
 | Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
 | Platform status report | [apps/learning-platform/status-report/index.html](apps/learning-platform/status-report/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
+| Support management login (sandbox) | [apps/support-management/login/index.html](apps/support-management/login/index.html) | [`/support-management/login/`](https://machadogestao.com/support-management/login/) |
+| Support management scheduler (sandbox) | [apps/support-management/scheduler/index.html](apps/support-management/scheduler/index.html) | [`/support-management/scheduler/`](https://machadogestao.com/support-management/scheduler/) |
 
 The device/browser warning's exact visible message is "Acesse a plataforma em
 um computador com Windows, usando o Microsoft Edge." The viewport warning's
@@ -58,7 +60,7 @@ para continuar."
 
 ### Canonical navigation behavior
 
-The marketing entry is canonical at `/`; each of the other eleven page entries
+The marketing entry is canonical at `/`; each of the other thirteen page entries
 is canonical at its exact trailing-slash path in the table. Direct entry and
 refresh at a canonical URL return HTTP `200` without redirect and rerun that
 page's normal boot and any entry-specific minimum-viewport, browser, query,
@@ -73,14 +75,22 @@ handling then differs by application group:
 | Entry group | Browser-visible slashless behavior | Browser-history effect |
 | --- | --- | --- |
 | Quote request, client intake, Conecta referral, and certificate validation | A parser-blocking inline script calls `location.replace` to change only the current slashless path to its trailing-slash canonical path and preserve the exact query string and fragment. | The correction replaces the current entry, so Back skips the slashless spelling and returns to the preceding document. Refresh and Forward retain the canonical URL. |
+| Two support-management entries | A parser-blocking external script normalizes the slashless path to its trailing-slash path, preserving query and fragment. | The correction replaces the current history entry. |
 | Seven learning-platform entries | There is no route normalizer. The slashless path, query string, and fragment remain visible and survive refresh when existing page-lifecycle logic does not navigate away. | The route layer adds no normalization entry. Admission transitions to either warning use `location.replace`, and validated viewport-warning recovery also replaces the warning. Ordinary login, registration, study, logout, and content navigation still use `window.location.href` and add one document-history entry. |
 
 Slashless spellings are compatibility inputs, not authoring destinations; new
 or updated links must use the canonical paths. This compatibility applies only
-to the eleven current non-root directory entries. It does not make explicit
+to the thirteen current non-root directory entries. It does not make explicit
 `index.html` spellings public contracts, create an SPA fallback, or alter any
 of the 64 explicit `404` paths. The three downloads use their exact file paths
 and are not subject to directory-slash normalization.
+
+Support management uses the dedicated same-origin sandbox API supplied by
+the companion backend's support sandbox entry point. The static pages remain
+unavailable for login when that API is absent; they never fall back to the
+production backend. See the [backend sandbox runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
+for configuration and testing. Its first step only registers a company card
+using Pagar.me test keys and test cards; purchases are a later step.
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply minimum-viewport, browser, query-parameter,

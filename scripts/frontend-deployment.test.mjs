@@ -36,7 +36,8 @@ const maintainedNonPlatformApplicationIds = [
   "quote-request",
   "client-intake",
   "certificate-validation",
-  "conecta-referral-form"
+  "conecta-referral-form",
+  "support-management"
 ];
 const backendConsumerModuleEntries = [
   {
@@ -435,7 +436,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   const manifest = await readDeploymentManifest();
   const validation = await validateDeploymentManifest(manifest);
 
-  assert.equal(publicEntries(manifest).length, 12);
+  assert.equal(publicEntries(manifest).length, 14);
   assert.equal(publicDownloads(manifest).length, 3);
   assert.deepEqual(
     publicEntries(manifest).map(({ path: publicPath }) => publicPath),
@@ -451,12 +452,14 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       "/plataforma/cadastro-foto/",
       "/plataforma/estudo/",
       "/plataforma/login/",
-      "/plataforma/statusreport/"
+      "/plataforma/statusreport/",
+      "/support-management/login/",
+      "/support-management/scheduler/"
     ]
   );
   assert.equal(
     publicEntries(manifest).filter(({ path: publicPath }) => publicPath !== "/").length,
-    11
+    13
   );
   assert.deepEqual(
     publicDownloads(manifest),
@@ -475,8 +478,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.mappings.length, 20);
-  assert.equal(validation.files.length, 258);
+  assert.equal(validation.mappings.length, 21);
+  assert.equal(validation.files.length, 267);
   const outputPaths = validation.files.map(({ output }) => output).sort();
   assert.deepEqual(
     renamedCurrentWarningOutputs.filter((output) => outputPaths.includes(output)),
@@ -523,8 +526,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   ]);
   assert.equal(
     validation.files.filter(({ output }) => !publicContractFiles.has(output)).length,
-    243,
-    "The centralized-origin artifact must contain exactly 243 production support files"
+    250,
+    "The artifact must contain exactly 250 supporting files"
   );
   assert.deepEqual(
     validation.mappings.filter(
@@ -706,14 +709,14 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(manifest.notFoundPaths.includes("/validacao/index.html"));
   assert.deepEqual(
     await assertReadmeContract(manifest),
-    { entries: 12, downloads: 3 }
+    { entries: 14, downloads: 3 }
   );
   const sourcePreviewReferences = await assertSourcePreviewReferences(manifest);
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    77,
-    "The lean signed-handle source graph must contain exactly 77 JavaScript imports"
+    79,
+    "The source graph must contain exactly 79 JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -728,7 +731,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
 });
 
-test("generated preview resolves exactly 77 lean signed-handle JavaScript imports", async (context) => {
+test("generated preview resolves exactly 79 JavaScript imports", async (context) => {
   const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-origin-artifact-"));
   context.after(() => rm(artifactRoot, { force: true, recursive: true }));
   const validation = await validateDeploymentManifest(await readDeploymentManifest());
@@ -744,8 +747,8 @@ test("generated preview resolves exactly 77 lean signed-handle JavaScript import
   const references = await assertLocalReferences(artifactRoot);
   assert.equal(
     references.javascriptReferences,
-    77,
-    "The generated lean signed-handle module graph must contain exactly 77 resolvable imports"
+    79,
+    "The generated module graph must contain exactly 79 resolvable imports"
   );
   assert.deepEqual(
     await readFile(join(artifactRoot, "shared", "backend-origin.js")),

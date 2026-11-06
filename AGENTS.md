@@ -156,6 +156,13 @@ match its existing style.
   stubbed or injected transports for request verification.
 - Stop every preview or stub server when verification finishes.
 
+The support-management app is a scoped sandbox exception to the production
+backend-origin rule. It uses only the same-origin `/support-management/api`,
+served by the backend's loopback-only `support-sandbox-server.js`; never add a
+production fallback. Its routes are `/support-management/login/` and
+`/support-management/scheduler/`. Do not connect automated browser checks to
+real Graph or Pagar.me; inject synthetic dependencies and intercept tokenization.
+
 Run the complete local suite:
 
 ```powershell
