@@ -1,4 +1,5 @@
 import { createSupportClient, LOGIN_PATH, submitCompanyCard } from '../modules/client.js';
+import { getCardDetails, formatCardNumber, formatCardholder, formatPostalCode, formatSecurityCode, formatStreetNumber, normalizeText, validateCardFields } from '../modules/card-fields.js';
 
 const client = createSupportClient();
 const message = document.getElementById('scheduler-message');
@@ -7,6 +8,13 @@ const editor = document.getElementById('card-editor');
 const edit = document.getElementById('edit-card');
 const save = document.getElementById('save-card');
 const cancel = document.getElementById('cancel-card');
+const cardInputs = Object.fromEntries([
+  ['number', 'number'], ['holderName', 'holder-name'], ['expMonth', 'exp-month'],
+  ['expYear', 'exp-year'], ['cvv', 'cvv']
+].map(([key, id]) => [key, document.getElementById(id)]));
+const addressInputs = ['line-1', 'street-number', 'line-2', 'neighborhood', 'city', 'state', 'zip-code']
+  .map((id) => document.getElementById(id));
+const formatters = new Map();
 let publicKey;
 let administrator = false;
 let busy = false;
@@ -22,7 +30,95 @@ for (let year = currentYear; year <= currentYear + 20; year++) {
   document.getElementById('exp-year').append(option);
 }
 
-function clearCard() { form.reset(); }
+function showFieldError(input, text = '') {
+  input.setCustomValidity(text);
+  input.setAttribute('aria-invalid', String(Boolean(text)));
+  const error = document.getElementById(`${input.id}-error`);
+  if (error) {
+    error.textContent = text;
+    error.hidden = !text;
+  }
+}
+
+function updateCardPreview() {
+  const details = getCardDetails(cardInputs.number.value);
+  const badge = document.getElementById('card-brand');
+  const status = document.getElementById('card-brand-status');
+  badge.dataset.brand = details.brand;
+  badge.hidden = status.hidden = !details.label;
+  if (badge.textContent !== details.label) badge.textContent = status.textContent = details.label;
+  cardInputs.cvv.maxLength = details.codeSize;
+  cardInputs.cvv.pattern = details.brand === 'unknown' ? '[0-9]{3,4}' : `[0-9]{${details.codeSize}}`;
+  cardInputs.cvv.value = formatSecurityCode(cardInputs.cvv.value, details);
+  if (cardInputs.cvv.value || cardInputs.cvv.getAttribute('aria-invalid') === 'true') showFieldError(cardInputs.cvv, cardErrors().cvv);
+}
+
+function bindFormatter(input, formatter, afterInput = () => {}) {
+  formatters.set(input, formatter);
+  function apply(value = input.value, caret = input.selectionStart) {
+    const formatted = formatter(value).slice(0, input.maxLength > 0 ? input.maxLength : undefined);
+    const position = caret === null ? null : Math.min(formatter(value.slice(0, caret)).length, formatted.length);
+    if (input.value !== formatted) {
+      input.value = formatted;
+      if (position !== null) input.setSelectionRange(position, position);
+    }
+    showFieldError(input);
+    afterInput();
+  }
+  input.addEventListener('input', (event) => { if (!event.isComposing) apply(); });
+  input.addEventListener('compositionend', () => apply());
+  input.addEventListener('paste', (event) => {
+    if (!event.clipboardData) return;
+    event.preventDefault();
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? start;
+    const text = event.clipboardData.getData('text');
+    apply(input.value.slice(0, start) + text + input.value.slice(end), start + text.length);
+  });
+}
+
+function cardErrors() {
+  return validateCardFields(Object.fromEntries(Object.entries(cardInputs).map(([key, input]) => [key, input.value])));
+}
+
+function validateAddress(input) {
+  const value = normalizeText(input.value);
+  const error = input.required && !value ? 'Preencha este campo.'
+    : input.id === 'zip-code' && value.replace(/\D/gu, '').length !== 8 ? 'Informe um CEP com 8 dígitos.' : '';
+  showFieldError(input, error);
+}
+
+bindFormatter(cardInputs.number, formatCardNumber, updateCardPreview);
+bindFormatter(cardInputs.holderName, formatCardholder);
+bindFormatter(cardInputs.cvv, (value) => formatSecurityCode(value, getCardDetails(cardInputs.number.value)));
+for (const [key, input] of Object.entries(cardInputs)) {
+  const validate = () => {
+    if (key === 'holderName') input.value = normalizeText(input.value);
+    const errors = cardErrors();
+    if (key === 'expMonth' || key === 'expYear') {
+      for (const expiry of ['expMonth', 'expYear']) {
+        const field = cardInputs[expiry];
+        if (expiry === key || field.value || field.getAttribute('aria-invalid') === 'true') showFieldError(field, errors[expiry]);
+      }
+    } else showFieldError(input, errors[key]);
+  };
+  input.addEventListener('blur', validate);
+  if (input.tagName === 'SELECT') input.addEventListener('change', validate);
+}
+for (const input of addressInputs) {
+  if (input.tagName !== 'SELECT') {
+    const formatter = input.id === 'zip-code' ? formatPostalCode : input.id === 'street-number' ? formatStreetNumber
+      : (value) => String(value).replace(/[\u0000-\u001f\u007f]/gu, ' ').replace(/\s+/gu, ' ');
+    bindFormatter(input, formatter);
+  } else input.addEventListener('change', () => validateAddress(input));
+  input.addEventListener('blur', () => { input.value = normalizeText(input.value); validateAddress(input); });
+}
+
+function clearCard() {
+  form.reset();
+  for (const input of [...Object.values(cardInputs), ...addressInputs]) showFieldError(input);
+  updateCardPreview();
+}
 window.addEventListener('pagehide', clearCard);
 
 function authFailure(error) {
@@ -75,13 +171,22 @@ edit.addEventListener('click', () => {
   if (!administrator || busy || reviewRequired) return;
   editor.hidden = false;
   edit.setAttribute('aria-expanded', 'true');
-  document.getElementById('editor-title').focus();
+  cardInputs.number.focus();
 });
 cancel.addEventListener('click', closeEditor);
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (!administrator || busy || leaving || reviewRequired) return;
+  for (const [input, formatter] of formatters) input.value = normalizeText(formatter(input.value));
+  updateCardPreview();
+  const errors = cardErrors();
+  for (const [key, input] of Object.entries(cardInputs)) showFieldError(input, errors[key]);
+  addressInputs.forEach(validateAddress);
+  if (!form.reportValidity()) {
+    message.textContent = 'Confira os campos indicados.';
+    return;
+  }
   busy = true;
   save.disabled = true;
   cancel.disabled = true;

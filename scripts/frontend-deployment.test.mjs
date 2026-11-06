@@ -479,7 +479,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     ]
   );
   assert.equal(validation.mappings.length, 21);
-  assert.equal(validation.files.length, 270);
+  assert.equal(validation.files.length, 271);
   const outputPaths = validation.files.map(({ output }) => output).sort();
   assert.deepEqual(
     renamedCurrentWarningOutputs.filter((output) => outputPaths.includes(output)),
@@ -526,8 +526,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   ]);
   assert.equal(
     validation.files.filter(({ output }) => !publicContractFiles.has(output)).length,
-    253,
-    "The artifact must contain exactly 253 supporting files"
+    254,
+    "The artifact must contain exactly 254 supporting files"
   );
   assert.deepEqual(
     validation.mappings.filter(
@@ -715,8 +715,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    79,
-    "The source graph must contain exactly 79 JavaScript imports"
+    80,
+    "The source graph must contain exactly 80 JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -731,7 +731,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
 });
 
-test("generated preview resolves exactly 79 JavaScript imports", async (context) => {
+test("generated preview resolves exactly 80 JavaScript imports", async (context) => {
   const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-origin-artifact-"));
   context.after(() => rm(artifactRoot, { force: true, recursive: true }));
   const validation = await validateDeploymentManifest(await readDeploymentManifest());
@@ -747,8 +747,8 @@ test("generated preview resolves exactly 79 JavaScript imports", async (context)
   const references = await assertLocalReferences(artifactRoot);
   assert.equal(
     references.javascriptReferences,
-    79,
-    "The generated module graph must contain exactly 79 resolvable imports"
+    80,
+    "The generated module graph must contain exactly 80 resolvable imports"
   );
   assert.deepEqual(
     await readFile(join(artifactRoot, "shared", "backend-origin.js")),
