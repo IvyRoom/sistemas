@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Atendimentos | Machado</title>
+  <script src="/support-management/modules/canonical.js"></script>
+  <link rel="icon" href="../img/FAVICON.ico">
+  <link rel="stylesheet" href="../style.css">
+  <script type="module" src="./main.js"></script>
+</head>
+<body>
+  <div class="scheduler-layout">
+    <aside class="sidebar" aria-label="Sua conta">
+      <button id="logout" class="logout" type="button">« sair</button>
+      <img class="logo" src="../img/LOGO_MACHADO.png" alt="Machado">
+      <h1>Atendimentos consultivos</h1>
+      <p id="company-name"></p>
+      <p class="account-name" id="user-name"></p>
+      <p class="sandbox-label">Ambiente de testes</p>
+    </aside>
+    <main class="scheduler-main">
+      <header class="page-header"><p class="eyebrow">Atendimentos</p><h2>Cartão da empresa</h2></header>
+      <p class="intro">Prepare o cartão para os próximos atendimentos.</p>
+      <p class="test-notice">Use somente os cartões de teste do Pagar.me. Nenhuma cobrança será realizada neste cadastro.</p>
+      <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
+      <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
+        <div class="panel-heading"><h3 id="card-title">Cartão cadastrado</h3><span class="card-state">Teste</span></div>
+        <p class="card-number" id="card-number"></p>
+        <p class="card-expiry" id="card-expiry"></p>
+      </section>
+      <p id="empty-card" class="empty-card" hidden>Nenhum cartão cadastrado para sua empresa.</p>
+      <p id="member-notice" class="muted" hidden>O administrador da sua empresa pode cadastrar ou alterar o cartão.</p>
+      <button id="edit-card" class="primary" type="button" aria-expanded="false" aria-controls="card-editor" hidden>Cadastrar cartão</button>
+      <section id="card-editor" class="card-panel" aria-labelledby="editor-title" hidden>
+        <h3 id="editor-title" tabindex="-1">Cadastrar cartão de teste</h3>
+        <p class="muted">Os dados do cartão são enviados diretamente ao Pagar.me.</p>
+        <form id="card-form" autocomplete="off" aria-busy="false">
+          <fieldset><legend>Cartão</legend>
+            <label for="holder-name">Nome impresso no cartão</label><input id="holder-name" name="holderName" type="text" maxlength="64" required>
+            <label for="number">Número do cartão</label><input id="number" name="number" type="text" inputmode="numeric" pattern="[0-9 ]{13,23}" maxlength="23" required>
+            <div class="form-row">
+              <div><label for="exp-month">Mês</label><input id="exp-month" name="expMonth" type="text" inputmode="numeric" pattern="0?[1-9]|1[0-2]" placeholder="MM" maxlength="2" required></div>
+              <div><label for="exp-year">Ano</label><input id="exp-year" name="expYear" type="text" inputmode="numeric" pattern="20[0-9]{2}" placeholder="AAAA" maxlength="4" required></div>
+              <div><label for="cvv">CVV</label><input id="cvv" name="cvv" type="password" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" required></div>
+            </div>
+          </fieldset>
+          <fieldset><legend>Endereço de cobrança</legend>
+            <label for="line-1">Número, rua e bairro</label><input id="line-1" name="line1" type="text" placeholder="123, Rua Exemplo, Centro" maxlength="256" required>
+            <label for="line-2">Complemento <span class="optional">(opcional)</span></label><input id="line-2" name="line2" type="text" maxlength="128">
+            <div class="address-row">
+              <div><label for="zip-code">CEP</label><input id="zip-code" name="zipCode" type="text" inputmode="numeric" pattern="[0-9]{5}-?[0-9]{3}" maxlength="9" required></div>
+              <div><label for="city">Cidade</label><input id="city" name="city" type="text" maxlength="128" required></div>
+              <div><label for="state">UF</label><select id="state" name="state" required><option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></div>
+            </div>
+            <p class="muted">País: Brasil</p>
+          </fieldset>
+          <div class="form-actions"><button id="save-card" class="primary" type="submit">Salvar cartão de teste</button><button id="cancel-card" class="secondary" type="button">Cancelar</button></div>
+        </form>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -192,6 +192,26 @@
         }
       ],
       "publicDownloads": []
+    },
+    {
+      "id": "support-management",
+      "mappings": [
+        {
+          "source": "apps/support-management",
+          "output": "support-management"
+        }
+      ],
+      "publicEntries": [
+        {
+          "path": "/support-management/login/",
+          "file": "support-management/login/index.html"
+        },
+        {
+          "path": "/support-management/scheduler/",
+          "file": "support-management/scheduler/index.html"
+        }
+      ],
+      "publicDownloads": []
     }
   ],
   "notFoundPaths": [
