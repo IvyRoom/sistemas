@@ -100,3 +100,37 @@ test('configuration fails closed unless both environment and public key are test
     await assert.rejects(createSupportClient().config(), /sandbox_unavailable/);
   }
 });
+
+test('login stays busy during authentication and restores controls after a rejection', async () => {
+  const elements = new Map();
+  const element = () => ({ value: '', disabled: false, textContent: '', attributes: {}, listeners: {},
+    setAttribute(name, value) { this.attributes[name] = value; },
+    addEventListener(name, callback) { this.listeners[name] = callback; },
+    focus() { this.focused = true; }
+  });
+  for (const id of ['login-form', 'login-submit', 'login-message', 'email', 'password']) elements.set(id, element());
+  const body = element();
+  let rejectLogin;
+  const pendingLogin = new Promise((resolve, reject) => { rejectLogin = reject; });
+  const client = { config: async () => ({}), login: () => pendingLogin };
+  const context = vm.createContext({ document: { body, getElementById: (id) => elements.get(id) },
+    window: { addEventListener() {}, location: { assign() { throw new Error('Unexpected navigation'); } } },
+    createSupportClient: () => client, SCHEDULER_PATH: '/support-management/scheduler/'
+  });
+  const source = fs.readFileSync(path.join(__dirname, '../../apps/support-management/login/main.js'), 'utf8');
+  await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/u, '')} })()`, context);
+  elements.get('email').value = 'admin@example.test';
+  elements.get('password').value = 'synthetic-password';
+  const submission = elements.get('login-form').listeners.submit({ preventDefault() {} });
+  assert.equal(body.attributes['aria-busy'], 'true');
+  assert.equal(elements.get('login-form').attributes['aria-busy'], 'true');
+  assert.equal(elements.get('login-submit').disabled, true);
+  rejectLogin({ status: 401 });
+  await submission;
+  assert.equal(body.attributes['aria-busy'], 'false');
+  assert.equal(elements.get('login-form').attributes['aria-busy'], 'false');
+  assert.equal(elements.get('login-submit').disabled, false);
+  assert.equal(elements.get('password').value, '');
+  assert.equal(elements.get('password').focused, true);
+  assert.match(elements.get('login-message').textContent, /E-mail ou senha inválidos/u);
+});

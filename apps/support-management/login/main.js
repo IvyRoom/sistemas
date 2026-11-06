@@ -7,20 +7,24 @@ const message = document.getElementById('login-message');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
 
-window.addEventListener('pagehide', () => { password.value = ''; });
+window.addEventListener('pagehide', () => {
+  password.value = '';
+  document.body.setAttribute('aria-busy', 'false');
+});
 
 try {
   await client.config();
   message.textContent = '';
   button.disabled = false;
 } catch {
-  message.textContent = 'O ambiente de testes ainda não está disponível. Tente novamente mais tarde.';
+  message.textContent = 'Não foi possível carregar a ferramenta. Tente novamente mais tarde.';
 }
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (button.disabled) return;
   button.disabled = true;
+  document.body.setAttribute('aria-busy', 'true');
   form.setAttribute('aria-busy', 'true');
   message.textContent = 'Entrando...';
   email.setAttribute('aria-invalid', 'false');
@@ -43,5 +47,6 @@ form.addEventListener('submit', async (event) => {
     password.value = '';
     button.disabled = false;
     form.setAttribute('aria-busy', 'false');
+    document.body.setAttribute('aria-busy', 'false');
   }
 });

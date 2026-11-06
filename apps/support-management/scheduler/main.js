@@ -12,6 +12,15 @@ let administrator = false;
 let busy = false;
 let leaving = false;
 let reviewRequired = false;
+let hasCard = false;
+
+const currentYear = new Date().getFullYear();
+for (let year = currentYear; year <= currentYear + 20; year++) {
+  const option = document.createElement('option');
+  option.value = String(year);
+  option.textContent = String(year).slice(-2);
+  document.getElementById('exp-year').append(option);
+}
 
 function clearCard() { form.reset(); }
 window.addEventListener('pagehide', clearCard);
@@ -35,19 +44,23 @@ function handleReviewRequired(error) {
 
 function closeEditor() {
   clearCard();
-  editor.hidden = true;
+  editor.hidden = hasCard;
   edit.setAttribute('aria-expanded', 'false');
-  edit.focus();
+  if (hasCard) edit.focus();
+  else document.getElementById('number').focus();
 }
 
 function renderCard(card) {
+  hasCard = Boolean(card);
   document.getElementById('card-summary').hidden = !card;
-  document.getElementById('empty-card').hidden = Boolean(card);
+  document.getElementById('empty-card').hidden = Boolean(card) || administrator;
   if (card) {
     document.getElementById('card-number').textContent = `${card.brand} •••• ${card.lastFour}`;
     document.getElementById('card-expiry').textContent = `Validade: ${String(card.expMonth).padStart(2, '0')}/${card.expYear}`;
   }
-  edit.textContent = card ? 'Alterar cartão' : 'Cadastrar cartão';
+  edit.hidden = !administrator || !card;
+  cancel.hidden = !card;
+  save.textContent = card ? 'Salvar cartão' : 'Cadastrar cartão';
 }
 
 document.getElementById('logout').addEventListener('click', async () => {
@@ -74,11 +87,11 @@ form.addEventListener('submit', async (event) => {
   cancel.disabled = true;
   edit.disabled = true;
   form.setAttribute('aria-busy', 'true');
-  message.textContent = 'Salvando cartão de teste...';
+  message.textContent = 'Salvando cartão...';
   const data = new FormData(form);
   const card = Object.fromEntries(['holderName', 'number', 'expMonth', 'expYear', 'cvv'].map((key) => [key, data.get(key)]));
   const billingAddress = {
-    line_1: data.get('line1').trim(),
+    line_1: `${data.get('streetNumber').trim()}, ${data.get('line1').trim()}, ${data.get('neighborhood').trim()}`,
     ...(data.get('line2').trim() ? { line_2: data.get('line2').trim() } : {}),
     zip_code: data.get('zipCode').replace(/\D/g, ''),
     city: data.get('city').trim(),
@@ -91,7 +104,7 @@ form.addEventListener('submit', async (event) => {
     if (leaving) return;
     renderCard(result.card);
     closeEditor();
-    message.textContent = 'Cartão de teste cadastrado para sua empresa.';
+    message.textContent = 'Cartão cadastrado para sua empresa.';
   } catch (error) {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
     if (error.status === 403) {
@@ -119,14 +132,12 @@ try {
   const config = await client.config();
   publicKey = config.publicKey;
   const { user } = await client.session();
-  document.getElementById('company-name').textContent = user.company;
-  document.getElementById('user-name').textContent = user.name;
   administrator = user.role === 'Administrador';
   const { card } = await client.card();
   renderCard(card);
-  edit.hidden = !administrator;
+  editor.hidden = !administrator || Boolean(card);
   document.getElementById('member-notice').hidden = administrator;
   message.textContent = '';
 } catch (error) {
-  if (!authFailure(error) && !handleReviewRequired(error)) message.textContent = 'Não foi possível carregar o ambiente de testes. Atualize a página para tentar novamente.';
+  if (!authFailure(error) && !handleReviewRequired(error)) message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
 }

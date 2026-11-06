@@ -479,7 +479,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
     ]
   );
   assert.equal(validation.mappings.length, 21);
-  assert.equal(validation.files.length, 267);
+  assert.equal(validation.files.length, 270);
   const outputPaths = validation.files.map(({ output }) => output).sort();
   assert.deepEqual(
     renamedCurrentWarningOutputs.filter((output) => outputPaths.includes(output)),
@@ -526,8 +526,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   ]);
   assert.equal(
     validation.files.filter(({ output }) => !publicContractFiles.has(output)).length,
-    250,
-    "The artifact must contain exactly 250 supporting files"
+    253,
+    "The artifact must contain exactly 253 supporting files"
   );
   assert.deepEqual(
     validation.mappings.filter(

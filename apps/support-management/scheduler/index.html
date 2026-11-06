@@ -12,53 +12,68 @@
 </head>
 <body>
   <div class="scheduler-layout">
-    <aside class="sidebar" aria-label="Sua conta">
+    <aside class="sidebar" aria-label="Ferramentas">
       <button id="logout" class="logout" type="button">« sair</button>
       <img class="logo" src="../img/LOGO_MACHADO.png" alt="Machado">
-      <h1>Atendimentos consultivos</h1>
-      <p id="company-name"></p>
-      <p class="account-name" id="user-name"></p>
-      <p class="sandbox-label">Ambiente de testes</p>
+      <nav aria-label="Agendamento"><a class="scheduler-tab" href="/support-management/scheduler/" aria-current="page">Cadastro de Cartão</a></nav>
     </aside>
     <main class="scheduler-main">
-      <header class="page-header"><p class="eyebrow">Atendimentos</p><h2>Cartão da empresa</h2></header>
-      <p class="intro">Prepare o cartão para os próximos atendimentos.</p>
-      <p class="test-notice">Use somente os cartões de teste do Pagar.me. Nenhuma cobrança será realizada neste cadastro.</p>
-      <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
-      <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
-        <div class="panel-heading"><h3 id="card-title">Cartão cadastrado</h3><span class="card-state">Teste</span></div>
-        <p class="card-number" id="card-number"></p>
-        <p class="card-expiry" id="card-expiry"></p>
-      </section>
-      <p id="empty-card" class="empty-card" hidden>Nenhum cartão cadastrado para sua empresa.</p>
-      <p id="member-notice" class="muted" hidden>O administrador da sua empresa pode cadastrar ou alterar o cartão.</p>
-      <button id="edit-card" class="primary" type="button" aria-expanded="false" aria-controls="card-editor" hidden>Cadastrar cartão</button>
-      <section id="card-editor" class="card-panel" aria-labelledby="editor-title" hidden>
-        <h3 id="editor-title" tabindex="-1">Cadastrar cartão de teste</h3>
-        <p class="muted">Os dados do cartão são enviados diretamente ao Pagar.me.</p>
-        <form id="card-form" autocomplete="off" aria-busy="false">
-          <fieldset><legend>Cartão</legend>
-            <label for="holder-name">Nome impresso no cartão</label><input id="holder-name" name="holderName" type="text" maxlength="64" required>
-            <label for="number">Número do cartão</label><input id="number" name="number" type="text" inputmode="numeric" pattern="[0-9 ]{13,23}" maxlength="23" required>
-            <div class="form-row">
-              <div><label for="exp-month">Mês</label><input id="exp-month" name="expMonth" type="text" inputmode="numeric" pattern="0?[1-9]|1[0-2]" placeholder="MM" maxlength="2" required></div>
-              <div><label for="exp-year">Ano</label><input id="exp-year" name="expYear" type="text" inputmode="numeric" pattern="20[0-9]{2}" placeholder="AAAA" maxlength="4" required></div>
-              <div><label for="cvv">CVV</label><input id="cvv" name="cvv" type="password" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" required></div>
-            </div>
-          </fieldset>
-          <fieldset><legend>Endereço de cobrança</legend>
-            <label for="line-1">Número, rua e bairro</label><input id="line-1" name="line1" type="text" placeholder="123, Rua Exemplo, Centro" maxlength="256" required>
-            <label for="line-2">Complemento <span class="optional">(opcional)</span></label><input id="line-2" name="line2" type="text" maxlength="128">
-            <div class="address-row">
-              <div><label for="zip-code">CEP</label><input id="zip-code" name="zipCode" type="text" inputmode="numeric" pattern="[0-9]{5}-?[0-9]{3}" maxlength="9" required></div>
-              <div><label for="city">Cidade</label><input id="city" name="city" type="text" maxlength="128" required></div>
-              <div><label for="state">UF</label><select id="state" name="state" required><option value="">Selecione</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></div>
-            </div>
-            <p class="muted">País: Brasil</p>
-          </fieldset>
-          <div class="form-actions"><button id="save-card" class="primary" type="submit">Salvar cartão de teste</button><button id="cancel-card" class="secondary" type="button">Cancelar</button></div>
-        </form>
-      </section>
+      <div class="checkout-panel">
+        <header class="page-header"><h1>Cadastro de Cartão</h1></header>
+        <p class="intro">Cadastre o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos.</p>
+        <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
+        <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
+          <h2 id="card-title">Cartão cadastrado</h2>
+          <p class="card-number" id="card-number"></p>
+          <p class="card-expiry" id="card-expiry"></p>
+        </section>
+        <p id="empty-card" class="empty-card" hidden>Nenhum cartão cadastrado para sua empresa.</p>
+        <p id="member-notice" class="muted" hidden>O administrador da sua empresa pode cadastrar ou alterar o cartão.</p>
+        <button id="edit-card" class="primary" type="button" aria-expanded="false" aria-controls="card-editor" hidden>Alterar cartão</button>
+        <section id="card-editor" aria-labelledby="editor-title" hidden>
+          <h2 id="editor-title" tabindex="-1">Cartão de crédito</h2>
+          <form id="card-form" autocomplete="off" aria-busy="false">
+            <fieldset><legend>Dados do cartão</legend>
+              <div class="card-details">
+                <div class="card-fields">
+                  <label for="number">Número do Cartão</label><input id="number" name="number" type="text" inputmode="numeric" pattern="[0-9 ]{13,23}" maxlength="23" placeholder="Digite somente números" required>
+                  <label for="holder-name">Nome do Titular</label><input id="holder-name" name="holderName" type="text" maxlength="64" placeholder="Nome do Titular" required>
+                  <div class="form-row">
+                    <div><label for="exp-month">Mês</label><select id="exp-month" name="expMonth" required><option value="">MM</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select></div>
+                    <div><label for="exp-year">Ano</label><select id="exp-year" name="expYear" required><option value="">AA</option></select></div>
+                    <div><label for="cvv">CVV</label><input id="cvv" name="cvv" type="password" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" placeholder="CVV" required></div>
+                  </div>
+                </div>
+                <img class="checkout-card" src="../img/checkout-card.webp" alt="" aria-hidden="true">
+              </div>
+            </fieldset>
+            <fieldset><legend>Endereço de cobrança</legend>
+              <div class="address-row">
+                <div><label for="line-1">Rua</label><input id="line-1" name="line1" type="text" placeholder="Digite a rua" maxlength="180" required></div>
+                <div><label for="street-number">Número</label><input id="street-number" name="streetNumber" type="text" placeholder="1234" maxlength="20" required></div>
+              </div>
+              <div class="address-pair">
+                <div><label for="line-2">Complemento <span class="optional">(opcional)</span></label><input id="line-2" name="line2" type="text" placeholder="Digite o complemento" maxlength="128"></div>
+                <div><label for="neighborhood">Bairro</label><input id="neighborhood" name="neighborhood" type="text" placeholder="Digite o bairro" maxlength="48" required></div>
+              </div>
+              <div class="city-row">
+                <div><label for="city">Cidade</label><input id="city" name="city" type="text" placeholder="Digite a cidade" maxlength="128" required></div>
+                <div><label for="state">Estado</label><select id="state" name="state" required><option value="">-</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></div>
+                <div><label for="zip-code">CEP</label><input id="zip-code" name="zipCode" type="text" inputmode="numeric" pattern="[0-9]{5}-?[0-9]{3}" maxlength="9" placeholder="Somente números" required></div>
+              </div>
+            </fieldset>
+            <button id="save-card" class="primary" type="submit">Cadastrar cartão</button>
+            <button id="cancel-card" class="secondary" type="button" hidden>Cancelar</button>
+          </form>
+        </section>
+        <footer class="checkout-footer">
+          <p class="checkout-help"><strong>Precisa de ajuda?</strong> <a href="https://api.whatsapp.com/send?phone=5541996799092&amp;text=Ol%C3%A1!%20Preciso%20de%20aux%C3%ADlio%20no%20cadastro%20de%20cart%C3%A3o.%20Podem%20me%20ajudar%3F" target="_blank" rel="noopener noreferrer">Entre em contato</a></p>
+          <p class="checkout-consent">Ao cadastrar ou atualizar o cartão, autorizo a Pagar.me a armazenar e processar os dados do cartão para a contratação dos atendimentos consultivos da Machado.</p>
+          <div class="checkout-security"><img src="../img/checkout-lock.webp" alt=""><p>Ambiente seguro.</p></div>
+          <p class="checkout-company">® Machado | Todos os direitos reservados. CNPJ: 39.794.363/0001-81</p>
+          <div class="checkout-provider"><p>Powered by</p><img src="../img/checkout-pagarme.webp" alt="Pagar.me"></div>
+        </footer>
+      </div>
     </main>
   </div>
 </body>
