@@ -264,8 +264,6 @@ form.addEventListener('submit', async (event) => {
       message.textContent = 'Somente administradores podem alterar o cartão.';
     } else if (error.code === 'support_management.card_verification_failed') {
       message.textContent = 'O cartão não foi aprovado na validação do Pagar.me. Confira os dados ou utilize outro cartão.';
-    } else if (error.code === 'support_management.card_verification_unconfirmed') {
-      message.textContent = 'Não foi possível confirmar a validação deste cartão. Entre em contato com o suporte.';
     } else if (error.status === 409) {
       message.textContent = 'Já existe um cadastro em andamento. Aguarde e atualize a página antes de tentar novamente.';
     } else {
