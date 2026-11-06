@@ -92,6 +92,15 @@ production backend. See the [backend sandbox runbook](https://github.com/IvyRoom
 for configuration and testing. Its first step only registers a company card
 using Pagar.me test keys and test cards; purchases are a later step.
 
+For daily support-management development, run `npm run support:dev` from the
+sibling `backend` checkout and open its printed local URL. The server reads these
+frontend sources directly: save an edit and refresh the browser, without a build
+or deployment. Backend code changes restart that local backend; sign in again
+after a restart. This connected local workflow uses the real read-only users
+workbook and Pagar.me test API after test-key and permitted-origin setup. Run
+`npm run support:test` from `backend` for focused checks. Keep commits local and
+existing PRs parked until Lucas explicitly requests publication.
+
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply minimum-viewport, browser, query-parameter,
 authentication, or session checks after its static HTML loads. Login, initial
