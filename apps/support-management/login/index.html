@@ -14,15 +14,17 @@
   <main class="login-layout">
     <img class="logo" src="../img/LOGO_MACHADO.png" alt="Machado">
     <div class="login-form-layout">
-      <section class="login-panel" aria-labelledby="welcome">
-        <div class="login-tool-title"><p>Ferramenta de Agendamento:</p><p>Atendimentos Consultivos</p></div>
-        <h1 id="welcome">Seja bem-vindo!</h1>
+      <section class="login-panel" aria-labelledby="login-title">
+        <h1 id="login-title" class="login-tool-title">Ferramenta de Agendamento:<br>Atendimentos Consultivos</h1>
         <form id="login-form" aria-busy="false">
           <label for="email">E-mail</label>
           <input id="email" name="email" type="email" autocomplete="username" maxlength="254" required aria-describedby="login-message">
           <label for="password">Senha</label>
           <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="login-message">
-          <button class="primary login-submit" id="login-submit" type="submit" disabled>Entrar</button>
+          <div class="login-actions">
+            <button class="primary login-submit" id="login-submit" type="submit" disabled>Entrar</button>
+            <p class="login-progress" id="login-progress" role="status" aria-live="polite" hidden>Entrando...</p>
+          </div>
           <p class="message" id="login-message" role="status" aria-live="polite">Carregando...</p>
         </form>
       </section>

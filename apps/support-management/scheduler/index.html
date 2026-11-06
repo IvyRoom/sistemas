@@ -23,20 +23,20 @@
         <p class="intro">Cadastre abaixo o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos.</p>
         <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
         <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
-          <h2 id="card-title">Cartão cadastrado</h2>
+          <div class="card-summary-heading"><h2 id="card-title">Cartão cadastrado</h2><button id="edit-card" class="card-edit" type="button" aria-expanded="false" aria-controls="card-editor" hidden>Alterar cartão</button></div>
           <p class="card-number" id="card-number"></p>
           <p class="card-expiry" id="card-expiry"></p>
         </section>
         <p id="empty-card" class="empty-card" hidden>Nenhum cartão cadastrado para sua empresa.</p>
         <p id="member-notice" class="muted" hidden>O administrador da sua empresa pode cadastrar ou alterar o cartão.</p>
-        <button id="edit-card" class="primary" type="button" aria-expanded="false" aria-controls="card-editor" hidden>Alterar cartão</button>
+        <button id="retry-card-sync" class="secondary" type="button" hidden>Sincronizar cadastro</button>
         <section id="card-editor" aria-labelledby="card-registration-title" hidden>
           <form id="card-form" autocomplete="off" aria-busy="false" novalidate>
             <fieldset><legend>Dados do cartão</legend>
               <div class="card-details">
                 <div class="card-fields">
                   <div class="card-number-label"><label for="number">Número do Cartão</label><span id="card-brand-status" class="field-hint" role="status" aria-live="polite" hidden></span></div>
-                  <input id="number" name="number" type="text" inputmode="numeric" pattern="[0-9 ]{12,23}" maxlength="23" placeholder="0000 0000 0000 0000" aria-describedby="number-error card-brand-status" required>
+                  <input id="number" name="number" type="text" inputmode="numeric" pattern="[0-9 ]{12,19}" maxlength="19" placeholder="0000 0000 0000 0000" aria-describedby="number-error card-brand-status" required>
                   <p class="field-error" id="number-error" aria-live="polite" hidden></p>
                   <label for="holder-name">Nome do Titular</label><input id="holder-name" name="holderName" type="text" maxlength="64" placeholder="Nome do Titular" aria-describedby="holder-name-error" required>
                   <p class="field-error" id="holder-name-error" aria-live="polite" hidden></p>

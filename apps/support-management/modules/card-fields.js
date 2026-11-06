@@ -44,8 +44,10 @@ export function getCardDetails(value) {
 }
 
 export function formatCardNumber(value) {
-  const digits = digitsOnly(value).slice(0, 19);
-  const gaps = getCardDetails(digits).gaps;
+  const candidate = digitsOnly(value);
+  const details = getCardDetails(candidate);
+  const digits = candidate.slice(0, Math.min(16, Math.max(...details.lengths)));
+  const gaps = details.gaps;
   return Array.from(digits, (digit, index) => `${index && gaps.includes(index) ? ' ' : ''}${digit}`).join('');
 }
 
@@ -55,7 +57,7 @@ export function normalizeText(value) {
 
 export function formatCardholder(value) {
   return String(value ?? '').normalize('NFC').replace(/\s+/gu, ' ')
-    .replace(/[^\p{L}\p{M}\p{N} .'’\-]/gu, '').replace(/ {2,}/gu, ' ').trimStart().toUpperCase();
+    .replace(/[^\p{L}\p{M} ]/gu, '').replace(/ {2,}/gu, ' ').trimStart();
 }
 
 export function formatPostalCode(value) {
@@ -90,12 +92,12 @@ export function validateCardFields(card, now = new Date()) {
   const details = getCardDetails(number);
   // UnionPay does not universally use Luhn; final acceptance remains with the provider.
   // https://github.com/braintree/card-validator/blob/main/src/card-number.ts
-  if (/[^\d\s-]/u.test(String(card.number ?? '')) || !details.lengths.includes(number.length)
+  if (/[^\d\s-]/u.test(String(card.number ?? '')) || number.length > 16 || !details.lengths.includes(number.length)
       || /^(\d)\1+$/u.test(number) || (details.brand !== 'unionpay' && !passesLuhn(number))) {
     errors.number = 'Informe um número de cartão válido.';
   }
   const holder = normalizeText(card.holderName);
-  if (!holder || holder.length > 64 || !/\p{L}/u.test(holder) || /[^\p{L}\p{M}\p{N} .'’\-]/u.test(holder)) {
+  if (!holder || holder.length > 64 || !/\p{L}/u.test(holder) || /[^\p{L}\p{M} ]/u.test(holder)) {
     errors.holderName = 'Informe o nome do titular como aparece no cartão.';
   }
   const month = Number(card.expMonth);

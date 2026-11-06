@@ -101,36 +101,167 @@ test('configuration fails closed unless both environment and public key are test
   }
 });
 
-test('login stays busy during authentication and restores controls after a rejection', async () => {
+test('workbook synchronization sends only the current authorization to its dedicated route', async () => {
+  const calls = [];
+  const { createSupportClient, values } = loadClient(async (url, options) => {
+    calls.push({ url, options });
+    return { ok: true, json: async () => ({ card: { lastFour: '0010' } }) };
+  });
+  values.set('supportManagementToken', 'session-example');
+  await createSupportClient().syncCard();
+  assert.equal(calls[0].url, '/support-management/api/card/sync');
+  assert.equal(calls[0].options.method, 'POST');
+  assert.equal(calls[0].options.headers.Authorization, 'Bearer session-example');
+  assert.equal(calls[0].options.body, undefined);
+});
+
+async function loadLogin(client) {
   const elements = new Map();
-  const element = () => ({ value: '', disabled: false, textContent: '', attributes: {}, listeners: {},
+  const element = () => ({ value: '', disabled: false, hidden: false, textContent: '', attributes: {}, listeners: {},
     setAttribute(name, value) { this.attributes[name] = value; },
     addEventListener(name, callback) { this.listeners[name] = callback; },
     focus() { this.focused = true; }
   });
-  for (const id of ['login-form', 'login-submit', 'login-message', 'email', 'password']) elements.set(id, element());
+  for (const id of ['login-form', 'login-submit', 'login-progress', 'login-message', 'email', 'password']) elements.set(id, element());
   const body = element();
-  let rejectLogin;
-  const pendingLogin = new Promise((resolve, reject) => { rejectLogin = reject; });
-  const client = { config: async () => ({}), login: () => pendingLogin };
+  const listeners = {};
   const context = vm.createContext({ document: { body, getElementById: (id) => elements.get(id) },
-    window: { addEventListener() {}, location: { assign() { throw new Error('Unexpected navigation'); } } },
+    window: { addEventListener(name, callback) { listeners[name] = callback; }, location: { assign() { throw new Error('Unexpected navigation'); } } },
     createSupportClient: () => client, SCHEDULER_PATH: '/support-management/scheduler/'
   });
   const source = fs.readFileSync(path.join(__dirname, '../../apps/support-management/login/main.js'), 'utf8');
   await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/u, '')} })()`, context);
   elements.get('email').value = 'admin@example.test';
   elements.get('password').value = 'synthetic-password';
+  return { elements, body, listeners };
+}
+
+test('login replaces the button while pending, prevents duplicate requests and restores it after rejection', async () => {
+  let rejectLogin;
+  let calls = 0;
+  const pendingLogin = new Promise((resolve, reject) => { rejectLogin = reject; });
+  const { elements, body } = await loadLogin({ config: async () => ({}), login: () => { calls++; return pendingLogin; } });
   const submission = elements.get('login-form').listeners.submit({ preventDefault() {} });
   assert.equal(body.attributes['aria-busy'], 'true');
   assert.equal(elements.get('login-form').attributes['aria-busy'], 'true');
   assert.equal(elements.get('login-submit').disabled, true);
+  assert.equal(elements.get('login-submit').hidden, true);
+  assert.equal(elements.get('login-progress').hidden, false);
+  assert.equal(elements.get('login-message').textContent, '');
+  await elements.get('login-form').listeners.submit({ preventDefault() {} });
+  assert.equal(calls, 1);
   rejectLogin({ status: 401 });
   await submission;
   assert.equal(body.attributes['aria-busy'], 'false');
   assert.equal(elements.get('login-form').attributes['aria-busy'], 'false');
   assert.equal(elements.get('login-submit').disabled, false);
+  assert.equal(elements.get('login-submit').hidden, false);
+  assert.equal(elements.get('login-progress').hidden, true);
   assert.equal(elements.get('password').value, '');
   assert.equal(elements.get('password').focused, true);
   assert.match(elements.get('login-message').textContent, /E-mail ou senha inválidos/u);
 });
+
+test('leaving the login clears its password and pending presentation', async () => {
+  let rejectLogin;
+  const pendingLogin = new Promise((resolve, reject) => { rejectLogin = reject; });
+  const { elements, body, listeners } = await loadLogin({ config: async () => ({}), login: () => pendingLogin });
+  const submission = elements.get('login-form').listeners.submit({ preventDefault() {} });
+  listeners.pagehide();
+  assert.equal(elements.get('password').value, '');
+  assert.equal(elements.get('login-submit').hidden, false);
+  assert.equal(elements.get('login-submit').disabled, false);
+  assert.equal(elements.get('login-progress').hidden, true);
+  assert.equal(elements.get('login-form').attributes['aria-busy'], 'false');
+  assert.equal(body.attributes['aria-busy'], 'false');
+  rejectLogin({ status: 503 });
+  await submission;
+});
+
+async function loadScheduler(client) {
+  const elements = new Map();
+  function element(tagName, attributes = '') {
+    const attribute = (name) => attributes.match(new RegExp(`(?:^|\\s)${name}="([^"]*)"`, 'u'))?.[1] ?? null;
+    return {
+      id: attribute('id') || '', tagName: tagName.toUpperCase(), value: '', textContent: '',
+      hidden: /(?:^|\s)hidden(?:\s|$)/u.test(attributes), disabled: false,
+      required: /(?:^|\s)required(?:\s|$)/u.test(attributes), maxLength: Number(attribute('maxlength') ?? -1),
+      selectionStart: null, dataset: {}, listeners: {}, attributes: {},
+      addEventListener(name, callback) { (this.listeners[name] ??= []).push(callback); },
+      setAttribute(name, value) { this.attributes[name] = value; },
+      getAttribute(name) { return this.attributes[name] ?? attribute(name); },
+      setCustomValidity(value) { this.validationMessage = value; },
+      append() {}, focus() { this.focused = true; },
+    };
+  }
+  const root = path.join(__dirname, '../../apps/support-management');
+  const html = fs.readFileSync(path.join(root, 'scheduler/index.html'), 'utf8');
+  for (const [, tagName, attributes] of html.matchAll(/<([a-z][a-z0-9]*)\b([^>]*\bid="[^"]+"[^>]*)>/gu)) {
+    const node = element(tagName, attributes);
+    elements.set(node.id, node);
+  }
+  const introduction = element('p');
+  const footer = element('footer');
+  elements.get('card-form').reset = () => {
+    for (const node of elements.values()) if (['INPUT', 'SELECT'].includes(node.tagName)) node.value = '';
+  };
+  const context = vm.createContext({
+    document: { getElementById: (id) => elements.get(id) || null,
+      querySelector: (selector) => selector === '.intro' ? introduction : footer,
+      createElement: (tagName) => element(tagName) },
+    window: { addEventListener() {}, location: { replace() { throw new Error('Unexpected navigation'); } } },
+    createSupportClient: () => client, LOGIN_PATH: '/support-management/login/',
+    submitCompanyCard: () => { throw new Error('Unexpected card registration'); },
+  });
+  const fields = fs.readFileSync(path.join(root, 'modules/card-fields.js'), 'utf8');
+  vm.runInContext(fields.replace(/export /gu, ''), context);
+  const source = fs.readFileSync(path.join(root, 'scheduler/main.js'), 'utf8');
+  await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/gmu, '')} })()`, context);
+  return { elements, introduction, footer,
+    async click(id) { for (const callback of elements.get(id).listeners.click || []) await callback({}); } };
+}
+
+const pendingCompanyCard = {
+  card: { brand: 'Visa', lastFour: '0010', expMonth: 12, expYear: 2030 }, workbookSyncPending: true,
+};
+
+for (const phase of ['startup', 'retry']) {
+  for (const reason of ['card_verification_required', 'card_review_required']) {
+    test(`${phase} synchronization handles ${reason} without leaving stale sync-only controls`, async () => {
+      let reads = 0;
+      let synchronizations = 0;
+      const client = {
+        config: async () => ({ publicKey: 'pk_test_synthetic' }),
+        session: async () => ({ user: { role: 'Administrador' } }),
+        card: async () => ++reads === 1 ? pendingCompanyCard : { card: null, verificationRequired: true },
+        async syncCard() {
+          synchronizations++;
+          if (phase === 'retry' && synchronizations === 1) {
+            throw { status: 503, code: 'support_management.workbook_sync_failed' };
+          }
+          throw { status: 409, code: `support_management.${reason}` };
+        },
+      };
+      const { elements, footer, click } = await loadScheduler(client);
+      if (phase === 'retry') {
+        assert.equal(elements.get('card-summary').hidden, false);
+        assert.equal(elements.get('retry-card-sync').hidden, false);
+        await click('retry-card-sync');
+      }
+      assert.equal(synchronizations, phase === 'retry' ? 2 : 1);
+      assert.equal(elements.get('retry-card-sync').hidden, true);
+      assert.equal(elements.get('edit-card').hidden, true);
+      if (reason === 'card_verification_required') {
+        assert.equal(reads, 2, 'Reverification must refresh the authoritative card snapshot');
+        assert.equal(elements.get('card-summary').hidden, true);
+        assert.equal(elements.get('card-editor').hidden, false);
+        assert.equal(footer.hidden, false);
+        assert.match(elements.get('scheduler-message').textContent, /validado novamente/u);
+      } else {
+        assert.equal(reads, 1, 'An ambiguous operation must remain blocked for review');
+        assert.equal(elements.get('card-editor').hidden, true);
+        assert.match(elements.get('scheduler-message').textContent, /conferido no Pagar\.me/u);
+      }
+    });
+  }
+}

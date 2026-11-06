@@ -15,14 +15,15 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .login-layout > .logo { height: 40px; width: auto; max-width: calc(100% - 48px); vertical-align: bottom; }
 .login-form-layout { min-height: 500px; height: calc(100vh - 120px); align-content: center; padding: 24px; }
 .login-panel { width: min(100%, 400px); margin-left: auto; margin-right: auto; }
-.login-tool-title { font-size: 18px; line-height: 1.4; margin-bottom: 20px; }
-.login-panel h1 { font-size: 30px; font-weight: 400; line-height: 1.25; margin-bottom: 20px; }
+.login-panel .login-tool-title { font-size: 18px; font-weight: 400; line-height: 1.4; margin-bottom: 20px; }
 .login-panel form { text-align: left; }
 .login-panel label { display: block; font-size: 18px; margin-bottom: 5px; }
 .login-panel input { display: block; width: 100%; height: 32px; min-height: 0; background: #fff; color: #000; border: 0; border-radius: 10px; font-size: 16px; padding: 0 10px; }
 .login-panel #email { margin-bottom: 10px; padding-right: 0; }
 .login-panel #password { margin-bottom: 30px; }
-.login-submit { display: block; background: #4a0816; color: #fff; font-size: 17px; height: 40px; width: 100px; padding: 0; border: 0; border-radius: 20px; margin-left: calc(50% - 50px); user-select: none; box-shadow: 0 0 8px rgba(255,255,255,.8); }
+.login-actions { width: 100px; height: 40px; margin-left: calc(50% - 50px); }
+.login-submit { display: block; background: #4a0816; color: #fff; font-size: 17px; height: 40px; width: 100px; padding: 0; border: 0; border-radius: 20px; user-select: none; box-shadow: 0 0 8px rgba(255,255,255,.8); }
+.login-progress { width: 100%; font-size: 17px; line-height: 40px; text-align: center; }
 .login-submit:hover { box-shadow: 0 0 12px rgba(255,255,255,.8); }
 .login-panel .message { color: #fff; width: 100%; margin: 30px auto 0; text-align: center; }
 .login-page :focus-visible { outline-color: #fff; }
@@ -42,6 +43,8 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-main .message { font-size: 13px; margin: 15px 0; }
 .card-panel { border: 1px solid rgb(222,222,222); border-radius: 5px; padding: 15px; margin: 15px 0; }
 .card-panel h2, .card-panel h3, legend { font-size: 15px; font-weight: 400; color: #790d26; }
+.card-summary-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.card-edit { flex-shrink: 0; background: transparent; color: #790d26; border: 0; padding: 4px 0; min-height: 32px; font-size: 13px; text-decoration: underline; }
 .card-number { font-size: 16px; margin-top: 10px; }
 .card-expiry, .empty-card, .muted { font-size: 12px; color: rgb(128,128,128); line-height: 1.5; }
 .card-expiry { margin-top: 5px; }

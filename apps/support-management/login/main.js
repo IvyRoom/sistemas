@@ -3,19 +3,28 @@ import { createSupportClient, SCHEDULER_PATH } from '../modules/client.js';
 const client = createSupportClient();
 const form = document.getElementById('login-form');
 const button = document.getElementById('login-submit');
+const progress = document.getElementById('login-progress');
 const message = document.getElementById('login-message');
 const email = document.getElementById('email');
 const password = document.getElementById('password');
 
+function setPending(pending) {
+  button.disabled = pending;
+  button.hidden = pending;
+  progress.hidden = !pending;
+  form.setAttribute('aria-busy', String(pending));
+  document.body.setAttribute('aria-busy', String(pending));
+}
+
 window.addEventListener('pagehide', () => {
   password.value = '';
-  document.body.setAttribute('aria-busy', 'false');
+  setPending(false);
 });
 
 try {
   await client.config();
   message.textContent = '';
-  button.disabled = false;
+  setPending(false);
 } catch {
   message.textContent = 'Não foi possível carregar a ferramenta. Tente novamente mais tarde.';
 }
@@ -23,10 +32,8 @@ try {
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   if (button.disabled) return;
-  button.disabled = true;
-  document.body.setAttribute('aria-busy', 'true');
-  form.setAttribute('aria-busy', 'true');
-  message.textContent = 'Entrando...';
+  setPending(true);
+  message.textContent = '';
   email.setAttribute('aria-invalid', 'false');
   password.setAttribute('aria-invalid', 'false');
   try {
@@ -45,8 +52,6 @@ form.addEventListener('submit', async (event) => {
     }
   } finally {
     password.value = '';
-    button.disabled = false;
-    form.setAttribute('aria-busy', 'false');
-    document.body.setAttribute('aria-busy', 'false');
+    setPending(false);
   }
 });

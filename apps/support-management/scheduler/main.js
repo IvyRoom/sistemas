@@ -8,6 +8,9 @@ const editor = document.getElementById('card-editor');
 const edit = document.getElementById('edit-card');
 const save = document.getElementById('save-card');
 const cancel = document.getElementById('cancel-card');
+const retrySync = document.getElementById('retry-card-sync');
+const introduction = document.querySelector('.intro');
+const footer = document.querySelector('.checkout-footer');
 const cardInputs = Object.fromEntries([
   ['number', 'number'], ['holderName', 'holder-name'], ['expMonth', 'exp-month'],
   ['expYear', 'exp-year'], ['cvv', 'cvv']
@@ -21,6 +24,7 @@ let busy = false;
 let leaving = false;
 let reviewRequired = false;
 let hasCard = false;
+let workbookSyncPending = false;
 
 const currentYear = new Date().getFullYear();
 for (let year = currentYear; year <= currentYear + 20; year++) {
@@ -132,6 +136,7 @@ function handleReviewRequired(error) {
   if (error.code !== 'support_management.card_review_required') return false;
   reviewRequired = true;
   edit.hidden = true;
+  retrySync.hidden = true;
   editor.hidden = true;
   clearCard();
   message.textContent = 'O cadastro precisa ser conferido no Pagar.me antes de uma nova tentativa. Entre em contato com o suporte.';
@@ -146,15 +151,24 @@ function closeEditor() {
   else document.getElementById('number').focus();
 }
 
-function renderCard(card) {
+function renderCard(card, syncPending = false, verificationRequired = false) {
   hasCard = Boolean(card);
+  workbookSyncPending = syncPending;
+  introduction.textContent = card
+    ? 'O cartão de crédito corporativo cadastrado abaixo será utilizado para a contratação dos atendimentos consultivos.'
+    : 'Cadastre abaixo o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos.';
+  footer.hidden = hasCard;
+  editor.hidden = !administrator || hasCard || reviewRequired;
   document.getElementById('card-summary').hidden = !card;
   document.getElementById('empty-card').hidden = Boolean(card) || administrator;
   if (card) {
     document.getElementById('card-number').textContent = `${card.brand} •••• ${card.lastFour}`;
     document.getElementById('card-expiry').textContent = `Validade: ${String(card.expMonth).padStart(2, '0')}/${card.expYear}`;
   }
-  edit.hidden = !administrator || !card;
+  edit.hidden = !administrator || !card || syncPending;
+  retrySync.hidden = !administrator || !syncPending;
+  message.textContent = verificationRequired ? 'O cartão precisa ser validado novamente. Cadastre-o abaixo.'
+    : syncPending ? 'O cartão foi cadastrado, mas a sincronização com BD - USUÁRIOS está pendente.' : '';
   cancel.hidden = !card;
   save.textContent = card ? 'Salvar cartão' : 'Cadastrar cartão';
 }
@@ -168,16 +182,48 @@ document.getElementById('logout').addEventListener('click', async () => {
 });
 
 edit.addEventListener('click', () => {
-  if (!administrator || busy || reviewRequired) return;
+  if (!administrator || busy || reviewRequired || workbookSyncPending) return;
   editor.hidden = false;
   edit.setAttribute('aria-expanded', 'true');
   cardInputs.number.focus();
 });
 cancel.addEventListener('click', closeEditor);
 
+retrySync.addEventListener('click', async () => {
+  if (!administrator || busy || !workbookSyncPending) return;
+  busy = true;
+  retrySync.disabled = true;
+  message.textContent = 'Sincronizando cadastro...';
+  try {
+    const result = await client.syncCard();
+    if (!leaving) renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+  } catch (error) {
+    if (leaving || authFailure(error) || handleReviewRequired(error)) return;
+    if (error.code === 'support_management.card_verification_required') {
+      try {
+        const result = await client.card();
+        if (!leaving) renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+      } catch (refreshError) {
+        if (!leaving && !authFailure(refreshError) && !handleReviewRequired(refreshError)) {
+          message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
+        }
+      }
+      return;
+    }
+    if (error.status === 403) {
+      administrator = false;
+      retrySync.hidden = true;
+    }
+    message.textContent = 'Não foi possível sincronizar o cartão com BD - USUÁRIOS. Tente novamente.';
+  } finally {
+    busy = false;
+    retrySync.disabled = false;
+  }
+});
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (!administrator || busy || leaving || reviewRequired) return;
+  if (!administrator || busy || leaving || reviewRequired || workbookSyncPending) return;
   for (const [input, formatter] of formatters) input.value = normalizeText(formatter(input.value));
   updateCardPreview();
   const errors = cardErrors();
@@ -207,9 +253,8 @@ form.addEventListener('submit', async (event) => {
   try {
     const result = await submitCompanyCard({ publicKey, card, billingAddress, client, clear: clearCard, isCurrent: () => !leaving });
     if (leaving) return;
-    renderCard(result.card);
+    renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
     closeEditor();
-    message.textContent = 'Cartão cadastrado para sua empresa.';
   } catch (error) {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
     if (error.status === 403) {
@@ -217,6 +262,10 @@ form.addEventListener('submit', async (event) => {
       edit.hidden = true;
       editor.hidden = true;
       message.textContent = 'Somente administradores podem alterar o cartão.';
+    } else if (error.code === 'support_management.card_verification_failed') {
+      message.textContent = 'O cartão não foi aprovado na validação do Pagar.me. Confira os dados ou utilize outro cartão.';
+    } else if (error.code === 'support_management.card_verification_unconfirmed') {
+      message.textContent = 'Não foi possível confirmar a validação deste cartão. Entre em contato com o suporte.';
     } else if (error.status === 409) {
       message.textContent = 'Já existe um cadastro em andamento. Aguarde e atualize a página antes de tentar novamente.';
     } else {
@@ -238,11 +287,17 @@ try {
   publicKey = config.publicKey;
   const { user } = await client.session();
   administrator = user.role === 'Administrador';
-  const { card } = await client.card();
-  renderCard(card);
-  editor.hidden = !administrator || Boolean(card);
+  let result = await client.card();
+  if (result.workbookSyncPending && !result.verificationRequired && administrator) {
+    try { result = await client.syncCard(); }
+    catch (error) {
+      if (error.status === 401 || error.code === 'support_management.card_review_required') throw error;
+      if (error.status === 403) administrator = false;
+      if (error.code === 'support_management.card_verification_required') result = await client.card();
+    }
+  }
+  renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
   document.getElementById('member-notice').hidden = administrator;
-  message.textContent = '';
 } catch (error) {
   if (!authFailure(error) && !handleReviewRequired(error)) message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
 }

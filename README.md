@@ -96,8 +96,9 @@ For daily support-management development, run `npm run support:dev` from the
 sibling `backend` checkout and open its printed local URL. The server reads these
 frontend sources directly: save an edit and refresh the browser, without a build
 or deployment. Backend code changes restart that local backend; sign in again
-after a restart. This connected local workflow uses the real read-only users
-workbook and Pagar.me test API after test-key and permitted-origin setup. Run
+after a restart. This connected local workflow reads user access and synchronizes
+masked card metadata in the real workbook, using the Pagar.me test API after
+test-key and permitted-origin setup. Run
 `npm run support:test` from `backend` for focused checks. Keep commits local and
 existing PRs parked until Lucas explicitly requests publication.
 

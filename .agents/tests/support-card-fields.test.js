@@ -34,16 +34,19 @@ test('formats pasted PANs and respects Amex and Diners spacing without preservin
   assert.equal(fields.formatCardNumber('4000-0000 0000x0010'), '4000 0000 0000 0010');
   assert.equal(fields.formatCardNumber('378282246310005'), '3782 822463 10005');
   assert.equal(fields.formatCardNumber('30569309025904'), '3056 930902 5904');
-  assert.equal(fields.formatCardNumber('999999999999999999999999'), '9999 9999 9999 9999 999');
+  assert.equal(fields.formatCardNumber('999999999999999999999999'), '9999 9999 9999 9999');
+  assert.equal(fields.formatCardNumber('5555555555554444999'), '5555 5555 5555 4444');
+  assert.equal(fields.formatCardNumber('3782822463100059999'), '3782 822463 10005');
   assert.equal(fields.formatCardNumber('40000'), '4000 0');
   assert.equal(fields.formatCardNumber(''), '');
 });
 
-test('normalizes Unicode holder names while preserving legitimate corporate digits and typing spaces', () => {
-  assert.equal(fields.formatCardholder('  João  D’Ávila-3M.  '), 'JOÃO D’ÁVILA-3M. ');
-  assert.equal(fields.formatCardholder('Ana\nO\'Brien 🦊 @'), "ANA O'BRIEN ");
-  assert.equal(fields.normalizeText(fields.formatCardholder('  Ana   Maria  ')), 'ANA MARIA');
-  assert.equal(fields.formatCardholder('Jose\u0301'), 'JOSÉ');
+test('holder names preserve case and accents while rejecting numbers and special characters', () => {
+  assert.equal(fields.formatCardholder('  João  D’Ávila-3M.  '), 'João DÁvilaM ');
+  assert.equal(fields.formatCardholder('Ana\nO\'Brien 🦊 @'), 'Ana OBrien ');
+  assert.equal(fields.normalizeText(fields.formatCardholder('  Ana   Maria  ')), 'Ana Maria');
+  assert.equal(fields.formatCardholder('Jose\u0301'), 'José');
+  assert.equal(fields.formatCardholder('123456'), '');
 });
 
 test('formats postal, security and street-number fields without discarding valid address notation', () => {
@@ -58,9 +61,11 @@ test('formats postal, security and street-number fields without discarding valid
   assert.equal(fields.normalizeText('  Rua\t24  de Maio\n'), 'Rua 24 de Maio');
 });
 
-test('validates card checksums, known lengths, corporate holders and brand-specific security codes', () => {
+test('validates card checksums, field lengths, holder names and brand-specific security codes', () => {
   assert.deepEqual(Object.keys(fields.validateCardFields(visa, date)), []);
-  assert.deepEqual(Object.keys(fields.validateCardFields({ ...visa, holderName: '3M JOÃO D’ÁVILA' }, date)), []);
+  assert.deepEqual(Object.keys(fields.validateCardFields({ ...visa, holderName: 'João da Silva' }, date)), []);
+  assert.ok(fields.validateCardFields({ ...visa, holderName: '3M JOÃO D’ÁVILA' }, date).holderName);
+  assert.ok(fields.validateCardFields({ ...visa, number: '4000000000000000006' }, date).number);
   assert.ok(fields.validateCardFields({ ...visa, number: '4000000000000011' }, date).number);
   assert.ok(fields.validateCardFields({ ...visa, number: '400000000000' }, date).number);
   assert.ok(fields.validateCardFields({ ...visa, number: '0000000000000000' }, date).number);

@@ -3,7 +3,7 @@ export const LOGIN_PATH = '/support-management/login/';
 export const SCHEDULER_PATH = '/support-management/scheduler/';
 
 export function createSupportClient({ fetch: transport = globalThis.fetch, storage = globalThis.sessionStorage } = {}) {
-  async function request(path, { method = 'GET', body } = {}) {
+  async function request(path, { method = 'GET', body, timeoutMs = 20000 } = {}) {
     const token = storage.getItem(TOKEN_KEY);
     const response = await transport(`/support-management/api${path}`, {
       method,
@@ -12,7 +12,7 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       credentials: 'omit',
       cache: 'no-store',
       redirect: 'error',
-      signal: AbortSignal.timeout(20000)
+      signal: AbortSignal.timeout(timeoutMs)
     });
     if (!response.ok) {
       const error = new Error('support_request_failed');
@@ -39,7 +39,8 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
     },
     session: () => request('/session'),
     card: () => request('/card'),
-    saveCard: (token, billingAddress) => request('/card', { method: 'PUT', body: { token, billingAddress } }),
+    saveCard: (token, billingAddress) => request('/card', { method: 'PUT', body: { token, billingAddress }, timeoutMs: 120000 }),
+    syncCard: () => request('/card/sync', { method: 'POST', timeoutMs: 120000 }),
     async logout() {
       try { await request('/logout', { method: 'POST' }); }
       finally { storage.removeItem(TOKEN_KEY); }
