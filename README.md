@@ -89,17 +89,31 @@ Support management uses the dedicated same-origin sandbox API supplied by
 the companion backend's support sandbox entry point. The static pages remain
 unavailable for login when that API is absent; they never fall back to the
 production backend. See the [backend sandbox runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
-for configuration and testing. Agendamento shows weekday availability and hourly
-prices from the workbooks, with date reservations and email/calendar invitations.
-Cadastro de Cartão uses Pagar.me test keys and test cards; charging is a later step.
+for configuration and testing. The scheduler uses a white/light-gray layout and
+the course-content header arrangement: title, full name and one-hour session
+countdown. Its 500px monthly calendars run Sunday–Saturday; unavailable dates are
+gray. Bookable dates run from tomorrow through today+30, excluding weekends and
+national/Curitiba holidays. A verified active company card is required to see
+availability and reserve. Selecting a date shows its hourly price, terms and
+acknowledgment before Reservar Agenda. Appointments start at 09:00 Brasília time
+in Microsoft Teams, with a 90-minute calendar hold and confirmation email.
+Cadastro de Cartão uses Pagar.me test keys and test cards; reservations and
+nonattendance do not automatically charge a card.
+
+Login preloads public configuration, masked card and calendar context. A
+token-bound sessionStorage cache avoids repeating those requests during the
+login-to-scheduler transition; reused context refreshes in the background.
+The cache expires with the one-hour session and clears on logout or HTTP 401.
+Authorization and reservation decisions remain on the backend.
 
 For daily support-management development, run `npm run support:dev` from the
 sibling `backend` checkout and open its printed local URL. The server reads these
 frontend sources directly: save an edit and refresh the browser, without a build
 or deployment. Backend code changes restart that local backend while preserving
 valid login sessions. This connected local workflow reads user access/prices,
-reserves real appointment rows and sends notifications when the user clicks
-Reservar Data. Card references are grouped by CNPJ and use the Pagar.me test API
+maintains the next 30 calendar dates in BD - ATENDIMENTOS, reserves real rows and
+sends notifications when the user clicks Reservar Agenda. Card references are
+grouped by CNPJ and use the Pagar.me test API
 after test-key and permitted-origin setup. Automated checks simulate all writes. Run
 `npm run support:test` from `backend` for focused checks. Keep commits local and
 existing PRs parked until Lucas explicitly requests publication.

@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../style.css">
   <script type="module" src="./main.js"></script>
 </head>
-<body>
+<body class="scheduler-page">
   <div class="scheduler-layout">
     <aside class="sidebar" aria-label="Ferramentas">
       <button id="logout" class="logout" type="button">« sair</button>
@@ -20,12 +20,35 @@
         <button id="card-tab" class="scheduler-tab" type="button" role="tab" aria-selected="false" aria-controls="card-panel" tabindex="-1">Cadastro de Cartão</button>
       </nav>
     </aside>
-    <main class="scheduler-main">
+    <div class="scheduler-workspace">
+      <header class="scheduler-header">
+        <h1 id="header-title">Agendamento: Atendimentos Consultivos</h1>
+        <div class="scheduler-user">
+          <p id="header-user-name"></p>
+          <p id="header-session-time"></p>
+        </div>
+      </header>
+      <main class="scheduler-main">
       <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
-        <header class="page-header"><h1>Agendamento</h1></header>
+        <div id="appointments-intro" class="appointments-intro">
+          <p>Clique abaixo para agenda um atendimento consultivo junto ao nosso diretor.</p>
+          <p><b>Todos os encontros iniciam às 09:00</b>, ocorrem via Microsoft Teams e não possuem tempo de duração pré-determinado - cada encontro pode durar até 1h30min, conforme necessário.</p>
+          <p>O investimento financeiro por hora de atendimento varia de acordo com a data e está listado, dia a dia, no calendário.</p>
+          <p>Ao finalizar a reserva, você receberá confirmação no e-mail cadastrado: <span id="appointment-confirmation-email"></span>.</p>
+        </div>
         <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
-        <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true"></div>
-        <button id="reserve-date" class="primary" type="button" disabled>Reservar Data</button>
+        <div id="appointments-stage" class="calendar-stage">
+          <p id="appointments-gate" class="payment-gate" role="status" hidden>Método de pagamento não cadastrado. Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p>
+          <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true"></div>
+        </div>
+        <section id="appointment-details" class="appointment-details" aria-label="Reserva de agenda" tabindex="-1" hidden>
+          <p><b>Data e Hora:</b> <span id="selected-appointment-date"></span></p>
+          <p><b>Investimento por Hora Consultiva:</b> <span id="selected-appointment-price"></span></p>
+          <p>Orientação: ao clicar em "Reservar Agenda", sua reserva de agenda estará concluída e você receberá sua confirmação por e-mail.</p>
+          <p id="reservation-warning"><b>Atenção:</b> esta operação não poderá ser desfeita. Em caso de não comparecimento no encontro agendado, será feita a cobrança equivalente a 1h consultiva.</p>
+          <label class="reservation-acknowledgment" for="reservation-acknowledged"><input id="reservation-acknowledged" type="checkbox" aria-describedby="reservation-warning">Estou ciente.</label>
+          <button id="reserve-date" class="primary" type="button" disabled>Reservar Agenda</button>
+        </section>
       </section>
       <section id="card-panel" class="checkout-panel" role="tabpanel" aria-labelledby="card-tab" hidden>
         <header class="page-header"><h1 id="card-registration-title">Cadastro de Cartão</h1></header>
@@ -83,7 +106,8 @@
           <div class="checkout-provider"><p>Powered by</p><img src="../img/checkout-pagarme.webp" alt="Pagar.me"></div>
         </footer>
       </section>
-    </main>
+      </main>
+    </div>
   </div>
 </body>
 </html>

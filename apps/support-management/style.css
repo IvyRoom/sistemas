@@ -30,15 +30,18 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .login-page footer { min-height: 40px; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 8px 24px; }
 .login-page[aria-busy="true"], .login-page[aria-busy="true"] * { cursor: wait !important; }
 .scheduler-layout { display: flex; min-height: 100vh; min-height: 100dvh; }
-.sidebar { flex: 0 0 300px; padding: 16px 26px 32px; background: linear-gradient(135deg, #4a0816, #000); color: #dedede; text-align: center; }
-.sidebar .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 24px auto 40px; }
-.logout { display: block; color: #dedede; background: transparent; padding: 0; min-height: 32px; border: 0; }
-.sidebar :focus-visible { outline-color: #fff; }
-.scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #a77a84; border-radius: 5px; color: #fff; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
-.scheduler-tab[aria-selected="true"] { background: rgba(255,255,255,.12); }
-.scheduler-tab:hover { background: rgba(255,255,255,.14); }
-.scheduler-main { flex: 1; min-width: 0; padding: 30px 24px; background: linear-gradient(#000000, #4a0816); font-family: sans-serif; color: rgb(58,58,58); }
-.checkout-panel { width: min(100%, 650px); margin: 0 auto; background: #fff; border: 1px solid rgb(146,146,146); border-radius: 15px; padding: 30px; }
+.sidebar { flex: 0 0 300px; padding: 16px 26px 32px; background: #f3f3f3; color: #444; text-align: center; border-right: 1px solid #d4d4d4; }
+.sidebar .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 24px auto 40px; filter: brightness(0); }
+.logout { display: block; color: #555; background: transparent; padding: 0; min-height: 32px; border: 0; }
+.scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #d4d4d4; border-radius: 5px; color: #444; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
+.scheduler-tab[aria-selected="true"] { background: #fff; border-color: #aaa; }
+.scheduler-tab:hover { background: #e9e9e9; }
+.scheduler-workspace { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.scheduler-header { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 40px; padding: 0 10px 0 20px; background: #eee; color: #444; }
+.scheduler-header h1 { min-width: 0; font-size: 16px; font-weight: 400; line-height: 1.25; }
+.scheduler-user { flex-shrink: 0; padding-left: 16px; font-size: 12px; line-height: 1.4; text-align: right; white-space: nowrap; }
+.scheduler-main { flex: 1; min-width: 0; padding: 24px; background: #fff; color: rgb(58,58,58); }
+.checkout-panel { width: min(100%, 650px); margin: 0 auto; background: #fff; border: 1px solid #dedede; border-radius: 5px; padding: 30px; }
 .page-header h1 { font-size: 20px; font-weight: 400; color: #790d26; margin-bottom: 5px; }
 .intro { font-size: 14px; line-height: 1.5; }
 .scheduler-main .message { font-size: 13px; margin: 15px 0; }
@@ -90,16 +93,20 @@ legend { padding: 0 4px; }
 .checkout-company { font-size: 10px; color: rgb(170,170,170); text-align: center; }
 .checkout-provider { display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 10px; color: rgb(109,109,109); }
 .checkout-provider img { width: 80px; height: auto; }
-.appointment-panel { width: min(100%, 1000px); }
-.appointment-calendar { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,300px),300px)); justify-content: center; align-items: start; gap: 18px; margin-top: 15px; }
-.calendar-month-block { min-width: 0; min-height: 300px; padding: 12px; border: 1px solid #dedede; border-radius: 5px; }
-.calendar-month-heading { color: #790d26; font-size: 14px; font-weight: 400; text-align: center; margin-bottom: 8px; }
-.calendar-month { width: 100%; table-layout: fixed; border-spacing: 3px; }
-.calendar-month th { color: #790d26; font-size: 10px; font-weight: 400; padding: 4px 0; }
-.calendar-month td { height: 38px; padding: 0; }
-.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 38px; padding: 4px 1px; color: #fff; border: 0; border-radius: 4px; }
-.calendar-day-number { font-size: 14px; }
-.calendar-day-price { font-size: 8px; white-space: nowrap; }
+.appointment-panel { display: flex; flex-direction: column; width: min(100%,1100px); min-height: calc(100vh - 88px); min-height: calc(100dvh - 88px); border: 0; border-radius: 0; padding: 0; }
+.appointments-intro { font-size: 14px; line-height: 1.6; }
+.appointments-intro p + p { margin-top: 8px; }
+.calendar-stage { display: flex; flex: 1; align-items: center; justify-content: center; min-height: 540px; padding: 20px 0; }
+.payment-gate { max-width: 650px; margin: auto; font-size: 16px; line-height: 1.6; text-align: center; }
+.appointment-calendar { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,500px),500px)); justify-content: center; align-items: start; width: 100%; gap: 24px; }
+.calendar-month-block { min-width: 0; aspect-ratio: 1; padding: 16px; border: 1px solid #dedede; border-radius: 5px; }
+.calendar-month-heading { color: #444; font-size: 18px; font-weight: 400; line-height: 24px; text-align: center; margin-bottom: 12px; }
+.calendar-month { width: 100%; height: calc(100% - 36px); table-layout: fixed; border-spacing: 5px; }
+.calendar-month th { color: #555; font-size: 12px; font-weight: 400; padding: 4px 0; }
+.calendar-month td { height: 54px; padding: 0; }
+.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; height: 100%; min-height: 54px; padding: 6px 2px; color: #fff; border: 0; border-radius: 4px; }
+.calendar-day-number { font-size: 18px; }
+.calendar-day-price { font-size: 10px; white-space: nowrap; }
 .calendar-day[data-price-step="0"] { background: #790d26; }
 .calendar-day[data-price-step="1"] { background: #7d201f; }
 .calendar-day[data-price-step="2"] { background: #813318; }
@@ -112,8 +119,14 @@ legend { padding: 0 4px; }
 .calendar-day[data-price-step="9"] { background: #2b5b28; }
 .calendar-day[data-price-step="10"] { background: #145931; }
 .calendar-day[data-price-step="unavailable"] { background: #dedede; color: #666; cursor: default; }
-.calendar-day[data-price-step="unavailable"] .calendar-day-price { font-size: 7px; }
+.calendar-day[data-price-step="unavailable"] .calendar-day-price { display: none; }
 .calendar-day[aria-pressed="true"] { outline: 3px solid #4a0816; outline-offset: 2px; box-shadow: inset 0 0 0 2px #fff; }
+.appointment-details { width: min(100%,800px); padding: 24px; margin: 24px auto 0; border: 1px solid #dedede; border-radius: 5px; font-size: 14px; line-height: 1.6; }
+.appointment-details p + p { margin-top: 12px; }
+.appointment-details .reservation-acknowledgment { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; font-size: 14px; }
+.appointment-details input[type="checkbox"] { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; accent-color: #4a0816; }
+.scheduler-main #reserve-date { margin: 24px auto 0; background: #4a0816; box-shadow: none; font-size: 16px; }
+.scheduler-main #reserve-date:hover { background: #790d26; box-shadow: none; }
 @media (max-width: 1040px) {
   .sidebar { flex-basis: 240px; padding-left: 20px; padding-right: 20px; }
   .card-preview { display: none; }
@@ -122,11 +135,24 @@ legend { padding: 0 4px; }
   .scheduler-layout { display: block; }
   .sidebar { padding: 14px 24px 24px; }
   .sidebar .logo { width: 180px; margin: 8px auto 24px; }
+  .scheduler-header { height: auto; min-height: 40px; align-items: flex-start; flex-direction: column; padding: 10px 16px; gap: 5px; }
+  .scheduler-user { padding-left: 0; text-align: left; white-space: normal; }
   .scheduler-main { padding: 20px 12px; }
   .checkout-panel { padding: 20px; }
+  .appointment-panel { min-height: calc(100dvh - 120px); padding: 0; }
   .page-header h1 { font-size: 20px; }
 }
 @media (max-width: 430px) {
+  .calendar-stage { min-height: 400px; }
+  .calendar-month-block { padding: 10px; }
+  .calendar-month-heading { font-size: 16px; }
+  .calendar-month { border-spacing: 3px; }
+  .calendar-month th { font-size: 10px; }
+  .calendar-month td, .calendar-day { min-height: 36px; height: 36px; }
+  .calendar-day { gap: 3px; padding: 3px 1px; }
+  .calendar-day-number { font-size: 14px; }
+  .calendar-day-price { font-size: 8px; }
+  .appointment-details { padding: 16px; }
   .address-pair, .city-row { grid-template-columns: minmax(0,1fr); gap: 0; }
   .form-row { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
   fieldset { padding: 12px; }

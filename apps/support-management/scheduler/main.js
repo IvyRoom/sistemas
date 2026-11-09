@@ -30,11 +30,14 @@ let initialized = false;
 let activeTab = 'appointments';
 let cardLoaded = false;
 let cardLoading;
+let cardSnapshot;
+let sessionTimer;
 const appointments = createAppointments({ client, onAuthFailure: authFailure, isCurrent: () => !leaving });
 const tabs = ['appointments', 'card'];
 
-async function selectTab(name) {
+async function selectTab(name, { calendar } = {}) {
   activeTab = name;
+  document.getElementById('header-title').textContent = name === 'card' ? 'Cadastro de Cartão' : 'Agendamento: Atendimentos Consultivos';
   for (const tab of tabs) {
     const selected = tab === name;
     const button = document.getElementById(`${tab}-tab`);
@@ -45,7 +48,7 @@ async function selectTab(name) {
   if (name !== 'card') clearCard();
   if (!initialized) return;
   if (name === 'card') await loadCard();
-  else await appointments.load();
+  else await appointments.load(calendar);
 }
 
 for (const [index, tab] of tabs.entries()) {
@@ -160,10 +163,13 @@ function clearCard() {
   updateCardPreview();
 }
 window.addEventListener('pagehide', clearCard);
+window.addEventListener('pagehide', () => globalThis.clearInterval?.(sessionTimer));
 
 function authFailure(error) {
   if (error.status !== 401) return false;
   leaving = true;
+  client.clearSession?.();
+  globalThis.clearInterval?.(sessionTimer);
   clearCard();
   window.location.replace(LOGIN_PATH);
   return true;
@@ -233,7 +239,11 @@ retrySync.addEventListener('click', async () => {
   message.textContent = 'Sincronizando cadastro...';
   try {
     const result = await client.syncCard();
-    if (!leaving) renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+    if (!leaving) {
+      cardSnapshot = undefined;
+      renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+      appointments.invalidate?.();
+    }
   } catch (error) {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
     if (error.code === 'support_management.card_verification_required') {
@@ -290,7 +300,9 @@ form.addEventListener('submit', async (event) => {
   try {
     const result = await submitCompanyCard({ publicKey, card, billingAddress, client, clear: clearCard, isCurrent: () => !leaving });
     if (leaving) return;
+    cardSnapshot = undefined;
     renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+    appointments.invalidate?.();
     closeEditor();
   } catch (error) {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
@@ -318,11 +330,12 @@ form.addEventListener('submit', async (event) => {
 });
 
 function loadCard() {
-  if (cardLoaded) return Promise.resolve();
+  if (cardLoaded && cardSnapshot === undefined) return Promise.resolve();
   if (cardLoading) return cardLoading;
   cardLoading = Promise.resolve().then(async () => {
     try {
-      let result = await client.card();
+      let result = cardSnapshot ?? await client.card();
+      cardSnapshot = undefined;
       if (result.workbookSyncPending && !result.verificationRequired && administrator) {
         try { result = await client.syncCard(); }
         catch (error) {
@@ -344,14 +357,57 @@ function loadCard() {
   return cardLoading;
 }
 
-try {
-  const config = await client.config();
+async function initializeSession(result, { fromCache = false } = {}) {
+  const config = result.config || await client.config();
+  if (config.environment !== undefined && config.environment !== 'sandbox') throw new Error('sandbox_unavailable');
+  if (!/^pk_test_[A-Za-z0-9_-]+$/u.test(config.publicKey || '')) throw new Error('sandbox_unavailable');
   publicKey = config.publicKey;
-  const { user } = await client.session();
+  const { user } = result;
+  document.getElementById('header-user-name').textContent = user.name || '';
+  globalThis.clearInterval?.(sessionTimer);
+  if (Number.isFinite(result.expiresAt)) {
+    const updateSessionTime = () => {
+      if (leaving) return;
+      const remaining = Math.max(0, Math.floor((result.expiresAt - Date.now()) / 1000));
+      const hours = String(Math.floor(remaining / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor(remaining % 3600 / 60)).padStart(2, '0');
+      const seconds = String(remaining % 60).padStart(2, '0');
+      document.getElementById('header-session-time').textContent = `Tempo Sessão: ${hours}:${minutes}:${seconds}`;
+      if (!remaining) authFailure({ status: 401 });
+    };
+    updateSessionTime();
+    if (leaving) return;
+    if (typeof globalThis.setInterval === 'function') sessionTimer = globalThis.setInterval(updateSessionTime, 1000);
+  }
   administrator = user.role === 'Administrador';
+  if (result.card !== undefined) cardSnapshot = result.card;
+  else if (!fromCache) {
+    cardSnapshot = undefined;
+    cardLoaded = false;
+  }
+  if (result.calendar === undefined && !fromCache) appointments.invalidate?.();
   initialized = true;
   document.getElementById('member-notice').hidden = administrator;
-  await selectTab(activeTab);
+  await selectTab(activeTab, { calendar: result.calendar });
+}
+
+try {
+  let cached = client.bootstrap?.();
+  if (cached?.context) {
+    try { await initializeSession(cached.context, { fromCache: true }); }
+    catch {
+      client.discardBootstrap?.();
+      cached = null;
+      cardSnapshot = undefined;
+      cardLoaded = false;
+      initialized = false;
+      appointments.invalidate?.();
+    }
+  }
+  if (!leaving && (!cached?.context || cached.refresh)) {
+    const current = await client.session();
+    if (!leaving) await initializeSession(current);
+  }
 } catch (error) {
   if (!authFailure(error)) document.getElementById(activeTab === 'card' ? 'scheduler-message' : 'appointments-message').textContent = 'Não foi possível carregar a ferramenta. Atualize a página para tentar novamente.';
 }

@@ -198,7 +198,7 @@ test('leaving the login clears its password and pending presentation', async () 
   await submission;
 });
 
-async function loadScheduler(client, { activateCard = true } = {}) {
+async function loadScheduler(client, { activateCard = true, appointmentController } = {}) {
   const elements = new Map();
   function element(tagName, attributes = '') {
     const attribute = (name) => attributes.match(new RegExp(`(?:^|\\s)${name}="([^"]*)"`, 'u'))?.[1] ?? null;
@@ -231,7 +231,7 @@ async function loadScheduler(client, { activateCard = true } = {}) {
       createElement: (tagName) => element(tagName) },
     window: { addEventListener() {}, location: { replace() { throw new Error('Unexpected navigation'); } } },
     createSupportClient: () => client, LOGIN_PATH: '/support-management/login/',
-    createAppointments: () => ({ load: async () => {} }),
+    createAppointments: () => appointmentController || ({ load: async () => {} }),
     submitCompanyCard: () => { throw new Error('Unexpected card registration'); },
   });
   const fields = fs.readFileSync(path.join(root, 'modules/card-fields.js'), 'utf8');
@@ -251,14 +251,17 @@ test('Agendamento is the default tab and card data loads only on the first card-
     card: async () => { reads++; return { card: null }; },
   }, { activateCard: false });
   assert.equal(reads, 0);
+  assert.equal(elements.get('header-title').textContent, 'Agendamento: Atendimentos Consultivos');
   assert.equal(elements.get('appointments-panel').hidden, false);
   assert.equal(elements.get('card-panel').hidden, true);
   await click('card-tab');
   assert.equal(reads, 1);
+  assert.equal(elements.get('header-title').textContent, 'Cadastro de Cartão');
   assert.equal(elements.get('appointments-panel').hidden, true);
   assert.equal(elements.get('card-panel').hidden, false);
   assert.equal(elements.get('card-tab').attributes['aria-selected'], 'true');
   await click('appointments-tab');
+  assert.equal(elements.get('header-title').textContent, 'Agendamento: Atendimentos Consultivos');
   await click('card-tab');
   assert.equal(reads, 1);
 });
@@ -307,3 +310,130 @@ for (const phase of ['startup', 'retry']) {
     });
   }
 }
+
+
+test('the login bootstrap is bound to the token, renders once without a fresh session read and caches only safe card details', async () => {
+  let calls = 0;
+  const result = { token: 'session-example', expiresAt: Date.now() + 60000,
+    user: { name: 'User', company: 'Company', role: 'Usuário', email: 'user@example.test', password: 'excluded' },
+    config: { environment: 'sandbox', publicKey: 'pk_test_example' },
+    calendar: { days: [], today: '2026-11-09', paymentMethodRegistered: true },
+    card: { card: { brand: 'Visa', lastFour: '0010', expMonth: 12, expYear: 2030, number: 'excluded', cvv: 'excluded' } }
+  };
+  const { createSupportClient, values } = loadClient(async () => { calls++; return { ok: true, json: async () => result }; });
+  const first = createSupportClient();
+  await first.login('user@example.test', 'password');
+  const nextPage = createSupportClient();
+  const saved = nextPage.bootstrap();
+  assert.equal(calls, 1);
+  assert.equal(saved.refresh, false);
+  assert.equal(saved.context.user.name, 'User');
+  assert.equal(saved.context.user.password, undefined);
+  assert.equal(saved.context.card.card.number, undefined);
+  assert.equal(saved.context.card.card.cvv, undefined);
+  assert.equal(nextPage.bootstrap().refresh, true, 'A reload must revalidate the displayed cache with the server');
+  values.set('supportManagementToken', 'another-user');
+  assert.equal(nextPage.bootstrap(), null);
+  assert.equal(values.has('supportManagementContext'), false);
+});
+
+test('expired or malformed bootstrap caches are discarded and logout removes the cached context', async () => {
+  const { createSupportClient, values } = loadClient(async () => ({ ok: true, status: 204 }));
+  const client = createSupportClient();
+  values.set('supportManagementToken', 'session-example');
+  for (const record of ['{malformed', JSON.stringify({ token: 'session-example', context: { expiresAt: Date.now() - 1 } })]) {
+    values.set('supportManagementContext', record);
+    assert.equal(client.bootstrap(), null);
+    assert.equal(values.has('supportManagementContext'), false);
+  }
+  values.set('supportManagementContext', 'cached-context');
+  await client.logout();
+  assert.equal(values.size, 0);
+});
+
+test('scheduler starts from the login bootstrap and does not repeat config, session or card reads on its first tabs', async () => {
+  const calls = [];
+  const context = { user: { name: 'User', role: 'Administrador' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' },
+    card: { card: null }, calendar: { days: [], today: '2026-11-09', paymentMethodRegistered: false } };
+  const { elements, click } = await loadScheduler({
+    bootstrap: () => ({ context, refresh: false }),
+    config: async () => { throw new Error('Repeated config read'); },
+    session: async () => { throw new Error('Repeated session read'); },
+    card: async () => { calls.push('card'); return { card: null }; },
+  }, { activateCard: false });
+  assert.equal(elements.get('appointments-panel').hidden, false);
+  assert.equal(elements.get('header-user-name').textContent, 'User');
+  await click('card-tab');
+  await click('appointments-tab');
+  await click('card-tab');
+  assert.deepEqual(calls, []);
+});
+
+
+test('incompatible cached contexts are discarded without losing the current authorization token', () => {
+  const { createSupportClient, values } = loadClient();
+  values.set('supportManagementToken', 'session-example');
+  const valid = { user: { name: 'User', role: 'Administrador' }, expiresAt: Date.now() + 60000,
+    config: { environment: 'sandbox', publicKey: 'pk_test_example' } };
+  for (const context of [
+    { ...valid, user: undefined },
+    { ...valid, config: undefined },
+    { ...valid, config: { environment: 'sandbox', publicKey: 'sk_test_example' } },
+  ]) {
+    values.set('supportManagementContext', JSON.stringify({ token: 'session-example', context, fromLogin: true }));
+    assert.equal(createSupportClient().bootstrap(), null);
+    assert.equal(values.has('supportManagementContext'), false);
+    assert.equal(values.get('supportManagementToken'), 'session-example');
+  }
+});
+
+test('successful card registration, synchronization and reservations invalidate persisted bootstrap snapshots', async () => {
+  const { createSupportClient, values } = loadClient(async () => ({ ok: true, json: async () => ({}) }));
+  const client = createSupportClient();
+  values.set('supportManagementToken', 'session-example');
+  for (const mutate of [() => client.saveCard('token_example', {}), () => client.syncCard(),
+    () => client.reserveDate({ date: '2026-11-10', priceCents: 50000, requestId: 'example', acknowledged: true })]) {
+    values.set('supportManagementContext', 'old-card-and-calendar-context');
+    await mutate();
+    assert.equal(values.has('supportManagementContext'), false);
+    assert.equal(values.get('supportManagementToken'), 'session-example');
+  }
+});
+
+test('an unusable cached bootstrap falls back to the current server session instead of trapping reloads', async () => {
+  let freshReads = 0;
+  let discarded = 0;
+  const { elements } = await loadScheduler({
+    bootstrap: () => ({ context: { config: { environment: 'production', publicKey: 'pk_live_bad' } }, refresh: false }),
+    discardBootstrap() { discarded++; },
+    session: async () => { freshReads++; return { user: { name: 'Current User', role: 'Usuário' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' } }; },
+  }, { activateCard: false });
+  assert.equal(discarded, 1);
+  assert.equal(freshReads, 1);
+  assert.equal(elements.get('header-user-name').textContent, 'Current User');
+  assert.equal(elements.get('appointments-panel').hidden, false);
+});
+
+test('an incomplete fresh bootstrap invalidates old calendar and card snapshots so route reads retry', async () => {
+  let loaded = false;
+  let calendarReads = 0;
+  let cardReads = 0;
+  const context = { user: { name: 'User', role: 'Administrador' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' },
+    card: { card: null }, calendar: { days: [], today: '2026-11-09', paymentMethodRegistered: false } };
+  const appointmentController = {
+    async load(result) {
+      if (result) loaded = true;
+      else if (!loaded) { calendarReads++; loaded = true; }
+    },
+    invalidate() { loaded = false; },
+  };
+  const { elements } = await loadScheduler({
+    bootstrap: () => ({ context, refresh: true }),
+    session: async () => ({ user: context.user, config: context.config }),
+    card: async () => { cardReads++; return { card: { brand: 'Visa', lastFour: '0010', expMonth: 12, expYear: 2030 } }; },
+  }, { appointmentController });
+  assert.equal(calendarReads, 1, 'A missing fresh calendar must retry its route instead of retaining the old gate');
+  assert.equal(cardReads, 1, 'A missing fresh card must not consume the old null wallet snapshot');
+  assert.equal(elements.get('card-summary').hidden, false);
+  assert.match(elements.get('card-number').textContent, /0010/u);
+});

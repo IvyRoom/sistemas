@@ -1,8 +1,50 @@
 export const TOKEN_KEY = 'supportManagementToken';
+const CONTEXT_KEY = 'supportManagementContext';
 export const LOGIN_PATH = '/support-management/login/';
 export const SCHEDULER_PATH = '/support-management/scheduler/';
 
 export function createSupportClient({ fetch: transport = globalThis.fetch, storage = globalThis.sessionStorage } = {}) {
+  function clearSession() {
+    storage.removeItem(TOKEN_KEY);
+    storage.removeItem(CONTEXT_KEY);
+  }
+
+  function rememberContext(result, fromLogin = false) {
+    const token = storage.getItem(TOKEN_KEY);
+    if (!token || !Number.isFinite(result?.expiresAt) || result.expiresAt <= Date.now()) return;
+    const safeCard = result.card?.card;
+    const context = {
+      user: result.user && { name: result.user.name, company: result.user.company, role: result.user.role, email: result.user.email },
+      expiresAt: result.expiresAt,
+      config: result.config && { environment: result.config.environment, publicKey: result.config.publicKey },
+      calendar: result.calendar,
+      card: result.card && { card: safeCard ? { brand: safeCard.brand, lastFour: safeCard.lastFour, expMonth: safeCard.expMonth, expYear: safeCard.expYear } : null,
+        verificationRequired: Boolean(result.card.verificationRequired), workbookSyncPending: Boolean(result.card.workbookSyncPending) }
+    };
+    try { storage.setItem(CONTEXT_KEY, JSON.stringify({ token, context, fromLogin, savedAt: Date.now() })); }
+    catch { storage.removeItem(CONTEXT_KEY); }
+  }
+
+  function bootstrap() {
+    try {
+      const saved = JSON.parse(storage.getItem(CONTEXT_KEY) || 'null');
+      const context = saved?.context;
+      if (!saved || saved.token !== storage.getItem(TOKEN_KEY) || !Number.isFinite(context?.expiresAt) || context.expiresAt <= Date.now()
+        || typeof context.user?.name !== 'string' || typeof context.user?.role !== 'string'
+        || context.config?.environment !== 'sandbox' || !/^pk_test_[A-Za-z0-9_-]+$/u.test(context.config.publicKey || '')) {
+        storage.removeItem(CONTEXT_KEY);
+        return null;
+      }
+      const refresh = !saved.fromLogin || Date.now() - saved.savedAt > 60000;
+      saved.fromLogin = false;
+      storage.setItem(CONTEXT_KEY, JSON.stringify(saved));
+      return { context: saved.context, refresh };
+    } catch {
+      storage.removeItem(CONTEXT_KEY);
+      return null;
+    }
+  }
+
   async function request(path, { method = 'GET', body, timeoutMs = 20000 } = {}) {
     const token = storage.getItem(TOKEN_KEY);
     const response = await transport(`/support-management/api${path}`, {
@@ -19,7 +61,7 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       error.status = response.status;
       try { error.code = (await response.json()).error; }
       catch { /* An unavailable service may return a non-JSON error. */ }
-      if (response.status === 401) storage.removeItem(TOKEN_KEY);
+      if (response.status === 401) clearSession();
       throw error;
     }
     return response.status === 204 ? null : response.json();
@@ -35,17 +77,38 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       const result = await request('/login', { method: 'POST', body: { email, password } });
       if (typeof result.token !== 'string' || !result.token) throw new Error('session_unavailable');
       storage.setItem(TOKEN_KEY, result.token);
+      storage.removeItem(CONTEXT_KEY);
+      rememberContext(result, true);
       return result;
     },
-    session: () => request('/session'),
+    async session() {
+      const result = await request('/session');
+      rememberContext(result);
+      return result;
+    },
+    bootstrap,
+    discardBootstrap: () => storage.removeItem(CONTEXT_KEY),
+    clearSession,
     calendar: () => request('/calendar'),
-    reserveDate: (reservation) => request('/reservations', { method: 'POST', body: reservation, timeoutMs: 120000 }),
+    async reserveDate(reservation) {
+      const result = await request('/reservations', { method: 'POST', body: reservation, timeoutMs: 120000 });
+      storage.removeItem(CONTEXT_KEY);
+      return result;
+    },
     card: () => request('/card'),
-    saveCard: (token, billingAddress) => request('/card', { method: 'PUT', body: { token, billingAddress }, timeoutMs: 120000 }),
-    syncCard: () => request('/card/sync', { method: 'POST', timeoutMs: 120000 }),
+    async saveCard(token, billingAddress) {
+      const result = await request('/card', { method: 'PUT', body: { token, billingAddress }, timeoutMs: 120000 });
+      storage.removeItem(CONTEXT_KEY);
+      return result;
+    },
+    async syncCard() {
+      const result = await request('/card/sync', { method: 'POST', timeoutMs: 120000 });
+      storage.removeItem(CONTEXT_KEY);
+      return result;
+    },
     async logout() {
       try { await request('/logout', { method: 'POST' }); }
-      finally { storage.removeItem(TOKEN_KEY); }
+      finally { clearSession(); }
     }
   };
 }

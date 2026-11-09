@@ -8,28 +8,35 @@ const vm = require('node:vm');
 
 function fixture(client, options = {}) {
   function element(tagName = 'div') {
-    return { tagName, children: [], dataset: {}, attributes: {}, listeners: {}, disabled: false, hidden: false, textContent: '', colSpan: 1,
+    return { tagName, children: [], dataset: {}, attributes: {}, listeners: {}, disabled: false, hidden: false, checked: false, textContent: '', colSpan: 1,
       append(...children) { this.children.push(...children); },
       replaceChildren(...children) { this.children = children; },
       setAttribute(key, value) { this.attributes[key] = value; },
       addEventListener(key, callback) { this.listeners[key] = callback; },
+      scrollIntoView(options) { this.scrollOptions = options; },
+      focus(options) { this.focusOptions = options; },
       querySelectorAll(selector) { return this.children.flatMap((child) => [ ...(child.tagName === selector ? [child] : []), ...child.querySelectorAll(selector) ]); },
     };
   }
-  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message'].map((id) => [id, element()]));
+  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointment-details', 'reservation-acknowledged', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
   let ids = 0;
   const failures = [];
   const context = vm.createContext({ Intl, document: { getElementById: (id) => elements.get(id), createElement: element } });
   const source = fs.readFileSync(path.join(__dirname, '../../apps/support-management/modules/appointments.js'), 'utf8');
   vm.runInContext(`${source.replace(/export /gu, '')}\nglobalThis.create = createAppointments;`, context);
-  const app = context.create({ client, onAuthFailure(error) { failures.push(error); return error.status === 401; },
+  const connectedClient = { ...client, async calendar(...args) {
+    const result = await client.calendar(...args);
+    return result && Array.isArray(result.days) ? { today: '2026-11-09', paymentMethodRegistered: true, administratorName: 'Administradora Exemplo', userEmail: 'user@example.test', ...result } : result;
+  } };
+  const app = context.create({ client: connectedClient, onAuthFailure(error) { failures.push(error); return error.status === 401; },
     requestId: () => `00000000-0000-4000-8000-${String(++ids).padStart(12, '0')}`, ...options,
   });
   const buttons = () => elements.get('appointment-calendar').querySelectorAll('button');
   const button = (date) => buttons().find((item) => item.dataset.date === date);
-  const select = (date = '2026-11-10') => button(date).listeners.click();
+  const acknowledge = (checked = true) => { elements.get('reservation-acknowledged').checked = checked; elements.get('reservation-acknowledged').listeners.change(); };
+  const select = (date = '2026-11-10', checked = true) => { button(date).listeners.click(); if (!button(date).disabled) acknowledge(checked); };
   const reserve = () => elements.get('reserve-date').listeners.click();
-  return { app, elements, buttons, button, select, reserve, failures, idCount: () => ids };
+  return { app, elements, buttons, button, select, acknowledge, reserve, failures, idCount: () => ids };
 }
 
 const days = [
@@ -38,7 +45,7 @@ const days = [
   { date: '2026-12-01', available: true, priceCents: 37500, pricePosition: 1 },
 ];
 
-test('calendar groups months into Monday–Friday week rows, disables missing dates and shows authoritative prices', async () => {
+test('calendar uses complete Sunday–Saturday weeks, gray unavailable dates and authoritative prices', async () => {
   const f = fixture({ calendar: async () => ({ days }) });
   await f.app.load();
   const blocks = f.elements.get('appointment-calendar').children;
@@ -47,24 +54,24 @@ test('calendar groups months into Monday–Friday week rows, disables missing da
   assert.equal(blocks[1].children[0].textContent, 'Dezembro de 2026');
   const [november, december] = blocks.map((block) => block.children[1]);
   assert.equal(november.attributes['aria-labelledby'], blocks[0].children[0].id);
-  assert.deepEqual(november.children[0].children[0].children.map((cell) => cell.textContent), ['seg.', 'ter.', 'qua.', 'qui.', 'sex.']);
-  assert.equal(november.children[0].children[0].children[0].attributes['aria-label'], 'segunda-feira');
+  assert.deepEqual(november.children[0].children[0].children.map((cell) => cell.textContent), ['dom.', 'seg.', 'ter.', 'qua.', 'qui.', 'sex.', 'sáb.']);
+  assert.equal(november.children[0].children[0].children[0].attributes['aria-label'], 'domingo');
   const weeks = november.children[1].children;
   assert.equal(weeks.length, 5);
-  assert.ok(weeks.every((week) => week.children.length === 5));
-  assert.equal(weeks[0].querySelectorAll('button').length, 5);
+  assert.ok(weeks.every((week) => week.children.length === 7));
+  assert.equal(weeks[0].querySelectorAll('button').length, 7);
   assert.ok(weeks[0].querySelectorAll('button').every((button) => button.disabled));
-  assert.equal(weeks[1].children[0].children[0].dataset.date, '2026-11-09');
-  assert.equal(weeks[1].children[0].children[0].disabled, true);
-  assert.equal(weeks[1].children[1].children[0].dataset.date, '2026-11-10');
-  assert.equal(weeks[1].children[2].children[0].dataset.date, '2026-11-11');
+  assert.equal(weeks[1].children[1].children[0].dataset.date, '2026-11-09');
+  assert.equal(weeks[1].children[1].children[0].disabled, true);
+  assert.equal(weeks[1].children[2].children[0].dataset.date, '2026-11-10');
+  assert.equal(weeks[1].children[3].children[0].dataset.date, '2026-11-11');
   assert.equal(december.children[1].children[0].children[0].children.length, 0);
-  assert.equal(december.children[1].children[0].children[1].children[0].dataset.date, '2026-12-01');
-  assert.equal(weeks[4].children[1].children.length, 0);
+  assert.equal(december.children[1].children[0].children[2].children[0].dataset.date, '2026-12-01');
+  assert.equal(weeks[4].children[2].children.length, 0);
   assert.equal(f.button('2026-11-10').children[0].textContent, '10');
   assert.match(f.button('2026-11-10').children[1].textContent, /500,00\/h/u);
   assert.equal(f.button('2026-11-11').disabled, true);
-  assert.equal(f.button('2026-11-11').children[1].textContent, 'INDISPONÍVEL');
+  assert.equal(f.button('2026-11-11').children[1].textContent, '');
   assert.equal(f.button('2026-11-10').dataset.priceStep, '0');
   assert.equal(f.button('2026-12-01').dataset.priceStep, '10');
   assert.equal(f.elements.get('reserve-date').disabled, true);
@@ -82,8 +89,8 @@ test('past and unlisted weekdays render as unavailable and cannot create a reser
     assert.equal(button.disabled, true);
     assert.equal(button.dataset.priceStep, 'unavailable');
     assert.equal(button.children[0].textContent, String(Number(date.slice(8))));
-    assert.equal(button.children[1].textContent, 'INDISPONÍVEL');
-    assert.match(button.attributes['aria-label'], /INDISPONÍVEL/u);
+    assert.equal(button.children[1].textContent, '');
+    assert.match(button.attributes['aria-label'], /não disponível/u);
     f.select(date);
     await f.reserve();
     assert.equal(button.attributes['aria-pressed'], 'false');
@@ -93,20 +100,20 @@ test('past and unlisted weekdays render as unavailable and cannot create a reser
   assert.equal(f.idCount(), 0);
 });
 
-test('a four-week month keeps dates under the matching weekday without rendering weekend tiles', async () => {
-  const f = fixture({ calendar: async () => ({ days: [
+test('a Monday-start month keeps all dates in the matching seven-column weekday', async () => {
+  const f = fixture({ calendar: async () => ({ today: '2027-02-01', days: [
     { date: '2027-02-01', available: true, priceCents: 50000, pricePosition: 0 },
     { date: '2027-02-26', available: true, priceCents: 37500, pricePosition: 1 },
   ] }) });
   await f.app.load();
   const table = f.elements.get('appointment-calendar').children[0].children[1];
   const weeks = table.children[1].children;
-  assert.equal(weeks.length, 4);
-  assert.equal(weeks[0].children[0].children[0].dataset.date, '2027-02-01');
-  assert.equal(weeks[3].children[4].children[0].dataset.date, '2027-02-26');
-  assert.equal(f.buttons().length, 20);
+  assert.equal(weeks.length, 5);
+  assert.equal(weeks[0].children[1].children[0].dataset.date, '2027-02-01');
+  assert.equal(weeks[3].children[5].children[0].dataset.date, '2027-02-26');
+  assert.equal(table.querySelectorAll('button').length, 28);
   assert.equal(f.buttons().filter((button) => !button.disabled).length, 2);
-  assert.ok(weeks.every((week) => week.children.length === 5));
+  assert.ok(weeks.every((week) => week.children.length === 7));
 });
 
 test('a booking submits only the selected quote, prevents duplicate clicks, then refreshes the calendar', async () => {
@@ -120,10 +127,10 @@ test('a booking submits only the selected quote, prevents duplicate clicks, then
   assert.equal(f.elements.get('reserve-date').textContent, 'Reservando...');
   await f.reserve();
   assert.equal(calls.length, 1);
-  assert.deepEqual(calls[0], { date: '2026-11-10', priceCents: 50000, requestId: '00000000-0000-4000-8000-000000000001' });
+  assert.deepEqual(calls[0], { date: '2026-11-10', priceCents: 50000, requestId: '00000000-0000-4000-8000-000000000001', acknowledged: true });
   resolve({ date: '2026-11-10', reserved: true });
   await first;
-  assert.equal(reads, 2);
+  assert.equal(reads, 3);
   assert.equal(f.elements.get('appointments-message').textContent, 'Data reservada.');
   assert.equal(f.elements.get('reserve-date').disabled, true);
 });
@@ -144,13 +151,15 @@ test('an uncertain failure retries the same request ID rather than creating anot
 test('returning to the calendar while a reservation is pending preserves its request until the response settles', async () => {
   let resolve;
   let reads = 0;
+  let submitted = false;
   const calls = [];
   const f = fixture({
     calendar: async () => {
       reads++;
-      return { days: reads === 1 ? days : days.map((day) => ({ ...day, available: false, priceCents: null, pricePosition: null })) };
+      return { days: !submitted ? days : days.map((day) => ({ ...day, available: false, priceCents: null, pricePosition: null })) };
     },
     reserveDate: (body) => {
+      submitted = true;
       calls.push(JSON.parse(JSON.stringify(body)));
       return new Promise((done) => { resolve = done; });
     },
@@ -159,7 +168,7 @@ test('returning to the calendar while a reservation is pending preserves its req
   f.select();
   const pending = f.reserve();
   assert.equal(await f.app.load(), false);
-  assert.equal(reads, 1);
+  assert.equal(reads, 2);
   assert.equal(f.elements.get('reserve-date').disabled, true);
   assert.equal(f.button('2026-11-10').attributes['aria-pressed'], 'true');
   await f.reserve();
@@ -167,7 +176,7 @@ test('returning to the calendar while a reservation is pending preserves its req
   await pending;
   assert.equal(calls.length, 1);
   assert.equal(f.idCount(), 1);
-  assert.equal(reads, 2);
+  assert.equal(reads, 3);
   assert.equal(f.elements.get('appointments-message').textContent, 'Data reservada.');
   assert.equal(f.button('2026-11-10').disabled, true);
   assert.equal(f.elements.get('reserve-date').disabled, true);
@@ -180,7 +189,7 @@ for (const reason of ['date_unavailable', 'price_changed']) {
     await f.app.load();
     f.select();
     await f.reserve();
-    assert.equal(reads, 2);
+    assert.equal(reads, 3);
     assert.equal(f.elements.get('reserve-date').disabled, true);
     assert.equal(f.buttons().some((button) => button.attributes['aria-pressed'] === 'true'), false);
     assert.match(f.elements.get('appointments-message').textContent, reason === 'price_changed' ? /preço/u : /não está mais disponível/u);
@@ -203,14 +212,114 @@ test('a reservation requiring review blocks repeats and a pending notification i
   assert.match(pending.elements.get('appointments-message').textContent, /notificações está pendente/u);
 });
 
-test('session expiry is delegated to authentication and malformed or weekend calendars fail closed', async () => {
+test('session expiry is delegated to authentication and malformed calendars fail closed', async () => {
   const expired = fixture({ calendar: async () => { throw { status: 401 }; } });
   assert.equal(await expired.app.load(), false);
   assert.equal(expired.failures.length, 1);
-  for (const invalid of [undefined, { days: [{ ...days[0], date: '2026-11-14' }] }, { days: [{ ...days[0], priceCents: -1 }] }, { days: [days[0], days[0]] }]) {
+  for (const invalid of [undefined, { days: [{ ...days[0], priceCents: -1 }] }, { days: [days[0], days[0]] }]) {
     const f = fixture({ calendar: async () => invalid });
     assert.equal(await f.app.load(), false);
     assert.equal(f.elements.get('appointment-calendar').hidden, true);
     assert.equal(f.elements.get('reserve-date').disabled, true);
   }
+});
+
+
+test('a missing company payment method shows the named administrator gate and hides appointment content', async () => {
+  const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: false, administratorName: 'Maria da Silva', userEmail: 'colleague@example.test' }) });
+  await f.app.load();
+  assert.equal(f.elements.get('appointments-gate').hidden, false);
+  assert.equal(f.elements.get('payment-administrator-name').textContent, 'Maria da Silva');
+  assert.equal(f.elements.get('appointments-intro').hidden, true);
+  assert.equal(f.elements.get('appointment-calendar').hidden, true);
+  assert.equal(f.elements.get('appointment-details').hidden, true);
+  assert.equal(f.elements.get('reserve-date').hidden, true);
+});
+
+test('selection reveals its formatted details and requires the acknowledgement before any reservation request', async () => {
+  let writes = 0;
+  const f = fixture({ calendar: async () => ({ days }), reserveDate: async () => { writes++; } });
+  await f.app.load();
+  assert.equal(f.elements.get('appointment-details').hidden, true);
+  f.select('2026-11-10', false);
+  assert.equal(f.elements.get('appointment-details').hidden, false);
+  assert.equal(f.elements.get('appointment-details').scrollOptions.behavior, 'instant');
+  assert.equal(f.elements.get('appointment-details').scrollOptions.block, 'start');
+  assert.equal(f.elements.get('appointment-details').focusOptions.preventScroll, true);
+  assert.equal(f.elements.get('selected-appointment-date').textContent, '10/NOV/2026 09:00');
+  assert.match(f.elements.get('selected-appointment-price').textContent, /500,00/u);
+  assert.equal(f.elements.get('appointment-confirmation-email').textContent, 'user@example.test');
+  assert.equal(f.elements.get('reserve-date').disabled, true);
+  await f.reserve();
+  assert.equal(writes, 0);
+  assert.equal(f.idCount(), 0);
+  f.acknowledge();
+  assert.equal(f.elements.get('reserve-date').disabled, false);
+  f.button('2026-11-10').listeners.click();
+  assert.equal(f.elements.get('reservation-acknowledged').checked, true, 'Selecting the same quote must preserve consent');
+  f.select('2026-12-01', false);
+  assert.equal(f.elements.get('reservation-acknowledged').checked, false);
+  assert.equal(f.elements.get('reserve-date').disabled, true);
+});
+
+test('weekends, past dates and dates beyond thirty days remain gray even when an invalid quote marks them available', async () => {
+  const invalidQuote = { available: true, priceCents: 50000, pricePosition: 0 };
+  const f = fixture({ calendar: async () => ({ days: [
+    { ...invalidQuote, date: '2026-11-08' },
+    { ...invalidQuote, date: '2026-11-14' },
+    { ...invalidQuote, date: '2026-12-10' },
+  ] }) });
+  await f.app.load();
+  for (const date of ['2026-11-08', '2026-11-14', '2026-12-10']) {
+    assert.equal(f.button(date).disabled, true);
+    assert.equal(f.button(date).dataset.priceStep, 'unavailable');
+    assert.equal(f.button(date).children[1].textContent, '');
+  }
+});
+
+test('the login bootstrap renders immediately and tab revisits do not repeat calendar reads', async () => {
+  let reads = 0;
+  const f = fixture({ calendar: async () => { reads++; return { days }; } });
+  const bootstrap = { days, today: '2026-11-09', paymentMethodRegistered: true, administratorName: 'Maria', userEmail: 'user@example.test' };
+  assert.equal(await f.app.load(bootstrap), true);
+  assert.equal(reads, 0);
+  await f.app.load();
+  await f.app.load();
+  assert.equal(reads, 0);
+  f.app.invalidate();
+  await f.app.load();
+  assert.equal(reads, 1);
+});
+
+test('the fresh preflight blocks a changed quote before writing and clears acknowledgement', async () => {
+  let reads = 0;
+  let writes = 0;
+  const f = fixture({
+    calendar: async () => ({ days: reads++ ? days.map(day => day.available ? { ...day, priceCents: day.priceCents + 100 } : day) : days }),
+    reserveDate: async () => { writes++; },
+  });
+  await f.app.load();
+  f.select();
+  await f.reserve();
+  assert.equal(reads, 2);
+  assert.equal(writes, 0);
+  assert.equal(f.idCount(), 0);
+  assert.equal(f.elements.get('reservation-acknowledged').checked, false);
+  assert.equal(f.elements.get('appointment-details').hidden, true);
+});
+
+test('uncertain booking replay retains its request ID when the fresh calendar now shows its own date unavailable', async () => {
+  const calls = [];
+  const f = fixture({
+    calendar: async () => ({ days: calls.length ? days.map(day => ({ ...day, available: false, priceCents: null, pricePosition: null })) : days }),
+    reserveDate: async body => { calls.push(JSON.parse(JSON.stringify(body))); throw { status: 503 }; },
+  });
+  await f.app.load();
+  f.select();
+  await f.reserve();
+  await f.reserve();
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls[0], calls[1]);
+  assert.equal(calls[0].acknowledged, true);
+  assert.equal(f.idCount(), 1);
 });
