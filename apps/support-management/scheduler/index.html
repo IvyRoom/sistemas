@@ -24,12 +24,7 @@
       <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
         <header class="page-header"><h1>Agendamento</h1></header>
         <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
-        <div class="calendar-scroll" tabindex="0" role="region" aria-label="Calendário de atendimentos">
-          <table id="appointment-calendar" class="appointment-calendar" aria-label="Datas e preços por hora" aria-busy="true">
-            <thead><tr id="calendar-months"></tr><tr id="calendar-weekdays"></tr></thead>
-            <tbody><tr id="calendar-days"></tr></tbody>
-          </table>
-        </div>
+        <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true"></div>
         <button id="reserve-date" class="primary" type="button" disabled>Reservar Data</button>
       </section>
       <section id="card-panel" class="checkout-panel" role="tabpanel" aria-labelledby="card-tab" hidden>

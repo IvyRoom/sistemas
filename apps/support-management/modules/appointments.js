@@ -1,7 +1,9 @@
 const weekday = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', timeZone: 'UTC' });
+const weekdayLabel = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', timeZone: 'UTC' });
 const month = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 const dateLabel = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeZone: 'UTC' });
 const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const dayMilliseconds = 86400000;
 
 function parseDays(result) {
   if (!Array.isArray(result?.days)) throw new Error('calendar_unavailable');
@@ -20,9 +22,6 @@ function parseDays(result) {
 }
 
 export function createAppointments({ client, onAuthFailure, isCurrent = () => true, document: doc = globalThis.document, requestId = () => globalThis.crypto.randomUUID() }) {
-  const months = doc.getElementById('calendar-months');
-  const weekdays = doc.getElementById('calendar-weekdays');
-  const dates = doc.getElementById('calendar-days');
   const calendar = doc.getElementById('appointment-calendar');
   const reserve = doc.getElementById('reserve-date');
   const message = doc.getElementById('appointments-message');
@@ -34,7 +33,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   let reviewRequired = false;
 
   function updateSelection() {
-    for (const button of dates.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.date === selected?.date));
+    for (const button of calendar.querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.date === selected?.date));
     reserve.disabled = busy || Boolean(loading) || reviewRequired || !selected;
   }
 
@@ -44,54 +43,90 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     updateSelection();
   }
 
+  function createDayButton(day) {
+    const button = doc.createElement('button');
+    button.type = 'button';
+    button.className = 'calendar-day';
+    button.dataset.date = day.date;
+    button.disabled = !day.available;
+    button.dataset.priceStep = day.available ? String(Math.round(day.pricePosition * 10)) : 'unavailable';
+    button.setAttribute('aria-label', `${dateLabel.format(day.value)}: ${day.available ? `${currency.format(day.priceCents / 100)} por hora` : 'INDISPONÍVEL'}`);
+    const number = doc.createElement('span');
+    number.className = 'calendar-day-number';
+    number.textContent = String(day.value.getUTCDate());
+    const price = doc.createElement('span');
+    price.className = 'calendar-day-price';
+    price.textContent = day.available ? `${currency.format(day.priceCents / 100)}/h` : 'INDISPONÍVEL';
+    button.append(number, price);
+    button.addEventListener('click', () => {
+      if (busy || loading || reviewRequired || !day.available) return;
+      if (selected?.date !== day.date || selected?.priceCents !== day.priceCents) reservation = undefined;
+      selected = day;
+      message.textContent = '';
+      updateSelection();
+    });
+    return button;
+  }
+
+  function createMonth(monthKey, monthDays) {
+    const firstDay = new Date(`${monthKey}-01T12:00:00Z`);
+    const lastDay = new Date(firstDay);
+    lastDay.setUTCMonth(firstDay.getUTCMonth() + 1, 0);
+    const firstMonday = firstDay.getTime() - ((firstDay.getUTCDay() + 6) % 7) * dayMilliseconds;
+    const byDate = new Map(monthDays.map((day) => [day.date, day]));
+    const block = doc.createElement('section');
+    block.className = 'calendar-month-block';
+    const heading = doc.createElement('h2');
+    heading.id = `calendar-month-${monthKey}`;
+    heading.className = 'calendar-month-heading';
+    const label = month.format(firstDay);
+    heading.textContent = label[0].toLocaleUpperCase('pt-BR') + label.slice(1);
+    const table = doc.createElement('table');
+    table.className = 'calendar-month';
+    table.setAttribute('aria-labelledby', heading.id);
+    const head = doc.createElement('thead');
+    const weekdays = doc.createElement('tr');
+    for (let offset = 0; offset < 5; offset++) {
+      const value = new Date(firstMonday + offset * dayMilliseconds);
+      const cell = doc.createElement('th');
+      cell.scope = 'col';
+      cell.textContent = weekday.format(value);
+      cell.setAttribute('aria-label', weekdayLabel.format(value));
+      weekdays.append(cell);
+    }
+    head.append(weekdays);
+    const body = doc.createElement('tbody');
+    for (let monday = firstMonday; monday <= lastDay.getTime(); monday += 7 * dayMilliseconds) {
+      const week = doc.createElement('tr');
+      let withinMonth = false;
+      for (let offset = 0; offset < 5; offset++) {
+        const value = new Date(monday + offset * dayMilliseconds);
+        const date = value.toISOString().slice(0, 10);
+        const cell = doc.createElement('td');
+        if (date.startsWith(monthKey)) {
+          withinMonth = true;
+          const day = byDate.get(date) || { date, value, available: false, priceCents: null, pricePosition: null };
+          cell.append(createDayButton(day));
+        }
+        week.append(cell);
+      }
+      if (withinMonth) body.append(week);
+    }
+    table.append(head, body);
+    block.append(heading, table);
+    return block;
+  }
+
   function render(result) {
     days = parseDays(result);
     if (selected && !days.some((day) => day.date === selected.date && day.available && day.priceCents === selected.priceCents)) clearSelection();
-    months.replaceChildren();
-    weekdays.replaceChildren();
-    dates.replaceChildren();
-    let monthCell;
-    let currentMonth;
+    const months = new Map();
     for (const day of days) {
-      const monthKey = day.date.slice(0, 7);
-      if (monthKey !== currentMonth) {
-        monthCell = doc.createElement('th');
-        monthCell.scope = 'colgroup';
-        monthCell.colSpan = 1;
-        const label = month.format(day.value);
-        monthCell.textContent = label[0].toLocaleUpperCase('pt-BR') + label.slice(1);
-        months.append(monthCell);
-        currentMonth = monthKey;
-      } else monthCell.colSpan++;
-      const weekdayCell = doc.createElement('th');
-      weekdayCell.scope = 'col';
-      weekdayCell.textContent = weekday.format(day.value);
-      weekdays.append(weekdayCell);
-      const cell = doc.createElement('td');
-      const button = doc.createElement('button');
-      button.type = 'button';
-      button.className = 'calendar-day';
-      button.dataset.date = day.date;
-      button.disabled = !day.available;
-      button.dataset.priceStep = day.available ? String(Math.round(day.pricePosition * 10)) : 'unavailable';
-      button.setAttribute('aria-label', `${dateLabel.format(day.value)}: ${day.available ? `${currency.format(day.priceCents / 100)} por hora` : 'INDISPONÍVEL'}`);
-      const number = doc.createElement('span');
-      number.className = 'calendar-day-number';
-      number.textContent = String(day.value.getUTCDate());
-      const price = doc.createElement('span');
-      price.className = 'calendar-day-price';
-      price.textContent = day.available ? `${currency.format(day.priceCents / 100)}/h` : 'INDISPONÍVEL';
-      button.append(number, price);
-      button.addEventListener('click', () => {
-        if (busy || loading || reviewRequired || !day.available) return;
-        if (selected?.date !== day.date || selected?.priceCents !== day.priceCents) reservation = undefined;
-        selected = day;
-        message.textContent = '';
-        updateSelection();
-      });
-      cell.append(button);
-      dates.append(cell);
+      const key = day.date.slice(0, 7);
+      if (!months.has(key)) months.set(key, []);
+      months.get(key).push(day);
     }
+    calendar.replaceChildren(...Array.from(months, ([key, monthDays]) => createMonth(key, monthDays)));
     calendar.hidden = !days.length;
     updateSelection();
   }
