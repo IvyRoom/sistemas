@@ -89,16 +89,18 @@ Support management uses the dedicated same-origin sandbox API supplied by
 the companion backend's support sandbox entry point. The static pages remain
 unavailable for login when that API is absent; they never fall back to the
 production backend. See the [backend sandbox runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
-for configuration and testing. Its first step only registers a company card
-using Pagar.me test keys and test cards; purchases are a later step.
+for configuration and testing. Agendamento shows weekday availability and hourly
+prices from the workbooks, with date reservations and email/calendar invitations.
+Cadastro de Cartão uses Pagar.me test keys and test cards; charging is a later step.
 
 For daily support-management development, run `npm run support:dev` from the
 sibling `backend` checkout and open its printed local URL. The server reads these
 frontend sources directly: save an edit and refresh the browser, without a build
 or deployment. Backend code changes restart that local backend while preserving
-valid login sessions. This connected local workflow reads user access and synchronizes
-reusable card references in the real workbook, using the Pagar.me test API after
-test-key and permitted-origin setup. Run
+valid login sessions. This connected local workflow reads user access/prices,
+reserves real appointment rows and sends notifications when the user clicks
+Reservar Data. Card references are grouped by CNPJ and use the Pagar.me test API
+after test-key and permitted-origin setup. Automated checks simulate all writes. Run
 `npm run support:test` from `backend` for focused checks. Keep commits local and
 existing PRs parked until Lucas explicitly requests publication.
 

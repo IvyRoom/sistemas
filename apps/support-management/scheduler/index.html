@@ -15,10 +15,24 @@
     <aside class="sidebar" aria-label="Ferramentas">
       <button id="logout" class="logout" type="button">« sair</button>
       <img class="logo" src="../img/LOGO_MACHADO.png" alt="Machado">
-      <nav aria-label="Agendamento"><a class="scheduler-tab" href="/support-management/scheduler/" aria-current="page">Cadastro de Cartão</a></nav>
+      <nav aria-label="Agendamento" role="tablist" aria-orientation="vertical">
+        <button id="appointments-tab" class="scheduler-tab" type="button" role="tab" aria-selected="true" aria-controls="appointments-panel">Agendamento</button>
+        <button id="card-tab" class="scheduler-tab" type="button" role="tab" aria-selected="false" aria-controls="card-panel" tabindex="-1">Cadastro de Cartão</button>
+      </nav>
     </aside>
     <main class="scheduler-main">
-      <div class="checkout-panel">
+      <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
+        <header class="page-header"><h1>Agendamento</h1></header>
+        <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
+        <div class="calendar-scroll" tabindex="0" role="region" aria-label="Calendário de atendimentos">
+          <table id="appointment-calendar" class="appointment-calendar" aria-label="Datas e preços por hora" aria-busy="true">
+            <thead><tr id="calendar-months"></tr><tr id="calendar-weekdays"></tr></thead>
+            <tbody><tr id="calendar-days"></tr></tbody>
+          </table>
+        </div>
+        <button id="reserve-date" class="primary" type="button" disabled>Reservar Data</button>
+      </section>
+      <section id="card-panel" class="checkout-panel" role="tabpanel" aria-labelledby="card-tab" hidden>
         <header class="page-header"><h1 id="card-registration-title">Cadastro de Cartão</h1></header>
         <p class="intro">Cadastre abaixo o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos.</p>
         <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
@@ -73,7 +87,7 @@
           <p class="checkout-company">® Machado | Método Gerencial para Empresas • Todos os direitos reservados. • CNPJ: 39.794.363/0001-81</p>
           <div class="checkout-provider"><p>Powered by</p><img src="../img/checkout-pagarme.webp" alt="Pagar.me"></div>
         </footer>
-      </div>
+      </section>
     </main>
   </div>
 </body>

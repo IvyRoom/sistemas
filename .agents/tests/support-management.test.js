@@ -115,6 +115,26 @@ test('workbook synchronization sends only the current authorization to its dedic
   assert.equal(calls[0].options.body, undefined);
 });
 
+test('calendar reads and date reservations use the current session and send only the selected quote and request ID', async () => {
+  const calls = [];
+  const { createSupportClient, values } = loadClient(async (url, options) => {
+    calls.push({ url, options });
+    return { ok: true, json: async () => ({}) };
+  });
+  values.set('supportManagementToken', 'session-example');
+  const client = createSupportClient();
+  await client.calendar();
+  const reservation = { date: '2026-11-10', priceCents: 50000, requestId: '00000000-0000-4000-8000-000000000001' };
+  await client.reserveDate(reservation);
+  assert.equal(calls[0].url, '/support-management/api/calendar');
+  assert.equal(calls[0].options.method, 'GET');
+  assert.equal(calls[0].options.body, undefined);
+  assert.equal(calls[1].url, '/support-management/api/reservations');
+  assert.equal(calls[1].options.method, 'POST');
+  assert.deepEqual(JSON.parse(calls[1].options.body), reservation);
+  assert.ok(calls.every(({ options }) => options.headers.Authorization === 'Bearer session-example'));
+});
+
 async function loadLogin(client) {
   const elements = new Map();
   const element = () => ({ value: '', disabled: false, hidden: false, textContent: '', attributes: {}, listeners: {},
@@ -178,7 +198,7 @@ test('leaving the login clears its password and pending presentation', async () 
   await submission;
 });
 
-async function loadScheduler(client) {
+async function loadScheduler(client, { activateCard = true } = {}) {
   const elements = new Map();
   function element(tagName, attributes = '') {
     const attribute = (name) => attributes.match(new RegExp(`(?:^|\\s)${name}="([^"]*)"`, 'u'))?.[1] ?? null;
@@ -211,15 +231,37 @@ async function loadScheduler(client) {
       createElement: (tagName) => element(tagName) },
     window: { addEventListener() {}, location: { replace() { throw new Error('Unexpected navigation'); } } },
     createSupportClient: () => client, LOGIN_PATH: '/support-management/login/',
+    createAppointments: () => ({ load: async () => {} }),
     submitCompanyCard: () => { throw new Error('Unexpected card registration'); },
   });
   const fields = fs.readFileSync(path.join(root, 'modules/card-fields.js'), 'utf8');
   vm.runInContext(fields.replace(/export /gu, ''), context);
   const source = fs.readFileSync(path.join(root, 'scheduler/main.js'), 'utf8');
   await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/gmu, '')} })()`, context);
+  if (activateCard) for (const callback of elements.get('card-tab').listeners.click || []) await callback({});
   return { elements, introduction, footer,
     async click(id) { for (const callback of elements.get(id).listeners.click || []) await callback({}); } };
 }
+
+test('Agendamento is the default tab and card data loads only on the first card-tab activation', async () => {
+  let reads = 0;
+  const { elements, click } = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => { reads++; return { card: null }; },
+  }, { activateCard: false });
+  assert.equal(reads, 0);
+  assert.equal(elements.get('appointments-panel').hidden, false);
+  assert.equal(elements.get('card-panel').hidden, true);
+  await click('card-tab');
+  assert.equal(reads, 1);
+  assert.equal(elements.get('appointments-panel').hidden, true);
+  assert.equal(elements.get('card-panel').hidden, false);
+  assert.equal(elements.get('card-tab').attributes['aria-selected'], 'true');
+  await click('appointments-tab');
+  await click('card-tab');
+  assert.equal(reads, 1);
+});
 
 const pendingCompanyCard = {
   card: { brand: 'Visa', lastFour: '0010', expMonth: 12, expYear: 2030 }, workbookSyncPending: true,

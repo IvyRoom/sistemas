@@ -38,6 +38,8 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       return result;
     },
     session: () => request('/session'),
+    calendar: () => request('/calendar'),
+    reserveDate: (reservation) => request('/reservations', { method: 'POST', body: reservation, timeoutMs: 120000 }),
     card: () => request('/card'),
     saveCard: (token, billingAddress) => request('/card', { method: 'PUT', body: { token, billingAddress }, timeoutMs: 120000 }),
     syncCard: () => request('/card/sync', { method: 'POST', timeoutMs: 120000 }),

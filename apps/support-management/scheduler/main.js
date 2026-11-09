@@ -1,5 +1,6 @@
 import { createSupportClient, LOGIN_PATH, submitCompanyCard } from '../modules/client.js';
 import { getCardDetails, formatCardNumber, formatCardholder, formatPostalCode, formatSecurityCode, formatStreetNumber, normalizeText, validateCardFields } from '../modules/card-fields.js';
+import { createAppointments } from '../modules/appointments.js';
 
 const client = createSupportClient();
 const message = document.getElementById('scheduler-message');
@@ -25,6 +26,41 @@ let leaving = false;
 let reviewRequired = false;
 let hasCard = false;
 let workbookSyncPending = false;
+let initialized = false;
+let activeTab = 'appointments';
+let cardLoaded = false;
+let cardLoading;
+const appointments = createAppointments({ client, onAuthFailure: authFailure, isCurrent: () => !leaving });
+const tabs = ['appointments', 'card'];
+
+async function selectTab(name) {
+  activeTab = name;
+  for (const tab of tabs) {
+    const selected = tab === name;
+    const button = document.getElementById(`${tab}-tab`);
+    button.setAttribute('aria-selected', String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    document.getElementById(`${tab}-panel`).hidden = !selected;
+  }
+  if (name !== 'card') clearCard();
+  if (!initialized) return;
+  if (name === 'card') await loadCard();
+  else await appointments.load();
+}
+
+for (const [index, tab] of tabs.entries()) {
+  const button = document.getElementById(`${tab}-tab`);
+  button.addEventListener('click', () => selectTab(tab));
+  button.addEventListener('keydown', (event) => {
+    const target = event.key === 'ArrowDown' ? (index + 1) % tabs.length
+      : event.key === 'ArrowUp' ? (index + tabs.length - 1) % tabs.length
+        : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null;
+    if (target === null) return;
+    event.preventDefault();
+    document.getElementById(`${tabs[target]}-tab`).focus();
+    void selectTab(tabs[target]);
+  });
+}
 
 const currentYear = new Date().getFullYear();
 for (let year = currentYear; year <= currentYear + 20; year++) {
@@ -127,6 +163,7 @@ window.addEventListener('pagehide', clearCard);
 
 function authFailure(error) {
   if (error.status !== 401) return false;
+  leaving = true;
   clearCard();
   window.location.replace(LOGIN_PATH);
   return true;
@@ -280,22 +317,41 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+function loadCard() {
+  if (cardLoaded) return Promise.resolve();
+  if (cardLoading) return cardLoading;
+  cardLoading = Promise.resolve().then(async () => {
+    try {
+      let result = await client.card();
+      if (result.workbookSyncPending && !result.verificationRequired && administrator) {
+        try { result = await client.syncCard(); }
+        catch (error) {
+          if (error.status === 401 || error.code === 'support_management.card_review_required') throw error;
+          if (error.status === 403) administrator = false;
+          if (error.code === 'support_management.card_verification_required') result = await client.card();
+        }
+      }
+      if (leaving) return;
+      renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+      document.getElementById('member-notice').hidden = administrator;
+      cardLoaded = true;
+    } catch (error) {
+      if (!leaving && !authFailure(error) && !handleReviewRequired(error)) message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
+    } finally {
+      cardLoading = undefined;
+    }
+  });
+  return cardLoading;
+}
+
 try {
   const config = await client.config();
   publicKey = config.publicKey;
   const { user } = await client.session();
   administrator = user.role === 'Administrador';
-  let result = await client.card();
-  if (result.workbookSyncPending && !result.verificationRequired && administrator) {
-    try { result = await client.syncCard(); }
-    catch (error) {
-      if (error.status === 401 || error.code === 'support_management.card_review_required') throw error;
-      if (error.status === 403) administrator = false;
-      if (error.code === 'support_management.card_verification_required') result = await client.card();
-    }
-  }
-  renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired));
+  initialized = true;
   document.getElementById('member-notice').hidden = administrator;
+  await selectTab(activeTab);
 } catch (error) {
-  if (!authFailure(error) && !handleReviewRequired(error)) message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
+  if (!authFailure(error)) document.getElementById(activeTab === 'card' ? 'scheduler-message' : 'appointments-message').textContent = 'Não foi possível carregar a ferramenta. Atualize a página para tentar novamente.';
 }
