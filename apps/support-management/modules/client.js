@@ -19,7 +19,9 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       config: result.config && { environment: result.config.environment, publicKey: result.config.publicKey },
       calendar: result.calendar,
       card: result.card && { card: safeCard ? { brand: safeCard.brand, lastFour: safeCard.lastFour, expMonth: safeCard.expMonth, expYear: safeCard.expYear } : null,
-        verificationRequired: Boolean(result.card.verificationRequired), workbookSyncPending: Boolean(result.card.workbookSyncPending) }
+        verificationRequired: Boolean(result.card.verificationRequired), workbookSyncPending: Boolean(result.card.workbookSyncPending),
+        cardDeletionPending: Boolean(result.card.cardDeletionPending),
+        ...(/^[a-f0-9]{64}$/u.test(result.card.cardRevision || '') ? { cardRevision: result.card.cardRevision } : {}) }
     };
     try { storage.setItem(CONTEXT_KEY, JSON.stringify({ token, context, fromLogin, savedAt: Date.now() })); }
     catch { storage.removeItem(CONTEXT_KEY); }
@@ -96,6 +98,11 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       return result;
     },
     card: () => request('/card'),
+    async deleteCard(expectedCardRevision) {
+      if (typeof expectedCardRevision !== 'string' || !/^[a-f0-9]{64}$/u.test(expectedCardRevision)) throw new Error('card_revision_required');
+      storage.removeItem(CONTEXT_KEY);
+      return request('/card', { method: 'DELETE', body: { expectedCardRevision }, timeoutMs: 120000 });
+    },
     async saveCard(token, billingAddress) {
       const result = await request('/card', { method: 'PUT', body: { token, billingAddress }, timeoutMs: 120000 });
       storage.removeItem(CONTEXT_KEY);

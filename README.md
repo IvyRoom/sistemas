@@ -91,16 +91,23 @@ unavailable for login when that API is absent; they never fall back to the
 production backend. See the [backend sandbox runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
 for configuration and testing. The scheduler uses burgundy-gradient sidebar/header
 bars, a white workspace and the course-content header arrangement: title, full
-name and one-hour session countdown. It always shows the current and next month,
-with square day tiles and Sunday–Saturday columns; unavailable dates are gray.
+name, with one-hour session expiry enforced in the background. It always shows
+the current and next month, with square day tiles and Sunday–Saturday columns;
+unavailable dates are gray.
 Bookable dates run from tomorrow through the end of next month, excluding weekends and
 national/Curitiba holidays. A verified active company card is required to see
-availability and reserve. Selecting a date shows its hourly price, terms and
-acknowledgment before Reservar Agenda. Appointments start at 09:00 Brasília time
+availability and reserve. Selecting a date opens its details in a popup and dims
+the other tiles. Reservar Agenda reveals the warning and Confirmar/Cancelar
+actions; Cancelar is the default, and only Confirmar submits the reservation.
+Appointments start at 09:00 Brasília time
 in Microsoft Teams, with a two-hour calendar hold and confirmation email. A short
-selection instruction and expandable FAQ provide the appointment information.
+selection instruction, calendar legend and expandable FAQ provide the appointment
+information.
 Cadastro de Cartão uses Pagar.me test keys and test cards; reservations and
 nonattendance do not automatically charge a card.
+Its administrator trash action confirms deletion, clears the selected company
+card, and returns to the registration form. The card introduction shares the
+calendar instruction's alignment; the top bar holds the only visible card title.
 
 Login preloads public configuration, masked card and calendar context. A
 token-bound sessionStorage cache avoids repeating those requests during the

@@ -41,8 +41,13 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   const gate = doc.getElementById('appointments-gate');
   const intro = doc.getElementById('appointments-intro');
   const faq = doc.getElementById('appointments-faq');
+  const legend = doc.getElementById('calendar-legend');
   const details = doc.getElementById('appointment-details');
-  const acknowledgement = doc.getElementById('reservation-acknowledged');
+  const warning = doc.getElementById('reservation-warning');
+  const confirm = doc.getElementById('confirm-reservation');
+  const cancel = doc.getElementById('cancel-reservation');
+  const close = doc.getElementById('close-reservation');
+  const dialogMessage = doc.getElementById('reservation-message');
   let snapshot;
   let selected;
   let reservation;
@@ -50,27 +55,44 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   let busy = false;
   let loaded = false;
   let reviewRequired = false;
+  let confirming = false;
+
+  function setMessage(text) {
+    message.textContent = dialogMessage.textContent = text;
+  }
 
   function updateSelection() {
     for (const button of calendar.querySelectorAll('button')) {
       button.setAttribute('aria-pressed', String(button.dataset.date === selected?.date));
       button.disabled = button.dataset.available !== 'true' || busy || Boolean(loading) || reviewRequired;
     }
-    details.hidden = !selected || !snapshot?.paymentMethodRegistered;
-    reserve.hidden = details.hidden;
-    reserve.disabled = busy || Boolean(loading) || reviewRequired || !selected || !acknowledgement.checked;
-    acknowledgement.disabled = busy || Boolean(loading) || reviewRequired;
+    calendar.dataset.selected = String(Boolean(selected && details.open));
+    reserve.hidden = !selected || confirming;
+    confirm.hidden = cancel.hidden = warning.hidden = !selected || !confirming;
+    reserve.disabled = confirm.disabled = busy || Boolean(loading) || reviewRequired || !selected;
+    cancel.disabled = close.disabled = busy;
+    details.setAttribute('aria-busy', String(busy));
   }
 
-  function clearSelection() {
+  function clearSelection({ keepReservation = false } = {}) {
+    const date = selected?.date;
     selected = undefined;
-    reservation = undefined;
-    acknowledgement.checked = false;
+    confirming = false;
+    if (!keepReservation) reservation = undefined;
+    if (details.open) details.close();
     updateSelection();
+    if (date) for (const button of calendar.querySelectorAll('button')) {
+      if (button.dataset.date === date) button.focus({ preventScroll: true });
+    }
+  }
+
+  function dismiss() {
+    if (busy) return;
+    clearSelection({ keepReservation: true });
   }
 
   function showSelected(day) {
-    const shortMonth = monthAbbreviation.format(day.value).replace('.', '').toLocaleUpperCase('pt-BR');
+    const shortMonth = monthAbbreviation.format(day.value).replace('.', '').toLocaleLowerCase('pt-BR');
     doc.getElementById('selected-appointment-date').textContent = String(day.value.getUTCDate()).padStart(2, '0') + '/' + shortMonth + '/' + day.value.getUTCFullYear() + ' 09:00';
     doc.getElementById('selected-appointment-price').textContent = currency.format(day.priceCents / 100);
   }
@@ -89,20 +111,20 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     number.textContent = String(day.value.getUTCDate());
     const price = doc.createElement('span');
     price.className = 'calendar-day-price';
-    price.textContent = day.available ? currency.format(day.priceCents / 100) + '/h' : '';
+    price.textContent = day.available ? currency.format(day.priceCents / 100) : '';
     button.append(number, price);
     button.addEventListener('click', () => {
       if (busy || loading || reviewRequired || !day.available || !snapshot?.paymentMethodRegistered) return;
-      if (selected?.date !== day.date || selected?.priceCents !== day.priceCents) {
+      if (reservation && (reservation.date !== day.date || reservation.priceCents !== day.priceCents)) {
         reservation = undefined;
-        acknowledgement.checked = false;
       }
       selected = day;
-      message.textContent = '';
+      confirming = false;
+      setMessage('');
       showSelected(day);
+      if (!details.open) details.showModal();
       updateSelection();
-      details.scrollIntoView({ behavior: 'instant', block: 'start' });
-      details.focus({ preventScroll: true });
+      reserve.focus({ preventScroll: true });
     });
     return button;
   }
@@ -163,6 +185,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     intro.hidden = !snapshot.paymentMethodRegistered;
     faq.hidden = !snapshot.paymentMethodRegistered;
     calendar.hidden = !snapshot.paymentMethodRegistered;
+    legend.hidden = !snapshot.paymentMethodRegistered;
     doc.getElementById('payment-administrator-name').textContent = snapshot.administratorName || 'administrador da empresa';
     doc.getElementById('appointment-confirmation-email').textContent = snapshot.userEmail;
     const monthKeys = [];
@@ -181,23 +204,24 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   function refresh() {
     if (loading) return loading;
     calendar.setAttribute('aria-busy', 'true');
-    message.textContent = 'Carregando...';
+    setMessage('Carregando...');
     loading = Promise.resolve().then(async () => {
       try {
         const result = await client.calendar();
         if (!isCurrent()) return false;
         render(result);
-        message.textContent = '';
+        setMessage('');
         return true;
       } catch (error) {
         if (!isCurrent() || onAuthFailure(error)) return false;
         clearSelection();
         calendar.hidden = true;
+        legend.hidden = true;
         intro.hidden = true;
         faq.hidden = true;
         gate.hidden = true;
         loaded = false;
-        message.textContent = 'Não foi possível carregar a agenda. Atualize a página para tentar novamente.';
+        setMessage('Não foi possível carregar a agenda. Atualize a página para tentar novamente.');
         return false;
       } finally {
         calendar.setAttribute('aria-busy', 'false');
@@ -214,7 +238,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     if (result) {
       try {
         render(result);
-        message.textContent = '';
+        setMessage('');
         calendar.setAttribute('aria-busy', 'false');
         return Promise.resolve(true);
       } catch {
@@ -224,13 +248,32 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     return loaded ? Promise.resolve(true) : refresh();
   }
 
-  acknowledgement.addEventListener('change', updateSelection);
-  reserve.addEventListener('click', async () => {
-    if (busy || loading || reviewRequired || !selected || !acknowledgement.checked || !isCurrent()) return;
+  close.addEventListener('click', dismiss);
+  cancel.addEventListener('click', dismiss);
+  details.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    dismiss();
+  });
+  details.addEventListener('close', () => {
+    if (!details.open && selected && !busy) dismiss();
+  });
+  details.addEventListener('click', (event) => {
+    if (event.target !== details) return;
+    const bounds = details.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dismiss();
+  });
+  reserve.addEventListener('click', () => {
+    if (busy || loading || reviewRequired || !selected || !details.open || !isCurrent()) return;
+    confirming = true;
+    updateSelection();
+    cancel.focus({ preventScroll: true });
+  });
+  confirm.addEventListener('click', async () => {
+    if (busy || loading || reviewRequired || !selected || !confirming || !details.open || !isCurrent()) return;
     busy = true;
-    reserve.textContent = 'Reservando...';
-    reserve.setAttribute('aria-busy', 'true');
-    message.textContent = '';
+    confirm.textContent = 'Reservando...';
+    confirm.setAttribute('aria-busy', 'true');
+    setMessage('');
     updateSelection();
     try {
       const quote = { date: selected.date, priceCents: selected.priceCents };
@@ -240,11 +283,14 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
         render(authoritative);
         if (!snapshot.paymentMethodRegistered) return;
         if (!selected || selected.date !== quote.date || selected.priceCents !== quote.priceCents) {
-          message.textContent = 'A disponibilidade ou o preço desta data mudou. Selecione a data novamente.';
+          setMessage('A disponibilidade ou o preço desta data mudou. Selecione a data novamente.');
           return;
         }
         reservation = { ...quote, requestId: requestId(), acknowledged: true };
-      } else parseCalendar(authoritative);
+      } else if (!parseCalendar(authoritative).paymentMethodRegistered) {
+        render(authoritative);
+        return;
+      }
       const submitted = reservation;
       const result = await client.reserveDate(submitted);
       if (!isCurrent()) return;
@@ -252,27 +298,27 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
       clearSelection();
       const refreshed = await refresh();
       if (!isCurrent()) return;
-      message.textContent = result.notificationPending ? 'Data reservada. O envio das notificações está pendente.'
-        : refreshed ? 'Data reservada.' : 'Data reservada. Atualize a página para consultar a agenda.';
+      setMessage(result.notificationPending ? 'Data reservada. O envio das notificações está pendente.'
+        : refreshed ? 'Data reservada.' : 'Data reservada. Atualize a página para consultar a agenda.');
     } catch (error) {
       if (!isCurrent() || onAuthFailure(error)) return;
       if (error.code === 'support_management.date_unavailable' || error.code === 'support_management.price_changed' || error.code === 'support_management.payment_method_required') {
         clearSelection();
         await refresh();
         if (!isCurrent()) return;
-        message.textContent = error.code === 'support_management.price_changed'
+        setMessage(error.code === 'support_management.price_changed'
           ? 'O preço desta data mudou. Selecione a data novamente.'
-          : error.code === 'support_management.date_unavailable' ? 'A data não está mais disponível. Selecione outra data.' : '';
+          : error.code === 'support_management.date_unavailable' ? 'A data não está mais disponível. Selecione outra data.' : '');
       } else if (error.code === 'support_management.reservation_review_required') {
         reviewRequired = true;
-        message.textContent = 'A reserva precisa ser conferida antes de uma nova tentativa. Entre em contato com o suporte.';
+        setMessage('A reserva precisa ser conferida antes de uma nova tentativa. Entre em contato com o suporte.');
       } else {
-        message.textContent = 'Não foi possível confirmar a reserva. Tente novamente.';
+        setMessage('Não foi possível confirmar a reserva. Tente novamente.');
       }
     } finally {
       busy = false;
-      reserve.textContent = 'Reservar Agenda';
-      reserve.setAttribute('aria-busy', 'false');
+      confirm.textContent = 'Confirmar';
+      confirm.setAttribute('aria-busy', 'false');
       updateSelection();
     }
   });
