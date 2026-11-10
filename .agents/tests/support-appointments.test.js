@@ -7,9 +7,12 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 function fixture(client, options = {}) {
-  const document = { activeElement: undefined };
+  const view = { innerWidth: 1280, innerHeight: 800, listeners: {},
+    addEventListener(name, callback, capture) { this.listeners[name] = { callback, capture }; } };
+  const document = { activeElement: undefined, defaultView: view };
   function element(tagName = 'div') {
-    return { tagName, children: [], dataset: {}, attributes: {}, listeners: {}, disabled: false, hidden: false, open: false, textContent: '', colSpan: 1,
+    return { tagName, children: [], dataset: {}, attributes: {}, listeners: {}, style: {}, disabled: false, hidden: false, open: false, inert: false, textContent: '', colSpan: 1,
+      bounds: { left: 10, right: 300, top: 10, bottom: 300, width: 290, height: 290 },
       append(...children) { this.children.push(...children); },
       replaceChildren(...children) { this.children = children; },
       setAttribute(key, value) { this.attributes[key] = value; },
@@ -17,11 +20,11 @@ function fixture(client, options = {}) {
       focus(options) { this.focusOptions = options; document.activeElement = this; },
       showModal() { this.open = true; this.showCount = (this.showCount || 0) + 1; },
       close() { this.open = false; this.listeners.close?.(); },
-      getBoundingClientRect() { return { left: 10, right: 300, top: 10, bottom: 300 }; },
+      getBoundingClientRect() { return this.bounds; },
       querySelectorAll(selector) { return this.children.flatMap((child) => [ ...(child.tagName === selector ? [child] : []), ...child.querySelectorAll(selector) ]); },
     };
   }
-  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointments-faq', 'calendar-legend', 'appointment-details', 'reservation-warning', 'confirm-reservation', 'cancel-reservation', 'close-reservation', 'reservation-message', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
+  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointments-faq', 'calendar-legend', 'appointment-details', 'reservation-content', 'reservation-overview', 'reservation-initial-step', 'reservation-confirm-step', 'reservation-warning', 'confirm-reservation', 'cancel-reservation', 'close-reservation', 'reservation-message', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
   let ids = 0;
   const failures = [];
   Object.assign(document, { getElementById: (id) => elements.get(id), createElement: element });
@@ -53,7 +56,7 @@ function fixture(client, options = {}) {
     const details = elements.get('appointment-details');
     details.listeners.click({ target: details, clientX, clientY });
   };
-  return { app, document, elements, buttons, button, select, start, confirm, reserve, cancel, close, escape, backdrop, failures, idCount: () => ids };
+  return { app, document, view, elements, buttons, button, select, start, confirm, reserve, cancel, close, escape, backdrop, failures, idCount: () => ids };
 }
 
 const days = [
@@ -259,7 +262,7 @@ test('a missing company payment method shows the named administrator gate and hi
   assert.equal(f.elements.get('appointment-calendar').hidden, true);
   assert.equal(f.elements.get('appointment-details').open, false);
   assert.equal(f.elements.get('calendar-legend').hidden, true);
-  assert.equal(f.elements.get('reserve-date').hidden, true);
+  assert.equal(f.elements.get('reserve-date').disabled, true);
 });
 
 test('selection opens its formatted dialog and the first reserve step requests confirmation without calling the API', async () => {
@@ -280,16 +283,27 @@ test('selection opens its formatted dialog and the first reserve step requests c
   assert.equal(f.button('2026-11-10').attributes['aria-pressed'], 'true');
   assert.equal(f.button('2026-12-01').attributes['aria-pressed'], 'false');
   assert.equal(f.elements.get('reserve-date').disabled, false);
-  assert.equal(f.elements.get('reserve-date').hidden, false);
-  for (const id of ['reservation-warning', 'confirm-reservation', 'cancel-reservation']) assert.equal(f.elements.get(id).hidden, true);
+  assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'initial');
+  assert.equal(f.elements.get('reservation-initial-step').inert, false);
+  assert.equal(f.elements.get('reservation-initial-step').attributes['aria-hidden'], 'false');
+  assert.equal(f.elements.get('reservation-confirm-step').inert, true);
+  assert.equal(f.elements.get('reservation-confirm-step').attributes['aria-hidden'], 'true');
+  assert.equal(f.elements.get('appointment-details').attributes['aria-describedby'], 'reservation-instructions');
   await f.confirm();
   assert.equal(reads, 1, 'Confirm cannot skip the first reserve step');
   await f.start();
   assert.equal(writes, 0);
   assert.equal(reads, 1, 'The first reserve step must not make a preflight request');
   assert.equal(f.idCount(), 0);
-  assert.equal(f.elements.get('reserve-date').hidden, true);
-  for (const id of ['reservation-warning', 'confirm-reservation', 'cancel-reservation']) assert.equal(f.elements.get(id).hidden, false);
+  assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'confirm');
+  assert.equal(f.elements.get('reservation-initial-step').inert, true);
+  assert.equal(f.elements.get('reservation-initial-step').attributes['aria-hidden'], 'true');
+  assert.equal(f.elements.get('reservation-confirm-step').inert, false);
+  assert.equal(f.elements.get('reservation-confirm-step').attributes['aria-hidden'], 'false');
+  assert.equal(f.elements.get('appointment-details').attributes['aria-describedby'], 'reservation-warning');
+  for (const id of ['reservation-overview', 'reserve-date', 'reservation-warning', 'confirm-reservation', 'cancel-reservation']) {
+    assert.equal(f.elements.get(id).hidden, false, 'Inactive step contents must retain their layout size');
+  }
   assert.equal(f.document.activeElement, f.elements.get('cancel-reservation'));
   assert.equal(f.elements.get('cancel-reservation').focusOptions.preventScroll, true);
 });
@@ -315,10 +329,58 @@ for (const dismissal of ['cancel', 'close', 'escape', 'backdrop']) {
     assert.equal(f.idCount(), 0);
     f.select();
     assert.equal(f.elements.get('appointment-details').open, true);
-    assert.equal(f.elements.get('reserve-date').hidden, false);
-    for (const id of ['reservation-warning', 'confirm-reservation', 'cancel-reservation']) assert.equal(f.elements.get(id).hidden, true);
+    assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'initial');
+    assert.equal(f.elements.get('reservation-initial-step').inert, false);
+    assert.equal(f.elements.get('reservation-confirm-step').inert, true);
+    assert.equal(f.elements.get('appointment-details').attributes['aria-describedby'], 'reservation-instructions');
   });
 }
+
+test('the booking popup stays centered on the calendar across steps without collapsing its inactive panel', async () => {
+  const f = fixture({ calendar: async () => ({ days }) });
+  const calendar = f.elements.get('appointment-calendar');
+  const details = f.elements.get('appointment-details');
+  calendar.bounds = { left: 300, top: 100, width: 800, height: 500 };
+  details.bounds = { left: 0, top: 0, width: 400, height: 300 };
+  await f.app.load();
+  f.select();
+  assert.deepEqual(details.style, { left: '500px', top: '200px' });
+  const position = { ...details.style };
+  f.start();
+  assert.deepEqual(details.style, position);
+  assert.equal(f.elements.get('reservation-initial-step').hidden, false);
+  assert.equal(f.elements.get('reservation-confirm-step').hidden, false);
+  assert.equal(f.elements.get('reservation-initial-step').inert, true);
+  assert.equal(f.elements.get('reservation-confirm-step').inert, false);
+  assert.equal(f.document.activeElement, f.elements.get('cancel-reservation'));
+});
+
+test('calendar-centered popup geometry clamps to the viewport and follows resize and captured scrolling only while open', async () => {
+  const f = fixture({ calendar: async () => ({ days }) });
+  const calendar = f.elements.get('appointment-calendar');
+  const details = f.elements.get('appointment-details');
+  f.view.innerWidth = 600;
+  f.view.innerHeight = 500;
+  calendar.bounds = { left: -250, top: -120, width: 1400, height: 1600 };
+  details.bounds = { left: 0, top: 0, width: 400, height: 300 };
+  await f.app.load();
+  f.select();
+  assert.deepEqual(details.style, { left: '192px', top: '192px' });
+  f.view.innerWidth = 390;
+  calendar.bounds = { left: 12, top: 100, width: 366, height: 800 };
+  details.bounds.width = 350;
+  details.bounds.height = 260;
+  f.view.listeners.resize.callback();
+  assert.deepEqual(details.style, { left: '20px', top: '232px' });
+  assert.equal(f.view.listeners.scroll.capture, true);
+  calendar.bounds.top = -600;
+  f.view.listeners.scroll.callback();
+  assert.equal(details.style.top, '8px');
+  f.close();
+  calendar.bounds.top = 100;
+  f.view.listeners.scroll.callback();
+  assert.equal(details.style.top, '8px', 'A closed popup must not reposition');
+});
 
 test('clicks inside the dialog content do not dismiss its selected quote', async () => {
   const f = fixture({ calendar: async () => ({ days }) });

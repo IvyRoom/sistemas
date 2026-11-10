@@ -30,11 +30,11 @@
       </header>
       <main class="scheduler-main">
       <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
-        <div id="appointments-intro" class="appointments-intro tool-intro">
-          <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
-        </div>
         <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
         <div id="appointments-stage" class="calendar-stage">
+          <div id="appointments-intro" class="appointments-intro tool-intro">
+            <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
+          </div>
           <p id="appointments-gate" class="payment-gate" role="status" hidden>Método de pagamento não cadastrado. Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p>
           <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true"></div>
           <div id="calendar-legend" class="calendar-legend" aria-label="Legenda do calendário" hidden>
@@ -44,23 +44,31 @@
         </div>
         <dialog id="appointment-details" class="appointment-details" aria-label="Reserva de agenda" aria-describedby="reservation-instructions">
           <button id="close-reservation" class="dialog-close" type="button" aria-label="Fechar reserva">×</button>
-          <p><b>Data e Hora:</b> <span id="selected-appointment-date"></span></p>
-          <p><b>Investimento por Hora Consultiva:</b> <span id="selected-appointment-price"></span></p>
-          <p id="reservation-instructions"><b>Orientação:</b> ao "Reservar Agenda", você receberá sua confirmação e orientações por e-mail.</p>
-          <p id="reservation-warning" role="alert" hidden><b>Atenção:</b> a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro agendado, será cobrada 1h de atendimento.</p>
-          <p id="reservation-message" class="message" role="status" aria-live="polite"></p>
-          <div class="reservation-actions">
-            <button id="reserve-date" class="primary" type="button" disabled>Reservar Agenda</button>
-            <button id="confirm-reservation" class="primary" type="button" hidden>Confirmar</button>
-            <button id="cancel-reservation" class="secondary" type="button" hidden>Cancelar</button>
+          <div id="reservation-content" class="reservation-content" data-active-step="initial">
+            <section id="reservation-initial-step" class="reservation-step" aria-hidden="false">
+              <div id="reservation-overview">
+                <p><b>Data e Hora:</b> <span id="selected-appointment-date"></span></p>
+                <p><b>Investimento por Hora Consultiva:</b> <span id="selected-appointment-price"></span></p>
+                <p id="reservation-instructions">Ao "Reservar Agenda", você receberá todas as orientações pertinentes por e-mail.</p>
+              </div>
+              <div class="reservation-actions"><button id="reserve-date" class="primary" type="button" disabled>Reservar Agenda</button></div>
+            </section>
+            <section id="reservation-confirm-step" class="reservation-step" aria-hidden="true" inert>
+              <p id="reservation-warning" role="alert"><b>Atenção:</b> a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro agendado, será cobrada 1h de atendimento.</p>
+              <div class="reservation-actions">
+                <button id="confirm-reservation" class="primary" type="button">Confirmar</button>
+                <button id="cancel-reservation" class="secondary" type="button">Cancelar</button>
+              </div>
+            </section>
           </div>
+          <p id="reservation-message" class="message" role="status" aria-live="polite"></p>
         </dialog>
         <section id="appointments-faq" class="appointments-faq" aria-labelledby="appointments-faq-title" hidden>
           <h2 id="appointments-faq-title">Perguntas Frequentes</h2>
           <details><summary>Qual o horário de início de um atendimento?</summary><p>Todos os atendimentos iniciam às 09:00 no horário de Brasília.</p></details>
           <details><summary>Quanto tempo dura um atendimento?</summary><p>Não há um tempo de duração pré-determinado. Cada encontro pode durar até 2h, conforme necessário.</p></details>
           <details><summary>Quanto custa um atendimento?</summary><p>No calendário acima, estão listados os investimentos por hora cobrados, dependendo da data escolhida. O custo de um atendimento é: valor por hora x tempo de duração.</p></details>
-          <details><summary>O que acontece depois que reservo uma data?</summary><p>Você receberá orientações em seu e-mail cadastrado (<span id="appointment-confirmation-email"></span>), com a reserva de agenda.</p></details>
+          <details><summary>O que acontece depois que reservo uma data?</summary><p>Você receberá todas as orientações pertinentes em seu e-mail cadastrado (<span id="appointment-confirmation-email"></span>).</p></details>
           <details><summary>É possível cancelar uma reserva de agenda?</summary><p>Não. Por questões operacionais internas na Machado, a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro, será cobrada 1h de atendimento.</p></details>
           <details><summary>Onde / como acontecem os atendimentos?</summary><p>Via Microsoft Teams.</p></details>
           <details><summary>Quem conduz os atendimentos?</summary><p>Todos os atendimentos são conduzidos por nosso diretor, Lucas Machado.</p></details>

@@ -43,7 +43,9 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   const faq = doc.getElementById('appointments-faq');
   const legend = doc.getElementById('calendar-legend');
   const details = doc.getElementById('appointment-details');
-  const warning = doc.getElementById('reservation-warning');
+  const content = doc.getElementById('reservation-content');
+  const initialStep = doc.getElementById('reservation-initial-step');
+  const confirmStep = doc.getElementById('reservation-confirm-step');
   const confirm = doc.getElementById('confirm-reservation');
   const cancel = doc.getElementById('cancel-reservation');
   const close = doc.getElementById('close-reservation');
@@ -57,8 +59,18 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   let reviewRequired = false;
   let confirming = false;
 
+  function positionDialog() {
+    const view = doc.defaultView;
+    if (!details.open || !view) return;
+    const anchor = calendar.getBoundingClientRect();
+    const popup = details.getBoundingClientRect();
+    details.style.left = Math.min(Math.max(8, view.innerWidth - popup.width - 8), Math.max(8, anchor.left + (anchor.width - popup.width) / 2)) + 'px';
+    details.style.top = Math.min(Math.max(8, view.innerHeight - popup.height - 8), Math.max(8, anchor.top + (anchor.height - popup.height) / 2)) + 'px';
+  }
+
   function setMessage(text) {
     message.textContent = dialogMessage.textContent = text;
+    positionDialog();
   }
 
   function updateSelection() {
@@ -67,11 +79,16 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
       button.disabled = button.dataset.available !== 'true' || busy || Boolean(loading) || reviewRequired;
     }
     calendar.dataset.selected = String(Boolean(selected && details.open));
-    reserve.hidden = !selected || confirming;
-    confirm.hidden = cancel.hidden = warning.hidden = !selected || !confirming;
+    content.dataset.activeStep = confirming ? 'confirm' : 'initial';
+    initialStep.inert = confirming;
+    confirmStep.inert = !confirming;
+    initialStep.setAttribute('aria-hidden', String(confirming));
+    confirmStep.setAttribute('aria-hidden', String(!confirming));
     reserve.disabled = confirm.disabled = busy || Boolean(loading) || reviewRequired || !selected;
     cancel.disabled = close.disabled = busy;
     details.setAttribute('aria-busy', String(busy));
+    details.setAttribute('aria-describedby', confirming ? 'reservation-warning' : 'reservation-instructions');
+    positionDialog();
   }
 
   function clearSelection({ keepReservation = false } = {}) {
@@ -249,6 +266,8 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   }
 
   close.addEventListener('click', dismiss);
+  doc.defaultView?.addEventListener('resize', positionDialog);
+  doc.defaultView?.addEventListener('scroll', positionDialog, true);
   cancel.addEventListener('click', dismiss);
   details.addEventListener('cancel', (event) => {
     event.preventDefault();

@@ -102,7 +102,7 @@ legend { padding: 0 4px; }
 .tool-intro { width: min(100%,500px); margin-inline: auto; }
 .appointments-intro { font-size: 14px; line-height: 1.6; }
 .appointments-intro p + p { margin-top: 8px; }
-.calendar-stage { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; min-height: 540px; padding: 20px 0; }
+.calendar-stage { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 18px; min-height: 540px; padding: 20px 0; }
 .payment-gate { max-width: 650px; margin: auto; font-size: 16px; line-height: 1.6; text-align: center; }
 .appointment-calendar { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,500px),500px)); justify-content: center; align-items: start; width: 100%; gap: 24px; }
 .calendar-month-block { min-width: 0; padding: 16px; border: 1px solid #dedede; border-radius: 5px; }
@@ -127,7 +127,7 @@ legend { padding: 0 4px; }
 .calendar-day[data-price-step="unavailable"] { background: #dedede; color: #666; cursor: default; }
 .calendar-day[data-price-step="unavailable"] .calendar-day-price { display: none; }
 .appointment-calendar[data-selected="true"] .calendar-day[aria-pressed="false"] { opacity: .4; }
-.calendar-legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; margin-top: 18px; color: #555; font-size: 12px; line-height: 1.5; }
+.calendar-legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 24px; color: #555; font-size: 12px; line-height: 1.5; }
 .calendar-legend-item { display: flex; align-items: center; gap: 8px; }
 .legend-range { display: flex; gap: 3px; }
 .legend-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; }
@@ -138,6 +138,13 @@ legend { padding: 0 4px; }
 .appointment-details { position: fixed; inset: 0; width: min(600px,calc(100% - 32px)); height: fit-content; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 36px 24px 24px; margin: auto; border: 1px solid #dedede; border-radius: 5px; background: #fff; color: rgb(58,58,58); box-shadow: 0 6px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.6; }
 .appointment-details::backdrop { background: transparent; }
 .appointment-details p + p { margin-top: 12px; }
+#appointment-details { inset: auto; margin: 0; padding-block: 36px; }
+.reservation-content { display: grid; }
+.reservation-step { grid-area: 1 / 1; align-self: center; min-width: 0; }
+.reservation-step[aria-hidden="true"] { visibility: hidden; pointer-events: none; }
+#reservation-warning { color: #4a0816; text-align: center; }
+#reservation-confirm-step .reservation-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: min(100%,230px); margin-inline: auto; }
+.scheduler-main #reservation-confirm-step .reservation-actions button { width: 100%; min-width: 0; padding-inline: 6px; }
 .card-delete-dialog { padding-top: 24px; }
 .card-delete-dialog h2 { color: #4a0816; font-size: 18px; font-weight: 400; }
 .card-delete-dialog p { margin-top: 12px; }
