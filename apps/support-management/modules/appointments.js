@@ -15,7 +15,9 @@ function parseDate(value) {
 function parseCalendar(result) {
   if (!Array.isArray(result?.days) || typeof result.paymentMethodRegistered !== 'boolean') throw new Error('calendar_unavailable');
   const today = parseDate(result.today);
-  const lastDate = new Date(today.getTime() + 30 * dayMilliseconds).toISOString().slice(0, 10);
+  const endOfNextMonth = new Date(today);
+  endOfNextMonth.setUTCMonth(today.getUTCMonth() + 2, 0);
+  const lastDate = endOfNextMonth.toISOString().slice(0, 10);
   let previous = '';
   const days = result.days.map((day) => {
     const value = parseDate(day?.date);
@@ -24,7 +26,7 @@ function parseCalendar(result) {
         || typeof day.pricePosition !== 'number' || day.pricePosition < 0 || day.pricePosition > 1 || !Number.isFinite(day.pricePosition)))
       || (!day.available && (day.priceCents !== null || day.pricePosition !== null))) throw new Error('calendar_unavailable');
     previous = day.date;
-    const available = day.available && day.date >= result.today && day.date <= lastDate && value.getUTCDay() !== 0 && value.getUTCDay() !== 6;
+    const available = day.available && day.date > result.today && day.date <= lastDate && value.getUTCDay() !== 0 && value.getUTCDay() !== 6;
     return { date: day.date, available, priceCents: available ? day.priceCents : null, pricePosition: available ? day.pricePosition : null, value };
   });
   return { days, today, lastDate, paymentMethodRegistered: result.paymentMethodRegistered,
@@ -38,6 +40,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   const message = doc.getElementById('appointments-message');
   const gate = doc.getElementById('appointments-gate');
   const intro = doc.getElementById('appointments-intro');
+  const faq = doc.getElementById('appointments-faq');
   const details = doc.getElementById('appointment-details');
   const acknowledgement = doc.getElementById('reservation-acknowledged');
   let snapshot;
@@ -158,6 +161,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     else if (stillAvailable) selected = stillAvailable;
     gate.hidden = snapshot.paymentMethodRegistered;
     intro.hidden = !snapshot.paymentMethodRegistered;
+    faq.hidden = !snapshot.paymentMethodRegistered;
     calendar.hidden = !snapshot.paymentMethodRegistered;
     doc.getElementById('payment-administrator-name').textContent = snapshot.administratorName || 'administrador da empresa';
     doc.getElementById('appointment-confirmation-email').textContent = snapshot.userEmail;
@@ -190,6 +194,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
         clearSelection();
         calendar.hidden = true;
         intro.hidden = true;
+        faq.hidden = true;
         gate.hidden = true;
         loaded = false;
         message.textContent = 'Não foi possível carregar a agenda. Atualize a página para tentar novamente.';

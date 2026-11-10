@@ -30,14 +30,15 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .login-page footer { min-height: 40px; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 8px 24px; }
 .login-page[aria-busy="true"], .login-page[aria-busy="true"] * { cursor: wait !important; }
 .scheduler-layout { display: flex; min-height: 100vh; min-height: 100dvh; }
-.sidebar { flex: 0 0 300px; padding: 16px 26px 32px; background: #f3f3f3; color: #444; text-align: center; border-right: 1px solid #d4d4d4; }
-.sidebar .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 24px auto 40px; filter: brightness(0); }
-.logout { display: block; color: #555; background: transparent; padding: 0; min-height: 32px; border: 0; }
-.scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #d4d4d4; border-radius: 5px; color: #444; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
-.scheduler-tab[aria-selected="true"] { background: #fff; border-color: #aaa; }
-.scheduler-tab:hover { background: #e9e9e9; }
+.sidebar { flex: 0 0 300px; padding: 16px 26px 32px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; text-align: center; border-right: 1px solid #d4d4d4; }
+.sidebar .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 24px auto 40px; }
+.logout { display: block; color: #fff; background: transparent; padding: 0; min-height: 32px; border: 0; }
+.sidebar :focus-visible { outline-color: #fff; }
+.scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #a77a84; border-radius: 5px; color: #fff; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
+.scheduler-tab[aria-selected="true"] { background: rgba(255,255,255,.08); border-color: #b5828d; }
+.scheduler-tab:hover { background: rgba(255,255,255,.14); }
 .scheduler-workspace { display: flex; flex: 1; flex-direction: column; min-width: 0; }
-.scheduler-header { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 40px; padding: 0 10px 0 20px; background: #eee; color: #444; }
+.scheduler-header { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 40px; padding: 0 10px 0 20px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; }
 .scheduler-header h1 { min-width: 0; font-size: 16px; font-weight: 400; line-height: 1.25; }
 .scheduler-user { flex-shrink: 0; padding-left: 16px; font-size: 12px; line-height: 1.4; text-align: right; white-space: nowrap; }
 .scheduler-main { flex: 1; min-width: 0; padding: 24px; background: #fff; color: rgb(58,58,58); }
@@ -99,12 +100,12 @@ legend { padding: 0 4px; }
 .calendar-stage { display: flex; flex: 1; align-items: center; justify-content: center; min-height: 540px; padding: 20px 0; }
 .payment-gate { max-width: 650px; margin: auto; font-size: 16px; line-height: 1.6; text-align: center; }
 .appointment-calendar { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,500px),500px)); justify-content: center; align-items: start; width: 100%; gap: 24px; }
-.calendar-month-block { min-width: 0; aspect-ratio: 1; padding: 16px; border: 1px solid #dedede; border-radius: 5px; }
+.calendar-month-block { min-width: 0; padding: 16px; border: 1px solid #dedede; border-radius: 5px; }
 .calendar-month-heading { color: #444; font-size: 18px; font-weight: 400; line-height: 24px; text-align: center; margin-bottom: 12px; }
-.calendar-month { width: 100%; height: calc(100% - 36px); table-layout: fixed; border-spacing: 5px; }
+.calendar-month { width: 100%; table-layout: fixed; border-spacing: 5px; }
 .calendar-month th { color: #555; font-size: 12px; font-weight: 400; padding: 4px 0; }
-.calendar-month td { height: 54px; padding: 0; }
-.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; height: 100%; min-height: 54px; padding: 6px 2px; color: #fff; border: 0; border-radius: 4px; }
+.calendar-month td { padding: 0; vertical-align: top; }
+.calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; aspect-ratio: 1; min-height: 0; padding: 6px 2px; color: #fff; border: 0; border-radius: 4px; }
 .calendar-day-number { font-size: 18px; }
 .calendar-day-price { font-size: 10px; white-space: nowrap; }
 .calendar-day[data-price-step="0"] { background: #790d26; }
@@ -125,6 +126,12 @@ legend { padding: 0 4px; }
 .appointment-details p + p { margin-top: 12px; }
 .appointment-details .reservation-acknowledgment { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; font-size: 14px; }
 .appointment-details input[type="checkbox"] { width: 18px; min-width: 18px; height: 18px; padding: 0; margin: 0; accent-color: #4a0816; }
+.appointments-faq { width: min(100%,800px); margin: 24px auto 0; font-size: 14px; line-height: 1.6; }
+.appointments-faq h2 { margin-bottom: 8px; color: #4a0816; font-size: 18px; font-weight: 400; }
+.appointments-faq details { padding: 12px 0; border-bottom: 1px solid #dedede; }
+.appointments-faq summary { cursor: pointer; color: #4a0816; font-weight: 600; }
+.appointments-faq summary:focus-visible { outline: 3px solid #9a4559; outline-offset: 3px; }
+.appointments-faq p { margin-top: 10px; }
 .scheduler-main #reserve-date { margin: 24px auto 0; background: #4a0816; box-shadow: none; font-size: 16px; }
 .scheduler-main #reserve-date:hover { background: #790d26; box-shadow: none; }
 @media (max-width: 1040px) {
@@ -148,7 +155,6 @@ legend { padding: 0 4px; }
   .calendar-month-heading { font-size: 16px; }
   .calendar-month { border-spacing: 3px; }
   .calendar-month th { font-size: 10px; }
-  .calendar-month td, .calendar-day { min-height: 36px; height: 36px; }
   .calendar-day { gap: 3px; padding: 3px 1px; }
   .calendar-day-number { font-size: 14px; }
   .calendar-day-price { font-size: 8px; }

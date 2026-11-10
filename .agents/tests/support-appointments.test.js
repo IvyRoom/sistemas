@@ -18,7 +18,7 @@ function fixture(client, options = {}) {
       querySelectorAll(selector) { return this.children.flatMap((child) => [ ...(child.tagName === selector ? [child] : []), ...child.querySelectorAll(selector) ]); },
     };
   }
-  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointment-details', 'reservation-acknowledged', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
+  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointments-faq', 'appointment-details', 'reservation-acknowledged', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
   let ids = 0;
   const failures = [];
   const context = vm.createContext({ Intl, document: { getElementById: (id) => elements.get(id), createElement: element } });
@@ -112,7 +112,8 @@ test('a Monday-start month keeps all dates in the matching seven-column weekday'
   assert.equal(weeks[0].children[1].children[0].dataset.date, '2027-02-01');
   assert.equal(weeks[3].children[5].children[0].dataset.date, '2027-02-26');
   assert.equal(table.querySelectorAll('button').length, 28);
-  assert.equal(f.buttons().filter((button) => !button.disabled).length, 2);
+  assert.equal(f.button('2027-02-01').disabled, true, 'Today remains blocked even if a quote marks it available');
+  assert.equal(f.buttons().filter((button) => !button.disabled).length, 1);
   assert.ok(weeks.every((week) => week.children.length === 7));
 });
 
@@ -220,6 +221,7 @@ test('session expiry is delegated to authentication and malformed calendars fail
     const f = fixture({ calendar: async () => invalid });
     assert.equal(await f.app.load(), false);
     assert.equal(f.elements.get('appointment-calendar').hidden, true);
+    assert.equal(f.elements.get('appointments-faq').hidden, true);
     assert.equal(f.elements.get('reserve-date').disabled, true);
   }
 });
@@ -231,6 +233,7 @@ test('a missing company payment method shows the named administrator gate and hi
   assert.equal(f.elements.get('appointments-gate').hidden, false);
   assert.equal(f.elements.get('payment-administrator-name').textContent, 'Maria da Silva');
   assert.equal(f.elements.get('appointments-intro').hidden, true);
+  assert.equal(f.elements.get('appointments-faq').hidden, true);
   assert.equal(f.elements.get('appointment-calendar').hidden, true);
   assert.equal(f.elements.get('appointment-details').hidden, true);
   assert.equal(f.elements.get('reserve-date').hidden, true);
@@ -262,19 +265,28 @@ test('selection reveals its formatted details and requires the acknowledgement b
   assert.equal(f.elements.get('reserve-date').disabled, true);
 });
 
-test('weekends, past dates and dates beyond thirty days remain gray even when an invalid quote marks them available', async () => {
+test('past dates, today and weekends stay gray while eligible dates through next month remain selectable', async () => {
   const invalidQuote = { available: true, priceCents: 50000, pricePosition: 0 };
   const f = fixture({ calendar: async () => ({ days: [
     { ...invalidQuote, date: '2026-11-08' },
+    { ...invalidQuote, date: '2026-11-09' },
     { ...invalidQuote, date: '2026-11-14' },
     { ...invalidQuote, date: '2026-12-10' },
+    { ...invalidQuote, date: '2026-12-31' },
+    { ...invalidQuote, date: '2027-01-01' },
   ] }) });
   await f.app.load();
-  for (const date of ['2026-11-08', '2026-11-14', '2026-12-10']) {
+  for (const date of ['2026-11-08', '2026-11-09', '2026-11-14']) {
     assert.equal(f.button(date).disabled, true);
     assert.equal(f.button(date).dataset.priceStep, 'unavailable');
     assert.equal(f.button(date).children[1].textContent, '');
   }
+  for (const date of ['2026-12-10', '2026-12-31']) {
+    assert.equal(f.button(date).disabled, false);
+    assert.equal(f.button(date).dataset.priceStep, '0');
+    assert.match(f.button(date).children[1].textContent, /500,00\/h/u);
+  }
+  assert.equal(f.button('2027-01-01'), undefined, 'A later month cannot extend the rendered window');
 });
 
 test('the login bootstrap renders immediately and tab revisits do not repeat calendar reads', async () => {
@@ -322,4 +334,54 @@ test('uncertain booking replay retains its request ID when the fresh calendar no
   assert.deepEqual(calls[0], calls[1]);
   assert.equal(calls[0].acknowledged, true);
   assert.equal(f.idCount(), 1);
+});
+
+
+test('empty API dates still render exactly the current month and the next month at the beginning of a month', async () => {
+  const f = fixture({ calendar: async () => ({ today: '2026-11-01', days: [] }) });
+  await f.app.load();
+  const blocks = f.elements.get('appointment-calendar').children;
+  assert.equal(blocks.length, 2);
+  assert.deepEqual(blocks.map(block => block.children[0].textContent), ['Novembro de 2026', 'Dezembro de 2026']);
+  assert.equal(f.buttons().length, 61);
+  assert.ok(f.buttons().every(button => button.disabled));
+  assert.equal(f.elements.get('appointment-calendar').hidden, false);
+});
+
+test('the two-month window rolls over December into January without including February', async () => {
+  const f = fixture({ calendar: async () => ({ today: '2026-12-31', days: [
+    { date: '2027-01-29', available: true, priceCents: 37500, pricePosition: 1 },
+    { date: '2027-02-01', available: true, priceCents: 37500, pricePosition: 1 },
+  ] }) });
+  await f.app.load();
+  const blocks = f.elements.get('appointment-calendar').children;
+  assert.deepEqual(blocks.map(block => block.children[0].textContent), ['Dezembro de 2026', 'Janeiro de 2027']);
+  assert.equal(f.button('2027-01-29').disabled, false);
+  assert.equal(f.button('2027-01-31').disabled, true);
+  assert.equal(f.button('2027-02-01'), undefined);
+});
+
+test('booking preflight accepts an eligible date at the end of next month beyond the former thirty-day cap', async () => {
+  let reads = 0;
+  const requests = [];
+  const f = fixture({
+    calendar: async () => { reads++; return { days: [{ date: '2026-12-31', available: true, priceCents: 37500, pricePosition: 1 }] }; },
+    reserveDate: async body => { requests.push(JSON.parse(JSON.stringify(body))); return { reserved: true, date: body.date }; },
+  });
+  await f.app.load();
+  f.select('2026-12-31');
+  await f.reserve();
+  assert.equal(reads, 3);
+  assert.equal(requests.length, 1);
+  assert.deepEqual(requests[0], { date: '2026-12-31', priceCents: 37500, requestId: '00000000-0000-4000-8000-000000000001', acknowledged: true });
+});
+
+test('the FAQ follows payment readiness and inserts its confirmation email as plain text', async () => {
+  const email = '<img src=x onerror=example>@example.test';
+  const f = fixture({ calendar: async () => ({ days, userEmail: email }) });
+  await f.app.load();
+  assert.equal(f.elements.get('appointments-faq').hidden, false);
+  assert.equal(f.elements.get('appointment-confirmation-email').textContent, email);
+  assert.equal(f.elements.get('appointment-confirmation-email').children.length, 0);
+  assert.equal(f.elements.get('appointment-confirmation-email').innerHTML, undefined);
 });

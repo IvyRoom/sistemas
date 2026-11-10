@@ -89,14 +89,16 @@ Support management uses the dedicated same-origin sandbox API supplied by
 the companion backend's support sandbox entry point. The static pages remain
 unavailable for login when that API is absent; they never fall back to the
 production backend. See the [backend sandbox runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
-for configuration and testing. The scheduler uses a white/light-gray layout and
-the course-content header arrangement: title, full name and one-hour session
-countdown. Its 500px monthly calendars run Sunday–Saturday; unavailable dates are
-gray. Bookable dates run from tomorrow through today+30, excluding weekends and
+for configuration and testing. The scheduler uses burgundy-gradient sidebar/header
+bars, a white workspace and the course-content header arrangement: title, full
+name and one-hour session countdown. It always shows the current and next month,
+with square day tiles and Sunday–Saturday columns; unavailable dates are gray.
+Bookable dates run from tomorrow through the end of next month, excluding weekends and
 national/Curitiba holidays. A verified active company card is required to see
 availability and reserve. Selecting a date shows its hourly price, terms and
 acknowledgment before Reservar Agenda. Appointments start at 09:00 Brasília time
-in Microsoft Teams, with a 90-minute calendar hold and confirmation email.
+in Microsoft Teams, with a two-hour calendar hold and confirmation email. A short
+selection instruction and expandable FAQ provide the appointment information.
 Cadastro de Cartão uses Pagar.me test keys and test cards; reservations and
 nonattendance do not automatically charge a card.
 
@@ -111,7 +113,7 @@ sibling `backend` checkout and open its printed local URL. The server reads thes
 frontend sources directly: save an edit and refresh the browser, without a build
 or deployment. Backend code changes restart that local backend while preserving
 valid login sessions. This connected local workflow reads user access/prices,
-maintains the next 30 calendar dates in BD - ATENDIMENTOS, reserves real rows and
+maintains dates through the end of next month in BD - ATENDIMENTOS, reserves real rows and
 sends notifications when the user clicks Reservar Agenda. Card references are
 grouped by CNPJ and use the Pagar.me test API
 after test-key and permitted-origin setup. Automated checks simulate all writes. Run

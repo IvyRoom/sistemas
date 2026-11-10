@@ -31,10 +31,7 @@
       <main class="scheduler-main">
       <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
         <div id="appointments-intro" class="appointments-intro">
-          <p>Clique abaixo para agenda um atendimento consultivo junto ao nosso diretor.</p>
-          <p><b>Todos os encontros iniciam às 09:00</b>, ocorrem via Microsoft Teams e não possuem tempo de duração pré-determinado - cada encontro pode durar até 1h30min, conforme necessário.</p>
-          <p>O investimento financeiro por hora de atendimento varia de acordo com a data e está listado, dia a dia, no calendário.</p>
-          <p>Ao finalizar a reserva, você receberá confirmação no e-mail cadastrado: <span id="appointment-confirmation-email"></span>.</p>
+          <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
         </div>
         <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
         <div id="appointments-stage" class="calendar-stage">
@@ -48,6 +45,15 @@
           <p id="reservation-warning"><b>Atenção:</b> esta operação não poderá ser desfeita. Em caso de não comparecimento no encontro agendado, será feita a cobrança equivalente a 1h consultiva.</p>
           <label class="reservation-acknowledgment" for="reservation-acknowledged"><input id="reservation-acknowledged" type="checkbox" aria-describedby="reservation-warning">Estou ciente.</label>
           <button id="reserve-date" class="primary" type="button" disabled>Reservar Agenda</button>
+        </section>
+        <section id="appointments-faq" class="appointments-faq" aria-labelledby="appointments-faq-title" hidden>
+          <h2 id="appointments-faq-title">Perguntas Frequentes</h2>
+          <details><summary>Qual o horário de início de um atendimento?</summary><p>Todos os atendimentos iniciam às 09:00 no horário de Brasília.</p></details>
+          <details><summary>Quanto tempo dura um atendimento?</summary><p>Não há um tempo de duração pré-determinado. Cada encontro pode durar até 2h, conforme necessário.</p></details>
+          <details><summary>Quanto custa um atendimento?</summary><p>No calendário acima, estão listados os investimentos por hora cobrados, dependendo da data escolhida. O custo de um atendimento é: valor por hora x tempo de duração.</p></details>
+          <details><summary>O que acontece depois que reservo uma data?</summary><p>Você receberá orientações em seu e-mail cadastrado (<span id="appointment-confirmation-email"></span>), com a reserva de agenda.</p></details>
+          <details><summary>Onde / como acontecem os atendimentos?</summary><p>Via Microsoft Teams.</p></details>
+          <details><summary>Quem irá conduzir os atendimentos?</summary><p>Todos os atendimentos são conduzidos por nosso diretor, Lucas Machado.</p></details>
         </section>
       </section>
       <section id="card-panel" class="checkout-panel" role="tabpanel" aria-labelledby="card-tab" hidden>
