@@ -336,6 +336,71 @@ test('Agendamento is the default tab and card data loads only on the first card-
   assert.equal(reads, 1);
 });
 
+for (const role of ['Administrador', 'Usuário']) {
+  test(`administrator sidebar tools and keyboard access match the authenticated role: ${role}`, async () => {
+    let cardReads = 0;
+    let permissionReads = 0;
+    const calendar = { paymentMethodRegistered: true, canBook: true };
+    const calendars = [];
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      session: async () => ({ user: { role }, calendar }),
+      card: async () => { cardReads++; return { card: null }; },
+      permissions: async () => { permissionReads++; return { employees: [] }; },
+    }, { activateCard: false, appointmentController: { load: async value => { calendars.push(value); } },
+      runtime: { duringInitialization: ({ elements }) => {
+        assert.equal(elements.get('admin-tools-divider').hidden, true, 'Administrator controls stay hidden until the role is known');
+        assert.equal(elements.get('card-tab').hidden, true);
+      } } });
+    const admin = role === 'Administrador';
+    assert.equal(f.elements.get('admin-tools-divider').hidden, !admin);
+    assert.equal(f.elements.get('card-tab').hidden, !admin);
+    assert.equal(f.elements.get('appointments-panel').hidden, false);
+    assert.deepEqual(calendars, [calendar], 'Role filtering must retain the supplied booking data');
+    assert.equal(cardReads, 0);
+    assert.equal(permissionReads, 0);
+    for (const [key, adminTarget] of [['ArrowDown', 'card'], ['ArrowUp', 'appointments'], ['End', 'card'], ['Home', 'appointments']]) {
+      const currentTab = f.elements.get('card-tab').attributes['aria-selected'] === 'true' ? 'card' : 'appointments';
+      let prevented = false;
+      await f.dispatch(`${currentTab}-tab`, 'keydown', { key, preventDefault() { prevented = true; } });
+      await new Promise(resolve => setImmediate(resolve));
+      const target = admin ? adminTarget : 'appointments';
+      assert.equal(prevented, true);
+      assert.equal(f.document.activeElement, f.elements.get(`${target}-tab`));
+      assert.equal(f.elements.get(`${target}-tab`).attributes['aria-selected'], 'true');
+      assert.equal(f.elements.get(`${target}-panel`).hidden, false);
+    }
+    if (!admin) {
+      await f.click('card-tab');
+      await f.dispatch('card-tab', 'keydown', { key: 'End', preventDefault() { throw new Error('A hidden tab cannot handle navigation'); } });
+      assert.equal(f.elements.get('card-panel').hidden, true);
+      assert.equal(f.elements.get('appointments-panel').hidden, false);
+      assert.equal(f.elements.get('header-title').textContent, 'Agendamento: Atendimentos Consultivos');
+    }
+    assert.equal(cardReads, admin ? 1 : 0);
+    assert.equal(permissionReads, admin ? 1 : 0);
+  });
+}
+
+for (const deniedRead of ['card', 'permissions']) {
+  test(`administrator access denied by ${deniedRead} hides its sidebar tools and returns to Agendamento`, async () => {
+    let reads = 0;
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      card: async () => { reads++; if (deniedRead === 'card') throw { status: 403 }; return { card: null }; },
+      permissions: async () => { reads++; if (deniedRead === 'permissions') throw { status: 403 }; return { employees: [] }; },
+    });
+    for (const id of ['admin-tools-divider', 'card-tab', 'card-panel', 'permissions-panel']) assert.equal(f.elements.get(id).hidden, true);
+    assert.equal(f.elements.get('appointments-panel').hidden, false);
+    assert.equal(f.elements.get('appointments-tab').attributes['aria-selected'], 'true');
+    assert.equal(f.document.activeElement, f.elements.get('appointments-tab'));
+    const previousReads = reads;
+    await f.click('card-tab');
+    assert.equal(reads, previousReads);
+    assert.equal(f.elements.get('card-panel').hidden, true);
+  });
+}
+
 test('the session expires in the background without displaying a countdown', async () => {
   let now = Date.now();
   const expiresAt = now + 3600000;
@@ -500,7 +565,7 @@ test('a pending deletion gives only administrators a trash retry and blocks regi
     assert.equal(elements.get('card-editor').hidden, true);
     assert.equal(elements.get('edit-card').hidden, role !== 'Administrador');
     assert.equal(elements.get('card-summary').hidden, role !== 'Administrador');
-    assert.equal(elements.get('empty-card').hidden, role === 'Administrador');
+    assert.equal(elements.get('card-panel').hidden, role !== 'Administrador');
     await dispatch('card-form', 'submit', { preventDefault() {} });
     await click('edit-card');
     assert.equal(elements.get('card-delete-actions').hidden, role !== 'Administrador');
@@ -980,6 +1045,8 @@ for (const status of [401, 403]) {
     if (status === 403) {
       assert.equal(f.elements.get('save-permissions').hidden, true);
       assert.equal(f.elements.get('permissions-pending').hidden, true);
+      for (const id of ['admin-tools-divider', 'card-tab', 'card-panel']) assert.equal(f.elements.get(id).hidden, true);
+      assert.equal(f.elements.get('appointments-panel').hidden, false);
     }
     assert.deepEqual(navigations, status === 401 ? ['/support-management/login/'] : []);
   });
@@ -1035,12 +1102,15 @@ test('reverting the draft after a failed save clears pending feedback without a 
 
 test('members never request or display employee permissions', async () => {
   let reads = 0;
+  let cardReads = 0;
   const f = await loadScheduler({
     config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Usuário' } }),
-    card: async () => ({ card: null }), permissions: async () => { reads++; return { employees }; },
+    card: async () => { cardReads++; return { card: null }; }, permissions: async () => { reads++; return { employees }; },
   });
   assert.equal(reads, 0);
-  assert.equal(f.elements.get('permissions-panel').hidden, true);
+  assert.equal(cardReads, 0);
+  for (const id of ['admin-tools-divider', 'card-tab', 'card-panel', 'permissions-panel']) assert.equal(f.elements.get(id).hidden, true);
+  assert.equal(f.elements.get('appointments-panel').hidden, false);
 });
 
 test('the card representation mirrors temporary entry but masks the CVV and clears with a tab change', async () => {
@@ -1180,12 +1250,13 @@ for (const phase of ['tokenization', 'backend']) {
   }
 }
 
-for (const departure of ['tab', 'pagehide', 'logout', 'expiry']) {
+for (const departure of ['tab', 'pagehide', 'logout', 'expiry', 'downgrade']) {
   test(`pending card data is cleared on ${departure} before the request settles`, async () => {
     const { submitCompanyCard } = loadClient();
     let finish;
     let submittedCard;
     let submittedData;
+    let registrations = 0;
     let now = 1000;
     let timer;
     const pendingToken = new Promise(resolve => { finish = resolve; });
@@ -1194,7 +1265,8 @@ for (const departure of ['tab', 'pagehide', 'logout', 'expiry']) {
       config: async () => ({ publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role: 'Administrador' }, expiresAt: 2000 }),
       card: async () => ({ card: null }), logout: async () => {}, clearSession() {},
-      saveCard: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
+      permissions: async () => ({ employees }), updatePermissions: async () => { throw { status: 403 }; },
+      saveCard: async () => { registrations++; return { card: registeredCompanyCard, cardRevision: CARD_REVISION }; },
     }, { runtime: {
       now: () => now, setInterval: (callback) => { timer = callback; return 1; }, clearInterval() {},
       navigate: (target) => navigations.push(target), onFormData: (data) => { submittedData = data; },
@@ -1205,6 +1277,7 @@ for (const departure of ['tab', 'pagehide', 'logout', 'expiry']) {
     if (departure === 'tab') await f.click('appointments-tab');
     else if (departure === 'pagehide') f.dispatchWindow('pagehide');
     else if (departure === 'logout') await f.click('logout');
+    else if (departure === 'downgrade') { await changePermission(f); await f.click('save-permissions'); }
     else { now = 2000; timer(); }
     assertCardCleared(f);
     assert.ok(Object.values(submittedCard).every(value => value === ''));
@@ -1213,6 +1286,10 @@ for (const departure of ['tab', 'pagehide', 'logout', 'expiry']) {
     finish({ ok: true, json: async () => ({ id: 'token_example' }) });
     await pending;
     assertCardCleared(f);
+    if (departure === 'downgrade') {
+      assert.equal(registrations, 0, 'Losing administrator access during tokenization must not submit a card registration');
+      assert.equal(f.elements.get('card-panel').hidden, true);
+    }
   });
 }
 
@@ -1259,7 +1336,8 @@ test('an administrator losing access during permission editing cannot retain act
   await f.click('edit-card');
   assert.equal(f.elements.get('card-delete-actions').hidden, false);
   await f.click('save-permissions');
-  for (const id of ['permissions-panel', 'edit-card', 'card-editor', 'retry-card-sync', 'card-delete-actions']) assert.equal(f.elements.get(id).hidden, true);
+  for (const id of ['permissions-panel', 'edit-card', 'card-editor', 'retry-card-sync', 'card-delete-actions', 'admin-tools-divider', 'card-tab', 'card-panel']) assert.equal(f.elements.get(id).hidden, true);
+  assert.equal(f.elements.get('appointments-panel').hidden, false);
   assert.equal(checkbox.disabled, true);
   await f.click('confirm-delete-card');
   assert.equal(deletions, 0);
@@ -1330,10 +1408,17 @@ for (const role of ['Administrador', 'Usuário']) {
       await checkbox.listeners.change[0]();
       finish({ ...initial, user: { name: 'Admin', role }, permissions: { employees: employees.map(employee => ({ ...employee, allowed: false })) } });
     } } });
-    if (role === 'Administrador') assert.equal(f.elements.get('permissions-list').children[0].children[0].checked, true);
+    if (role === 'Administrador') {
+      assert.equal(f.elements.get('permissions-list').children[0].children[0].checked, true);
+      assert.equal(f.elements.get('admin-tools-divider').hidden, false);
+      assert.equal(f.elements.get('card-tab').hidden, false);
+    }
     else {
       assert.equal(f.elements.get('permissions-panel').hidden, true);
       assert.equal(f.elements.get('save-permissions').disabled, true);
+      for (const id of ['admin-tools-divider', 'card-tab', 'card-panel']) assert.equal(f.elements.get(id).hidden, true);
+      assert.equal(f.elements.get('appointments-panel').hidden, false);
+      assert.equal(f.document.activeElement, f.elements.get('appointments-tab'));
     }
   });
 }

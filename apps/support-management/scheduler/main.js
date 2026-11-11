@@ -54,6 +54,7 @@ const appointments = createAppointments({ client, onAuthFailure: authFailure, is
 const tabs = ['appointments', 'card'];
 
 async function selectTab(name, { calendar } = {}) {
+  if (name === 'card' && !administrator) return;
   activeTab = name;
   document.getElementById('header-title').textContent = name === 'card' ? 'Configurações da Conta PJ' : 'Agendamento: Atendimentos Consultivos';
   for (const tab of tabs) {
@@ -72,17 +73,37 @@ async function selectTab(name, { calendar } = {}) {
   else await appointments.load(calendar);
 }
 
-for (const [index, tab] of tabs.entries()) {
+function updateAdministratorTools() {
+  document.getElementById('admin-tools-divider').hidden = !administrator;
+  document.getElementById('card-tab').hidden = !administrator;
+  permissionsPanel.hidden = !administrator;
+  if (administrator) return;
+  permissionsDirty = false;
+  removeCard.hidden = retrySync.hidden = editor.hidden = true;
+  document.getElementById('card-panel').hidden = true;
+  clearCard();
+  hideDeleteActions();
+  updatePermissionControls();
+  if (activeTab === 'card') {
+    document.getElementById('appointments-tab').focus({ preventScroll: true });
+    void selectTab('appointments');
+  }
+}
+
+for (const tab of tabs) {
   const button = document.getElementById(`${tab}-tab`);
   button.addEventListener('click', () => selectTab(tab));
   button.addEventListener('keydown', (event) => {
-    const target = event.key === 'ArrowDown' ? (index + 1) % tabs.length
-      : event.key === 'ArrowUp' ? (index + tabs.length - 1) % tabs.length
-        : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : null;
+    const visibleTabs = tabs.filter(name => !document.getElementById(`${name}-tab`).hidden);
+    const index = visibleTabs.indexOf(tab);
+    if (index < 0) return;
+    const target = event.key === 'ArrowDown' ? (index + 1) % visibleTabs.length
+      : event.key === 'ArrowUp' ? (index + visibleTabs.length - 1) % visibleTabs.length
+        : event.key === 'Home' ? 0 : event.key === 'End' ? visibleTabs.length - 1 : null;
     if (target === null) return;
     event.preventDefault();
-    document.getElementById(`${tabs[target]}-tab`).focus();
-    void selectTab(tabs[target]);
+    document.getElementById(`${visibleTabs[target]}-tab`).focus();
+    void selectTab(visibleTabs[target]);
   });
 }
 
@@ -294,12 +315,10 @@ confirmDelete.addEventListener('click', async () => {
     if (leaving || authFailure(error)) return;
     if (error.status === 403) {
       administrator = false;
-      removeCard.hidden = true;
-      editor.hidden = true;
+      updateAdministratorTools();
       document.getElementById('card-summary').hidden = !hasCard;
       document.getElementById('empty-card').hidden = hasCard;
       document.getElementById('member-notice').hidden = false;
-      hideDeleteActions();
       message.textContent = 'Somente administradores podem excluir o cartão.';
     } else if (error.code === 'support_management.card_changed') {
       cardLoaded = false;
@@ -335,6 +354,10 @@ retrySync.addEventListener('click', async () => {
         const result = await client.card();
         if (!leaving) renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired), Boolean(result.cardDeletionPending), result.cardRevision);
       } catch (refreshError) {
+        if (refreshError.status === 403) {
+          administrator = false;
+          updateAdministratorTools();
+        }
         if (!leaving && !authFailure(refreshError) && !handleReviewRequired(refreshError)) {
           message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
         }
@@ -343,8 +366,7 @@ retrySync.addEventListener('click', async () => {
     }
     if (error.status === 403) {
       administrator = false;
-      retrySync.hidden = true;
-      hideDeleteActions();
+      updateAdministratorTools();
     }
     message.textContent = 'Não foi possível sincronizar o cartão com BD - USUÁRIOS. Tente novamente.';
   } finally {
@@ -378,8 +400,8 @@ form.addEventListener('submit', async (event) => {
   form.setAttribute('aria-busy', 'true');
   message.textContent = 'Salvando cartão...';
   try {
-    const result = await submitCompanyCard({ publicKey, card, client, clear: clearCard, isCurrent: () => !leaving });
-    if (leaving) return;
+    const result = await submitCompanyCard({ publicKey, card, client, clear: clearCard, isCurrent: () => !leaving && administrator });
+    if (leaving || !administrator) return;
     cardSnapshot = undefined;
     renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired), Boolean(result.cardDeletionPending), result.cardRevision);
     appointments.invalidate?.();
@@ -388,8 +410,7 @@ form.addEventListener('submit', async (event) => {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
     if (error.status === 403) {
       administrator = false;
-      removeCard.hidden = true;
-      editor.hidden = true;
+      updateAdministratorTools();
       message.textContent = 'Somente administradores podem alterar o cartão.';
     } else if (error.code === 'support_management.card_verification_failed') {
       message.textContent = 'O cartão não foi aprovado na validação do Pagar.me. Confira os dados ou utilize outro cartão.';
@@ -475,10 +496,7 @@ savePermissions.addEventListener('click', async () => {
     if (leaving || authFailure(error)) return;
     if (error.status === 403) {
       administrator = false;
-      permissionsDirty = false;
-      permissionsPanel.hidden = true;
-      removeCard.hidden = retrySync.hidden = editor.hidden = true;
-      hideDeleteActions();
+      updateAdministratorTools();
     } else if (error.code === 'support_management.employee_not_found') {
       permissionsRefreshRequired = true;
       permissionsMessage.textContent = 'A lista de colaboradores mudou. Atualize a página antes de salvar novamente.';
@@ -513,9 +531,7 @@ function loadPermissions() {
       if (leaving || authFailure(error)) return;
       if (error.status === 403) {
         administrator = false;
-        permissionsPanel.hidden = true;
-        removeCard.hidden = retrySync.hidden = editor.hidden = true;
-        hideDeleteActions();
+        updateAdministratorTools();
       }
       else permissionsMessage.textContent = 'Não foi possível carregar as permissões. Atualize a página para tentar novamente.';
     } finally {
@@ -527,12 +543,14 @@ function loadPermissions() {
 }
 
 function loadCard() {
+  if (!administrator) return Promise.resolve();
   if (cardLoaded && cardSnapshot === undefined) return Promise.resolve();
   if (cardLoading) return cardLoading;
   cardLoading = Promise.resolve().then(async () => {
     try {
       let result = cardSnapshot ?? await client.card();
       cardSnapshot = undefined;
+      if (leaving || !administrator) return;
       if ((result.card || result.cardDeletionPending) && !/^[a-f0-9]{64}$/u.test(result.cardRevision || '')) {
         result = await client.card();
         if (!/^[a-f0-9]{64}$/u.test(result.cardRevision || '') && (result.card || result.cardDeletionPending)) throw new Error('card_revision_unavailable');
@@ -541,15 +559,22 @@ function loadCard() {
         try { result = await client.syncCard(); }
         catch (error) {
           if (error.status === 401 || error.code === 'support_management.card_review_required') throw error;
-          if (error.status === 403) administrator = false;
+          if (error.status === 403) {
+            administrator = false;
+            updateAdministratorTools();
+          }
           if (error.code === 'support_management.card_verification_required') result = await client.card();
         }
       }
-      if (leaving) return;
+      if (leaving || !administrator) return;
       renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired), Boolean(result.cardDeletionPending), result.cardRevision);
       document.getElementById('member-notice').hidden = administrator;
       cardLoaded = true;
     } catch (error) {
+      if (error.status === 403) {
+        administrator = false;
+        updateAdministratorTools();
+      }
       if (!leaving && !authFailure(error) && !handleReviewRequired(error)) message.textContent = 'Não foi possível carregar o cadastro de cartão. Atualize a página para tentar novamente.';
     } finally {
       cardLoading = undefined;
@@ -576,12 +601,11 @@ async function initializeSession(result, { fromCache = false } = {}) {
     if (typeof globalThis.setInterval === 'function') sessionTimer = globalThis.setInterval(enforceSessionExpiry, 1000);
   }
   administrator = user.role === 'Administrador';
-  permissionsPanel.hidden = !administrator;
-  if (!administrator) {
-    permissionsDirty = false;
-    removeCard.hidden = retrySync.hidden = editor.hidden = true;
-    hideDeleteActions();
+  if (!administrator && activeTab === 'card') {
+    activeTab = 'appointments';
+    document.getElementById('appointments-tab').focus({ preventScroll: true });
   }
+  updateAdministratorTools();
   updatePermissionControls();
   if (!permissionsDirty && !permissionsBusy && result.permissions !== undefined) permissionsSnapshot = result.permissions;
   else if (!fromCache && !permissionsDirty && !permissionsBusy) {
