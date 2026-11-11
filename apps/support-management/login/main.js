@@ -41,7 +41,7 @@ form.addEventListener('submit', async (event) => {
     window.location.assign(SCHEDULER_PATH);
   } catch (error) {
     if (error.status === 401) {
-      message.textContent = 'E-mail ou senha inválidos, ou acesso inativo.';
+      message.textContent = 'E-mail ou senha inválidos.';
       email.setAttribute('aria-invalid', 'true');
       password.setAttribute('aria-invalid', 'true');
       password.focus();

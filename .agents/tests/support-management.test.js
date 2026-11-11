@@ -212,7 +212,7 @@ test('login replaces the button while pending, prevents duplicate requests and r
   assert.equal(elements.get('login-progress').hidden, true);
   assert.equal(elements.get('password').value, '');
   assert.equal(elements.get('password').focused, true);
-  assert.match(elements.get('login-message').textContent, /E-mail ou senha inválidos/u);
+  assert.equal(elements.get('login-message').textContent, 'E-mail ou senha inválidos.');
 });
 
 test('leaving the login clears its password and pending presentation', async () => {
@@ -234,6 +234,7 @@ test('leaving the login clears its password and pending presentation', async () 
 async function loadScheduler(client, { activateCard = true, appointmentController, runtime = {} } = {}) {
   const elements = new Map();
   const documentListeners = new Map();
+  const windowListeners = new Map();
   const document = { activeElement: null,
     addEventListener(name, callback) { const handlers = documentListeners.get(name) || new Set(); handlers.add(callback); documentListeners.set(name, handlers); },
     removeEventListener(name, callback) { documentListeners.get(name)?.delete(callback); },
@@ -269,6 +270,8 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   }
   const introduction = element('p');
   const footer = element('footer');
+  document.body = element('body');
+  elements.get('save-permissions').textContent = 'Save';
   elements.get('card-form').reset = () => {
     for (const node of elements.values()) if (['INPUT', 'SELECT'].includes(node.tagName)) node.value = '';
   };
@@ -276,7 +279,7 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
       querySelector: (selector) => selector === '.intro' ? introduction : footer,
       createElement: (tagName) => element(tagName) });
   const context = vm.createContext({ document,
-    window: { addEventListener() {}, location: { replace: runtime.navigate || (() => { throw new Error('Unexpected navigation'); }) } },
+    window: { addEventListener(name, callback) { const handlers = windowListeners.get(name) || []; handlers.push(callback); windowListeners.set(name, handlers); }, location: { replace: runtime.navigate || (() => { throw new Error('Unexpected navigation'); }) } },
     createSupportClient: () => ({ permissions: async () => ({ employees: [] }), ...client }), LOGIN_PATH: '/support-management/login/',
     createAppointments: () => appointmentController || ({ load: async () => {} }),
     submitCompanyCard: () => { throw new Error('Unexpected card registration'); },
@@ -291,6 +294,7 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   await initializing;
   if (activateCard) for (const callback of elements.get('card-tab').listeners.click || []) await callback({});
   return { elements, introduction, footer, document,
+    dispatchWindow(name) { for (const callback of windowListeners.get(name) || []) callback(); },
     async click(id, event = {}) { for (const callback of elements.get(id).listeners.click || []) await callback(event); },
     async dispatch(id, name, event = {}) { for (const callback of elements.get(id).listeners[name] || []) await callback(event); } };
 }
@@ -832,6 +836,10 @@ test('checkbox edits stay local until Save submits all active employee flags onc
   const pending = f.click('save-permissions');
   assert.ok(list.children.every(row => row.children[0].disabled));
   assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.document.body.attributes['aria-busy'], 'true');
+  assert.equal(f.elements.get('save-permissions').attributes['aria-busy'], 'true');
+  assert.equal(f.elements.get('save-permissions').textContent, 'Save');
+  assert.equal(f.elements.get('permissions-message').textContent, '');
   await f.click('save-permissions');
   assert.deepEqual(writes, [[{ email: 'admin@example.test', allowed: false }, { email: 'colleague@example.test', allowed: true }]]);
   finish({ employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'colleague@example.test' })) });
@@ -840,7 +848,10 @@ test('checkbox edits stay local until Save submits all active employee flags onc
   assert.equal(list.children[0].children[0].disabled, false);
   assert.equal(list.children[2].children[0].disabled, true);
   assert.equal(f.elements.get('save-permissions').disabled, false);
-  assert.equal(f.elements.get('permissions-message').textContent, 'Salvo.');
+  assert.equal(f.document.body.attributes['aria-busy'], 'false');
+  assert.equal(f.elements.get('save-permissions').attributes['aria-busy'], 'false');
+  assert.equal(f.elements.get('save-permissions').textContent, 'Save');
+  assert.equal(f.elements.get('permissions-message').textContent, '');
   assert.equal(reads, 1, 'Saving must not add a redundant permissions GET');
   assert.ok(invalidated >= 1);
 });
@@ -858,6 +869,42 @@ test('Save sends all selected defaults even without edits so blank workbook valu
   assert.deepEqual(writes, [[{ email: 'admin@example.test', allowed: true }, { email: 'colleague@example.test', allowed: true }]]);
 });
 
+test('leaving the scheduler clears its permission wait presentation while the pending write stays guarded', async () => {
+  let finish;
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    updatePermissions: () => new Promise(resolve => { finish = resolve; }),
+  });
+  const pending = f.click('save-permissions');
+  assert.equal(f.document.body.attributes['aria-busy'], 'true');
+  f.dispatchWindow('pagehide');
+  assert.equal(f.document.body.attributes['aria-busy'], 'false');
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  finish({ employees });
+  await pending;
+  assert.equal(f.elements.get('save-permissions').disabled, false);
+  assert.equal(f.document.body.attributes['aria-busy'], 'false');
+  assert.equal(f.elements.get('permissions-message').textContent, '');
+});
+
+for (const status of [401, 403]) {
+  test(`permission Save clears wait state after authorization failure ${status}`, async () => {
+    const navigations = [];
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      card: async () => ({ card: null }), permissions: async () => ({ employees }),
+      updatePermissions: async () => { throw { status }; },
+    }, { runtime: { navigate: path => navigations.push(path) } });
+    await f.click('save-permissions');
+    assert.equal(f.document.body.attributes['aria-busy'], 'false');
+    assert.equal(f.elements.get('save-permissions').attributes['aria-busy'], 'false');
+    assert.equal(f.elements.get('save-permissions').textContent, 'Save');
+    assert.equal(f.elements.get('permissions-message').textContent, '');
+    assert.deepEqual(navigations, status === 401 ? ['/support-management/login/'] : []);
+  });
+}
+
 test('failed Save preserves the selected draft for an idempotent retry without claiming success or doing extra reads', async () => {
   let reads = 0;
   let writes = 0;
@@ -874,10 +921,11 @@ test('failed Save preserves the selected draft for an idempotent retry without c
   assert.equal(list.children[0].children[0].checked, true);
   assert.equal(list.children[0].children[0].disabled, false);
   assert.match(f.elements.get('permissions-message').textContent, /Não foi possível confirmar/u);
+  assert.equal(f.document.body.attributes['aria-busy'], 'false');
   assert.equal(reads, 1);
   await f.click('save-permissions');
   assert.equal(writes, 2);
-  assert.equal(f.elements.get('permissions-message').textContent, 'Salvo.');
+  assert.equal(f.elements.get('permissions-message').textContent, '');
 });
 
 test('members never request or display employee permissions', async () => {

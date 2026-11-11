@@ -170,6 +170,7 @@ function clearCard() {
 }
 window.addEventListener('pagehide', clearCard);
 window.addEventListener('pagehide', () => globalThis.clearInterval?.(sessionTimer));
+window.addEventListener('pagehide', () => document.body.setAttribute('aria-busy', 'false'));
 
 function authFailure(error) {
   if (error.status !== 401) return false;
@@ -397,6 +398,7 @@ function updatePermissionControls() {
   for (const input of permissionInputs) input.disabled = !administrator || permissionsBusy || permissionsRefreshRequired || input.dataset.active !== 'true';
   savePermissions.disabled = !administrator || permissionsBusy || permissionsRefreshRequired || !permissionsLoaded || !permissionEmployees.some(employee => employee.active);
   savePermissions.setAttribute('aria-busy', String(permissionsBusy));
+  document.body.setAttribute('aria-busy', String(permissionsBusy));
 }
 
 function renderPermissions(result) {
@@ -442,14 +444,14 @@ savePermissions.addEventListener('click', async () => {
   permissionsVersion++;
   updatePermissionControls();
   document.addEventListener('focusin', trackFocus);
-  permissionsMessage.textContent = 'Salvando...';
+  permissionsMessage.textContent = '';
   appointments.invalidate?.();
   client.discardBootstrap?.();
   try {
     const updated = await client.updatePermissions(selected);
     if (leaving) return;
     renderPermissions(updated);
-    permissionsMessage.textContent = 'Salvo.';
+    permissionsMessage.textContent = '';
   } catch (error) {
     if (leaving || authFailure(error)) return;
     if (error.status === 403) {

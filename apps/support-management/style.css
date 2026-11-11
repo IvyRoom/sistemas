@@ -29,6 +29,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .login-page :focus-visible { outline-color: #fff; }
 .login-page footer { min-height: 40px; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 8px 24px; }
 .login-page[aria-busy="true"], .login-page[aria-busy="true"] * { cursor: wait !important; }
+.scheduler-page[aria-busy="true"], .scheduler-page[aria-busy="true"] * { cursor: wait !important; }
 .scheduler-layout { display: flex; min-height: 100vh; min-height: 100dvh; }
 .sidebar { flex: 0 0 300px; padding: 16px 26px 32px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; text-align: center; border-right: 1px solid #d4d4d4; }
 .sidebar .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 24px auto 40px; }
@@ -37,7 +38,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #a77a84; border-radius: 5px; color: #fff; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
 .scheduler-tab[aria-selected="true"] { background: rgba(255,255,255,.08); border-color: #b5828d; }
 .scheduler-tab:hover { background: rgba(255,255,255,.14); }
-.admin-tools-divider { margin: 30px 0 10px; padding-bottom: 8px; border-bottom: 1px solid #a77a84; color: #dedede; text-align: left; font-size: 15px; line-height: 1.5; }
+.admin-tools-divider { margin: 25px 0 8px; padding-bottom: 8px; border-bottom: 1px solid #a77a84; color: #dedede; text-align: left; font-size: 15px; line-height: 1.5; }
 .scheduler-workspace { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .scheduler-header { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 40px; padding: 0 10px 0 20px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; }
 .scheduler-header h1 { min-width: 0; font-size: 16px; font-weight: 400; line-height: 1.25; }
@@ -53,7 +54,9 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-main .permission-option { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 14px; line-height: 1.5; }
 .scheduler-main .permission-option input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; accent-color: #4a0816; }
 .permission-option:has(input:disabled) { color: #777; }
-.card-tool-content fieldset { padding: 30px; }
+.card-tool-content fieldset { position: relative; padding: 30px; }
+.card-tool-content legend { position: absolute; top: 0; left: 30px; transform: translateY(-50%); background: #fff; }
+.scheduler-main .card-number-label label { margin-top: 0; }
 .card-tool-content #card-editor { margin-top: 0; }
 .card-tool-content fieldset:first-child { margin-top: 0; }
 .card-tool-content > .message:first-child { margin-top: 0; }
