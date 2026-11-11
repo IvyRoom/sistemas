@@ -1,6 +1,5 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', sans-serif; }
-html:has(.scheduler-page) { scrollbar-gutter: stable; }
 button, input, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }
@@ -38,14 +37,14 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #a77a84; border-radius: 5px; color: #fff; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
 .scheduler-tab[aria-selected="true"] { background: rgba(255,255,255,.08); border-color: #b5828d; }
 .scheduler-tab:hover { background: rgba(255,255,255,.14); }
-.admin-tools-divider { margin: 14px 0 24px; padding-bottom: 24px; border-bottom: 1px solid #a77a84; color: #dedede; text-align: left; font-size: 15px; line-height: 1.5; }
+.admin-tools-divider { margin: 30px 0 10px; padding-bottom: 8px; border-bottom: 1px solid #a77a84; color: #dedede; text-align: left; font-size: 15px; line-height: 1.5; }
 .scheduler-workspace { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .scheduler-header { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 40px; padding: 0 10px 0 20px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; }
 .scheduler-header h1 { min-width: 0; font-size: 16px; font-weight: 400; line-height: 1.25; }
 .scheduler-user { flex-shrink: 0; padding-left: 16px; font-size: 12px; line-height: 1.4; text-align: right; white-space: nowrap; }
-.scheduler-main { flex: 1; min-width: 0; padding: 24px; background: #fff; color: rgb(58,58,58); }
+.scheduler-main { display: flex; flex-direction: column; flex: 1; min-width: 0; padding: 24px; background: #fff; color: rgb(58,58,58); }
 .checkout-panel { width: min(100%, 650px); margin: 0 auto; background: #fff; border: 1px solid #dedede; border-radius: 5px; padding: 30px; }
-.card-tool-panel { width: min(100%,1100px); padding: 0; border: 0; border-radius: 0; container-type: inline-size; }
+.card-tool-panel { display: flex; flex: 1; flex-direction: column; justify-content: center; width: min(100%,1100px); padding: 0; border: 0; border-radius: 0; container-type: inline-size; }
 .account-settings-grid { display: grid; grid-template-columns: minmax(0,1fr); align-items: start; justify-items: center; gap: 30px; }
 .account-tool { width: 100%; max-width: 700px; min-width: 0; }
 .account-tool-title { color: #790d26; font-size: 20px; font-weight: 400; margin-bottom: 12px; }
@@ -55,6 +54,8 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-main .permission-option input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; accent-color: #4a0816; }
 .permission-option:has(input:disabled) { color: #777; }
 .card-tool-content fieldset { padding: 30px; }
+.card-tool-content #card-editor { margin-top: 0; }
+.card-tool-content fieldset:first-child { margin-top: 0; }
 .card-tool-content > .message:first-child { margin-top: 0; }
 .page-header h1 { font-size: 20px; font-weight: 400; color: #790d26; margin-bottom: 5px; }
 .intro { font-size: 14px; line-height: 1.5; }
@@ -105,6 +106,8 @@ legend { padding: 0 4px; }
 .scheduler-main .primary:hover { background: #0ab666; box-shadow: 2px 2px 8px black; }
 .scheduler-main #save-card { background: #4a0816; }
 .scheduler-main #save-card:hover { background: #790d26; }
+.scheduler-main #save-permissions { background: #4a0816; margin-bottom: 0; }
+.scheduler-main #save-permissions:hover { background: #790d26; }
 .scheduler-main .primary:disabled { opacity: .65; }
 .secondary { display: block; font-size: 13px; color: #790d26; background: transparent; border: 0; padding: 8px 12px; margin: 0 auto; text-decoration: underline; }
 .checkout-footer { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
@@ -118,8 +121,7 @@ legend { padding: 0 4px; }
 .appointments-intro { font-size: 14px; line-height: 1.6; }
 .appointments-intro p + p { margin-top: 8px; }
 .calendar-stage { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 18px; min-height: 540px; padding: 20px 0; }
-.payment-gate { max-width: 650px; margin: auto; font-size: 16px; line-height: 1.6; text-align: center; }
-.payment-gate p + p { margin-top: 16px; }
+.payment-gate { max-width: 100%; margin: auto; font-size: 16px; line-height: 1.6; text-align: center; }
 .appointment-calendar { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,500px),500px)); justify-content: center; align-items: start; width: 100%; gap: 24px; }
 .calendar-month-block { min-width: 0; padding: 16px; border: 1px solid #dedede; border-radius: 5px; }
 .calendar-month-heading { color: #444; font-size: 18px; font-weight: 400; line-height: 24px; text-align: center; margin-bottom: 12px; }
@@ -177,6 +179,9 @@ legend { padding: 0 4px; }
 .appointments-faq summary::-webkit-details-marker { display: none; }
 .appointments-faq summary:focus-visible { outline: 3px solid #9a4559; outline-offset: 3px; }
 .appointments-faq p { margin-top: 10px; }
+@container (min-width: 900px) {
+  .payment-gate p + p { white-space: nowrap; }
+}
 @container (min-width: 1024px) {
   .account-settings-grid { grid-template-columns: minmax(0,2fr) minmax(280px,1fr); }
   .tool-intro { width: 1024px; }
@@ -186,6 +191,7 @@ legend { padding: 0 4px; }
   .sidebar { flex-basis: 240px; padding-left: 20px; padding-right: 20px; }
 }
 @media (max-width: 760px) {
+  .payment-gate p + p { white-space: normal; }
   .scheduler-layout { display: block; }
   .sidebar { padding: 14px 24px 24px; }
   .sidebar .logo { width: 180px; margin: 8px auto 24px; }

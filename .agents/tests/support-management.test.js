@@ -286,7 +286,9 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   const fields = fs.readFileSync(path.join(root, 'modules/card-fields.js'), 'utf8');
   vm.runInContext(fields.replace(/export /gu, ''), context);
   const source = fs.readFileSync(path.join(root, 'scheduler/main.js'), 'utf8');
-  await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/gmu, '')} })()`, context);
+  const initializing = vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/gmu, '')} })()`, context);
+  if (runtime.duringInitialization) await runtime.duringInitialization({ elements, document });
+  await initializing;
   if (activateCard) for (const callback of elements.get('card-tab').listeners.click || []) await callback({});
   return { elements, introduction, footer, document,
     async click(id, event = {}) { for (const callback of elements.get(id).listeners.click || []) await callback(event); },
@@ -787,11 +789,11 @@ test('permission requests use only the current authorization and the selected em
   values.set('supportManagementContext', 'old-context');
   const client = createSupportClient();
   await client.permissions();
-  await client.updatePermission('colleague@example.test', true);
+  await client.updatePermissions([{ email: 'colleague@example.test', allowed: true }]);
   assert.equal(requests[0].url, '/support-management/api/permissions');
   assert.equal(requests[0].options.method, 'GET');
   assert.equal(requests[1].options.method, 'PATCH');
-  assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'colleague@example.test', allowed: true });
+  assert.deepEqual(JSON.parse(requests[1].options.body), { employees: [{ email: 'colleague@example.test', allowed: true }] });
   assert.ok(requests.every(({ options }) => options.headers.Authorization === 'Bearer session-example'));
   assert.equal(values.has('supportManagementContext'), false);
 });
@@ -802,7 +804,7 @@ const employees = [
   { email: 'inactive@example.test', name: 'Inativo', allowed: false, active: false },
 ];
 
-test('administrator permissions render plain employee names and autosave one selection while preventing duplicate edits', async () => {
+test('checkbox edits stay local until Save submits all active employee flags once', async () => {
   let reads = 0;
   let finish;
   let invalidated = 0;
@@ -812,42 +814,70 @@ test('administrator permissions render plain employee names and autosave one sel
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }),
     permissions: async () => { reads++; return { employees }; },
-    updatePermission: (email, allowed) => { writes.push({ email, allowed }); return new Promise(resolve => { finish = resolve; }); },
+    updatePermissions: selected => { writes.push(JSON.parse(JSON.stringify(selected))); return new Promise(resolve => { finish = resolve; }); },
   }, { appointmentController: { load: async () => {}, invalidate: () => { invalidated++; } } });
   const list = f.elements.get('permissions-list');
   assert.equal(reads, 1);
-  assert.equal(list.children.length, 3);
   assert.equal(list.children[1].children[1].textContent, '<Colega>');
   assert.equal(list.children[1].children[1].children.length, 0);
   assert.equal(list.children[2].children[0].disabled, true);
   const checkbox = list.children[1].children[0];
   checkbox.checked = true;
-  const pending = checkbox.listeners.change[0]();
-  assert.ok(list.children.every(row => row.children[0].disabled));
   await checkbox.listeners.change[0]();
-  assert.deepEqual(writes, [{ email: 'colleague@example.test', allowed: true }]);
+  assert.deepEqual(writes, []);
+  assert.equal(checkbox.disabled, false);
+  await f.click('appointments-tab');
+  await f.click('card-tab');
+  assert.equal(list.children[1].children[0], checkbox, 'Tab revisits must retain the unsaved draft');
+  const pending = f.click('save-permissions');
+  assert.ok(list.children.every(row => row.children[0].disabled));
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  await f.click('save-permissions');
+  assert.deepEqual(writes, [[{ email: 'admin@example.test', allowed: false }, { email: 'colleague@example.test', allowed: true }]]);
   finish({ employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'colleague@example.test' })) });
   await pending;
   assert.equal(list.children[1].children[0].checked, true);
   assert.equal(list.children[0].children[0].disabled, false);
   assert.equal(list.children[2].children[0].disabled, true);
+  assert.equal(f.elements.get('save-permissions').disabled, false);
+  assert.equal(f.elements.get('permissions-message').textContent, 'Salvo.');
+  assert.equal(reads, 1, 'Saving must not add a redundant permissions GET');
   assert.ok(invalidated >= 1);
 });
 
-test('failed permission writes reconcile with the server and show an error without claiming success', async () => {
+test('Save sends all selected defaults even without edits so blank workbook values can be materialized', async () => {
+  const allSelected = employees.map(employee => ({ ...employee, allowed: employee.active }));
+  const writes = [];
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
-    session: async () => ({ user: { role: 'Administrador' } }),
-    card: async () => ({ card: null }), permissions: async () => ({ employees }),
-    updatePermission: async () => { throw { status: 503 }; },
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees: allSelected }),
+    updatePermissions: async selected => { writes.push(JSON.parse(JSON.stringify(selected))); return { employees: allSelected }; },
+  });
+  assert.ok(f.elements.get('permissions-list').children.slice(0, 2).every(row => row.children[0].checked));
+  await f.click('save-permissions');
+  assert.deepEqual(writes, [[{ email: 'admin@example.test', allowed: true }, { email: 'colleague@example.test', allowed: true }]]);
+});
+
+test('failed Save preserves the selected draft for an idempotent retry without claiming success or doing extra reads', async () => {
+  let reads = 0;
+  let writes = 0;
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => { reads++; return { employees }; },
+    updatePermissions: async () => { if (++writes === 1) throw { status: 503 }; return { employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'admin@example.test' })) }; },
   });
   const list = f.elements.get('permissions-list');
   const checkbox = list.children[0].children[0];
   checkbox.checked = true;
   await checkbox.listeners.change[0]();
-  assert.equal(list.children[0].children[0].checked, false);
+  await f.click('save-permissions');
+  assert.equal(list.children[0].children[0].checked, true);
   assert.equal(list.children[0].children[0].disabled, false);
   assert.match(f.elements.get('permissions-message').textContent, /Não foi possível confirmar/u);
+  assert.equal(reads, 1);
+  await f.click('save-permissions');
+  assert.equal(writes, 2);
+  assert.equal(f.elements.get('permissions-message').textContent, 'Salvo.');
 });
 
 test('members never request or display employee permissions', async () => {
@@ -918,48 +948,117 @@ test('an administrator losing access during permission editing cannot retain act
   const f = await loadScheduler({
     config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
-    permissions: async () => ({ employees }), updatePermission: async () => { throw { status: 403 }; },
+    permissions: async () => ({ employees }), updatePermissions: async () => { throw { status: 403 }; },
   });
   const checkbox = f.elements.get('permissions-list').children[0].children[0];
   checkbox.checked = true;
   await checkbox.listeners.change[0]();
+  await f.click('save-permissions');
   for (const id of ['permissions-panel', 'edit-card', 'card-editor', 'retry-card-sync']) assert.equal(f.elements.get(id).hidden, true);
   assert.equal(checkbox.disabled, true);
 });
 
-for (const destination of ['same-checkbox', 'other-control', 'other-tab']) {
-  test(`permission autosave restores keyboard focus only when it still belongs to that edit: ${destination}`, async () => {
+for (const destination of ['save-button', 'other-control', 'other-tab']) {
+  test(`permission Save restores focus only when the user has not moved away: ${destination}`, async () => {
     let finish;
     const f = await loadScheduler({
       config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: null }), permissions: async () => ({ employees }),
-      updatePermission: () => new Promise(resolve => { finish = resolve; }),
+      updatePermissions: () => new Promise(resolve => { finish = resolve; }),
     });
     const checkbox = f.elements.get('permissions-list').children[1].children[0];
-    checkbox.focus();
     checkbox.checked = true;
-    const pending = checkbox.listeners.change[0]();
-    f.document.activeElement = { tagName: 'BODY' }; // Native disabling moves focus away from the old control.
+    await checkbox.listeners.change[0]();
+    const save = f.elements.get('save-permissions');
+    save.focus();
+    const pending = f.click('save-permissions');
+    f.document.activeElement = { tagName: 'BODY' };
     let expected;
     if (destination === 'other-control') {
-      expected = f.elements.get('number');
-      expected.focus();
+      expected = f.elements.get('number'); expected.focus();
     } else if (destination === 'other-tab') {
-      expected = f.elements.get('appointments-tab');
-      expected.focus();
-      await f.click('appointments-tab');
+      expected = f.elements.get('appointments-tab'); expected.focus(); await f.click('appointments-tab');
     }
     finish({ employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'colleague@example.test' })) });
     await pending;
-    const updated = f.elements.get('permissions-list').children[1].children[0];
-    assert.notEqual(updated, checkbox);
-    if (destination === 'same-checkbox') {
-      assert.equal(f.document.activeElement, updated);
-      assert.equal(updated.focusOptions.preventScroll, true);
-      assert.equal(updated.disabled, false);
-    } else {
-      assert.equal(f.document.activeElement, expected);
-      assert.equal(updated.focused, undefined);
+    if (destination === 'save-button') {
+      assert.equal(f.document.activeElement, save);
+      assert.equal(save.focusOptions.preventScroll, true);
+      assert.equal(save.disabled, false);
+    } else assert.equal(f.document.activeElement, expected);
+  });
+}
+
+
+test('old autosave permission caches are refreshed before the explicit Save flow can use them', () => {
+  const { createSupportClient, values } = loadClient();
+  values.set('supportManagementToken', 'session-example');
+  values.set('supportManagementContext', JSON.stringify({ token: 'session-example', fromLogin: true, savedAt: Date.now(), context: {
+    user: { name: 'Admin', role: 'Administrador' }, expiresAt: Date.now() + 60000,
+    config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' }, permissions: { employees },
+  } }));
+  const cached = createSupportClient().bootstrap();
+  assert.equal(cached.refresh, true);
+  assert.equal(cached.context.permissions, undefined);
+});
+
+for (const role of ['Administrador', 'Usuário']) {
+  test(`background session refresh preserves an unsaved permission draft unless access is removed: ${role}`, async () => {
+    let finish;
+    let entered;
+    const started = new Promise(resolve => { entered = resolve; });
+    const initial = { user: { name: 'Admin', role: 'Administrador' }, config: { publicKey: 'pk_test_synthetic' },
+      card: { card: null }, permissions: { employees } };
+    const f = await loadScheduler({
+      bootstrap: () => ({ context: initial, refresh: true }),
+      session: () => { entered(); return new Promise(resolve => { finish = resolve; }); },
+      card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    }, { runtime: { duringInitialization: async ({ elements }) => {
+      await started;
+      for (const callback of elements.get('card-tab').listeners.click) await callback({});
+      const checkbox = elements.get('permissions-list').children[0].children[0];
+      checkbox.checked = true;
+      await checkbox.listeners.change[0]();
+      finish({ ...initial, user: { name: 'Admin', role }, permissions: { employees: employees.map(employee => ({ ...employee, allowed: false })) } });
+    } } });
+    if (role === 'Administrador') assert.equal(f.elements.get('permissions-list').children[0].children[0].checked, true);
+    else {
+      assert.equal(f.elements.get('permissions-panel').hidden, true);
+      assert.equal(f.elements.get('save-permissions').disabled, true);
     }
   });
 }
+
+
+test('a stale employee list requires a refresh instead of replaying an obsolete permission batch', async () => {
+  let writes = 0;
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    updatePermissions: async () => { writes++; throw { status: 404, code: 'support_management.employee_not_found' }; },
+  });
+  await f.click('save-permissions');
+  assert.match(f.elements.get('permissions-message').textContent, /Atualize a página/u);
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.ok(f.elements.get('permissions-list').children.every(row => row.children[0].disabled));
+  await f.click('save-permissions');
+  assert.equal(writes, 1);
+});
+
+
+test('Save completion invalidates a calendar loaded while the permission request was pending without adding an automatic read', async () => {
+  let finish;
+  const events = [];
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    updatePermissions: () => { events.push('save-pending'); return new Promise(resolve => { finish = resolve; }); },
+  }, { appointmentController: { load: async () => { events.push('calendar-read'); }, invalidate: () => { events.push('invalidate'); } } });
+  events.length = 0;
+  const pending = f.click('save-permissions');
+  await f.click('appointments-tab');
+  assert.deepEqual(events, ['invalidate', 'save-pending', 'calendar-read']);
+  finish({ employees });
+  await pending;
+  assert.deepEqual(events, ['invalidate', 'save-pending', 'calendar-read', 'invalidate']);
+});

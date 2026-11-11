@@ -105,8 +105,9 @@ in Microsoft Teams, with a three-hour calendar hold and confirmation email. A sh
 selection instruction, calendar legend and expandable FAQ provide the appointment
 information.
 Configurações da Conta PJ places Cadastro de Cartão and employee Permissões side
-by side on wide screens. Permission checkboxes save each change to the workbook;
-inactive employees cannot be enabled. Card entry includes a live representation
+by side on wide screens, centered vertically. Permission checkboxes start from
+the workbook's AUTORIZADO A CONTRATAR ATENDIMENTOS values (Sim by default);
+edits stay local until Save persists the selection. Card entry includes a live representation
 with a masked CVV and no billing-address section. It uses Pagar.me test keys and test cards; reservations and
 nonattendance do not automatically charge a card.
 Its administrator trash action confirms deletion, clears the selected company

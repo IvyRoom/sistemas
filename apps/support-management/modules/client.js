@@ -19,6 +19,7 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       config: result.config && { environment: result.config.environment, publicKey: result.config.publicKey },
       calendar: result.calendar,
       ...(result.user?.role === 'Administrador' && Array.isArray(result.permissions?.employees) ? { permissions: {
+        saveMode: 'explicit',
         employees: result.permissions.employees.map(({ email, name, allowed, active }) => ({ email, name, allowed: allowed === true, active: active === true }))
       } } : {}),
       card: result.card && { card: safeCard ? { brand: safeCard.brand, lastFour: safeCard.lastFour, expMonth: safeCard.expMonth, expYear: safeCard.expYear } : null,
@@ -40,7 +41,9 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
         storage.removeItem(CONTEXT_KEY);
         return null;
       }
-      const refresh = !saved.fromLogin || Date.now() - saved.savedAt > 60000;
+      const stalePermissions = context.permissions && context.permissions.saveMode !== 'explicit';
+      if (stalePermissions) delete context.permissions;
+      const refresh = Boolean(stalePermissions) || !saved.fromLogin || Date.now() - saved.savedAt > 60000;
       saved.fromLogin = false;
       storage.setItem(CONTEXT_KEY, JSON.stringify(saved));
       return { context: saved.context, refresh };
@@ -102,9 +105,9 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
     },
     card: () => request('/card'),
     permissions: () => request('/permissions'),
-    async updatePermission(email, allowed) {
+    async updatePermissions(employees) {
       storage.removeItem(CONTEXT_KEY);
-      return request('/permissions', { method: 'PATCH', body: { email, allowed } });
+      return request('/permissions', { method: 'PATCH', body: { employees } });
     },
     async deleteCard(expectedCardRevision) {
       if (typeof expectedCardRevision !== 'string' || !/^[a-f0-9]{64}$/u.test(expectedCardRevision)) throw new Error('card_revision_required');

@@ -19,6 +19,7 @@ const footer = document.querySelector('.checkout-footer');
 const permissionsPanel = document.getElementById('permissions-panel');
 const permissionsList = document.getElementById('permissions-list');
 const permissionsMessage = document.getElementById('permissions-message');
+const savePermissions = document.getElementById('save-permissions');
 const cardInputs = Object.fromEntries([
   ['number', 'number'], ['holderName', 'holder-name'], ['expMonth', 'exp-month'],
   ['expYear', 'exp-year'], ['cvv', 'cvv']
@@ -45,6 +46,9 @@ let permissionsSnapshot;
 let permissionsBusy = false;
 let permissionInputs = [];
 let permissionsVersion = 0;
+let permissionsDirty = false;
+let permissionsRefreshRequired = false;
+let permissionEmployees = [];
 const appointments = createAppointments({ client, onAuthFailure: authFailure, isCurrent: () => !leaving });
 const tabs = ['appointments', 'card'];
 
@@ -389,70 +393,89 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+function updatePermissionControls() {
+  for (const input of permissionInputs) input.disabled = !administrator || permissionsBusy || permissionsRefreshRequired || input.dataset.active !== 'true';
+  savePermissions.disabled = !administrator || permissionsBusy || permissionsRefreshRequired || !permissionsLoaded || !permissionEmployees.some(employee => employee.active);
+  savePermissions.setAttribute('aria-busy', String(permissionsBusy));
+}
+
 function renderPermissions(result) {
   if (!Array.isArray(result?.employees) || result.employees.some((employee) => typeof employee.email !== 'string'
-    || typeof employee.name !== 'string' || typeof employee.allowed !== 'boolean' || typeof employee.active !== 'boolean')) throw new Error('permissions_unavailable');
+    || typeof employee.name !== 'string' || typeof employee.allowed !== 'boolean' || typeof employee.active !== 'boolean')
+    || new Set(result.employees.map(employee => employee.email)).size !== result.employees.length) throw new Error('permissions_unavailable');
+  permissionEmployees = result.employees.map(employee => ({ ...employee }));
+  permissionsRefreshRequired = false;
+  permissionsDirty = false;
   permissionInputs = [];
-  const rows = result.employees.map((employee) => {
+  const rows = permissionEmployees.map((employee) => {
     const row = document.createElement('label');
     row.className = 'permission-option';
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = employee.allowed;
-    checkbox.disabled = !employee.active || permissionsBusy;
     checkbox.dataset.active = String(employee.active);
     checkbox.dataset.email = employee.email;
     const name = document.createElement('span');
     name.textContent = employee.name;
     row.append(checkbox, name);
     permissionInputs.push(checkbox);
-    checkbox.addEventListener('change', async () => {
-      if (!administrator || permissionsBusy || leaving || !employee.active) { checkbox.checked = employee.allowed; return; }
-      const allowed = checkbox.checked;
-      let restoreFocus = document.activeElement === checkbox;
-      const trackFocus = (event) => { if (event.target !== checkbox) restoreFocus = false; };
-      permissionsBusy = true;
+    checkbox.addEventListener('change', () => {
+      if (!administrator || permissionsBusy || permissionsRefreshRequired || leaving || !employee.active) { checkbox.checked = employee.allowed; return; }
       permissionsVersion++;
-      for (const input of permissionInputs) input.disabled = true;
-      document.addEventListener('focusin', trackFocus);
-      permissionsMessage.textContent = 'Salvando...';
-      appointments.invalidate?.();
-      client.discardBootstrap?.();
-      try {
-        const updated = await client.updatePermission(employee.email, allowed);
-        if (leaving) return;
-        renderPermissions(updated);
-        permissionsMessage.textContent = '';
-      } catch (error) {
-        if (leaving || authFailure(error)) return;
-        checkbox.checked = employee.allowed;
-        if (error.status === 403) {
-          administrator = false;
-          permissionsPanel.hidden = true;
-          removeCard.hidden = retrySync.hidden = editor.hidden = true;
-        } else {
-          try { renderPermissions(await client.permissions()); }
-          catch (refreshError) { if (leaving || authFailure(refreshError)) return; }
-          permissionsMessage.textContent = 'Não foi possível confirmar a atualização da permissão. Tente novamente.';
-        }
-      } finally {
-        document.removeEventListener('focusin', trackFocus);
-        permissionsBusy = false;
-        for (const input of permissionInputs) input.disabled = !administrator || input.dataset.active !== 'true';
-        const updatedCheckbox = permissionInputs.find(input => input.dataset.email === employee.email);
-        if (restoreFocus && !leaving && administrator && activeTab === 'card' && !permissionsPanel.hidden && updatedCheckbox && !updatedCheckbox.disabled) {
-          updatedCheckbox.focus({ preventScroll: true });
-        }
-      }
+      permissionsDirty = permissionInputs.some(input => input.checked !== permissionEmployees.find(person => person.email === input.dataset.email).allowed);
+      permissionsMessage.textContent = '';
     });
     return row;
   });
   permissionsList.replaceChildren(...rows);
+  permissionsLoaded = true;
+  updatePermissionControls();
 }
+
+savePermissions.addEventListener('click', async () => {
+  if (!administrator || permissionsBusy || leaving || !permissionsLoaded || savePermissions.disabled) return;
+  const selected = permissionInputs.filter(input => input.dataset.active === 'true')
+    .map(input => ({ email: input.dataset.email, allowed: input.checked }));
+  let restoreFocus = document.activeElement === savePermissions;
+  const trackFocus = (event) => { if (event.target !== savePermissions) restoreFocus = false; };
+  permissionsBusy = true;
+  permissionsVersion++;
+  updatePermissionControls();
+  document.addEventListener('focusin', trackFocus);
+  permissionsMessage.textContent = 'Salvando...';
+  appointments.invalidate?.();
+  client.discardBootstrap?.();
+  try {
+    const updated = await client.updatePermissions(selected);
+    if (leaving) return;
+    renderPermissions(updated);
+    permissionsMessage.textContent = 'Salvo.';
+  } catch (error) {
+    if (leaving || authFailure(error)) return;
+    if (error.status === 403) {
+      administrator = false;
+      permissionsDirty = false;
+      permissionsPanel.hidden = true;
+      removeCard.hidden = retrySync.hidden = editor.hidden = true;
+    } else if (error.code === 'support_management.employee_not_found') {
+      permissionsRefreshRequired = true;
+      permissionsMessage.textContent = 'A lista de colaboradores mudou. Atualize a página antes de salvar novamente.';
+    } else permissionsMessage.textContent = 'Não foi possível confirmar o salvamento. Tente novamente.';
+  } finally {
+    appointments.invalidate?.();
+    client.discardBootstrap?.();
+    document.removeEventListener('focusin', trackFocus);
+    permissionsBusy = false;
+    updatePermissionControls();
+    if (restoreFocus && !leaving && administrator && activeTab === 'card' && !permissionsPanel.hidden && !savePermissions.disabled) {
+      savePermissions.focus({ preventScroll: true });
+    }
+  }
+});
 
 function loadPermissions() {
   permissionsPanel.hidden = !administrator;
-  if (!administrator || (permissionsLoaded && permissionsSnapshot === undefined)) return Promise.resolve();
+  if (!administrator || permissionsDirty || permissionsBusy || (permissionsLoaded && permissionsSnapshot === undefined)) return Promise.resolve();
   if (permissionsLoading) return permissionsLoading;
   permissionsLoading = Promise.resolve().then(async () => {
     try {
@@ -472,6 +495,7 @@ function loadPermissions() {
       else permissionsMessage.textContent = 'Não foi possível carregar as permissões. Atualize a página para tentar novamente.';
     } finally {
       permissionsLoading = undefined;
+      updatePermissionControls();
     }
   });
   return permissionsLoading;
@@ -528,8 +552,13 @@ async function initializeSession(result, { fromCache = false } = {}) {
   }
   administrator = user.role === 'Administrador';
   permissionsPanel.hidden = !administrator;
-  if (result.permissions !== undefined) permissionsSnapshot = result.permissions;
-  else if (!fromCache) {
+  if (!administrator) {
+    permissionsDirty = false;
+    removeCard.hidden = retrySync.hidden = editor.hidden = true;
+  }
+  updatePermissionControls();
+  if (!permissionsDirty && !permissionsBusy && result.permissions !== undefined) permissionsSnapshot = result.permissions;
+  else if (!fromCache && !permissionsDirty && !permissionsBusy) {
     permissionsSnapshot = undefined;
     permissionsLoaded = false;
   }
@@ -560,7 +589,7 @@ try {
   if (!leaving && (!cached?.context || cached.refresh)) {
     const permissionsAtRead = permissionsVersion;
     const current = await client.session();
-    if (permissionsAtRead !== permissionsVersion) {
+    if (permissionsDirty || permissionsBusy || permissionsAtRead !== permissionsVersion) {
       delete current.permissions;
       delete current.calendar;
       client.discardBootstrap?.();
