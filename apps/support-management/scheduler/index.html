@@ -36,7 +36,7 @@
             <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
           </div>
           <div id="appointments-gate" class="payment-gate" role="status" hidden><p>Configurações da Conta PJ pendentes.</p><p>Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p></div>
-          <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true"></div>
+          <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true" tabindex="-1"></div>
           <div id="calendar-legend" class="calendar-legend" aria-label="Legenda do calendário" hidden>
             <p class="calendar-legend-item"><span class="legend-range" aria-hidden="true"><span class="legend-swatch legend-price-high"></span><span class="legend-swatch legend-price-middle"></span><span class="legend-swatch legend-price-low"></span></span>Datas Disponíveis</p>
             <p class="calendar-legend-item"><span class="legend-swatch legend-unavailable" aria-hidden="true"></span>Datas Reservadas / Indisponíveis</p>
@@ -55,13 +55,16 @@
             </section>
             <section id="reservation-confirm-step" class="reservation-step" aria-hidden="true" inert>
               <p id="reservation-warning" role="alert"><b>Atenção:</b> a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro agendado, será cobrada 1h de atendimento.</p>
+              <p id="reservation-message" class="message" role="status" aria-live="polite" hidden></p>
               <div class="reservation-actions">
                 <button id="confirm-reservation" class="primary" type="button">Confirmar</button>
                 <button id="cancel-reservation" class="secondary" type="button">Cancelar</button>
               </div>
             </section>
+            <section id="reservation-status-step" class="reservation-step" aria-hidden="true" inert>
+              <p id="reservation-status" role="status" aria-live="polite" tabindex="-1"></p>
+            </section>
           </div>
-          <p id="reservation-message" class="message" role="status" aria-live="polite"></p>
         </dialog>
         <section id="appointments-faq" class="appointments-faq" aria-labelledby="appointments-faq-title" hidden>
           <h2 id="appointments-faq-title">Perguntas Frequentes</h2>

@@ -46,6 +46,9 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   const content = doc.getElementById('reservation-content');
   const initialStep = doc.getElementById('reservation-initial-step');
   const confirmStep = doc.getElementById('reservation-confirm-step');
+  const statusStep = doc.getElementById('reservation-status-step');
+  const status = doc.getElementById('reservation-status');
+  const warning = doc.getElementById('reservation-warning');
   const confirm = doc.getElementById('confirm-reservation');
   const cancel = doc.getElementById('cancel-reservation');
   const close = doc.getElementById('close-reservation');
@@ -59,6 +62,9 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   let loaded = false;
   let reviewRequired = false;
   let confirming = false;
+  let completed = false;
+  let blockedError = '';
+  let bookingStarted = false;
 
   function positionDialog() {
     const view = doc.defaultView;
@@ -69,26 +75,34 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     details.style.top = Math.min(Math.max(8, view.innerHeight - popup.height - 8), Math.max(8, anchor.top + (anchor.height - popup.height) / 2)) + 'px';
   }
 
-  function setMessage(text) {
-    message.textContent = dialogMessage.textContent = text;
+  function setMessage(text, { outside = false } = {}) {
+    message.textContent = outside ? text : '';
+    dialogMessage.textContent = outside ? '' : text;
+    dialogMessage.hidden = outside || !text;
+    warning.hidden = !outside && Boolean(text);
     positionDialog();
   }
 
   function updateSelection() {
     for (const button of calendar.querySelectorAll('button')) {
       button.setAttribute('aria-pressed', String(button.dataset.date === selected?.date));
-      button.disabled = button.dataset.available !== 'true' || busy || Boolean(loading) || !loaded || reviewRequired;
+      button.disabled = button.dataset.available !== 'true' || busy || completed || Boolean(blockedError) || Boolean(loading) || !loaded || reviewRequired;
     }
     calendar.dataset.selected = String(Boolean(selected && details.open));
-    content.dataset.activeStep = confirming ? 'confirm' : 'initial';
-    initialStep.inert = confirming;
-    confirmStep.inert = !confirming;
-    initialStep.setAttribute('aria-hidden', String(confirming));
-    confirmStep.setAttribute('aria-hidden', String(!confirming));
-    reserve.disabled = confirm.disabled = busy || Boolean(loading) || !loaded || reviewRequired || !selected;
+    const step = busy ? 'busy' : completed ? 'complete' : blockedError ? 'error' : confirming ? 'confirm' : 'initial';
+    content.dataset.activeStep = step;
+    for (const [panel, active] of [[initialStep, step === 'initial'], [confirmStep, step === 'confirm'], [statusStep, ['busy', 'complete', 'error'].includes(step)]]) {
+      panel.inert = !active;
+      panel.setAttribute('aria-hidden', String(!active));
+    }
+    status.textContent = busy ? 'Reservando...' : completed ? 'Agendamento confirmado.' : blockedError;
+    reserve.disabled = confirm.disabled = busy || completed || Boolean(blockedError) || Boolean(loading) || !loaded || reviewRequired || !selected;
     cancel.disabled = close.disabled = busy;
+    close.hidden = busy;
+    doc.body.dataset.reserving = String(busy);
     details.setAttribute('aria-busy', String(busy));
-    details.setAttribute('aria-describedby', confirming ? 'reservation-warning' : 'reservation-instructions');
+    details.setAttribute('aria-describedby', ['busy', 'complete', 'error'].includes(step) ? 'reservation-status'
+      : confirming ? dialogMessage.textContent ? 'reservation-message' : 'reservation-warning' : 'reservation-instructions');
     positionDialog();
   }
 
@@ -96,17 +110,23 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     const date = selected?.date;
     selected = undefined;
     confirming = false;
+    completed = false;
+    blockedError = '';
     if (!keepReservation) reservation = undefined;
     if (details.open) details.close();
     updateSelection();
-    if (date) for (const button of calendar.querySelectorAll('button')) {
-      if (button.dataset.date === date) button.focus({ preventScroll: true });
+    if (date) {
+      const button = [...calendar.querySelectorAll('button')].find(button => button.dataset.date === date && !button.disabled);
+      (button || calendar).focus({ preventScroll: true });
     }
   }
 
   function dismiss() {
     if (busy) return;
+    const silent = completed || Boolean(blockedError);
     clearSelection({ keepReservation: true });
+    setMessage('');
+    if (!loaded && !loading) void refresh({ silent });
   }
 
   function showSelected(day) {
@@ -132,12 +152,14 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     price.textContent = day.available ? currency.format(day.priceCents / 100) : '';
     button.append(number, price);
     button.addEventListener('click', () => {
-      if (busy || loading || !loaded || reviewRequired || !day.available || !snapshot?.canBook) return;
+      if (busy || completed || blockedError || loading || !loaded || reviewRequired || !day.available || !snapshot?.canBook) return;
       if (reservation && (reservation.date !== day.date || reservation.priceCents !== day.priceCents)) {
         reservation = undefined;
       }
       selected = day;
       confirming = false;
+      completed = false;
+      blockedError = '';
       setMessage('');
       showSelected(day);
       if (!details.open) details.showModal();
@@ -197,7 +219,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   function render(result) {
     snapshot = parseCalendar(result);
     const stillAvailable = selected && snapshot.days.find((day) => day.date === selected.date && day.available && day.priceCents === selected.priceCents);
-    if (!snapshot.canBook || (selected && !stillAvailable)) clearSelection();
+    if (!completed && !blockedError && (!snapshot.canBook || (selected && !stillAvailable))) clearSelection();
     else if (stillAvailable) selected = stillAvailable;
     gate.hidden = snapshot.canBook;
     intro.hidden = !snapshot.canBook;
@@ -227,29 +249,29 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     updateSelection();
   }
 
-  function refresh() {
+  function refresh({ silent = false } = {}) {
     if (loading) return loading;
     invalidate();
     const currentGeneration = generation;
     calendar.setAttribute('aria-busy', 'true');
-    setMessage('Carregando...');
+    if (!silent) setMessage('Carregando...', { outside: true });
     loading = Promise.resolve().then(async () => {
       try {
         const result = await client.calendar();
         if (!isCurrent() || currentGeneration !== generation) return false;
         render(result);
-        setMessage('');
+        if (!silent) setMessage('', { outside: true });
         return true;
       } catch (error) {
         if (!isCurrent() || currentGeneration !== generation || onAuthFailure(error)) return false;
-        clearSelection();
+        if (!completed && !blockedError) clearSelection();
         calendar.hidden = true;
         legend.hidden = true;
         intro.hidden = true;
         faq.hidden = true;
         gate.hidden = true;
         loaded = false;
-        setMessage('Não foi possível carregar a agenda. Atualize a página para tentar novamente.');
+        if (!silent) setMessage('Não foi possível carregar a agenda. Atualize a página para tentar novamente.', { outside: true });
         return false;
       } finally {
         if (currentGeneration === generation) {
@@ -264,8 +286,9 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   }
 
   function load(result) {
+    if (result && bookingStarted) client.discardBootstrap?.();
     if (busy) return Promise.resolve(false);
-    if (result) {
+    if (result && !bookingStarted) {
       invalidate();
       try {
         render(result);
@@ -276,12 +299,13 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
         loaded = false;
       }
     }
-    return loaded ? Promise.resolve(true) : refresh();
+    return loaded ? Promise.resolve(true) : refresh({ silent: completed || Boolean(blockedError) });
   }
 
   close.addEventListener('click', dismiss);
   doc.defaultView?.addEventListener('resize', positionDialog);
   doc.defaultView?.addEventListener('scroll', positionDialog, true);
+  doc.defaultView?.addEventListener('pagehide', () => { doc.body.dataset.reserving = 'false'; });
   cancel.addEventListener('click', dismiss);
   details.addEventListener('cancel', (event) => {
     event.preventDefault();
@@ -296,63 +320,53 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dismiss();
   });
   reserve.addEventListener('click', () => {
-    if (busy || loading || !loaded || reviewRequired || !selected || !details.open || !isCurrent()) return;
+    if (busy || completed || blockedError || loading || !loaded || reviewRequired || !selected || !details.open || !isCurrent()) return;
     confirming = true;
     updateSelection();
     cancel.focus({ preventScroll: true });
   });
   confirm.addEventListener('click', async () => {
-    if (busy || loading || !loaded || reviewRequired || !selected || !confirming || !details.open || !isCurrent()) return;
+    if (busy || completed || blockedError || loading || !loaded || reviewRequired || !selected || !confirming || !details.open || !isCurrent()) return;
+    bookingStarted = true;
     busy = true;
-    confirm.textContent = 'Reservando...';
-    confirm.setAttribute('aria-busy', 'true');
     setMessage('');
     updateSelection();
+    status.focus({ preventScroll: true });
     try {
-      const quote = { date: selected.date, priceCents: selected.priceCents };
-      const authoritative = await client.calendar({ fresh: true });
-      if (!isCurrent()) return;
       if (!reservation) {
-        render(authoritative);
-        if (!snapshot.canBook) return;
-        if (!selected || selected.date !== quote.date || selected.priceCents !== quote.priceCents) {
-          setMessage('A disponibilidade ou o preço desta data mudou. Selecione a data novamente.');
-          return;
-        }
-        reservation = { ...quote, requestId: requestId(), acknowledged: true };
-      } else if (!parseCalendar(authoritative).canBook) {
-        render(authoritative);
-        return;
+        reservation = { date: selected.date, priceCents: selected.priceCents, requestId: requestId(), acknowledged: true };
       }
       const submitted = reservation;
       const result = await client.reserveDate(submitted);
       if (!isCurrent()) return;
       if (result?.reserved !== true || result.date !== submitted.date) throw new Error('reservation_failed');
-      clearSelection();
-      const refreshed = await refresh();
-      if (!isCurrent()) return;
-      setMessage(result.notificationPending ? 'Data reservada. O envio das notificações está pendente.'
-        : refreshed ? 'Data reservada.' : 'Data reservada. Atualize a página para consultar a agenda.');
+      completed = true;
+      confirming = false;
+      reservation = undefined;
+      void refresh({ silent: true });
     } catch (error) {
       if (!isCurrent() || onAuthFailure(error)) return;
-      if (error.code === 'support_management.date_unavailable' || error.code === 'support_management.price_changed' || error.code === 'support_management.payment_method_required' || error.code === 'support_management.booking_permission_required') {
-        clearSelection();
-        await refresh();
-        if (!isCurrent()) return;
-        setMessage(error.code === 'support_management.price_changed'
-          ? 'O preço desta data mudou. Selecione a data novamente.'
-          : error.code === 'support_management.date_unavailable' ? 'A data não está mais disponível. Selecione outra data.' : '');
+      const rejected = {
+        'support_management.date_unavailable': 'A data não está mais disponível. Selecione outra data.',
+        'support_management.price_changed': 'O preço desta data mudou. Selecione a data novamente.',
+        'support_management.payment_method_required': 'Não foi possível confirmar a reserva. Tente novamente.',
+        'support_management.booking_permission_required': 'Não foi possível confirmar a reserva. Tente novamente.',
+      }[error.code];
+      if (rejected) {
+        reservation = undefined;
+        confirming = false;
+        blockedError = rejected;
+        void refresh({ silent: true });
       } else if (error.code === 'support_management.reservation_review_required') {
         reviewRequired = true;
-        setMessage('A reserva precisa ser conferida antes de uma nova tentativa. Entre em contato com o suporte.');
+        blockedError = 'A reserva precisa ser conferida antes de uma nova tentativa. Entre em contato com o suporte.';
       } else {
         setMessage('Não foi possível confirmar a reserva. Tente novamente.');
       }
     } finally {
       busy = false;
-      confirm.textContent = 'Confirmar';
-      confirm.setAttribute('aria-busy', 'false');
       updateSelection();
+      if (isCurrent() && details.open) (completed || blockedError ? close : cancel).focus({ preventScroll: true });
     }
   });
 

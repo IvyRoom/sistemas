@@ -30,6 +30,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .login-page footer { min-height: 40px; color: #fff; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 8px 24px; }
 .login-page[aria-busy="true"], .login-page[aria-busy="true"] * { cursor: wait !important; }
 .scheduler-page[aria-busy="true"], .scheduler-page[aria-busy="true"] * { cursor: wait !important; }
+.scheduler-page[data-reserving="true"], .scheduler-page[data-reserving="true"] * { cursor: wait !important; }
 .scheduler-layout { display: flex; min-height: 100vh; min-height: 100dvh; }
 .sidebar { flex: 0 0 300px; padding: 16px 26px 32px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; text-align: center; border-right: 1px solid #d4d4d4; }
 .sidebar .logo { display: block; width: 220px; max-width: 100%; height: auto; margin: 24px auto 40px; }
@@ -171,10 +172,13 @@ legend { padding: 0 4px; }
 .appointment-details p + p { margin-top: 12px; }
 #appointment-details { inset: auto; margin: 0; padding: 36px; width: max-content; max-width: calc(100% - 32px); }
 #reservation-confirm-step { contain: inline-size; }
+#reservation-status-step { contain: inline-size; text-align: center; }
+#reservation-status:focus { outline: none; }
 .reservation-content { display: grid; }
 .reservation-step { grid-area: 1 / 1; align-self: center; min-width: 0; }
 .reservation-step[aria-hidden="true"] { visibility: hidden; pointer-events: none; }
 #reservation-warning { color: #4a0816; text-align: center; }
+#reservation-message { margin: 0; text-align: center; }
 #reservation-confirm-step .reservation-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: min(100%,230px); margin-inline: auto; }
 .scheduler-main #reservation-confirm-step .reservation-actions button { width: 100%; min-width: 0; padding-inline: 6px; }
 .dialog-close { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: #555; font-size: 24px; line-height: 1; }

@@ -24,7 +24,8 @@ function fixture(client, options = {}) {
       querySelectorAll(selector) { return this.children.flatMap((child) => [ ...(child.tagName === selector ? [child] : []), ...child.querySelectorAll(selector) ]); },
     };
   }
-  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointments-faq', 'calendar-legend', 'appointment-details', 'reservation-content', 'reservation-overview', 'reservation-initial-step', 'reservation-confirm-step', 'reservation-warning', 'confirm-reservation', 'cancel-reservation', 'close-reservation', 'reservation-message', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
+  const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointments-faq', 'calendar-legend', 'appointment-details', 'reservation-content', 'reservation-overview', 'reservation-initial-step', 'reservation-confirm-step', 'reservation-status-step', 'reservation-status', 'reservation-warning', 'confirm-reservation', 'cancel-reservation', 'close-reservation', 'reservation-message', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
+  document.body = element('body');
   let ids = 0;
   const failures = [];
   Object.assign(document, { getElementById: (id) => elements.get(id), createElement: element });
@@ -138,25 +139,226 @@ test('a Monday-start month keeps all dates in the matching seven-column weekday'
   assert.ok(weeks.every((week) => week.children.length === 7));
 });
 
-test('a booking submits only the selected quote, prevents duplicate clicks, then refreshes the calendar', async () => {
+test('confirmation submits the quote immediately and keeps a locked success popup while the calendar refreshes', async () => {
   let resolve;
   let reads = 0;
+  let reserved = false;
   const readOptions = [];
   const calls = [];
-  const f = fixture({ calendar: async (options) => { reads++; readOptions.push(options?.fresh === true); return { days }; }, reserveDate: (body) => { calls.push(JSON.parse(JSON.stringify(body))); return new Promise((done) => { resolve = done; }); } });
+  const f = fixture({ calendar: async (options) => {
+    reads++; readOptions.push(options?.fresh === true);
+    return { days: reserved ? days.map(day => day.date === '2026-11-10' ? { ...day, available: false, priceCents: null, pricePosition: null } : day) : days };
+  }, reserveDate: (body) => { calls.push(JSON.parse(JSON.stringify(body))); return new Promise((done) => { resolve = done; }); } });
   await f.app.load();
   f.select();
   const first = f.reserve();
-  assert.equal(f.elements.get('confirm-reservation').textContent, 'Reservando...');
+  assert.equal(f.elements.get('reservation-status').textContent, 'Reservando...');
+  assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'busy');
+  assert.equal(f.document.body.dataset.reserving, 'true');
+  assert.equal(f.elements.get('close-reservation').hidden, true);
+  assert.equal(reads, 1, 'The server validates the quote without a second client calendar preflight');
   await f.reserve();
   assert.equal(calls.length, 1);
   assert.deepEqual(calls[0], { date: '2026-11-10', priceCents: 50000, requestId: '00000000-0000-4000-8000-000000000001', acknowledged: true });
+  reserved = true;
   resolve({ date: '2026-11-10', reserved: true });
   await first;
-  assert.equal(reads, 3);
-  assert.deepEqual(readOptions, [false, true, false], 'Confirmation must preflight a fresh calendar before its write');
-  assert.equal(f.elements.get('appointments-message').textContent, 'Data reservada.');
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'complete');
+  assert.equal(f.document.body.dataset.reserving, 'false');
+  assert.equal(f.elements.get('close-reservation').hidden, false);
+  assert.equal(f.document.activeElement, f.elements.get('close-reservation'));
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  assert.ok(f.buttons().every(button => button.disabled));
+  await new Promise(done => setImmediate(done));
+  assert.equal(reads, 2);
+  assert.deepEqual(readOptions, [false, false]);
+  assert.equal(f.elements.get('appointment-details').open, true, 'Removing the booked date from fresh availability must not close confirmation');
+  assert.ok(f.buttons().every(button => button.disabled), 'Fresh calendar data stays locked until the confirmation closes');
   assert.equal(f.elements.get('reserve-date').disabled, true);
+  f.close();
+  assert.equal(f.elements.get('appointment-details').open, false);
+  assert.equal(f.button('2026-11-10').disabled, true);
+  assert.equal(f.button('2026-12-01').disabled, false);
+  assert.equal(f.document.activeElement, f.elements.get('appointment-calendar'));
+});
+
+test('confirmation is immediate even while background availability is pending and closing waits for fresh dates', async () => {
+  const refresh = deferred();
+  let reads = 0;
+  let writes = 0;
+  const f = fixture({ calendar: async () => ++reads === 1 ? { days } : refresh.promise,
+    reserveDate: async () => { writes++; return { reserved: true, date: '2026-11-10' }; } });
+  await f.app.load();
+  f.select();
+  await f.reserve();
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.document.body.dataset.reserving, 'false');
+  assert.equal(f.elements.get('close-reservation').disabled, false);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  assert.equal(f.elements.get('reservation-message').textContent, '');
+  assert.ok(f.buttons().every(button => button.disabled));
+  f.select('2026-12-01');
+  await f.confirm();
+  assert.equal(writes, 1);
+  assert.equal(f.button('2026-11-10').attributes['aria-pressed'], 'true');
+  f.close();
+  assert.equal(f.elements.get('appointment-details').open, false);
+  assert.ok(f.buttons().every(button => button.disabled));
+  assert.equal(f.document.activeElement, f.elements.get('appointment-calendar'));
+  refresh.resolve({ days: days.map(day => day.date === '2026-11-10' ? { ...day, available: false, priceCents: null, pricePosition: null } : day) });
+  await new Promise(done => setImmediate(done));
+  assert.equal(reads, 2);
+  assert.equal(f.button('2026-11-10').disabled, true);
+  assert.equal(f.button('2026-12-01').disabled, false);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+});
+
+test('a failed silent availability refresh cannot erase a confirmed booking or add outside popup copy', async () => {
+  let reads = 0;
+  let writes = 0;
+  const f = fixture({ calendar: async () => {
+    if (++reads === 2) throw { status: 503 };
+    return { days };
+  }, reserveDate: async () => { writes++; return { reserved: true, date: '2026-11-10', notificationPending: true }; } });
+  await f.app.load();
+  f.select();
+  await f.reserve();
+  await new Promise(done => setImmediate(done));
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.document.activeElement, f.elements.get('close-reservation'));
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  assert.equal(f.elements.get('reservation-message').textContent, '');
+  assert.equal(f.elements.get('appointment-calendar').hidden, true);
+  f.close();
+  await new Promise(done => setImmediate(done));
+  assert.equal(reads, 3);
+  assert.equal(writes, 1);
+  assert.equal(f.elements.get('appointment-calendar').hidden, false);
+  assert.equal(f.button('2026-12-01').disabled, false);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+});
+
+for (const closed of [false, true]) {
+  test(`a late session bootstrap cannot restore a booked date ${closed ? 'after closing' : 'inside'} its confirmation popup`, async () => {
+    let reads = 0;
+    let writes = 0;
+    let discarded = 0;
+    const bookedDays = days.map(day => day.date === '2026-11-10' ? { ...day, available: false, priceCents: null, pricePosition: null } : day);
+    const f = fixture({ calendar: async () => { reads++; return { days: bookedDays }; },
+      discardBootstrap: () => { discarded++; },
+      reserveDate: async () => { writes++; return { reserved: true, date: '2026-11-10' }; } });
+    await f.app.load(readyCalendar);
+    f.select();
+    await f.reserve();
+    await new Promise(done => setImmediate(done));
+    if (closed) f.close();
+    assert.equal(await f.app.load(readyCalendar), true);
+    assert.equal(discarded, 1, 'Ignoring a late session response must also remove its stale persisted bootstrap');
+    assert.equal(reads, 1, 'The late bootstrap must reuse the controller’s authoritative post-booking calendar');
+    assert.equal(writes, 1);
+    assert.equal(f.button('2026-11-10').dataset.available, 'false');
+    assert.equal(f.button('2026-11-10').disabled, true);
+    assert.equal(f.elements.get('appointment-details').open, !closed);
+    assert.equal(f.elements.get('appointments-message').textContent, '');
+    if (!closed) assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+    f.select();
+    await f.confirm();
+    assert.equal(writes, 1);
+  });
+}
+
+test('a late bootstrap shares the pending post-booking refresh instead of replacing it or starting another read', async () => {
+  const fresh = deferred();
+  let reads = 0;
+  let writes = 0;
+  const f = fixture({ calendar: () => { reads++; return fresh.promise; },
+    reserveDate: async () => { writes++; return { reserved: true, date: '2026-11-10' }; } });
+  await f.app.load(readyCalendar);
+  f.select();
+  await f.reserve();
+  const pending = f.app.load(readyCalendar);
+  assert.equal(f.app.load(missingCard), pending);
+  assert.equal(reads, 1);
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.ok(f.buttons().every(button => button.disabled));
+  fresh.resolve({ days: days.map(day => day.date === '2026-11-10' ? { ...day, available: false, priceCents: null, pricePosition: null } : day) });
+  assert.equal(await pending, true);
+  assert.equal(reads, 1);
+  assert.equal(writes, 1);
+  assert.equal(f.button('2026-11-10').dataset.available, 'false');
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+});
+
+test('after a post-booking refresh failure a supplied bootstrap still requires an authoritative retry', async () => {
+  let reads = 0;
+  const f = fixture({ calendar: async () => {
+    if (++reads === 1) throw { status: 503 };
+    return { days: [], paymentMethodRegistered: true, canBook: false };
+  }, reserveDate: async () => ({ reserved: true, date: '2026-11-10' }) });
+  await f.app.load(readyCalendar);
+  f.select();
+  await f.reserve();
+  await new Promise(done => setImmediate(done));
+  assert.equal(await f.app.load(readyCalendar), true);
+  assert.equal(reads, 2);
+  assert.equal(f.elements.get('appointments-gate').hidden, false);
+  assert.equal(f.elements.get('appointment-calendar').hidden, true);
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+});
+
+for (const result of [undefined, { reserved: false, date: '2026-11-10' }, { reserved: true, date: '2026-12-01' }]) {
+  test(`an unconfirmed reservation response ${JSON.stringify(result)} never shows success and preserves its retry identity`, async () => {
+    const requests = [];
+    const f = fixture({ calendar: async () => ({ days }), reserveDate: async body => {
+      requests.push(JSON.parse(JSON.stringify(body)));
+      return requests.length === 1 ? result : { reserved: true, date: body.date };
+    } });
+    await f.app.load();
+    f.select();
+    await f.reserve();
+    assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'confirm');
+    assert.match(f.elements.get('reservation-message').textContent, /Não foi possível confirmar/u);
+    assert.equal(f.elements.get('reservation-warning').hidden, true);
+    assert.equal(f.elements.get('appointments-message').textContent, '');
+    assert.equal(f.document.body.dataset.reserving, 'false');
+    assert.equal(f.document.activeElement, f.elements.get('cancel-reservation'));
+    assert.equal(f.elements.get('close-reservation').hidden, false);
+    await f.confirm();
+    assert.deepEqual(requests[0], requests[1]);
+    assert.equal(f.idCount(), 1);
+    assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  });
+}
+
+test('booking wait presentation clears on authentication failure and page exit without showing false success', async () => {
+  const expired = fixture({ calendar: async () => ({ days }), reserveDate: async () => { throw { status: 401 }; } });
+  await expired.app.load();
+  expired.select();
+  await expired.reserve();
+  assert.equal(expired.failures.length, 1);
+  assert.equal(expired.document.body.dataset.reserving, 'false');
+  assert.notEqual(expired.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  const pending = deferred();
+  let current = true;
+  const f = fixture({ calendar: async () => ({ days }), reserveDate: () => pending.promise }, { isCurrent: () => current });
+  await f.app.load();
+  f.select();
+  const request = f.reserve();
+  assert.equal(f.document.body.dataset.reserving, 'true');
+  current = false;
+  f.view.listeners.pagehide.callback();
+  assert.equal(f.document.body.dataset.reserving, 'false');
+  pending.resolve({ reserved: true, date: '2026-11-10' });
+  await request;
+  assert.equal(f.document.body.dataset.reserving, 'false');
+  assert.notEqual(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
 });
 
 test('an uncertain failure retries the same request ID rather than creating another reservation', async () => {
@@ -170,7 +372,7 @@ test('an uncertain failure retries the same request ID rather than creating anot
   assert.deepEqual(requests[0], requests[1]);
   assert.equal(f.idCount(), 1);
   assert.equal(f.elements.get('reserve-date').disabled, false);
-  assert.equal(f.elements.get('reservation-message').textContent, f.elements.get('appointments-message').textContent);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
   assert.match(f.elements.get('reservation-message').textContent, /Não foi possível confirmar/u);
 });
 
@@ -194,31 +396,38 @@ test('returning to the calendar while a reservation is pending preserves its req
   f.select();
   const pending = f.reserve();
   assert.equal(await f.app.load(), false);
-  assert.equal(reads, 2);
+  assert.equal(reads, 1);
   assert.equal(f.elements.get('reserve-date').disabled, true);
   assert.equal(f.button('2026-11-10').attributes['aria-pressed'], 'true');
   await f.reserve();
   resolve({ date: '2026-11-10', reserved: true });
   await pending;
+  await new Promise(done => setImmediate(done));
   assert.equal(calls.length, 1);
   assert.equal(f.idCount(), 1);
-  assert.equal(reads, 3);
-  assert.equal(f.elements.get('appointments-message').textContent, 'Data reservada.');
+  assert.equal(reads, 2);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.equal(f.elements.get('appointment-details').open, true);
   assert.equal(f.button('2026-11-10').disabled, true);
   assert.equal(f.elements.get('reserve-date').disabled, true);
 });
 
 for (const reason of ['date_unavailable', 'price_changed']) {
-  test(`${reason} clears the stale selection and refreshes authoritative dates`, async () => {
+  test(`${reason} stays inside the popup and refreshes authoritative dates before another selection`, async () => {
     let reads = 0;
     const f = fixture({ calendar: async () => { reads++; return { days }; }, reserveDate: async () => { throw { status: 409, code: `support_management.${reason}` }; } });
     await f.app.load();
     f.select();
     await f.reserve();
-    assert.equal(reads, 3);
+    await new Promise(done => setImmediate(done));
+    assert.equal(reads, 2);
     assert.equal(f.elements.get('reserve-date').disabled, true);
+    assert.equal(f.elements.get('appointment-details').open, true);
+    assert.match(f.elements.get('reservation-status').textContent, reason === 'price_changed' ? /preço/u : /não está mais disponível/u);
+    assert.equal(f.elements.get('appointments-message').textContent, '');
+    f.close();
     assert.equal(f.buttons().some((button) => button.attributes['aria-pressed'] === 'true'), false);
-    assert.match(f.elements.get('appointments-message').textContent, reason === 'price_changed' ? /preço/u : /não está mais disponível/u);
   });
 }
 
@@ -235,7 +444,9 @@ test('a reservation requiring review blocks repeats and a pending notification i
   await pending.app.load();
   pending.select();
   await pending.reserve();
-  assert.match(pending.elements.get('appointments-message').textContent, /notificações está pendente/u);
+  assert.equal(pending.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
+  assert.equal(pending.elements.get('appointments-message').textContent, '');
+  assert.doesNotMatch(pending.elements.get('reservation-status').textContent, /e-mail|notifica/u);
 });
 
 test('session expiry is delegated to authentication and malformed calendars fail closed', async () => {
@@ -347,7 +558,8 @@ for (const dismissal of ['cancel', 'close', 'escape', 'backdrop']) {
 }
 
 test('the booking popup stays centered on the calendar across steps without collapsing its inactive panel', async () => {
-  const f = fixture({ calendar: async () => ({ days }) });
+  const request = deferred();
+  const f = fixture({ calendar: async () => ({ days }), reserveDate: () => request.promise });
   const calendar = f.elements.get('appointment-calendar');
   const details = f.elements.get('appointment-details');
   calendar.bounds = { left: 300, top: 100, width: 800, height: 500 };
@@ -363,6 +575,17 @@ test('the booking popup stays centered on the calendar across steps without coll
   assert.equal(f.elements.get('reservation-initial-step').inert, true);
   assert.equal(f.elements.get('reservation-confirm-step').inert, false);
   assert.equal(f.document.activeElement, f.elements.get('cancel-reservation'));
+  const pending = f.confirm();
+  assert.deepEqual(details.style, position);
+  assert.equal(f.elements.get('reservation-status-step').hidden, false);
+  assert.equal(f.elements.get('reservation-status-step').inert, false);
+  assert.equal(f.elements.get('reservation-initial-step').inert, true);
+  assert.equal(f.elements.get('reservation-confirm-step').inert, true);
+  request.resolve({ reserved: true, date: '2026-11-10' });
+  await pending;
+  assert.deepEqual(details.style, position);
+  assert.equal(f.elements.get('reservation-status-step').inert, false);
+  assert.equal(details.open, true);
 });
 
 test('calendar-centered popup geometry clamps to the viewport and follows resize and captured scrolling only while open', async () => {
@@ -404,13 +627,12 @@ test('clicks inside the dialog content do not dismiss its selected quote', async
   assert.equal(f.button('2026-11-10').attributes['aria-pressed'], 'true');
 });
 
-test('preflight and submission prevent dismissal or quote changes until the response settles', async () => {
+test('submission hides every action and prevents dismissal or quote changes until the response settles', async () => {
   let reads = 0;
-  let resolvePreflight;
   let resolveReservation;
   const calls = [];
   const f = fixture({
-    calendar: async () => ++reads === 2 ? new Promise(done => { resolvePreflight = done; }) : { days },
+    calendar: async () => { reads++; return { days }; },
     reserveDate: body => { calls.push(JSON.parse(JSON.stringify(body))); return new Promise(done => { resolveReservation = done; }); },
   });
   await f.app.load();
@@ -426,26 +648,37 @@ test('preflight and submission prevent dismissal or quote changes until the resp
     assert.equal(f.elements.get('appointment-details').open, true);
     assert.equal(f.elements.get('appointment-details').attributes['aria-busy'], 'true');
     assert.equal(f.elements.get('appointment-calendar').dataset.selected, 'true');
+    assert.equal(f.elements.get('reservation-content').dataset.activeStep, 'busy');
+    assert.equal(f.elements.get('reservation-initial-step').attributes['aria-hidden'], 'true');
+    assert.equal(f.elements.get('reservation-confirm-step').attributes['aria-hidden'], 'true');
+    assert.equal(f.elements.get('reservation-status-step').attributes['aria-hidden'], 'false');
+    assert.equal(f.elements.get('reservation-status').textContent, 'Reservando...');
+    assert.equal(f.elements.get('close-reservation').hidden, true);
+    assert.equal(f.document.body.dataset.reserving, 'true');
+    assert.equal(f.document.activeElement, f.elements.get('reservation-status'));
     assert.equal(f.button('2026-11-10').attributes['aria-pressed'], 'true');
     assert.equal(f.button('2026-12-01').attributes['aria-pressed'], 'false');
     for (const id of ['confirm-reservation', 'cancel-reservation', 'close-reservation']) assert.equal(f.elements.get(id).disabled, true);
   };
   assertBusy();
-  assert.equal(calls.length, 0);
-  assert.equal(f.idCount(), 0);
-  resolvePreflight({ days });
-  await new Promise(done => setImmediate(done));
   assert.equal(calls.length, 1);
+  assert.equal(f.idCount(), 1);
+  assert.equal(reads, 1);
   assertBusy();
   await f.confirm();
   assert.equal(calls.length, 1);
   resolveReservation({ reserved: true, date: '2026-11-10' });
   await pending;
-  assert.equal(f.elements.get('appointment-details').open, false);
-  assert.equal(f.elements.get('appointment-calendar').dataset.selected, 'false');
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.elements.get('reservation-status').textContent, 'Agendamento confirmado.');
   assert.equal(f.elements.get('appointment-details').attributes['aria-busy'], 'false');
+  assert.equal(f.document.body.dataset.reserving, 'false');
+  assert.equal(f.elements.get('close-reservation').hidden, false);
   assert.equal(calls.length, 1);
-  assert.equal(reads, 3);
+  await new Promise(done => setImmediate(done));
+  assert.equal(reads, 2);
+  f.close();
+  assert.equal(f.elements.get('appointment-calendar').dataset.selected, 'false');
 });
 
 test('an uncertain reservation keeps its request ID after cancellation and reopening the same quote', async () => {
@@ -469,23 +702,29 @@ test('an uncertain reservation keeps its request ID after cancellation and reope
   assert.equal(f.idCount(), 1);
 });
 
-test('an uncertain replay is blocked when its fresh preflight finds that the company card was removed', async () => {
+test('the server can reject an uncertain replay after its company card is removed without a new request ID', async () => {
   let reads = 0;
   const requests = [];
   const f = fixture({
-    calendar: async () => ({ days, paymentMethodRegistered: ++reads < 3, administratorName: 'Maria da Silva' }),
-    reserveDate: async body => { requests.push(JSON.parse(JSON.stringify(body))); throw { status: 503 }; },
+    calendar: async () => ({ days, paymentMethodRegistered: ++reads === 1, administratorName: 'Maria da Silva' }),
+    reserveDate: async body => {
+      requests.push(JSON.parse(JSON.stringify(body)));
+      throw requests.length === 1 ? { status: 503 } : { status: 403, code: 'support_management.payment_method_required' };
+    },
   });
   await f.app.load();
   f.select();
   await f.reserve();
   assert.equal(requests.length, 1);
   await f.confirm();
-  assert.equal(reads, 3);
-  assert.equal(requests.length, 1);
+  await new Promise(done => setImmediate(done));
+  assert.equal(reads, 2);
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests[0], requests[1]);
   assert.equal(f.idCount(), 1);
-  assert.equal(f.elements.get('appointment-details').open, false);
-  assert.equal(f.elements.get('appointment-calendar').dataset.selected, 'false');
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.elements.get('reservation-status').textContent, 'Não foi possível confirmar a reserva. Tente novamente.');
+  assert.equal(f.elements.get('appointments-message').textContent, '');
   assert.equal(f.elements.get('appointments-gate').hidden, false);
   assert.equal(f.elements.get('payment-administrator-name').textContent, 'Maria da Silva');
   for (const id of ['appointments-intro', 'appointments-faq', 'appointment-calendar', 'calendar-legend']) assert.equal(f.elements.get(id).hidden, true);
@@ -684,27 +923,33 @@ test('invalidating availability preserves an uncertain reservation identity when
   assert.equal(f.idCount(), 1);
 });
 
-test('the fresh preflight blocks a changed quote before writing and closes the stale dialog', async () => {
+test('a server price rejection refreshes the changed quote and keeps its error inside the popup', async () => {
   let reads = 0;
   let writes = 0;
   const f = fixture({
     calendar: async () => ({ days: reads++ ? days.map(day => day.available ? { ...day, priceCents: day.priceCents + 100 } : day) : days }),
-    reserveDate: async () => { writes++; },
+    reserveDate: async () => { writes++; throw { status: 409, code: 'support_management.price_changed' }; },
   });
   await f.app.load();
   f.select();
   await f.reserve();
+  await new Promise(done => setImmediate(done));
   assert.equal(reads, 2);
-  assert.equal(writes, 0);
-  assert.equal(f.idCount(), 0);
-  assert.equal(f.elements.get('appointment-details').open, false);
+  assert.equal(writes, 1);
+  assert.equal(f.idCount(), 1);
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.match(f.elements.get('reservation-status').textContent, /preço/u);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  assert.match(f.button('2026-11-10').children[1].textContent, /501,00$/u);
+  f.close();
   assert.equal(f.elements.get('appointment-calendar').dataset.selected, 'false');
 });
 
-test('uncertain booking replay retains its request ID when the fresh calendar now shows its own date unavailable', async () => {
+test('uncertain booking replay retains its request ID and relies on the server instead of a client calendar preflight', async () => {
   const calls = [];
+  let reads = 0;
   const f = fixture({
-    calendar: async () => ({ days: calls.length ? days.map(day => ({ ...day, available: false, priceCents: null, pricePosition: null })) : days }),
+    calendar: async () => { reads++; return { days }; },
     reserveDate: async body => { calls.push(JSON.parse(JSON.stringify(body))); throw { status: 503 }; },
   });
   await f.app.load();
@@ -715,6 +960,7 @@ test('uncertain booking replay retains its request ID when the fresh calendar no
   assert.deepEqual(calls[0], calls[1]);
   assert.equal(calls[0].acknowledged, true);
   assert.equal(f.idCount(), 1);
+  assert.equal(reads, 1);
 });
 
 
@@ -742,7 +988,7 @@ test('the two-month window rolls over December into January without including Fe
   assert.equal(f.button('2027-02-01'), undefined);
 });
 
-test('booking preflight accepts an eligible date at the end of next month beyond the former thirty-day cap', async () => {
+test('booking submits an eligible date at the end of next month beyond the former thirty-day cap', async () => {
   let reads = 0;
   const requests = [];
   const f = fixture({
@@ -752,7 +998,8 @@ test('booking preflight accepts an eligible date at the end of next month beyond
   await f.app.load();
   f.select('2026-12-31');
   await f.reserve();
-  assert.equal(reads, 3);
+  await new Promise(done => setImmediate(done));
+  assert.equal(reads, 2);
   assert.equal(requests.length, 1);
   assert.deepEqual(requests[0], { date: '2026-12-31', priceCents: 37500, requestId: '00000000-0000-4000-8000-000000000001', acknowledged: true });
 });
@@ -788,15 +1035,18 @@ test('a pre-permission cached calendar is discarded in favor of a fresh denied c
   assert.equal(f.elements.get('appointments-gate').hidden, false);
 });
 
-test('permission revoked during fresh booking preflight closes its popup before any write', async () => {
+test('a server permission rejection stays in the popup and refreshes its authoritative scheduling gate', async () => {
   let reads = 0;
   let writes = 0;
   const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: true, canBook: ++reads === 1 }),
-    reserveDate: async () => { writes++; } });
+    reserveDate: async () => { writes++; throw { status: 403, code: 'support_management.booking_permission_required' }; } });
   await f.app.load();
   f.select();
   await f.reserve();
-  assert.equal(writes, 0);
-  assert.equal(f.elements.get('appointment-details').open, false);
+  await new Promise(done => setImmediate(done));
+  assert.equal(writes, 1);
+  assert.equal(f.elements.get('appointment-details').open, true);
+  assert.equal(f.elements.get('reservation-status').textContent, 'Não foi possível confirmar a reserva. Tente novamente.');
+  assert.equal(f.elements.get('appointments-message').textContent, '');
   assert.equal(f.elements.get('appointments-gate').hidden, false);
 });
