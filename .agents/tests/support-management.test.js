@@ -271,7 +271,8 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   const introduction = element('p');
   const footer = element('footer');
   document.body = element('body');
-  elements.get('save-permissions').textContent = 'Save';
+  elements.get('save-permissions').textContent = html.match(/id="save-permissions"[^>]*>([^<]+)<\/button>/u)?.[1] || '';
+  elements.get('permissions-pending').textContent = html.match(/id="permissions-pending"[^>]*>([^<]+)<\/p>/u)?.[1] || '';
   elements.get('card-form').reset = () => {
     for (const node of elements.values()) if (['INPUT', 'SELECT'].includes(node.tagName)) node.value = '';
   };
@@ -825,7 +826,14 @@ const employees = [
   { email: 'inactive@example.test', name: 'Inativo', allowed: false, active: false },
 ];
 
-test('checkbox edits stay local until Save submits all active employee flags once', async () => {
+async function changePermission(f, index = 0, checked) {
+  const checkbox = f.elements.get('permissions-list').children[index].children[0];
+  checkbox.checked = checked ?? !checkbox.checked;
+  for (const callback of checkbox.listeners.change || []) await callback();
+  return checkbox;
+}
+
+test('checkbox edits reveal Salvar and pending feedback until an explicit successful save', async () => {
   let reads = 0;
   let finish;
   let invalidated = 0;
@@ -842,20 +850,32 @@ test('checkbox edits stay local until Save submits all active employee flags onc
   assert.equal(list.children[1].children[1].textContent, '<Colega>');
   assert.equal(list.children[1].children[1].children.length, 0);
   assert.equal(list.children[2].children[0].disabled, true);
+  assert.equal(f.elements.get('save-permissions').textContent, 'Salvar');
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
+  assert.equal(f.elements.get('permissions-pending').textContent, 'Salvamento pendente.');
   const checkbox = list.children[1].children[0];
   checkbox.checked = true;
   await checkbox.listeners.change[0]();
   assert.deepEqual(writes, []);
   assert.equal(checkbox.disabled, false);
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('save-permissions').disabled, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
   await f.click('appointments-tab');
   await f.click('card-tab');
   assert.equal(list.children[1].children[0], checkbox, 'Tab revisits must retain the unsaved draft');
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
   const pending = f.click('save-permissions');
   assert.ok(list.children.every(row => row.children[0].disabled));
   assert.equal(f.elements.get('save-permissions').disabled, true);
   assert.equal(f.document.body.attributes['aria-busy'], 'true');
   assert.equal(f.elements.get('save-permissions').attributes['aria-busy'], 'true');
-  assert.equal(f.elements.get('save-permissions').textContent, 'Save');
+  assert.equal(f.elements.get('save-permissions').textContent, 'Salvar');
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
   assert.equal(f.elements.get('permissions-message').textContent, '');
   await f.click('save-permissions');
   assert.deepEqual(writes, [[{ email: 'admin@example.test', allowed: false }, { email: 'colleague@example.test', allowed: true }]]);
@@ -864,16 +884,25 @@ test('checkbox edits stay local until Save submits all active employee flags onc
   assert.equal(list.children[1].children[0].checked, true);
   assert.equal(list.children[0].children[0].disabled, false);
   assert.equal(list.children[2].children[0].disabled, true);
-  assert.equal(f.elements.get('save-permissions').disabled, false);
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
   assert.equal(f.document.body.attributes['aria-busy'], 'false');
   assert.equal(f.elements.get('save-permissions').attributes['aria-busy'], 'false');
-  assert.equal(f.elements.get('save-permissions').textContent, 'Save');
+  assert.equal(f.elements.get('save-permissions').textContent, 'Salvar');
   assert.equal(f.elements.get('permissions-message').textContent, '');
   assert.equal(reads, 1, 'Saving must not add a redundant permissions GET');
   assert.ok(invalidated >= 1);
+  await changePermission(f, 1, false);
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
+  await changePermission(f, 1, true);
+  assert.equal(f.elements.get('save-permissions').hidden, true, 'Dirty state must compare with the latest saved permissions');
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
+  assert.equal(writes.length, 1);
 });
 
-test('Save sends all selected defaults even without edits so blank workbook values can be materialized', async () => {
+test('unchanged permission defaults keep Salvar hidden and never make a save request', async () => {
   const allSelected = employees.map(employee => ({ ...employee, allowed: employee.active }));
   const writes = [];
   const f = await loadScheduler({
@@ -882,8 +911,33 @@ test('Save sends all selected defaults even without edits so blank workbook valu
     updatePermissions: async selected => { writes.push(JSON.parse(JSON.stringify(selected))); return { employees: allSelected }; },
   });
   assert.ok(f.elements.get('permissions-list').children.slice(0, 2).every(row => row.children[0].checked));
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
   await f.click('save-permissions');
-  assert.deepEqual(writes, [[{ email: 'admin@example.test', allowed: true }, { email: 'colleague@example.test', allowed: true }]]);
+  assert.deepEqual(writes, []);
+});
+
+test('reverting every changed permission hides Salvar and pending feedback without a request', async () => {
+  const writes = [];
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    updatePermissions: async selected => { writes.push(selected); return { employees }; },
+  });
+  await changePermission(f, 0, true);
+  await changePermission(f, 1, true);
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
+  await changePermission(f, 0, false);
+  assert.equal(f.elements.get('save-permissions').hidden, false, 'Another employee still has an unsaved change');
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
+  await changePermission(f, 1, false);
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
+  await f.click('save-permissions');
+  assert.deepEqual(writes, []);
 });
 
 test('leaving the scheduler clears its permission wait presentation while the pending write stays guarded', async () => {
@@ -893,14 +947,18 @@ test('leaving the scheduler clears its permission wait presentation while the pe
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: () => new Promise(resolve => { finish = resolve; }),
   });
+  await changePermission(f);
   const pending = f.click('save-permissions');
   assert.equal(f.document.body.attributes['aria-busy'], 'true');
   f.dispatchWindow('pagehide');
   assert.equal(f.document.body.attributes['aria-busy'], 'false');
   assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
   finish({ employees });
   await pending;
-  assert.equal(f.elements.get('save-permissions').disabled, false);
+  assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
   assert.equal(f.document.body.attributes['aria-busy'], 'false');
   assert.equal(f.elements.get('permissions-message').textContent, '');
 });
@@ -913,11 +971,16 @@ for (const status of [401, 403]) {
       card: async () => ({ card: null }), permissions: async () => ({ employees }),
       updatePermissions: async () => { throw { status }; },
     }, { runtime: { navigate: path => navigations.push(path) } });
+    await changePermission(f);
     await f.click('save-permissions');
     assert.equal(f.document.body.attributes['aria-busy'], 'false');
     assert.equal(f.elements.get('save-permissions').attributes['aria-busy'], 'false');
-    assert.equal(f.elements.get('save-permissions').textContent, 'Save');
+    assert.equal(f.elements.get('save-permissions').textContent, 'Salvar');
     assert.equal(f.elements.get('permissions-message').textContent, '');
+    if (status === 403) {
+      assert.equal(f.elements.get('save-permissions').hidden, true);
+      assert.equal(f.elements.get('permissions-pending').hidden, true);
+    }
     assert.deepEqual(navigations, status === 401 ? ['/support-management/login/'] : []);
   });
 }
@@ -934,15 +997,40 @@ test('failed Save preserves the selected draft for an idempotent retry without c
   const checkbox = list.children[0].children[0];
   checkbox.checked = true;
   await checkbox.listeners.change[0]();
+  f.elements.get('save-permissions').focus();
   await f.click('save-permissions');
   assert.equal(list.children[0].children[0].checked, true);
   assert.equal(list.children[0].children[0].disabled, false);
   assert.match(f.elements.get('permissions-message').textContent, /Não foi possível confirmar/u);
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('save-permissions').disabled, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
+  assert.equal(f.document.activeElement, f.elements.get('save-permissions'), 'A failed save retains the visible retry control');
   assert.equal(f.document.body.attributes['aria-busy'], 'false');
   assert.equal(reads, 1);
   await f.click('save-permissions');
   assert.equal(writes, 2);
   assert.equal(f.elements.get('permissions-message').textContent, '');
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
+});
+
+test('reverting the draft after a failed save clears pending feedback without a retry', async () => {
+  let writes = 0;
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    updatePermissions: async () => { writes++; throw { status: 503 }; },
+  });
+  await changePermission(f, 0, true);
+  await f.click('save-permissions');
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
+  await changePermission(f, 0, false);
+  assert.equal(f.elements.get('save-permissions').hidden, true);
+  assert.equal(f.elements.get('permissions-pending').hidden, true);
+  assert.equal(f.elements.get('permissions-message').textContent, '');
+  await f.click('save-permissions');
+  assert.equal(writes, 1);
 });
 
 test('members never request or display employee permissions', async () => {
@@ -1201,9 +1289,11 @@ for (const destination of ['save-button', 'other-control', 'other-tab']) {
     finish({ employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'colleague@example.test' })) });
     await pending;
     if (destination === 'save-button') {
-      assert.equal(f.document.activeElement, save);
-      assert.equal(save.focusOptions.preventScroll, true);
-      assert.equal(save.disabled, false);
+      const editedCheckbox = f.elements.get('permissions-list').children[1].children[0];
+      assert.equal(f.document.activeElement, editedCheckbox);
+      assert.equal(editedCheckbox.focusOptions.preventScroll, true);
+      assert.equal(editedCheckbox.disabled, false);
+      assert.equal(save.hidden, true);
     } else assert.equal(f.document.activeElement, expected);
   });
 }
@@ -1256,9 +1346,12 @@ test('a stale employee list requires a refresh instead of replaying an obsolete 
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: async () => { writes++; throw { status: 404, code: 'support_management.employee_not_found' }; },
   });
+  await changePermission(f);
   await f.click('save-permissions');
   assert.match(f.elements.get('permissions-message').textContent, /Atualize a página/u);
   assert.equal(f.elements.get('save-permissions').disabled, true);
+  assert.equal(f.elements.get('save-permissions').hidden, false);
+  assert.equal(f.elements.get('permissions-pending').hidden, false);
   assert.ok(f.elements.get('permissions-list').children.every(row => row.children[0].disabled));
   await f.click('save-permissions');
   assert.equal(writes, 1);
@@ -1273,6 +1366,7 @@ test('Save completion invalidates a calendar loaded while the permission request
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: () => { events.push('save-pending'); return new Promise(resolve => { finish = resolve; }); },
   }, { appointmentController: { load: async () => { events.push('calendar-read'); }, invalidate: () => { events.push('invalidate'); } } });
+  await changePermission(f);
   events.length = 0;
   const pending = f.click('save-permissions');
   await f.click('appointments-tab');

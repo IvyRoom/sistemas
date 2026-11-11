@@ -119,6 +119,7 @@ legend { padding: 0 4px; }
 .scheduler-main #save-card:hover { background: #790d26; }
 .scheduler-main #save-permissions { background: #4a0816; margin-bottom: 0; }
 .scheduler-main #save-permissions:hover { background: #790d26; }
+.permissions-pending { margin-top: 12px; color: #790d26; text-align: center; font-size: 12px; }
 .scheduler-main .primary:disabled { opacity: .65; }
 .secondary { display: block; font-size: 13px; color: #790d26; background: transparent; border: 0; padding: 8px 12px; margin: 0 auto; text-decoration: underline; }
 .checkout-footer { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }

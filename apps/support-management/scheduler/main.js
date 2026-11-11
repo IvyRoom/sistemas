@@ -19,6 +19,7 @@ const permissionsPanel = document.getElementById('permissions-panel');
 const permissionsList = document.getElementById('permissions-list');
 const permissionsMessage = document.getElementById('permissions-message');
 const savePermissions = document.getElementById('save-permissions');
+const permissionsPending = document.getElementById('permissions-pending');
 const cardInputs = Object.fromEntries([
   ['number', 'number'], ['holderName', 'holder-name'], ['expMonth', 'exp-month'],
   ['expYear', 'exp-year'], ['cvv', 'cvv']
@@ -411,7 +412,8 @@ form.addEventListener('submit', async (event) => {
 
 function updatePermissionControls() {
   for (const input of permissionInputs) input.disabled = !administrator || permissionsBusy || permissionsRefreshRequired || input.dataset.active !== 'true';
-  savePermissions.disabled = !administrator || permissionsBusy || permissionsRefreshRequired || !permissionsLoaded || !permissionEmployees.some(employee => employee.active);
+  savePermissions.hidden = permissionsPending.hidden = !administrator || !permissionsDirty;
+  savePermissions.disabled = !administrator || !permissionsDirty || permissionsBusy || permissionsRefreshRequired || !permissionsLoaded || !permissionEmployees.some(employee => employee.active);
   savePermissions.setAttribute('aria-busy', String(permissionsBusy));
   document.body.setAttribute('aria-busy', String(permissionsBusy));
 }
@@ -441,6 +443,7 @@ function renderPermissions(result) {
       permissionsVersion++;
       permissionsDirty = permissionInputs.some(input => input.checked !== permissionEmployees.find(person => person.email === input.dataset.email).allowed);
       permissionsMessage.textContent = '';
+      updatePermissionControls();
     });
     return row;
   });
@@ -450,9 +453,10 @@ function renderPermissions(result) {
 }
 
 savePermissions.addEventListener('click', async () => {
-  if (!administrator || permissionsBusy || leaving || !permissionsLoaded || savePermissions.disabled) return;
+  if (!administrator || !permissionsDirty || permissionsBusy || leaving || !permissionsLoaded || savePermissions.disabled) return;
   const selected = permissionInputs.filter(input => input.dataset.active === 'true')
     .map(input => ({ email: input.dataset.email, allowed: input.checked }));
+  const editedEmail = permissionInputs.find(input => input.checked !== permissionEmployees.find(person => person.email === input.dataset.email).allowed)?.dataset.email;
   let restoreFocus = document.activeElement === savePermissions;
   const trackFocus = (event) => { if (event.target !== savePermissions) restoreFocus = false; };
   permissionsBusy = true;
@@ -485,8 +489,10 @@ savePermissions.addEventListener('click', async () => {
     document.removeEventListener('focusin', trackFocus);
     permissionsBusy = false;
     updatePermissionControls();
-    if (restoreFocus && !leaving && administrator && activeTab === 'card' && !permissionsPanel.hidden && !savePermissions.disabled) {
-      savePermissions.focus({ preventScroll: true });
+    if (restoreFocus && !leaving && administrator && activeTab === 'card' && !permissionsPanel.hidden) {
+      const focusTarget = !savePermissions.hidden && !savePermissions.disabled ? savePermissions
+        : permissionInputs.find(input => !input.disabled && input.dataset.email === editedEmail) || permissionInputs.find(input => !input.disabled);
+      focusTarget?.focus({ preventScroll: true });
     }
   }
 });
