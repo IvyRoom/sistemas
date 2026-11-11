@@ -30,13 +30,13 @@
       </header>
       <main class="scheduler-main">
       <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
-        <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
         <div id="appointments-stage" class="calendar-stage">
-          <div id="appointments-intro" class="appointments-intro tool-intro">
+          <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
+          <div id="appointments-intro" class="appointments-intro tool-intro" hidden>
             <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
           </div>
           <div id="appointments-gate" class="payment-gate" role="status" hidden><p>Configurações da Conta PJ pendentes.</p><p>Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p></div>
-          <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true" tabindex="-1"></div>
+          <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true" tabindex="-1" hidden></div>
           <div id="calendar-legend" class="calendar-legend" aria-label="Legenda do calendário" hidden>
             <p class="calendar-legend-item"><span class="legend-range" aria-hidden="true"><span class="legend-swatch legend-price-high"></span><span class="legend-swatch legend-price-middle"></span><span class="legend-swatch legend-price-low"></span></span>Datas Disponíveis</p>
             <p class="calendar-legend-item"><span class="legend-swatch legend-unavailable" aria-hidden="true"></span>Datas Reservadas / Indisponíveis</p>

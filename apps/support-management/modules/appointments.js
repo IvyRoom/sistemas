@@ -77,6 +77,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
 
   function setMessage(text, { outside = false } = {}) {
     message.textContent = outside ? text : '';
+    message.hidden = !outside || !text;
     dialogMessage.textContent = outside ? '' : text;
     dialogMessage.hidden = outside || !text;
     warning.hidden = !outside && Boolean(text);
@@ -241,20 +242,23 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     updateSelection();
   }
 
-  function invalidate() {
+  function invalidate({ silent = details.open } = {}) {
     loaded = false;
     generation++;
     loading = undefined;
     gate.hidden = true;
+    calendar.setAttribute('aria-busy', 'true');
+    if (!silent) {
+      intro.hidden = calendar.hidden = legend.hidden = faq.hidden = true;
+      setMessage('Carregando...', { outside: true });
+    }
     updateSelection();
   }
 
   function refresh({ silent = false } = {}) {
     if (loading) return loading;
-    invalidate();
+    invalidate({ silent });
     const currentGeneration = generation;
-    calendar.setAttribute('aria-busy', 'true');
-    if (!silent) setMessage('Carregando...', { outside: true });
     loading = Promise.resolve().then(async () => {
       try {
         const result = await client.calendar();

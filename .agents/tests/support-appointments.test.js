@@ -25,6 +25,11 @@ function fixture(client, options = {}) {
     };
   }
   const elements = new Map(['appointment-calendar', 'reserve-date', 'appointments-message', 'appointments-gate', 'appointments-intro', 'appointments-faq', 'calendar-legend', 'appointment-details', 'reservation-content', 'reservation-overview', 'reservation-initial-step', 'reservation-confirm-step', 'reservation-status-step', 'reservation-status', 'reservation-warning', 'confirm-reservation', 'cancel-reservation', 'close-reservation', 'reservation-message', 'selected-appointment-date', 'selected-appointment-price', 'payment-administrator-name', 'appointment-confirmation-email'].map((id) => [id, element()]));
+  const markup = fs.readFileSync(path.join(__dirname, '../../apps/support-management/scheduler/index.html'), 'utf8');
+  for (const [, attributes, id] of markup.matchAll(/<[a-z][a-z0-9]*\b([^>]*\bid="([^"]+)"[^>]*)>/gu)) {
+    if (elements.has(id)) elements.get(id).hidden = /(?:^|\s)hidden(?:\s|$)/u.test(attributes);
+  }
+  elements.get('appointments-message').textContent = markup.match(/id="appointments-message"[^>]*>([^<]*)<\/p>/u)?.[1] || '';
   document.body = element('body');
   let ids = 0;
   const failures = [];
@@ -65,6 +70,27 @@ const days = [
   { date: '2026-11-11', available: false, priceCents: null, pricePosition: null },
   { date: '2026-12-01', available: true, priceCents: 37500, pricePosition: 1 },
 ];
+
+test('the initial scheduler shows only its loading status until authoritative calendar data arrives', async () => {
+  const response = deferred();
+  let reads = 0;
+  const f = fixture({ calendar: () => { reads++; return response.promise; } });
+  const hiddenTools = ['appointments-intro', 'appointment-calendar', 'calendar-legend', 'appointments-faq', 'appointments-gate'];
+  assert.equal(f.elements.get('appointments-message').textContent, 'Carregando...');
+  assert.equal(f.elements.get('appointments-message').hidden, false);
+  for (const id of hiddenTools) assert.equal(f.elements.get(id).hidden, true, `${id} must be hidden before session bootstrap`);
+  const pending = f.app.load();
+  for (const id of hiddenTools) assert.equal(f.elements.get(id).hidden, true);
+  assert.equal(f.elements.get('appointments-message').hidden, false);
+  assert.equal(f.elements.get('appointment-calendar').attributes['aria-busy'], 'true');
+  response.resolve({ days });
+  assert.equal(await pending, true);
+  assert.equal(reads, 1);
+  assert.equal(f.elements.get('appointments-message').hidden, true);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  for (const id of hiddenTools.slice(0, 4)) assert.equal(f.elements.get(id).hidden, false);
+  assert.equal(f.elements.get('appointments-gate').hidden, true);
+});
 
 test('calendar uses complete Sunday–Saturday weeks, gray unavailable dates and authoritative prices', async () => {
   const f = fixture({ calendar: async () => ({ days }) });
@@ -199,6 +225,8 @@ test('confirmation is immediate even while background availability is pending an
   assert.equal(f.elements.get('close-reservation').disabled, false);
   assert.equal(f.elements.get('appointments-message').textContent, '');
   assert.equal(f.elements.get('reservation-message').textContent, '');
+  assert.equal(f.elements.get('appointments-message').hidden, true);
+  assert.equal(f.elements.get('appointment-calendar').hidden, false, 'A silent booking refresh must preserve the calendar behind its confirmation');
   assert.ok(f.buttons().every(button => button.disabled));
   f.select('2026-12-01');
   await f.confirm();
@@ -758,7 +786,11 @@ test('the login bootstrap renders immediately and tab revisits do not repeat cal
   let reads = 0;
   const f = fixture({ calendar: async () => { reads++; return { days }; } });
   const bootstrap = { days, today: '2026-11-09', paymentMethodRegistered: true, canBook: true, administratorName: 'Maria', userEmail: 'user@example.test' };
-  assert.equal(await f.app.load(bootstrap), true);
+  const cached = f.app.load(bootstrap);
+  assert.equal(f.elements.get('appointments-intro').hidden, false, 'Usable bootstrap data must render synchronously');
+  assert.equal(f.elements.get('appointment-calendar').hidden, false);
+  assert.equal(f.elements.get('appointments-message').hidden, true);
+  assert.equal(await cached, true);
   assert.equal(reads, 0);
   await f.app.load();
   await f.app.load();
@@ -777,6 +809,28 @@ function deferred() {
   let reject;
   const promise = new Promise((done, fail) => { resolve = done; reject = fail; });
   return { promise, resolve, reject };
+}
+
+for (const previous of ['ready', 'missing-card']) {
+  test(`invalidating a ${previous} calendar leaves only the loading status until its refresh finishes`, async () => {
+    const next = deferred();
+    const f = fixture({ calendar: () => next.promise });
+    await f.app.load(previous === 'ready' ? readyCalendar : missingCard);
+    f.app.invalidate();
+    for (const id of ['appointments-intro', 'appointment-calendar', 'calendar-legend', 'appointments-faq', 'appointments-gate']) {
+      assert.equal(f.elements.get(id).hidden, true);
+    }
+    assert.equal(f.elements.get('appointments-message').hidden, false);
+    assert.equal(f.elements.get('appointments-message').textContent, 'Carregando...');
+    const pending = f.app.load();
+    assert.equal(f.app.load(), pending);
+    assert.equal(f.elements.get('appointments-intro').hidden, true);
+    next.resolve(readyCalendar);
+    assert.equal(await pending, true);
+    assert.equal(f.elements.get('appointments-message').hidden, true);
+    assert.equal(f.elements.get('appointments-intro').hidden, false);
+    assert.equal(f.elements.get('appointment-calendar').hidden, false);
+  });
 }
 
 for (const allowed of [false, true]) {

@@ -135,6 +135,7 @@ legend { padding: 0 4px; }
 .appointments-intro { font-size: 14px; line-height: 1.6; }
 .appointments-intro p + p { margin-top: 8px; }
 .calendar-stage { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 18px; min-height: 540px; padding: 20px 0; }
+#appointments-message { margin: 0; text-align: center; }
 .payment-gate { max-width: 100%; margin: auto; font-size: 16px; line-height: 1.6; text-align: center; }
 .appointment-calendar { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,500px),500px)); justify-content: center; align-items: start; width: 100%; gap: 24px; }
 .calendar-month-block { min-width: 0; padding: 16px; border: 1px solid #dedede; border-radius: 5px; }
