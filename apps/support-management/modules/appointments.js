@@ -54,6 +54,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   let selected;
   let reservation;
   let loading;
+  let generation = 0;
   let busy = false;
   let loaded = false;
   let reviewRequired = false;
@@ -76,7 +77,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   function updateSelection() {
     for (const button of calendar.querySelectorAll('button')) {
       button.setAttribute('aria-pressed', String(button.dataset.date === selected?.date));
-      button.disabled = button.dataset.available !== 'true' || busy || Boolean(loading) || reviewRequired;
+      button.disabled = button.dataset.available !== 'true' || busy || Boolean(loading) || !loaded || reviewRequired;
     }
     calendar.dataset.selected = String(Boolean(selected && details.open));
     content.dataset.activeStep = confirming ? 'confirm' : 'initial';
@@ -84,7 +85,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     confirmStep.inert = !confirming;
     initialStep.setAttribute('aria-hidden', String(confirming));
     confirmStep.setAttribute('aria-hidden', String(!confirming));
-    reserve.disabled = confirm.disabled = busy || Boolean(loading) || reviewRequired || !selected;
+    reserve.disabled = confirm.disabled = busy || Boolean(loading) || !loaded || reviewRequired || !selected;
     cancel.disabled = close.disabled = busy;
     details.setAttribute('aria-busy', String(busy));
     details.setAttribute('aria-describedby', confirming ? 'reservation-warning' : 'reservation-instructions');
@@ -131,7 +132,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     price.textContent = day.available ? currency.format(day.priceCents / 100) : '';
     button.append(number, price);
     button.addEventListener('click', () => {
-      if (busy || loading || reviewRequired || !day.available || !snapshot?.canBook) return;
+      if (busy || loading || !loaded || reviewRequired || !day.available || !snapshot?.canBook) return;
       if (reservation && (reservation.date !== day.date || reservation.priceCents !== day.priceCents)) {
         reservation = undefined;
       }
@@ -218,19 +219,29 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     updateSelection();
   }
 
+  function invalidate() {
+    loaded = false;
+    generation++;
+    loading = undefined;
+    gate.hidden = true;
+    updateSelection();
+  }
+
   function refresh() {
     if (loading) return loading;
+    invalidate();
+    const currentGeneration = generation;
     calendar.setAttribute('aria-busy', 'true');
     setMessage('Carregando...');
     loading = Promise.resolve().then(async () => {
       try {
         const result = await client.calendar();
-        if (!isCurrent()) return false;
+        if (!isCurrent() || currentGeneration !== generation) return false;
         render(result);
         setMessage('');
         return true;
       } catch (error) {
-        if (!isCurrent() || onAuthFailure(error)) return false;
+        if (!isCurrent() || currentGeneration !== generation || onAuthFailure(error)) return false;
         clearSelection();
         calendar.hidden = true;
         legend.hidden = true;
@@ -241,9 +252,11 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
         setMessage('Não foi possível carregar a agenda. Atualize a página para tentar novamente.');
         return false;
       } finally {
-        calendar.setAttribute('aria-busy', 'false');
-        loading = undefined;
-        updateSelection();
+        if (currentGeneration === generation) {
+          calendar.setAttribute('aria-busy', 'false');
+          loading = undefined;
+          updateSelection();
+        }
       }
     });
     updateSelection();
@@ -253,6 +266,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   function load(result) {
     if (busy) return Promise.resolve(false);
     if (result) {
+      invalidate();
       try {
         render(result);
         setMessage('');
@@ -282,13 +296,13 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dismiss();
   });
   reserve.addEventListener('click', () => {
-    if (busy || loading || reviewRequired || !selected || !details.open || !isCurrent()) return;
+    if (busy || loading || !loaded || reviewRequired || !selected || !details.open || !isCurrent()) return;
     confirming = true;
     updateSelection();
     cancel.focus({ preventScroll: true });
   });
   confirm.addEventListener('click', async () => {
-    if (busy || loading || reviewRequired || !selected || !confirming || !details.open || !isCurrent()) return;
+    if (busy || loading || !loaded || reviewRequired || !selected || !confirming || !details.open || !isCurrent()) return;
     busy = true;
     confirm.textContent = 'Reservando...';
     confirm.setAttribute('aria-busy', 'true');
@@ -342,5 +356,5 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     }
   });
 
-  return { load, invalidate() { loaded = false; } };
+  return { load, invalidate };
 }

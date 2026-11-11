@@ -529,6 +529,161 @@ test('the login bootstrap renders immediately and tab revisits do not repeat cal
   assert.equal(reads, 1);
 });
 
+const missingCard = { days: [], today: '2026-11-09', paymentMethodRegistered: false, canBook: false,
+  administratorName: 'Maria', userEmail: 'user@example.test' };
+const readyCalendar = { ...missingCard, days, paymentMethodRegistered: true, canBook: true };
+
+function deferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
+}
+
+for (const allowed of [false, true]) {
+  test(`invalidating a missing-card gate hides it immediately and waits for fresh booking permission ${allowed}`, async () => {
+    const next = deferred();
+    let reads = 0;
+    let writes = 0;
+    const f = fixture({ calendar: () => { reads++; return next.promise; }, reserveDate: async () => { writes++; } });
+    await f.app.load(missingCard);
+    assert.equal(f.elements.get('appointments-gate').hidden, false);
+    f.app.invalidate();
+    assert.equal(f.elements.get('appointments-gate').hidden, true);
+    assert.ok(f.buttons().every(button => button.disabled));
+    f.select();
+    assert.equal(f.elements.get('appointment-details').open, false);
+    const pending = f.app.load();
+    assert.equal(f.app.load(), pending, 'Tab revisits must share the current fresh request');
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(reads, 1);
+    assert.equal(f.elements.get('appointments-gate').hidden, true);
+    assert.equal(f.elements.get('appointment-calendar').attributes['aria-busy'], 'true');
+    assert.ok(f.buttons().every(button => button.disabled));
+    next.resolve({ ...readyCalendar, canBook: allowed });
+    assert.equal(await pending, true);
+    assert.equal(f.elements.get('appointments-gate').hidden, allowed);
+    assert.equal(f.elements.get('appointment-calendar').hidden, !allowed);
+    if (allowed) assert.equal(f.button('2026-11-10').disabled, false);
+    else {
+      f.select();
+      assert.equal(f.elements.get('appointment-details').open, false);
+    }
+    await f.app.load();
+    assert.equal(reads, 1, 'A warmed authoritative result must be reusable without another request');
+    assert.equal(writes, 0);
+  });
+}
+
+for (const stale of ['missing-card', 'expired', 'malformed']) {
+  for (const order of ['older-first', 'newer-first']) {
+    test(`an invalidated ${stale} response settling ${order} cannot replace or finish a newer calendar load`, async () => {
+      const previous = deferred();
+      const current = deferred();
+      let reads = 0;
+      const f = fixture({ calendar: () => (++reads === 1 ? previous.promise : current.promise) });
+      const oldLoad = f.app.load();
+      await new Promise(resolve => setImmediate(resolve));
+      f.app.invalidate();
+      const newLoad = f.app.load();
+      assert.notEqual(newLoad, oldLoad);
+      await new Promise(resolve => setImmediate(resolve));
+      assert.equal(reads, 2);
+      const settleOld = () => stale === 'expired' ? previous.reject({ status: 401 })
+        : previous.resolve(stale === 'malformed' ? { days: null } : missingCard);
+      if (order === 'older-first') {
+        settleOld();
+        assert.equal(await oldLoad, false);
+        assert.equal(f.app.load(), newLoad, 'The old finally must not clear the newer request');
+        assert.equal(f.elements.get('appointment-calendar').attributes['aria-busy'], 'true');
+        assert.equal(f.elements.get('appointments-gate').hidden, true);
+      }
+      current.resolve(readyCalendar);
+      assert.equal(await newLoad, true);
+      if (order === 'newer-first') {
+        settleOld();
+        assert.equal(await oldLoad, false);
+      }
+      assert.equal(f.failures.length, 0, 'An obsolete failure must not expire the current view');
+      assert.equal(f.elements.get('appointments-gate').hidden, true);
+      assert.equal(f.elements.get('appointment-calendar').hidden, false);
+      assert.equal(f.elements.get('appointment-calendar').attributes['aria-busy'], 'false');
+      assert.equal(f.button('2026-11-10').disabled, false);
+      assert.equal(f.elements.get('appointments-message').textContent, '');
+      await f.app.load();
+      assert.equal(reads, 2);
+    });
+  }
+}
+
+test('a failed fresh calendar stays closed and an older success cannot erase its error or interrupt an explicit retry', async () => {
+  const previous = deferred();
+  const current = deferred();
+  const retry = deferred();
+  const responses = [previous, current, retry];
+  let reads = 0;
+  const f = fixture({ calendar: () => responses[reads++].promise });
+  await f.app.load(readyCalendar);
+  f.select();
+  f.app.invalidate();
+  assert.equal(f.elements.get('reserve-date').disabled, true);
+  const oldLoad = f.app.load();
+  await new Promise(resolve => setImmediate(resolve));
+  f.app.invalidate();
+  const newLoad = f.app.load();
+  await new Promise(resolve => setImmediate(resolve));
+  current.reject({ status: 503 });
+  assert.equal(await newLoad, false);
+  for (const id of ['appointments-gate', 'appointment-calendar', 'calendar-legend', 'appointments-intro', 'appointments-faq']) assert.equal(f.elements.get(id).hidden, true);
+  assert.match(f.elements.get('appointments-message').textContent, /Não foi possível carregar/u);
+  assert.equal(f.elements.get('appointment-details').open, false);
+  assert.ok(f.buttons().every(button => button.disabled));
+  const retried = f.app.load();
+  await new Promise(resolve => setImmediate(resolve));
+  previous.resolve(readyCalendar);
+  assert.equal(await oldLoad, false);
+  assert.equal(f.app.load(), retried);
+  assert.equal(f.elements.get('appointment-calendar').attributes['aria-busy'], 'true');
+  assert.equal(f.elements.get('appointments-gate').hidden, true);
+  retry.resolve(readyCalendar);
+  assert.equal(await retried, true);
+  assert.equal(f.elements.get('appointments-message').textContent, '');
+  assert.equal(f.button('2026-11-10').disabled, false);
+  assert.equal(reads, 3);
+});
+
+test('an authoritative bootstrap supersedes an older in-flight missing-card request', async () => {
+  const previous = deferred();
+  let reads = 0;
+  const f = fixture({ calendar: () => { reads++; return previous.promise; } });
+  const oldLoad = f.app.load();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(await f.app.load(readyCalendar), true);
+  previous.resolve(missingCard);
+  assert.equal(await oldLoad, false);
+  assert.equal(f.elements.get('appointments-gate').hidden, true);
+  assert.equal(f.button('2026-11-10').disabled, false);
+  await f.app.load();
+  assert.equal(reads, 1);
+});
+
+test('invalidating availability preserves an uncertain reservation identity when its refreshed quote remains unchanged', async () => {
+  const requests = [];
+  const f = fixture({ calendar: async () => ({ days }),
+    reserveDate: async body => { requests.push(JSON.parse(JSON.stringify(body))); throw { status: 503 }; } });
+  await f.app.load();
+  f.select();
+  await f.reserve();
+  f.app.invalidate();
+  assert.equal(f.elements.get('confirm-reservation').disabled, true);
+  await f.app.load();
+  assert.equal(f.elements.get('appointment-details').open, true);
+  await f.reserve();
+  assert.equal(requests.length, 2);
+  assert.deepEqual(requests[0], requests[1]);
+  assert.equal(f.idCount(), 1);
+});
+
 test('the fresh preflight blocks a changed quote before writing and closes the stale dialog', async () => {
   let reads = 0;
   let writes = 0;

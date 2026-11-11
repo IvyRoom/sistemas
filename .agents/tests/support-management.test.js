@@ -555,6 +555,7 @@ test('confirmed deletion removes the masked summary, restores the original form 
   assert.equal(freshCalendars, 1);
   assert.equal(paymentRegistered, false);
   assert.equal(elements.get('card-delete-actions').hidden, true);
+  assert.equal(elements.get('card-delete-actions').attributes['aria-busy'], 'false');
   assert.equal(elements.get('card-summary').hidden, true);
   assert.equal(elements.get('card-number').textContent, '');
   assert.equal(elements.get('card-expiry').textContent, '');
@@ -592,6 +593,7 @@ test('failed or unconfirmed deletions retain the masked summary and allow a safe
     assert.equal(elements.get('edit-card').disabled, false);
     assert.equal(elements.get('card-editor').hidden, true);
     assert.equal(elements.get('card-delete-actions').hidden, false);
+    assert.equal(elements.get('card-delete-actions').attributes['aria-busy'], 'false');
     assert.match(elements.get('scheduler-message').textContent, /Não foi possível confirmar/u);
     await click('cancel-delete-card');
     await click('edit-card');
@@ -676,11 +678,56 @@ test('an in-flight card deletion prevents duplicate submissions and dismissal', 
   await dispatchDocument('keydown', { key: 'Escape', preventDefault() {} });
   assert.equal(deletions, 1);
   assert.equal(elements.get('card-delete-actions').hidden, false);
+  assert.equal(elements.get('card-delete-actions').attributes['aria-busy'], 'true');
   assert.equal(elements.get('cancel-delete-card').disabled, true);
   resolveDelete({ card: null });
   await pending;
   assert.equal(elements.get('card-delete-actions').hidden, true);
+  assert.equal(elements.get('card-delete-actions').attributes['aria-busy'], 'false');
   assert.equal(elements.get('card-editor').hidden, false);
+});
+
+for (const status of [401, 403]) {
+  test(`card deletion clears its wait state and hides actions after authorization failure ${status}`, async () => {
+    let failDelete;
+    const navigations = [];
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }), clearSession() {},
+      deleteCard: () => new Promise((resolve, reject) => { failDelete = reject; }),
+    }, { runtime: { navigate: path => navigations.push(path) } });
+    await f.click('edit-card');
+    const pending = f.click('confirm-delete-card');
+    assert.equal(f.elements.get('card-delete-actions').attributes['aria-busy'], 'true');
+    failDelete({ status });
+    await pending;
+    assert.equal(f.elements.get('card-delete-actions').attributes['aria-busy'], 'false');
+    assert.equal(f.elements.get('card-delete-actions').hidden, true);
+    assert.equal(f.elements.get('confirm-delete-card').disabled, false);
+    assert.equal(f.elements.get('cancel-delete-card').disabled, false);
+    assert.deepEqual(navigations, status === 401 ? ['/support-management/login/'] : []);
+  });
+}
+
+test('leaving the page hides pending deletion controls immediately and settlement clears their wait state', async () => {
+  let finishDelete;
+  let deletions = 0;
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
+    deleteCard: () => { deletions++; return new Promise(resolve => { finishDelete = resolve; }); },
+  });
+  await f.click('edit-card');
+  const pending = f.click('confirm-delete-card');
+  assert.equal(f.elements.get('card-delete-actions').attributes['aria-busy'], 'true');
+  f.dispatchWindow('pagehide');
+  assert.equal(f.elements.get('card-delete-actions').hidden, true);
+  await f.click('confirm-delete-card');
+  assert.equal(deletions, 1);
+  finishDelete({ card: null });
+  await pending;
+  assert.equal(f.elements.get('card-delete-actions').attributes['aria-busy'], 'false');
+  assert.equal(f.elements.get('card-delete-actions').hidden, true);
 });
 
 for (const phase of ['startup', 'retry']) {
@@ -1234,6 +1281,112 @@ function assertCardCleared(f) {
   assert.equal(f.elements.get('card-preview-holder').textContent, 'NOME DO TITULAR');
   assert.equal(f.elements.get('card-preview-expiry').textContent, 'MM/AA');
   assert.equal(f.elements.get('card-preview-cvv').textContent, 'CVV ***');
+}
+
+for (const mutation of ['registration', 'synchronization']) {
+  test(`successful card ${mutation} preloads a fresh calendar without blocking card controls`, async () => {
+    const { submitCompanyCard } = loadClient();
+    let initialized = false;
+    let finishCalendar;
+    let prefetch;
+    let reads = 0;
+    let invalidations = 0;
+    let syncs = 0;
+    const result = { card: registeredCompanyCard, cardRevision: CARD_REVISION };
+    const appointmentController = {
+      invalidate() { if (initialized) invalidations++; },
+      load() {
+        if (!initialized) return Promise.resolve();
+        if (!prefetch) {
+          reads++;
+          prefetch = new Promise(resolve => { finishCalendar = resolve; });
+        }
+        return prefetch;
+      },
+    };
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      card: async () => mutation === 'synchronization' ? pendingCompanyCard : { card: null },
+      saveCard: async () => result,
+      syncCard: async () => {
+        if (++syncs === 1) throw { status: 503, code: 'support_management.workbook_sync_failed' };
+        return result;
+      },
+    }, { appointmentController, runtime: { submitCompanyCard: args => submitCompanyCard({ ...args,
+      transport: async () => ({ ok: true, json: async () => ({ id: 'token_example' }) }) }) } });
+    initialized = true;
+    if (mutation === 'registration') await fillCard(f);
+    let settled = false;
+    const saving = (mutation === 'registration' ? f.dispatch('card-form', 'submit', { preventDefault() {} })
+      : f.click('retry-card-sync')).then(() => { settled = true; });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(settled, true, 'Card controls cannot await the calendar network request');
+    assert.equal(invalidations, 1);
+    assert.equal(reads, 1);
+    assert.equal(f.elements.get('save-card').disabled, false);
+    assert.equal(f.elements.get('retry-card-sync').disabled, false);
+    assert.notEqual(f.elements.get('card-form').attributes['aria-busy'], 'true');
+    assert.equal(f.elements.get('card-summary').hidden, false);
+    const tab = f.click('appointments-tab');
+    assert.equal(f.elements.get('appointments-panel').hidden, false);
+    assert.equal(reads, 1, 'Tab access shares the prefetched calendar request');
+    finishCalendar();
+    await Promise.all([saving, tab]);
+  });
+}
+
+for (const role of ['Administrador', 'Usuário']) {
+  test(`a session refresh started before card registration cannot restore its old missing-card context: ${role}`, async () => {
+    let finishSession;
+    let sessionStarted;
+    let registered = false;
+    let paymentRegistered;
+    let prefetches = 0;
+    const started = new Promise(resolve => { sessionStarted = resolve; });
+    const initial = { user: { name: 'Admin', role: 'Administrador' }, config: { publicKey: 'pk_test_synthetic' },
+      card: { card: null }, calendar: { paymentMethodRegistered: false } };
+    const f = await loadScheduler({
+      bootstrap: () => ({ context: initial, refresh: true }),
+      session: () => { sessionStarted(); return new Promise(resolve => { finishSession = resolve; }); },
+      card: async () => registered ? { card: registeredCompanyCard, cardRevision: CARD_REVISION } : { card: null },
+    }, { activateCard: false, appointmentController: {
+      invalidate() {},
+      async load(result) {
+        if (result) paymentRegistered = result.paymentMethodRegistered;
+        else if (registered) { prefetches++; paymentRegistered = true; }
+      },
+    }, runtime: {
+      submitCompanyCard: async ({ clear }) => {
+        registered = true;
+        clear();
+        return { card: registeredCompanyCard, cardRevision: CARD_REVISION };
+      },
+      duringInitialization: async ({ elements }) => {
+        await started;
+        for (const callback of elements.get('card-tab').listeners.click) await callback({});
+        for (const [index, id] of cardFieldIds.entries()) {
+          elements.get(id).value = cardFieldValues[index];
+          const event = ['exp-month', 'exp-year'].includes(id) ? 'change' : 'input';
+          for (const callback of elements.get(id).listeners[event]) await callback({});
+        }
+        for (const callback of elements.get('card-form').listeners.submit) await callback({ preventDefault() {} });
+        assert.equal(paymentRegistered, true);
+        finishSession({ ...initial, user: { name: 'Current user', role } });
+      },
+    } });
+    assert.equal(paymentRegistered, true, 'An older session payload cannot reinstate a missing-card calendar');
+    assert.ok(prefetches >= 1);
+    assert.equal(f.elements.get('header-user-name').textContent, 'Current user', 'Fresh identity must still apply');
+    if (role === 'Administrador') {
+      assert.equal(f.elements.get('card-summary').hidden, false);
+      assert.match(f.elements.get('card-number').textContent, /0010/u);
+      assert.equal(f.elements.get('card-editor').hidden, true);
+    } else {
+      assert.equal(f.elements.get('card-tab').hidden, true);
+      assert.equal(f.elements.get('card-panel').hidden, true);
+      assert.equal(f.elements.get('appointments-panel').hidden, false);
+    }
+  });
 }
 
 for (const failed of [false, true]) {

@@ -39,6 +39,7 @@ let activeTab = 'appointments';
 let cardLoaded = false;
 let cardLoading;
 let cardSnapshot;
+let cardVersion = 0;
 let sessionTimer;
 let clearSubmittedCard;
 let permissionsLoaded = false;
@@ -302,6 +303,7 @@ confirmDelete.addEventListener('click', async () => {
     const result = await client.deleteCard(cardRevision);
     if (leaving) return;
     if (result?.card !== null || result.cardDeletionPending) throw new Error('card_deletion_unconfirmed');
+    cardVersion++;
     client.discardBootstrap?.();
     cardSnapshot = undefined;
     cardLoaded = true;
@@ -344,9 +346,11 @@ retrySync.addEventListener('click', async () => {
   try {
     const result = await client.syncCard();
     if (!leaving) {
+      cardVersion++;
       cardSnapshot = undefined;
       renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired), Boolean(result.cardDeletionPending), result.cardRevision);
       appointments.invalidate?.();
+      void appointments.load().catch(() => {});
     }
   } catch (error) {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
@@ -403,10 +407,12 @@ form.addEventListener('submit', async (event) => {
   try {
     const result = await submitCompanyCard({ publicKey, card, client, clear: clearCard, isCurrent: () => !leaving && administrator });
     if (leaving || !administrator) return;
+    cardVersion++;
     cardSnapshot = undefined;
     renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired), Boolean(result.cardDeletionPending), result.cardRevision);
     appointments.invalidate?.();
     closeEditor();
+    void appointments.load().catch(() => {});
   } catch (error) {
     if (leaving || authFailure(error) || handleReviewRequired(error)) return;
     if (error.status === 403) {
@@ -584,7 +590,7 @@ function loadCard() {
   return cardLoading;
 }
 
-async function initializeSession(result, { fromCache = false } = {}) {
+async function initializeSession(result, { fromCache = false, preserveCard = false } = {}) {
   const config = result.config || await client.config();
   if (config.environment !== undefined && config.environment !== 'sandbox') throw new Error('sandbox_unavailable');
   if (!/^pk_test_[A-Za-z0-9_-]+$/u.test(config.publicKey || '')) throw new Error('sandbox_unavailable');
@@ -613,15 +619,17 @@ async function initializeSession(result, { fromCache = false } = {}) {
     permissionsSnapshot = undefined;
     permissionsLoaded = false;
   }
-  if (result.card !== undefined) cardSnapshot = result.card;
-  else if (!fromCache) {
-    cardSnapshot = undefined;
-    cardLoaded = false;
+  if (!preserveCard) {
+    if (result.card !== undefined) cardSnapshot = result.card;
+    else if (!fromCache) {
+      cardSnapshot = undefined;
+      cardLoaded = false;
+    }
+    if (result.calendar === undefined && !fromCache) appointments.invalidate?.();
   }
-  if (result.calendar === undefined && !fromCache) appointments.invalidate?.();
   initialized = true;
   document.getElementById('member-notice').hidden = administrator;
-  await selectTab(activeTab, { calendar: result.calendar });
+  await selectTab(activeTab, { calendar: preserveCard ? undefined : result.calendar });
 }
 
 try {
@@ -639,13 +647,16 @@ try {
   }
   if (!leaving && (!cached?.context || cached.refresh)) {
     const permissionsAtRead = permissionsVersion;
+    const cardAtRead = cardVersion;
     const current = await client.session();
     if (permissionsDirty || permissionsBusy || permissionsAtRead !== permissionsVersion) {
       delete current.permissions;
       delete current.calendar;
       client.discardBootstrap?.();
     }
-    if (!leaving) await initializeSession(current);
+    const preserveCard = cardAtRead !== cardVersion;
+    if (preserveCard) client.discardBootstrap?.();
+    if (!leaving) await initializeSession(current, { preserveCard });
   }
 } catch (error) {
   if (!authFailure(error)) document.getElementById(activeTab === 'card' ? 'scheduler-message' : 'appointments-message').textContent = 'Não foi possível carregar a ferramenta. Atualize a página para tentar novamente.';

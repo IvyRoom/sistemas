@@ -75,6 +75,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .card-delete-button:hover { background: #f5eff1; }
 .card-delete-cancel { border-color: #4a0816; background: #4a0816; color: #fff; }
 .card-delete-cancel:hover { background: #790d26; }
+.scheduler-page:has(#card-delete-actions[aria-busy="true"]:not([hidden])), .scheduler-page:has(#card-delete-actions[aria-busy="true"]:not([hidden])) * { cursor: wait !important; }
 .card-number { font-size: 16px; margin-top: 10px; }
 .card-expiry, .empty-card, .muted { font-size: 12px; color: rgb(128,128,128); line-height: 1.5; }
 .card-expiry { margin-top: 5px; }
