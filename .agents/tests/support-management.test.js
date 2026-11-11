@@ -892,6 +892,27 @@ test('an unusable cached bootstrap falls back to the current server session inst
   assert.equal(elements.get('appointments-panel').hidden, false);
 });
 
+test('a background session failure reveals the calendar status hidden by its cached render', async () => {
+  let entered;
+  let rejectRefresh;
+  const started = new Promise(resolve => { entered = resolve; });
+  const context = { user: { name: 'Cached User', role: 'Usuário' },
+    config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' }, calendar: { days: [] } };
+  const { elements } = await loadScheduler({
+    bootstrap: () => ({ context, refresh: true }),
+    session: () => { entered(); return new Promise((resolve, reject) => { rejectRefresh = reject; }); },
+  }, { activateCard: false, runtime: { duringInitialization: async ({ elements }) => {
+    await started;
+    elements.get('appointments-message').hidden = true;
+    elements.get('appointments-message').textContent = '';
+    rejectRefresh({ status: 503 });
+  } } });
+  assert.equal(elements.get('header-user-name').textContent, 'Cached User');
+  assert.equal(elements.get('appointments-panel').hidden, false);
+  assert.equal(elements.get('appointments-message').hidden, false);
+  assert.equal(elements.get('appointments-message').textContent, 'Não foi possível carregar a ferramenta. Atualize a página para tentar novamente.');
+});
+
 test('an incomplete fresh bootstrap invalidates old calendar and card snapshots so route reads retry', async () => {
   let loaded = false;
   let calendarReads = 0;

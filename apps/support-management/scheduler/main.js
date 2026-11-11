@@ -659,5 +659,9 @@ try {
     if (!leaving) await initializeSession(current, { preserveCard });
   }
 } catch (error) {
-  if (!authFailure(error)) document.getElementById(activeTab === 'card' ? 'scheduler-message' : 'appointments-message').textContent = 'Não foi possível carregar a ferramenta. Atualize a página para tentar novamente.';
+  if (!authFailure(error)) {
+    const target = document.getElementById(activeTab === 'card' ? 'scheduler-message' : 'appointments-message');
+    target.textContent = 'Não foi possível carregar a ferramenta. Atualize a página para tentar novamente.';
+    target.hidden = false;
+  }
 }
