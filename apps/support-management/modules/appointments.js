@@ -13,7 +13,7 @@ function parseDate(value) {
 }
 
 function parseCalendar(result) {
-  if (!Array.isArray(result?.days) || typeof result.paymentMethodRegistered !== 'boolean') throw new Error('calendar_unavailable');
+  if (!Array.isArray(result?.days) || typeof result.paymentMethodRegistered !== 'boolean' || typeof result.canBook !== 'boolean') throw new Error('calendar_unavailable');
   const today = parseDate(result.today);
   const endOfNextMonth = new Date(today);
   endOfNextMonth.setUTCMonth(today.getUTCMonth() + 2, 0);
@@ -29,7 +29,7 @@ function parseCalendar(result) {
     const available = day.available && day.date > result.today && day.date <= lastDate && value.getUTCDay() !== 0 && value.getUTCDay() !== 6;
     return { date: day.date, available, priceCents: available ? day.priceCents : null, pricePosition: available ? day.pricePosition : null, value };
   });
-  return { days, today, lastDate, paymentMethodRegistered: result.paymentMethodRegistered,
+  return { days, today, lastDate, paymentMethodRegistered: result.paymentMethodRegistered, canBook: result.canBook && result.paymentMethodRegistered,
     administratorName: typeof result.administratorName === 'string' ? result.administratorName : '',
     userEmail: typeof result.userEmail === 'string' ? result.userEmail : '' };
 }
@@ -131,7 +131,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
     price.textContent = day.available ? currency.format(day.priceCents / 100) : '';
     button.append(number, price);
     button.addEventListener('click', () => {
-      if (busy || loading || reviewRequired || !day.available || !snapshot?.paymentMethodRegistered) return;
+      if (busy || loading || reviewRequired || !day.available || !snapshot?.canBook) return;
       if (reservation && (reservation.date !== day.date || reservation.priceCents !== day.priceCents)) {
         reservation = undefined;
       }
@@ -196,13 +196,13 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
   function render(result) {
     snapshot = parseCalendar(result);
     const stillAvailable = selected && snapshot.days.find((day) => day.date === selected.date && day.available && day.priceCents === selected.priceCents);
-    if (!snapshot.paymentMethodRegistered || (selected && !stillAvailable)) clearSelection();
+    if (!snapshot.canBook || (selected && !stillAvailable)) clearSelection();
     else if (stillAvailable) selected = stillAvailable;
-    gate.hidden = snapshot.paymentMethodRegistered;
-    intro.hidden = !snapshot.paymentMethodRegistered;
-    faq.hidden = !snapshot.paymentMethodRegistered;
-    calendar.hidden = !snapshot.paymentMethodRegistered;
-    legend.hidden = !snapshot.paymentMethodRegistered;
+    gate.hidden = snapshot.canBook;
+    intro.hidden = !snapshot.canBook;
+    faq.hidden = !snapshot.canBook;
+    calendar.hidden = !snapshot.canBook;
+    legend.hidden = !snapshot.canBook;
     doc.getElementById('payment-administrator-name').textContent = snapshot.administratorName || 'administrador da empresa';
     doc.getElementById('appointment-confirmation-email').textContent = snapshot.userEmail;
     const monthKeys = [];
@@ -300,13 +300,13 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
       if (!isCurrent()) return;
       if (!reservation) {
         render(authoritative);
-        if (!snapshot.paymentMethodRegistered) return;
+        if (!snapshot.canBook) return;
         if (!selected || selected.date !== quote.date || selected.priceCents !== quote.priceCents) {
           setMessage('A disponibilidade ou o preço desta data mudou. Selecione a data novamente.');
           return;
         }
         reservation = { ...quote, requestId: requestId(), acknowledged: true };
-      } else if (!parseCalendar(authoritative).paymentMethodRegistered) {
+      } else if (!parseCalendar(authoritative).canBook) {
         render(authoritative);
         return;
       }
@@ -321,7 +321,7 @@ export function createAppointments({ client, onAuthFailure, isCurrent = () => tr
         : refreshed ? 'Data reservada.' : 'Data reservada. Atualize a página para consultar a agenda.');
     } catch (error) {
       if (!isCurrent() || onAuthFailure(error)) return;
-      if (error.code === 'support_management.date_unavailable' || error.code === 'support_management.price_changed' || error.code === 'support_management.payment_method_required') {
+      if (error.code === 'support_management.date_unavailable' || error.code === 'support_management.price_changed' || error.code === 'support_management.payment_method_required' || error.code === 'support_management.booking_permission_required') {
         clearSelection();
         await refresh();
         if (!isCurrent()) return;

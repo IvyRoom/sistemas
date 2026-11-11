@@ -1,5 +1,5 @@
 import { createSupportClient, LOGIN_PATH, submitCompanyCard } from '../modules/client.js';
-import { getCardDetails, formatCardNumber, formatCardholder, formatPostalCode, formatSecurityCode, formatStreetNumber, normalizeText, validateCardFields } from '../modules/card-fields.js';
+import { getCardDetails, formatCardNumber, formatCardholder, formatSecurityCode, normalizeText, validateCardFields } from '../modules/card-fields.js';
 import { createAppointments } from '../modules/appointments.js';
 
 const client = createSupportClient();
@@ -16,12 +16,13 @@ const cancelDelete = document.getElementById('cancel-delete-card');
 const deleteMessage = document.getElementById('delete-card-message');
 const introduction = document.querySelector('.intro');
 const footer = document.querySelector('.checkout-footer');
+const permissionsPanel = document.getElementById('permissions-panel');
+const permissionsList = document.getElementById('permissions-list');
+const permissionsMessage = document.getElementById('permissions-message');
 const cardInputs = Object.fromEntries([
   ['number', 'number'], ['holderName', 'holder-name'], ['expMonth', 'exp-month'],
   ['expYear', 'exp-year'], ['cvv', 'cvv']
 ].map(([key, id]) => [key, document.getElementById(id)]));
-const addressInputs = ['line-1', 'street-number', 'line-2', 'neighborhood', 'city', 'state', 'zip-code']
-  .map((id) => document.getElementById(id));
 const formatters = new Map();
 let publicKey;
 let administrator = false;
@@ -38,12 +39,18 @@ let cardLoaded = false;
 let cardLoading;
 let cardSnapshot;
 let sessionTimer;
+let permissionsLoaded = false;
+let permissionsLoading;
+let permissionsSnapshot;
+let permissionsBusy = false;
+let permissionInputs = [];
+let permissionsVersion = 0;
 const appointments = createAppointments({ client, onAuthFailure: authFailure, isCurrent: () => !leaving });
 const tabs = ['appointments', 'card'];
 
 async function selectTab(name, { calendar } = {}) {
   activeTab = name;
-  document.getElementById('header-title').textContent = name === 'card' ? 'Cadastro de Cartão' : 'Agendamento: Atendimentos Consultivos';
+  document.getElementById('header-title').textContent = name === 'card' ? 'Configurações da Conta PJ' : 'Agendamento: Atendimentos Consultivos';
   for (const tab of tabs) {
     const selected = tab === name;
     const button = document.getElementById(`${tab}-tab`);
@@ -53,7 +60,7 @@ async function selectTab(name, { calendar } = {}) {
   }
   if (name !== 'card') clearCard();
   if (!initialized) return;
-  if (name === 'card') await loadCard();
+  if (name === 'card') await Promise.all([loadCard(), loadPermissions()]);
   else await appointments.load(calendar);
 }
 
@@ -96,6 +103,10 @@ function updateCardPreview() {
   badge.dataset.brand = details.brand;
   badge.hidden = status.hidden = !details.label;
   if (badge.textContent !== details.label) badge.textContent = status.textContent = details.label;
+  document.getElementById('card-preview-number').textContent = cardInputs.number.value || '•••• •••• •••• ••••';
+  document.getElementById('card-preview-holder').textContent = cardInputs.holderName.value.toLocaleUpperCase('pt-BR') || 'NOME DO TITULAR';
+  document.getElementById('card-preview-expiry').textContent = `${String(cardInputs.expMonth.value || 'MM').padStart(2, '0')}/${cardInputs.expYear.value ? String(cardInputs.expYear.value).slice(-2) : 'AA'}`;
+  document.getElementById('card-preview-cvv').textContent = 'CVV ***';
   cardInputs.cvv.maxLength = details.codeSize;
   cardInputs.cvv.pattern = details.brand === 'unknown' ? '[0-9]{3,4}' : `[0-9]{${details.codeSize}}`;
   cardInputs.cvv.value = formatSecurityCode(cardInputs.cvv.value, details);
@@ -130,16 +141,9 @@ function cardErrors() {
   return validateCardFields(Object.fromEntries(Object.entries(cardInputs).map(([key, input]) => [key, input.value])));
 }
 
-function validateAddress(input) {
-  const value = normalizeText(input.value);
-  const error = input.required && !value ? 'Preencha este campo.'
-    : input.id === 'zip-code' && value.replace(/\D/gu, '').length !== 8 ? 'Informe um CEP com 8 dígitos.' : '';
-  showFieldError(input, error);
-}
-
 bindFormatter(cardInputs.number, formatCardNumber, updateCardPreview);
-bindFormatter(cardInputs.holderName, formatCardholder);
-bindFormatter(cardInputs.cvv, (value) => formatSecurityCode(value, getCardDetails(cardInputs.number.value)));
+bindFormatter(cardInputs.holderName, formatCardholder, updateCardPreview);
+bindFormatter(cardInputs.cvv, (value) => formatSecurityCode(value, getCardDetails(cardInputs.number.value)), updateCardPreview);
 for (const [key, input] of Object.entries(cardInputs)) {
   const validate = () => {
     if (key === 'holderName') input.value = normalizeText(input.value);
@@ -150,22 +154,14 @@ for (const [key, input] of Object.entries(cardInputs)) {
         if (expiry === key || field.value || field.getAttribute('aria-invalid') === 'true') showFieldError(field, errors[expiry]);
       }
     } else showFieldError(input, errors[key]);
+    updateCardPreview();
   };
   input.addEventListener('blur', validate);
   if (input.tagName === 'SELECT') input.addEventListener('change', validate);
 }
-for (const input of addressInputs) {
-  if (input.tagName !== 'SELECT') {
-    const formatter = input.id === 'zip-code' ? formatPostalCode : input.id === 'street-number' ? formatStreetNumber
-      : (value) => String(value).replace(/[\u0000-\u001f\u007f]/gu, ' ').replace(/\s+/gu, ' ');
-    bindFormatter(input, formatter);
-  } else input.addEventListener('change', () => validateAddress(input));
-  input.addEventListener('blur', () => { input.value = normalizeText(input.value); validateAddress(input); });
-}
-
 function clearCard() {
   form.reset();
-  for (const input of [...Object.values(cardInputs), ...addressInputs]) showFieldError(input);
+  for (const input of Object.values(cardInputs)) showFieldError(input);
   updateCardPreview();
 }
 window.addEventListener('pagehide', clearCard);
@@ -204,9 +200,7 @@ function renderCard(card, syncPending = false, verificationRequired = false, del
   workbookSyncPending = syncPending;
   cardDeletionPending = deletionPending;
   cardRevision = typeof revision === 'string' && /^[a-f0-9]{64}$/u.test(revision) ? revision : undefined;
-  introduction.textContent = card
-    ? 'O cartão de crédito corporativo cadastrado abaixo será utilizado para a contratação dos atendimentos consultivos.'
-    : 'Cadastre abaixo o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos.';
+  introduction.textContent = 'Cadastre aqui o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos:';
   footer.hidden = hasCard || cardDeletionPending;
   editor.hidden = !administrator || hasCard || cardDeletionPending || reviewRequired;
   document.getElementById('card-summary').hidden = !card && !(administrator && cardDeletionPending);
@@ -225,7 +219,7 @@ function renderCard(card, syncPending = false, verificationRequired = false, del
     : verificationRequired ? 'O cartão precisa ser validado novamente. Cadastre-o abaixo.'
     : syncPending ? 'O cartão foi cadastrado, mas a sincronização com BD - USUÁRIOS está pendente.' : '';
   cancel.hidden = !card;
-  save.textContent = card ? 'Salvar cartão' : 'Cadastrar cartão';
+  save.textContent = card ? 'Salvar cartão' : 'Cadastrar Cartão';
 }
 
 document.getElementById('logout').addEventListener('click', async () => {
@@ -278,7 +272,7 @@ confirmDelete.addEventListener('click', async () => {
     deleteDialog.close();
     await appointments.load();
     if (!leaving) {
-      message.textContent = 'Cartão excluído.';
+      message.textContent = '';
       cardInputs.number.focus({ preventScroll: true });
     }
   } catch (error) {
@@ -350,7 +344,6 @@ form.addEventListener('submit', async (event) => {
   updateCardPreview();
   const errors = cardErrors();
   for (const [key, input] of Object.entries(cardInputs)) showFieldError(input, errors[key]);
-  addressInputs.forEach(validateAddress);
   if (!form.reportValidity()) {
     message.textContent = 'Confira os campos indicados.';
     return;
@@ -363,17 +356,9 @@ form.addEventListener('submit', async (event) => {
   message.textContent = 'Salvando cartão...';
   const data = new FormData(form);
   const card = Object.fromEntries(['holderName', 'number', 'expMonth', 'expYear', 'cvv'].map((key) => [key, data.get(key)]));
-  const billingAddress = {
-    line_1: `${data.get('streetNumber').trim()}, ${data.get('line1').trim()}, ${data.get('neighborhood').trim()}`,
-    ...(data.get('line2').trim() ? { line_2: data.get('line2').trim() } : {}),
-    zip_code: data.get('zipCode').replace(/\D/g, ''),
-    city: data.get('city').trim(),
-    state: data.get('state'),
-    country: 'BR'
-  };
   clearCard();
   try {
-    const result = await submitCompanyCard({ publicKey, card, billingAddress, client, clear: clearCard, isCurrent: () => !leaving });
+    const result = await submitCompanyCard({ publicKey, card, client, clear: clearCard, isCurrent: () => !leaving });
     if (leaving) return;
     cardSnapshot = undefined;
     renderCard(result.card, Boolean(result.workbookSyncPending), Boolean(result.verificationRequired), Boolean(result.cardDeletionPending), result.cardRevision);
@@ -403,6 +388,94 @@ form.addEventListener('submit', async (event) => {
     form.setAttribute('aria-busy', 'false');
   }
 });
+
+function renderPermissions(result) {
+  if (!Array.isArray(result?.employees) || result.employees.some((employee) => typeof employee.email !== 'string'
+    || typeof employee.name !== 'string' || typeof employee.allowed !== 'boolean' || typeof employee.active !== 'boolean')) throw new Error('permissions_unavailable');
+  permissionInputs = [];
+  const rows = result.employees.map((employee) => {
+    const row = document.createElement('label');
+    row.className = 'permission-option';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = employee.allowed;
+    checkbox.disabled = !employee.active || permissionsBusy;
+    checkbox.dataset.active = String(employee.active);
+    checkbox.dataset.email = employee.email;
+    const name = document.createElement('span');
+    name.textContent = employee.name;
+    row.append(checkbox, name);
+    permissionInputs.push(checkbox);
+    checkbox.addEventListener('change', async () => {
+      if (!administrator || permissionsBusy || leaving || !employee.active) { checkbox.checked = employee.allowed; return; }
+      const allowed = checkbox.checked;
+      let restoreFocus = document.activeElement === checkbox;
+      const trackFocus = (event) => { if (event.target !== checkbox) restoreFocus = false; };
+      permissionsBusy = true;
+      permissionsVersion++;
+      for (const input of permissionInputs) input.disabled = true;
+      document.addEventListener('focusin', trackFocus);
+      permissionsMessage.textContent = 'Salvando...';
+      appointments.invalidate?.();
+      client.discardBootstrap?.();
+      try {
+        const updated = await client.updatePermission(employee.email, allowed);
+        if (leaving) return;
+        renderPermissions(updated);
+        permissionsMessage.textContent = '';
+      } catch (error) {
+        if (leaving || authFailure(error)) return;
+        checkbox.checked = employee.allowed;
+        if (error.status === 403) {
+          administrator = false;
+          permissionsPanel.hidden = true;
+          removeCard.hidden = retrySync.hidden = editor.hidden = true;
+        } else {
+          try { renderPermissions(await client.permissions()); }
+          catch (refreshError) { if (leaving || authFailure(refreshError)) return; }
+          permissionsMessage.textContent = 'Não foi possível confirmar a atualização da permissão. Tente novamente.';
+        }
+      } finally {
+        document.removeEventListener('focusin', trackFocus);
+        permissionsBusy = false;
+        for (const input of permissionInputs) input.disabled = !administrator || input.dataset.active !== 'true';
+        const updatedCheckbox = permissionInputs.find(input => input.dataset.email === employee.email);
+        if (restoreFocus && !leaving && administrator && activeTab === 'card' && !permissionsPanel.hidden && updatedCheckbox && !updatedCheckbox.disabled) {
+          updatedCheckbox.focus({ preventScroll: true });
+        }
+      }
+    });
+    return row;
+  });
+  permissionsList.replaceChildren(...rows);
+}
+
+function loadPermissions() {
+  permissionsPanel.hidden = !administrator;
+  if (!administrator || (permissionsLoaded && permissionsSnapshot === undefined)) return Promise.resolve();
+  if (permissionsLoading) return permissionsLoading;
+  permissionsLoading = Promise.resolve().then(async () => {
+    try {
+      const result = permissionsSnapshot ?? await client.permissions();
+      permissionsSnapshot = undefined;
+      if (leaving || !administrator) return;
+      renderPermissions(result);
+      permissionsMessage.textContent = '';
+      permissionsLoaded = true;
+    } catch (error) {
+      if (leaving || authFailure(error)) return;
+      if (error.status === 403) {
+        administrator = false;
+        permissionsPanel.hidden = true;
+        removeCard.hidden = retrySync.hidden = editor.hidden = true;
+      }
+      else permissionsMessage.textContent = 'Não foi possível carregar as permissões. Atualize a página para tentar novamente.';
+    } finally {
+      permissionsLoading = undefined;
+    }
+  });
+  return permissionsLoading;
+}
 
 function loadCard() {
   if (cardLoaded && cardSnapshot === undefined) return Promise.resolve();
@@ -454,6 +527,12 @@ async function initializeSession(result, { fromCache = false } = {}) {
     if (typeof globalThis.setInterval === 'function') sessionTimer = globalThis.setInterval(enforceSessionExpiry, 1000);
   }
   administrator = user.role === 'Administrador';
+  permissionsPanel.hidden = !administrator;
+  if (result.permissions !== undefined) permissionsSnapshot = result.permissions;
+  else if (!fromCache) {
+    permissionsSnapshot = undefined;
+    permissionsLoaded = false;
+  }
   if (result.card !== undefined) cardSnapshot = result.card;
   else if (!fromCache) {
     cardSnapshot = undefined;
@@ -479,7 +558,13 @@ try {
     }
   }
   if (!leaving && (!cached?.context || cached.refresh)) {
+    const permissionsAtRead = permissionsVersion;
     const current = await client.session();
+    if (permissionsAtRead !== permissionsVersion) {
+      delete current.permissions;
+      delete current.calendar;
+      client.discardBootstrap?.();
+    }
     if (!leaving) await initializeSession(current);
   }
 } catch (error) {

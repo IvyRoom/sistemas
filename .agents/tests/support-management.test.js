@@ -45,7 +45,7 @@ test('production or malformed keys prevent all card network requests', async () 
   }
 });
 
-test('only token and billing address reach the company backend, followed by clearing', async () => {
+test('only the token reaches the company backend, followed by clearing', async () => {
   const calls = [];
   const { createSupportClient, submitCompanyCard, values } = loadClient(async (url, options) => {
     calls.push({ url, options });
@@ -64,7 +64,7 @@ test('only token and billing address reach the company backend, followed by clea
   assert.equal(calls[0].url, '/support-management/api/card');
   assert.equal(calls[0].options.method, 'PUT');
   assert.equal(calls[0].options.headers.Authorization, 'Bearer session-example');
-  assert.deepEqual(JSON.parse(calls[0].options.body), { token: 'token_example', billingAddress: address });
+  assert.deepEqual(JSON.parse(calls[0].options.body), { token: 'token_example' });
   assert.deepEqual([...values.entries()], [['supportManagementToken', 'session-example']]);
 });
 
@@ -233,6 +233,11 @@ test('leaving the login clears its password and pending presentation', async () 
 
 async function loadScheduler(client, { activateCard = true, appointmentController, runtime = {} } = {}) {
   const elements = new Map();
+  const documentListeners = new Map();
+  const document = { activeElement: null,
+    addEventListener(name, callback) { const handlers = documentListeners.get(name) || new Set(); handlers.add(callback); documentListeners.set(name, handlers); },
+    removeEventListener(name, callback) { documentListeners.get(name)?.delete(callback); },
+  };
   function element(tagName, attributes = '') {
     const attribute = (name) => attributes.match(new RegExp(`(?:^|\\s)${name}="([^"]*)"`, 'u'))?.[1] ?? null;
     return {
@@ -240,12 +245,17 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
       hidden: /(?:^|\s)hidden(?:\s|$)/u.test(attributes), disabled: false,
       required: /(?:^|\s)required(?:\s|$)/u.test(attributes), maxLength: Number(attribute('maxlength') ?? -1),
       selectionStart: null, dataset: {}, listeners: {}, attributes: {},
-      open: false,
+      open: false, checked: false, children: [],
       addEventListener(name, callback) { (this.listeners[name] ??= []).push(callback); },
       setAttribute(name, value) { this.attributes[name] = value; },
       getAttribute(name) { return this.attributes[name] ?? attribute(name); },
       setCustomValidity(value) { this.validationMessage = value; },
-      append() {}, focus(options) { this.focused = true; this.focusOptions = options; },
+      append(...children) { this.children.push(...children); },
+      replaceChildren(...children) { this.children = children; },
+      focus(options) {
+        this.focused = true; this.focusOptions = options; document.activeElement = this;
+        for (const callback of documentListeners.get('focusin') || []) callback({ target: this });
+      },
       showModal() { this.open = true; },
       close() { this.open = false; },
       getBoundingClientRect() { return { left: 10, top: 10, right: 300, bottom: 300 }; },
@@ -262,12 +272,12 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   elements.get('card-form').reset = () => {
     for (const node of elements.values()) if (['INPUT', 'SELECT'].includes(node.tagName)) node.value = '';
   };
-  const context = vm.createContext({
-    document: { getElementById: (id) => elements.get(id) || null,
+  Object.assign(document, { getElementById: (id) => elements.get(id) || null,
       querySelector: (selector) => selector === '.intro' ? introduction : footer,
-      createElement: (tagName) => element(tagName) },
+      createElement: (tagName) => element(tagName) });
+  const context = vm.createContext({ document,
     window: { addEventListener() {}, location: { replace: runtime.navigate || (() => { throw new Error('Unexpected navigation'); }) } },
-    createSupportClient: () => client, LOGIN_PATH: '/support-management/login/',
+    createSupportClient: () => ({ permissions: async () => ({ employees: [] }), ...client }), LOGIN_PATH: '/support-management/login/',
     createAppointments: () => appointmentController || ({ load: async () => {} }),
     submitCompanyCard: () => { throw new Error('Unexpected card registration'); },
     ...(runtime.now ? { Date: class extends Date { static now() { return runtime.now(); } } } : {}),
@@ -278,7 +288,7 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   const source = fs.readFileSync(path.join(root, 'scheduler/main.js'), 'utf8');
   await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/gmu, '')} })()`, context);
   if (activateCard) for (const callback of elements.get('card-tab').listeners.click || []) await callback({});
-  return { elements, introduction, footer,
+  return { elements, introduction, footer, document,
     async click(id, event = {}) { for (const callback of elements.get(id).listeners.click || []) await callback(event); },
     async dispatch(id, name, event = {}) { for (const callback of elements.get(id).listeners[name] || []) await callback(event); } };
 }
@@ -296,7 +306,7 @@ test('Agendamento is the default tab and card data loads only on the first card-
   assert.equal(elements.get('card-panel').hidden, true);
   await click('card-tab');
   assert.equal(reads, 1);
-  assert.equal(elements.get('header-title').textContent, 'Cadastro de Cartão');
+  assert.equal(elements.get('header-title').textContent, 'Configurações da Conta PJ');
   assert.equal(elements.get('appointments-panel').hidden, true);
   assert.equal(elements.get('card-panel').hidden, false);
   assert.equal(elements.get('card-tab').attributes['aria-selected'], 'true');
@@ -410,10 +420,10 @@ test('confirmed deletion removes the masked summary, restores the original form 
   assert.equal(elements.get('card-expiry').textContent, '');
   assert.equal(elements.get('edit-card').hidden, true);
   assert.equal(elements.get('card-editor').hidden, false);
-  assert.equal(elements.get('save-card').textContent, 'Cadastrar cartão');
+  assert.equal(elements.get('save-card').textContent, 'Cadastrar Cartão');
   assert.equal(footer.hidden, false);
-  assert.match(introduction.textContent, /^Cadastre abaixo/u);
-  assert.equal(elements.get('scheduler-message').textContent, 'Cartão excluído.');
+  assert.match(introduction.textContent, /^Cadastre aqui/u);
+  assert.equal(elements.get('scheduler-message').textContent, '');
   await click('appointments-tab');
   await click('card-tab');
   assert.equal(elements.get('card-editor').hidden, false, 'Tab navigation cannot resurrect a stale registered card');
@@ -766,3 +776,190 @@ test('a stale deletion keeps its original revision until the replacement card is
   assert.deepEqual(revisions, [CARD_REVISION, CARD_REVISION, replacementRevision]);
   assert.equal(elements.get('card-summary').hidden, true);
 });
+
+test('permission requests use only the current authorization and the selected employee flag', async () => {
+  const requests = [];
+  const { createSupportClient, values } = loadClient(async (url, options) => {
+    requests.push({ url, options });
+    return { ok: true, json: async () => ({ employees: [] }) };
+  });
+  values.set('supportManagementToken', 'session-example');
+  values.set('supportManagementContext', 'old-context');
+  const client = createSupportClient();
+  await client.permissions();
+  await client.updatePermission('colleague@example.test', true);
+  assert.equal(requests[0].url, '/support-management/api/permissions');
+  assert.equal(requests[0].options.method, 'GET');
+  assert.equal(requests[1].options.method, 'PATCH');
+  assert.deepEqual(JSON.parse(requests[1].options.body), { email: 'colleague@example.test', allowed: true });
+  assert.ok(requests.every(({ options }) => options.headers.Authorization === 'Bearer session-example'));
+  assert.equal(values.has('supportManagementContext'), false);
+});
+
+const employees = [
+  { email: 'admin@example.test', name: 'Administradora', allowed: false, active: true },
+  { email: 'colleague@example.test', name: '<Colega>', allowed: false, active: true },
+  { email: 'inactive@example.test', name: 'Inativo', allowed: false, active: false },
+];
+
+test('administrator permissions render plain employee names and autosave one selection while preventing duplicate edits', async () => {
+  let reads = 0;
+  let finish;
+  let invalidated = 0;
+  const writes = [];
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }),
+    permissions: async () => { reads++; return { employees }; },
+    updatePermission: (email, allowed) => { writes.push({ email, allowed }); return new Promise(resolve => { finish = resolve; }); },
+  }, { appointmentController: { load: async () => {}, invalidate: () => { invalidated++; } } });
+  const list = f.elements.get('permissions-list');
+  assert.equal(reads, 1);
+  assert.equal(list.children.length, 3);
+  assert.equal(list.children[1].children[1].textContent, '<Colega>');
+  assert.equal(list.children[1].children[1].children.length, 0);
+  assert.equal(list.children[2].children[0].disabled, true);
+  const checkbox = list.children[1].children[0];
+  checkbox.checked = true;
+  const pending = checkbox.listeners.change[0]();
+  assert.ok(list.children.every(row => row.children[0].disabled));
+  await checkbox.listeners.change[0]();
+  assert.deepEqual(writes, [{ email: 'colleague@example.test', allowed: true }]);
+  finish({ employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'colleague@example.test' })) });
+  await pending;
+  assert.equal(list.children[1].children[0].checked, true);
+  assert.equal(list.children[0].children[0].disabled, false);
+  assert.equal(list.children[2].children[0].disabled, true);
+  assert.ok(invalidated >= 1);
+});
+
+test('failed permission writes reconcile with the server and show an error without claiming success', async () => {
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }), permissions: async () => ({ employees }),
+    updatePermission: async () => { throw { status: 503 }; },
+  });
+  const list = f.elements.get('permissions-list');
+  const checkbox = list.children[0].children[0];
+  checkbox.checked = true;
+  await checkbox.listeners.change[0]();
+  assert.equal(list.children[0].children[0].checked, false);
+  assert.equal(list.children[0].children[0].disabled, false);
+  assert.match(f.elements.get('permissions-message').textContent, /Não foi possível confirmar/u);
+});
+
+test('members never request or display employee permissions', async () => {
+  let reads = 0;
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Usuário' } }),
+    card: async () => ({ card: null }), permissions: async () => { reads++; return { employees }; },
+  });
+  assert.equal(reads, 0);
+  assert.equal(f.elements.get('permissions-panel').hidden, true);
+});
+
+test('the card representation mirrors temporary entry but masks the CVV and clears with a tab change', async () => {
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }),
+  });
+  f.elements.get('number').value = '4000000000000010';
+  await f.dispatch('number', 'input', {});
+  f.elements.get('holder-name').value = 'test holder';
+  await f.dispatch('holder-name', 'input', {});
+  f.elements.get('exp-month').value = '12';
+  f.elements.get('exp-year').value = '2030';
+  await f.dispatch('exp-month', 'change', {});
+  f.elements.get('cvv').value = '123';
+  await f.dispatch('cvv', 'input', {});
+  assert.equal(f.elements.get('card-preview-number').textContent, '4000 0000 0000 0010');
+  assert.equal(f.elements.get('card-preview-holder').textContent, 'TEST HOLDER');
+  assert.equal(f.elements.get('card-preview-expiry').textContent, '12/30');
+  assert.equal(f.elements.get('card-preview-cvv').textContent, 'CVV ***');
+  await f.click('appointments-tab');
+  assert.equal(f.elements.get('card-preview-number').textContent, '•••• •••• •••• ••••');
+  assert.equal(f.elements.get('card-preview-holder').textContent, 'NOME DO TITULAR');
+  assert.equal(f.elements.get('card-preview-expiry').textContent, 'MM/AA');
+  assert.equal(f.elements.get('cvv').value, '');
+});
+
+test('administrator bootstrap caches only safe employee flags alongside booking authorization', async () => {
+  const { createSupportClient } = loadClient(async () => ({ ok: true, json: async () => ({
+    token: 'session-example', expiresAt: Date.now() + 60000,
+    user: { name: 'Admin', role: 'Administrador', bookingAllowed: true },
+    config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' },
+    calendar: { canBook: true },
+    permissions: { employees: employees.map(employee => ({ ...employee, password: 'PRIVATE', providerId: 'PRIVATE' })) },
+  }) }));
+  const client = createSupportClient();
+  await client.login('admin@example.test', 'synthetic-password');
+  const context = client.bootstrap().context;
+  assert.equal(context.user.bookingAllowed, true);
+  assert.equal(context.calendar.canBook, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(context.permissions.employees)), employees);
+});
+
+test('a permissions bootstrap renders immediately without an extra employee read on tab revisits', async () => {
+  let reads = 0;
+  const f = await loadScheduler({
+    bootstrap: () => ({ context: { user: { role: 'Administrador' }, config: { publicKey: 'pk_test_synthetic' },
+      card: { card: null }, permissions: { employees } }, refresh: false }),
+    permissions: async () => { reads++; throw new Error('Unexpected repeat read'); },
+  });
+  assert.equal(f.elements.get('permissions-list').children.length, 3);
+  await f.click('appointments-tab');
+  await f.click('card-tab');
+  assert.equal(reads, 0);
+});
+
+test('an administrator losing access during permission editing cannot retain active account mutation controls', async () => {
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
+    permissions: async () => ({ employees }), updatePermission: async () => { throw { status: 403 }; },
+  });
+  const checkbox = f.elements.get('permissions-list').children[0].children[0];
+  checkbox.checked = true;
+  await checkbox.listeners.change[0]();
+  for (const id of ['permissions-panel', 'edit-card', 'card-editor', 'retry-card-sync']) assert.equal(f.elements.get(id).hidden, true);
+  assert.equal(checkbox.disabled, true);
+});
+
+for (const destination of ['same-checkbox', 'other-control', 'other-tab']) {
+  test(`permission autosave restores keyboard focus only when it still belongs to that edit: ${destination}`, async () => {
+    let finish;
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      card: async () => ({ card: null }), permissions: async () => ({ employees }),
+      updatePermission: () => new Promise(resolve => { finish = resolve; }),
+    });
+    const checkbox = f.elements.get('permissions-list').children[1].children[0];
+    checkbox.focus();
+    checkbox.checked = true;
+    const pending = checkbox.listeners.change[0]();
+    f.document.activeElement = { tagName: 'BODY' }; // Native disabling moves focus away from the old control.
+    let expected;
+    if (destination === 'other-control') {
+      expected = f.elements.get('number');
+      expected.focus();
+    } else if (destination === 'other-tab') {
+      expected = f.elements.get('appointments-tab');
+      expected.focus();
+      await f.click('appointments-tab');
+    }
+    finish({ employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'colleague@example.test' })) });
+    await pending;
+    const updated = f.elements.get('permissions-list').children[1].children[0];
+    assert.notEqual(updated, checkbox);
+    if (destination === 'same-checkbox') {
+      assert.equal(f.document.activeElement, updated);
+      assert.equal(updated.focusOptions.preventScroll, true);
+      assert.equal(updated.disabled, false);
+    } else {
+      assert.equal(f.document.activeElement, expected);
+      assert.equal(updated.focused, undefined);
+    }
+  });
+}

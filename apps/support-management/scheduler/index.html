@@ -18,7 +18,7 @@
       <nav aria-label="Agendamento" role="tablist" aria-orientation="vertical">
         <button id="appointments-tab" class="scheduler-tab" type="button" role="tab" aria-selected="true" aria-controls="appointments-panel">Agendamento</button>
         <p class="admin-tools-divider" role="presentation">Ferramentas do Administrador</p>
-        <button id="card-tab" class="scheduler-tab" type="button" role="tab" aria-selected="false" aria-controls="card-panel" tabindex="-1">Cadastro de Cartão</button>
+        <button id="card-tab" class="scheduler-tab" type="button" role="tab" aria-selected="false" aria-controls="card-panel" tabindex="-1">Configurações da Conta PJ</button>
       </nav>
     </aside>
     <div class="scheduler-workspace">
@@ -35,7 +35,7 @@
           <div id="appointments-intro" class="appointments-intro tool-intro">
             <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
           </div>
-          <p id="appointments-gate" class="payment-gate" role="status" hidden>Método de pagamento não cadastrado. Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p>
+          <div id="appointments-gate" class="payment-gate" role="status" hidden><p>Configurações da Conta PJ não finalizadas.</p><p>Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p></div>
           <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true"></div>
           <div id="calendar-legend" class="calendar-legend" aria-label="Legenda do calendário" hidden>
             <p class="calendar-legend-item"><span class="legend-range" aria-hidden="true"><span class="legend-swatch legend-price-high"></span><span class="legend-swatch legend-price-middle"></span><span class="legend-swatch legend-price-low"></span></span>Datas Disponíveis</p>
@@ -66,7 +66,7 @@
         <section id="appointments-faq" class="appointments-faq" aria-labelledby="appointments-faq-title" hidden>
           <h2 id="appointments-faq-title">Perguntas Frequentes</h2>
           <details><summary>Qual o horário de início de um atendimento?</summary><p>Todos os atendimentos iniciam às 09:00 no horário de Brasília.</p></details>
-          <details><summary>Quanto tempo dura um atendimento?</summary><p>Não há um tempo de duração pré-determinado. Cada encontro pode durar até 2h, conforme necessário.</p></details>
+          <details><summary>Quanto tempo dura um atendimento?</summary><p>Não há um tempo de duração pré-determinado. Cada encontro pode durar até 3h, conforme necessário.</p></details>
           <details><summary>Quanto custa um atendimento?</summary><p>No calendário acima, estão listados os investimentos por hora cobrados, dependendo da data escolhida. O custo de um atendimento é: valor por hora x tempo de duração.</p></details>
           <details><summary>O que acontece depois que reservo uma data?</summary><p>Você receberá todas as orientações pertinentes em seu e-mail cadastrado (<span id="appointment-confirmation-email"></span>).</p></details>
           <details><summary>É possível cancelar uma reserva de agenda?</summary><p>Não. Por questões operacionais internas na Machado, a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro, será cobrada 1h de atendimento.</p></details>
@@ -75,7 +75,10 @@
         </section>
       </section>
       <section id="card-panel" class="checkout-panel card-tool-panel" role="tabpanel" aria-labelledby="card-tab" hidden>
-        <p class="intro tool-intro">Cadastre abaixo o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos.</p>
+        <div class="account-settings-grid">
+        <section class="account-tool" aria-labelledby="card-registration-title">
+        <h2 id="card-registration-title" class="account-tool-title">Cadastro de Cartão</h2>
+        <p class="intro">Cadastre aqui o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos:</p>
         <div class="card-tool-content">
         <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
         <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
@@ -86,7 +89,7 @@
         <p id="empty-card" class="empty-card" hidden>Nenhum cartão cadastrado para sua empresa.</p>
         <p id="member-notice" class="muted" hidden>O administrador da sua empresa pode cadastrar ou excluir o cartão.</p>
         <button id="retry-card-sync" class="secondary" type="button" hidden>Sincronizar cadastro</button>
-        <section id="card-editor" aria-labelledby="header-title" hidden>
+        <section id="card-editor" aria-labelledby="card-registration-title" hidden>
           <form id="card-form" autocomplete="off" aria-busy="false" novalidate>
             <fieldset><legend>Dados do cartão</legend>
               <div class="card-details">
@@ -102,33 +105,27 @@
                     <div><label for="cvv">CVV</label><input id="cvv" name="cvv" type="password" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" placeholder="CVV" aria-describedby="cvv-error" required><p class="field-error" id="cvv-error" aria-live="polite" hidden></p></div>
                   </div>
                 </div>
-                <div class="card-preview" aria-hidden="true"><img class="checkout-card" src="../img/checkout-card.webp" alt=""><span id="card-brand" class="card-brand" hidden></span></div>
+                <div class="card-preview" aria-hidden="true"><span class="card-chip"></span><span id="card-brand" class="card-brand" hidden></span><span id="card-preview-number" class="card-preview-number">•••• •••• •••• ••••</span><span id="card-preview-holder" class="card-preview-holder">NOME DO TITULAR</span><span id="card-preview-expiry" class="card-preview-expiry">MM/AA</span><span id="card-preview-cvv" class="card-preview-cvv">CVV ***</span></div>
               </div>
             </fieldset>
-            <fieldset><legend>Endereço de cobrança</legend>
-              <div class="address-row">
-                <div><label for="line-1">Rua</label><input id="line-1" name="line1" type="text" placeholder="Digite a rua" maxlength="180" required></div>
-                <div><label for="street-number">Número</label><input id="street-number" name="streetNumber" type="text" placeholder="1234 ou S/N" maxlength="20" required></div>
-              </div>
-              <div class="address-pair">
-                <div><label for="line-2">Complemento <span class="optional">(opcional)</span></label><input id="line-2" name="line2" type="text" placeholder="Digite o complemento" maxlength="128"></div>
-                <div><label for="neighborhood">Bairro</label><input id="neighborhood" name="neighborhood" type="text" placeholder="Digite o bairro" maxlength="48" required></div>
-              </div>
-              <div class="city-row">
-                <div><label for="city">Cidade</label><input id="city" name="city" type="text" placeholder="Digite a cidade" maxlength="128" required></div>
-                <div><label for="state">Estado</label><select id="state" name="state" required><option value="">-</option><option>AC</option><option>AL</option><option>AP</option><option>AM</option><option>BA</option><option>CE</option><option>DF</option><option>ES</option><option>GO</option><option>MA</option><option>MT</option><option>MS</option><option>MG</option><option>PA</option><option>PB</option><option>PR</option><option>PE</option><option>PI</option><option>RJ</option><option>RN</option><option>RS</option><option>RO</option><option>RR</option><option>SC</option><option>SP</option><option>SE</option><option>TO</option></select></div>
-                <div><label for="zip-code">CEP</label><input id="zip-code" name="zipCode" type="text" inputmode="numeric" pattern="[0-9]{5}-[0-9]{3}" maxlength="9" placeholder="00000-000" required></div>
-              </div>
-            </fieldset>
-            <button id="save-card" class="primary" type="submit">Cadastrar cartão</button>
+            <button id="save-card" class="primary" type="submit">Cadastrar Cartão</button>
             <button id="cancel-card" class="secondary" type="button" hidden>Cancelar</button>
           </form>
         </section>
         <footer class="checkout-footer">
           <div class="checkout-security"><img src="../img/checkout-lock.webp" alt=""><p>Ambiente seguro.</p></div>
-          <p class="checkout-company">® Machado | Método Gerencial para Empresas • Todos os direitos reservados. • CNPJ: 39.794.363/0001-81</p>
           <div class="checkout-provider"><p>Powered by</p><img src="../img/checkout-pagarme.webp" alt="Pagar.me"></div>
         </footer>
+        </div>
+        </section>
+        <section id="permissions-panel" class="account-tool" aria-labelledby="permissions-title">
+          <h2 id="permissions-title" class="account-tool-title">Permissões</h2>
+          <p class="intro">Selecione os colaboradores que estão autorizados a contratar atendimentos consultivos:</p>
+          <div class="permissions-content">
+            <p id="permissions-message" class="message" role="status" aria-live="polite"></p>
+            <div id="permissions-list" class="permissions-list"></div>
+          </div>
+        </section>
         </div>
         <dialog id="delete-card-dialog" class="appointment-details card-delete-dialog" aria-labelledby="delete-card-title">
           <h2 id="delete-card-title">Excluir cartão?</h2>

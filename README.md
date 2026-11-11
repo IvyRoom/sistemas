@@ -95,19 +95,22 @@ name, with one-hour session expiry enforced in the background. It always shows
 the current and next month, with square day tiles and Sunday–Saturday columns;
 unavailable dates are gray.
 Bookable dates run from tomorrow through the end of next month, excluding weekends and
-national/Curitiba holidays. A verified active company card is required to see
+national/Curitiba holidays. A verified active company card and administrator-granted
+employee permission are required to see
 availability and reserve. Selecting a date opens its details in a popup and dims
 the other tiles. Reservar Agenda reveals the warning and Confirmar/Cancelar
 actions; Cancelar is the default, and only Confirmar submits the reservation.
 Appointments start at 09:00 Brasília time
-in Microsoft Teams, with a two-hour calendar hold and confirmation email. A short
+in Microsoft Teams, with a three-hour calendar hold and confirmation email. A short
 selection instruction, calendar legend and expandable FAQ provide the appointment
 information.
-Cadastro de Cartão uses Pagar.me test keys and test cards; reservations and
+Configurações da Conta PJ places Cadastro de Cartão and employee Permissões side
+by side on wide screens. Permission checkboxes save each change to the workbook;
+inactive employees cannot be enabled. Card entry includes a live representation
+with a masked CVV and no billing-address section. It uses Pagar.me test keys and test cards; reservations and
 nonattendance do not automatically charge a card.
 Its administrator trash action confirms deletion, clears the selected company
-card, and returns to the registration form. The card introduction shares the
-calendar instruction's alignment; the top bar holds the only visible card title.
+card, and returns to the registration form.
 
 Login preloads public configuration, masked card and calendar context. A
 token-bound sessionStorage cache avoids repeating those requests during the

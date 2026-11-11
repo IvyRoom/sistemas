@@ -14,10 +14,13 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
     if (!token || !Number.isFinite(result?.expiresAt) || result.expiresAt <= Date.now()) return;
     const safeCard = result.card?.card;
     const context = {
-      user: result.user && { name: result.user.name, company: result.user.company, role: result.user.role, email: result.user.email },
+      user: result.user && { name: result.user.name, company: result.user.company, role: result.user.role, email: result.user.email, bookingAllowed: result.user.bookingAllowed === true },
       expiresAt: result.expiresAt,
       config: result.config && { environment: result.config.environment, publicKey: result.config.publicKey },
       calendar: result.calendar,
+      ...(result.user?.role === 'Administrador' && Array.isArray(result.permissions?.employees) ? { permissions: {
+        employees: result.permissions.employees.map(({ email, name, allowed, active }) => ({ email, name, allowed: allowed === true, active: active === true }))
+      } } : {}),
       card: result.card && { card: safeCard ? { brand: safeCard.brand, lastFour: safeCard.lastFour, expMonth: safeCard.expMonth, expYear: safeCard.expYear } : null,
         verificationRequired: Boolean(result.card.verificationRequired), workbookSyncPending: Boolean(result.card.workbookSyncPending),
         cardDeletionPending: Boolean(result.card.cardDeletionPending),
@@ -98,13 +101,18 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       return result;
     },
     card: () => request('/card'),
+    permissions: () => request('/permissions'),
+    async updatePermission(email, allowed) {
+      storage.removeItem(CONTEXT_KEY);
+      return request('/permissions', { method: 'PATCH', body: { email, allowed } });
+    },
     async deleteCard(expectedCardRevision) {
       if (typeof expectedCardRevision !== 'string' || !/^[a-f0-9]{64}$/u.test(expectedCardRevision)) throw new Error('card_revision_required');
       storage.removeItem(CONTEXT_KEY);
       return request('/card', { method: 'DELETE', body: { expectedCardRevision }, timeoutMs: 120000 });
     },
-    async saveCard(token, billingAddress) {
-      const result = await request('/card', { method: 'PUT', body: { token, billingAddress }, timeoutMs: 120000 });
+    async saveCard(token) {
+      const result = await request('/card', { method: 'PUT', body: { token }, timeoutMs: 120000 });
       storage.removeItem(CONTEXT_KEY);
       return result;
     },
@@ -143,11 +151,11 @@ export async function tokenizeCard(publicKey, card, transport = globalThis.fetch
   return result.id;
 }
 
-export async function submitCompanyCard({ publicKey, card, billingAddress, client, transport, clear, isCurrent = () => true }) {
+export async function submitCompanyCard({ publicKey, card, client, transport, clear, isCurrent = () => true }) {
   try {
     const token = await tokenizeCard(publicKey, card, transport);
     if (!isCurrent()) throw new Error('session_ended');
-    return await client.saveCard(token, billingAddress);
+    return await client.saveCard(token);
   } finally {
     clear();
   }

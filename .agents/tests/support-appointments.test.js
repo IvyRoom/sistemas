@@ -33,7 +33,7 @@ function fixture(client, options = {}) {
   vm.runInContext(`${source.replace(/export /gu, '')}\nglobalThis.create = createAppointments;`, context);
   const connectedClient = { ...client, async calendar(...args) {
     const result = await client.calendar(...args);
-    return result && Array.isArray(result.days) ? { today: '2026-11-09', paymentMethodRegistered: true, administratorName: 'Administradora Exemplo', userEmail: 'user@example.test', ...result } : result;
+    return result && Array.isArray(result.days) ? { today: '2026-11-09', paymentMethodRegistered: true, canBook: true, administratorName: 'Administradora Exemplo', userEmail: 'user@example.test', ...result } : result;
   } };
   const app = context.create({ client: connectedClient, onAuthFailure(error) { failures.push(error); return error.status === 401; },
     requestId: () => `00000000-0000-4000-8000-${String(++ids).padStart(12, '0')}`, ...options,
@@ -253,7 +253,7 @@ test('session expiry is delegated to authentication and malformed calendars fail
 
 
 test('a missing company payment method shows the named administrator gate and hides appointment content', async () => {
-  const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: false, administratorName: 'Maria da Silva', userEmail: 'colleague@example.test' }) });
+  const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: false, canBook: false, administratorName: 'Maria da Silva', userEmail: 'colleague@example.test' }) });
   await f.app.load();
   assert.equal(f.elements.get('appointments-gate').hidden, false);
   assert.equal(f.elements.get('payment-administrator-name').textContent, 'Maria da Silva');
@@ -508,7 +508,7 @@ test('past dates, today and weekends stay gray while eligible dates through next
 test('the login bootstrap renders immediately and tab revisits do not repeat calendar reads', async () => {
   let reads = 0;
   const f = fixture({ calendar: async () => { reads++; return { days }; } });
-  const bootstrap = { days, today: '2026-11-09', paymentMethodRegistered: true, administratorName: 'Maria', userEmail: 'user@example.test' };
+  const bootstrap = { days, today: '2026-11-09', paymentMethodRegistered: true, canBook: true, administratorName: 'Maria', userEmail: 'user@example.test' };
   assert.equal(await f.app.load(bootstrap), true);
   assert.equal(reads, 0);
   await f.app.load();
@@ -600,4 +600,38 @@ test('the FAQ follows payment readiness and inserts its confirmation email as pl
   assert.equal(f.elements.get('appointment-confirmation-email').textContent, email);
   assert.equal(f.elements.get('appointment-confirmation-email').children.length, 0);
   assert.equal(f.elements.get('appointment-confirmation-email').innerHTML, undefined);
+});
+
+test('a verified company card does not expose availability or permit selection without booking permission', async () => {
+  let writes = 0;
+  const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: true, canBook: false }),
+    reserveDate: async () => { writes++; } });
+  await f.app.load();
+  assert.equal(f.elements.get('appointments-gate').hidden, false);
+  for (const id of ['appointments-intro', 'appointments-faq', 'appointment-calendar', 'calendar-legend']) assert.equal(f.elements.get(id).hidden, true);
+  f.select();
+  await f.reserve();
+  assert.equal(f.elements.get('appointment-details').open, false);
+  assert.equal(writes, 0);
+});
+
+test('a pre-permission cached calendar is discarded in favor of a fresh denied calendar', async () => {
+  let reads = 0;
+  const f = fixture({ calendar: async () => { reads++; return { days, paymentMethodRegistered: true, canBook: false }; } });
+  await f.app.load({ days, today: '2026-11-09', paymentMethodRegistered: true });
+  assert.equal(reads, 1);
+  assert.equal(f.elements.get('appointments-gate').hidden, false);
+});
+
+test('permission revoked during fresh booking preflight closes its popup before any write', async () => {
+  let reads = 0;
+  let writes = 0;
+  const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: true, canBook: ++reads === 1 }),
+    reserveDate: async () => { writes++; } });
+  await f.app.load();
+  f.select();
+  await f.reserve();
+  assert.equal(writes, 0);
+  assert.equal(f.elements.get('appointment-details').open, false);
+  assert.equal(f.elements.get('appointments-gate').hidden, false);
 });
