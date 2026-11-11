@@ -38,7 +38,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-tab { display: block; width: 100%; padding: 13px 15px; margin-bottom: 10px; border: 1px solid #a77a84; border-radius: 5px; color: #fff; background: transparent; text-decoration: none; text-align: left; font-size: 16px; }
 .scheduler-tab[aria-selected="true"] { background: rgba(255,255,255,.08); border-color: #b5828d; }
 .scheduler-tab:hover { background: rgba(255,255,255,.14); }
-.admin-tools-divider { margin: 25px 0 8px; padding-bottom: 8px; border-bottom: 1px solid #a77a84; color: #dedede; text-align: left; font-size: 15px; line-height: 1.5; }
+.admin-tools-divider { margin: 25px 0 13px; padding-bottom: 8px; border-bottom: 1px solid #a77a84; color: #dedede; text-align: left; font-size: 15px; line-height: 1.5; }
 .scheduler-workspace { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .scheduler-header { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 40px; padding: 0 10px 0 20px; background: linear-gradient(135deg, #4a0816, #160208); color: #fff; }
 .scheduler-header h1 { min-width: 0; font-size: 16px; font-weight: 400; line-height: 1.25; }
@@ -50,6 +50,9 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .account-tool { width: 100%; max-width: 700px; min-width: 0; }
 .account-tool-title { color: #790d26; font-size: 20px; font-weight: 400; margin-bottom: 12px; }
 .card-tool-content, .permissions-content { width: 100%; margin-top: 24px; padding: 30px; border: 1px solid #dedede; border-radius: 5px; }
+.card-tool-content:has(#card-summary:not([hidden])) { padding: 0; border: 0; background: transparent; }
+.card-tool-content:has(#card-summary:not([hidden])) #card-summary { width: 100%; margin: 0; padding: 30px; }
+#card-form[aria-busy="true"], #card-form[aria-busy="true"] * { cursor: wait !important; }
 .permissions-list { display: flex; flex-direction: column; gap: 16px; }
 .scheduler-main .permission-option { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 14px; line-height: 1.5; }
 .scheduler-main .permission-option input { width: 18px; height: 18px; flex-shrink: 0; margin: 0; accent-color: #4a0816; }
@@ -65,8 +68,13 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .scheduler-main .message { font-size: 13px; margin: 15px 0; }
 .card-panel { border: 1px solid rgb(222,222,222); border-radius: 5px; padding: 15px; margin: 15px 0; }
 .card-panel h2, .card-panel h3, legend { font-size: 15px; font-weight: 400; color: #790d26; }
-.card-summary-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.card-summary-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
 .card-edit { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 4px; border: 0; background: transparent; color: #790d26; }
+.card-delete-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; width: 232px; max-width: 100%; margin-left: auto; }
+.card-delete-button { height: 32px; min-width: 0; padding: 0 8px; border: 1px solid #c8b8bc; border-radius: 5px; background: #fff; color: #4a0816; font-size: 12px; }
+.card-delete-button:hover { background: #f5eff1; }
+.card-delete-cancel { border-color: #4a0816; background: #4a0816; color: #fff; }
+.card-delete-cancel:hover { background: #790d26; }
 .card-number { font-size: 16px; margin-top: 10px; }
 .card-expiry, .empty-card, .muted { font-size: 12px; color: rgb(128,128,128); line-height: 1.5; }
 .card-expiry { margin-top: 5px; }
@@ -167,9 +175,6 @@ legend { padding: 0 4px; }
 #reservation-warning { color: #4a0816; text-align: center; }
 #reservation-confirm-step .reservation-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: min(100%,230px); margin-inline: auto; }
 .scheduler-main #reservation-confirm-step .reservation-actions button { width: 100%; min-width: 0; padding-inline: 6px; }
-.card-delete-dialog { padding-top: 24px; }
-.card-delete-dialog h2 { color: #4a0816; font-size: 18px; font-weight: 400; }
-.card-delete-dialog p { margin-top: 12px; }
 .dialog-close { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: #555; font-size: 24px; line-height: 1; }
 .reservation-actions { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .scheduler-main .reservation-actions .primary { margin: 0; background: #4a0816; box-shadow: none; font-size: 16px; }

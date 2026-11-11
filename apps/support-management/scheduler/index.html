@@ -82,7 +82,14 @@
         <div class="card-tool-content">
         <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
         <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
-          <div class="card-summary-heading"><h2 id="card-title">Cartão cadastrado</h2><button id="edit-card" class="card-edit" type="button" aria-label="Excluir cartão" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"></path></svg></button></div>
+          <div class="card-summary-heading">
+            <h2 id="card-title">Cartão cadastrado</h2>
+            <button id="edit-card" class="card-edit" type="button" aria-label="Excluir cartão" aria-expanded="false" aria-controls="card-delete-actions" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"></path></svg></button>
+            <div id="card-delete-actions" class="card-delete-actions" role="group" aria-label="Exclusão do cartão" hidden>
+              <button id="confirm-delete-card" class="card-delete-button" type="button">Deletar Cartão</button>
+              <button id="cancel-delete-card" class="card-delete-button card-delete-cancel" type="button">Cancelar</button>
+            </div>
+          </div>
           <p class="card-number" id="card-number"></p>
           <p class="card-expiry" id="card-expiry"></p>
         </section>
@@ -128,15 +135,6 @@
           </div>
         </section>
         </div>
-        <dialog id="delete-card-dialog" class="appointment-details card-delete-dialog" aria-labelledby="delete-card-title">
-          <h2 id="delete-card-title">Excluir cartão?</h2>
-          <p>O cartão cadastrado será excluído. Para utilizar outro cartão, faça um novo cadastro.</p>
-          <p id="delete-card-message" class="message" role="status" aria-live="polite"></p>
-          <div class="reservation-actions">
-            <button id="confirm-delete-card" class="primary" type="button">Excluir cartão</button>
-            <button id="cancel-delete-card" class="secondary" type="button" autofocus>Cancelar</button>
-          </div>
-        </dialog>
       </section>
       </main>
     </div>

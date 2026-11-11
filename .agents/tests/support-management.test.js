@@ -275,6 +275,8 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   elements.get('card-form').reset = () => {
     for (const node of elements.values()) if (['INPUT', 'SELECT'].includes(node.tagName)) node.value = '';
   };
+  elements.get('card-form').reportValidity = () => ![...elements.values()].some(node =>
+    ['INPUT', 'SELECT'].includes(node.tagName) && !node.disabled && (node.validationMessage || (node.required && !node.value)));
   Object.assign(document, { getElementById: (id) => elements.get(id) || null,
       querySelector: (selector) => selector === '.intro' ? introduction : footer,
       createElement: (tagName) => element(tagName) });
@@ -282,7 +284,17 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
     window: { addEventListener(name, callback) { const handlers = windowListeners.get(name) || []; handlers.push(callback); windowListeners.set(name, handlers); }, location: { replace: runtime.navigate || (() => { throw new Error('Unexpected navigation'); }) } },
     createSupportClient: () => ({ permissions: async () => ({ employees: [] }), ...client }), LOGIN_PATH: '/support-management/login/',
     createAppointments: () => appointmentController || ({ load: async () => {} }),
-    submitCompanyCard: () => { throw new Error('Unexpected card registration'); },
+    submitCompanyCard: runtime.submitCompanyCard || (() => { throw new Error('Unexpected card registration'); }),
+    FormData: class {
+      constructor() {
+        this.values = new Map([...elements.values()].filter(node => ['INPUT', 'SELECT'].includes(node.tagName)
+          && node.getAttribute('name') && !node.disabled).map(node => [node.getAttribute('name'), node.value]));
+        runtime.onFormData?.(this);
+      }
+      get(key) { return this.values.get(key) ?? null; }
+      keys() { return this.values.keys(); }
+      delete(key) { this.values.delete(key); }
+    },
     ...(runtime.now ? { Date: class extends Date { static now() { return runtime.now(); } } } : {}),
     ...(runtime.setInterval ? { setInterval: runtime.setInterval, clearInterval: runtime.clearInterval } : {}),
   });
@@ -295,6 +307,7 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
   if (activateCard) for (const callback of elements.get('card-tab').listeners.click || []) await callback({});
   return { elements, introduction, footer, document,
     dispatchWindow(name) { for (const callback of windowListeners.get(name) || []) callback(); },
+    async dispatchDocument(name, event = {}) { for (const callback of documentListeners.get(name) || []) await callback(event); },
     async click(id, event = {}) { for (const callback of elements.get(id).listeners.click || []) await callback(event); },
     async dispatch(id, name, event = {}) { for (const callback of elements.get(id).listeners[name] || []) await callback(event); } };
 }
@@ -360,10 +373,10 @@ const pendingCompanyCard = {
 
 const registeredCompanyCard = { brand: 'Visa', lastFour: '0010', expMonth: 12, expYear: 2030 };
 
-for (const dismissal of ['cancel', 'escape', 'backdrop']) {
-  test(`the deletion dialog defaults to Cancelar and ${dismissal} makes no deletion request`, async () => {
+for (const dismissal of ['cancel', 'escape', 'tab']) {
+  test(`inline card deletion defaults to Cancelar and ${dismissal} makes no deletion request`, async () => {
     let deletions = 0;
-    const { elements, click, dispatch } = await loadScheduler({
+    const { elements, document, click, dispatchDocument } = await loadScheduler({
       config: async () => ({ publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
@@ -372,8 +385,10 @@ for (const dismissal of ['cancel', 'escape', 'backdrop']) {
     elements.get('number').value = 'temporary card field';
     elements.get('cvv').value = '123';
     await click('edit-card');
-    assert.equal(elements.get('delete-card-dialog').open, true);
-    assert.equal(elements.get('cancel-delete-card').focused, true);
+    assert.equal(elements.get('card-delete-actions').hidden, false);
+    assert.equal(elements.get('edit-card').hidden, true);
+    assert.equal(elements.get('edit-card').attributes['aria-expanded'], 'true');
+    assert.equal(document.activeElement, elements.get('cancel-delete-card'));
     assert.equal(elements.get('number').value, '');
     assert.equal(elements.get('cvv').value, '');
     assert.equal(elements.get('card-editor').hidden, true);
@@ -381,12 +396,15 @@ for (const dismissal of ['cancel', 'escape', 'backdrop']) {
     if (dismissal === 'cancel') await click('cancel-delete-card');
     else if (dismissal === 'escape') {
       let prevented = false;
-      await dispatch('delete-card-dialog', 'cancel', { preventDefault() { prevented = true; } });
+      await dispatchDocument('keydown', { key: 'Escape', preventDefault() { prevented = true; } });
       assert.equal(prevented, true);
-    } else await click('delete-card-dialog', { target: elements.get('delete-card-dialog'), clientX: 0, clientY: 0 });
-    assert.equal(elements.get('delete-card-dialog').open, false);
-    assert.equal(elements.get('edit-card').focused, true);
+    } else await click('appointments-tab');
+    assert.equal(elements.get('card-delete-actions').hidden, true);
+    assert.equal(elements.get('edit-card').hidden, false);
+    assert.equal(elements.get('edit-card').attributes['aria-expanded'], 'false');
+    if (dismissal !== 'tab') assert.equal(document.activeElement, elements.get('edit-card'));
     assert.equal(elements.get('card-summary').hidden, false);
+    await click('confirm-delete-card');
     assert.equal(deletions, 0);
   });
 }
@@ -420,7 +438,7 @@ test('confirmed deletion removes the masked summary, restores the original form 
   assert.equal(invalidated, 1);
   assert.equal(freshCalendars, 1);
   assert.equal(paymentRegistered, false);
-  assert.equal(elements.get('delete-card-dialog').open, false);
+  assert.equal(elements.get('card-delete-actions').hidden, true);
   assert.equal(elements.get('card-summary').hidden, true);
   assert.equal(elements.get('card-number').textContent, '');
   assert.equal(elements.get('card-expiry').textContent, '');
@@ -454,11 +472,11 @@ test('failed or unconfirmed deletions retain the masked summary and allow a safe
     await click('confirm-delete-card');
     assert.equal(elements.get('card-summary').hidden, false);
     assert.match(elements.get('card-number').textContent, /0010/u);
-    assert.equal(elements.get('edit-card').hidden, false);
+    assert.equal(elements.get('edit-card').hidden, true);
     assert.equal(elements.get('edit-card').disabled, false);
     assert.equal(elements.get('card-editor').hidden, true);
-    assert.equal(elements.get('delete-card-dialog').open, true);
-    assert.match(elements.get('delete-card-message').textContent, /Não foi possível confirmar/u);
+    assert.equal(elements.get('card-delete-actions').hidden, false);
+    assert.match(elements.get('scheduler-message').textContent, /Não foi possível confirmar/u);
     await click('cancel-delete-card');
     await click('edit-card');
     await click('confirm-delete-card');
@@ -484,7 +502,7 @@ test('a pending deletion gives only administrators a trash retry and blocks regi
     assert.equal(elements.get('empty-card').hidden, role === 'Administrador');
     await dispatch('card-form', 'submit', { preventDefault() {} });
     await click('edit-card');
-    assert.equal(elements.get('delete-card-dialog').open, role === 'Administrador');
+    assert.equal(elements.get('card-delete-actions').hidden, role !== 'Administrador');
     await click('confirm-delete-card');
     assert.equal(deletions, role === 'Administrador' ? 1 : 0);
     assert.equal(elements.get('card-editor').hidden, role !== 'Administrador');
@@ -502,7 +520,7 @@ test('members cannot reveal the deletion action or submit deletion for a registe
   assert.equal(elements.get('edit-card').hidden, true);
   await click('edit-card');
   await click('confirm-delete-card');
-  assert.equal(elements.get('delete-card-dialog').open, false);
+  assert.equal(elements.get('card-delete-actions').hidden, true);
   assert.equal(deletions, 0);
 });
 
@@ -518,7 +536,7 @@ test('an administrator can delete a verified registered card whose workbook sync
   assert.equal(elements.get('retry-card-sync').hidden, false);
   assert.equal(elements.get('edit-card').hidden, false);
   await click('edit-card');
-  assert.equal(elements.get('delete-card-dialog').open, true);
+  assert.equal(elements.get('card-delete-actions').hidden, false);
   await click('confirm-delete-card');
   assert.equal(deletions, 1);
   assert.equal(elements.get('retry-card-sync').hidden, true);
@@ -529,7 +547,7 @@ test('an administrator can delete a verified registered card whose workbook sync
 test('an in-flight card deletion prevents duplicate submissions and dismissal', async () => {
   let resolveDelete;
   let deletions = 0;
-  const { elements, click, dispatch } = await loadScheduler({
+  const { elements, click, dispatchDocument } = await loadScheduler({
     config: async () => ({ publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
@@ -539,14 +557,13 @@ test('an in-flight card deletion prevents duplicate submissions and dismissal', 
   const pending = click('confirm-delete-card');
   await click('confirm-delete-card');
   await click('cancel-delete-card');
-  await dispatch('delete-card-dialog', 'cancel', { preventDefault() {} });
-  await click('delete-card-dialog', { target: elements.get('delete-card-dialog'), clientX: 0, clientY: 0 });
+  await dispatchDocument('keydown', { key: 'Escape', preventDefault() {} });
   assert.equal(deletions, 1);
-  assert.equal(elements.get('delete-card-dialog').open, true);
+  assert.equal(elements.get('card-delete-actions').hidden, false);
   assert.equal(elements.get('cancel-delete-card').disabled, true);
   resolveDelete({ card: null });
   await pending;
-  assert.equal(elements.get('delete-card-dialog').open, false);
+  assert.equal(elements.get('card-delete-actions').hidden, true);
   assert.equal(elements.get('card-editor').hidden, false);
 });
 
@@ -772,7 +789,7 @@ test('a stale deletion keeps its original revision until the replacement card is
   await click('confirm-delete-card');
   await click('confirm-delete-card');
   assert.deepEqual(revisions, [CARD_REVISION, CARD_REVISION]);
-  assert.match(elements.get('delete-card-message').textContent, /cartão cadastrado mudou/u);
+  assert.match(elements.get('scheduler-message').textContent, /cartão cadastrado mudou/u);
   assert.match(elements.get('card-number').textContent, /0010/u);
   await click('cancel-delete-card');
   await click('card-tab');
@@ -963,6 +980,154 @@ test('the card representation mirrors temporary entry but masks the CVV and clea
   assert.equal(f.elements.get('cvv').value, '');
 });
 
+test('CVV typing clears prior feedback and preview updates do not validate an unfinished code', async () => {
+  const f = await loadScheduler({
+    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    card: async () => ({ card: null }),
+  });
+  f.elements.get('number').value = '4000000000000010';
+  await f.dispatch('number', 'input', {});
+  for (const value of ['1', '12']) {
+    f.elements.get('cvv').value = value;
+    await f.dispatch('cvv', 'input', {});
+    assert.equal(f.elements.get('cvv-error').hidden, true);
+    assert.equal(f.elements.get('cvv').validationMessage, '');
+  }
+  await f.dispatch('holder-name', 'input', {});
+  await f.dispatch('exp-month', 'change', {});
+  assert.equal(f.elements.get('cvv-error').hidden, true);
+  await f.dispatch('cvv', 'blur', {});
+  assert.equal(f.elements.get('cvv-error').textContent, 'Informe o código de segurança válido.');
+  assert.equal(f.elements.get('cvv-error').hidden, false);
+  f.elements.get('cvv').value = '1';
+  await f.dispatch('cvv', 'input', {});
+  assert.equal(f.elements.get('cvv-error').hidden, true);
+  await f.dispatch('card-form', 'submit', { preventDefault() {} });
+  assert.equal(f.elements.get('cvv-error').hidden, false, 'Submitting must still identify an incomplete code');
+  f.elements.get('cvv').value = '123';
+  await f.dispatch('cvv', 'input', {});
+  await f.dispatch('cvv', 'blur', {});
+  assert.equal(f.elements.get('cvv-error').hidden, true);
+});
+
+const cardFieldIds = ['number', 'holder-name', 'exp-month', 'exp-year', 'cvv'];
+const cardFieldValues = ['4000 0000 0000 0010', 'TEST HOLDER', '12', '2030', '123'];
+
+async function fillCard(f) {
+  for (const [index, id] of cardFieldIds.entries()) {
+    f.elements.get(id).value = cardFieldValues[index];
+    await f.dispatch(id, ['exp-month', 'exp-year'].includes(id) ? 'change' : 'input', {});
+  }
+}
+
+function assertCardCleared(f) {
+  for (const id of cardFieldIds) assert.equal(f.elements.get(id).value, '');
+  assert.equal(f.elements.get('card-preview-number').textContent, '•••• •••• •••• ••••');
+  assert.equal(f.elements.get('card-preview-holder').textContent, 'NOME DO TITULAR');
+  assert.equal(f.elements.get('card-preview-expiry').textContent, 'MM/AA');
+  assert.equal(f.elements.get('card-preview-cvv').textContent, 'CVV ***');
+}
+
+for (const phase of ['tokenization', 'backend']) {
+  for (const accepted of [true, false]) {
+    test(`card fields stay visible and locked during ${phase}, then clear on ${accepted ? 'success' : 'failure'}`, async () => {
+      const { submitCompanyCard } = loadClient();
+      let finish;
+      let submittedCard;
+      let submittedData;
+      let tokenizations = 0;
+      let registrations = 0;
+      const pendingPhase = new Promise((resolve, reject) => {
+        finish = () => accepted ? resolve(phase === 'tokenization'
+          ? { ok: true, json: async () => ({ id: 'token_example' }) }
+          : { card: registeredCompanyCard, cardRevision: CARD_REVISION }) : reject({ status: 503 });
+      });
+      const f = await loadScheduler({
+        config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+        card: async () => ({ card: null }),
+        saveCard: async (token) => {
+          registrations++;
+          assert.equal(token, 'token_example');
+          return phase === 'backend' ? pendingPhase : { card: registeredCompanyCard, cardRevision: CARD_REVISION };
+        },
+      }, { runtime: {
+        onFormData(data) { submittedData = data; },
+        submitCompanyCard: (args) => {
+          submittedCard = args.card;
+          return submitCompanyCard({ ...args, transport: async (url, options) => {
+            tokenizations++;
+            assert.equal(JSON.parse(options.body).card.number, '4000000000000010');
+            assert.equal(JSON.parse(options.body).card.cvv, '123');
+            return phase === 'tokenization' ? pendingPhase : { ok: true, json: async () => ({ id: 'token_example' }) };
+          } });
+        },
+      } });
+      await fillCard(f);
+      const pending = f.dispatch('card-form', 'submit', { preventDefault() {} });
+      await new Promise(resolve => setImmediate(resolve));
+      for (const [index, id] of cardFieldIds.entries()) {
+        assert.equal(f.elements.get(id).value, cardFieldValues[index]);
+        assert.equal(f.elements.get(id).disabled, true);
+      }
+      assert.equal(submittedData.get('cvv'), '123', 'Values must be captured before controls are disabled');
+      assert.equal(f.elements.get('card-preview-number').textContent, cardFieldValues[0]);
+      assert.equal(f.elements.get('card-preview-holder').textContent, cardFieldValues[1]);
+      assert.equal(f.elements.get('card-preview-expiry').textContent, '12/30');
+      assert.equal(f.elements.get('card-preview-cvv').textContent, 'CVV ***');
+      assert.equal(f.elements.get('card-form').attributes['aria-busy'], 'true');
+      assert.equal(f.elements.get('save-card').disabled, true);
+      await f.dispatch('card-form', 'submit', { preventDefault() {} });
+      assert.equal(tokenizations, 1);
+      assert.equal(registrations, phase === 'backend' ? 1 : 0);
+      finish();
+      await pending;
+      assertCardCleared(f);
+      assert.ok(Object.values(submittedCard).every(value => value === ''));
+      assert.deepEqual([...submittedData.keys()], []);
+      for (const id of cardFieldIds) assert.equal(f.elements.get(id).disabled, false);
+      assert.equal(f.elements.get('save-card').disabled, false);
+      assert.equal(f.elements.get('card-form').attributes['aria-busy'], 'false');
+      assert.equal(f.elements.get('card-summary').hidden, !accepted);
+    });
+  }
+}
+
+for (const departure of ['tab', 'pagehide', 'logout', 'expiry']) {
+  test(`pending card data is cleared on ${departure} before the request settles`, async () => {
+    const { submitCompanyCard } = loadClient();
+    let finish;
+    let submittedCard;
+    let submittedData;
+    let now = 1000;
+    let timer;
+    const pendingToken = new Promise(resolve => { finish = resolve; });
+    const navigations = [];
+    const f = await loadScheduler({
+      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      session: async () => ({ user: { role: 'Administrador' }, expiresAt: 2000 }),
+      card: async () => ({ card: null }), logout: async () => {}, clearSession() {},
+      saveCard: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
+    }, { runtime: {
+      now: () => now, setInterval: (callback) => { timer = callback; return 1; }, clearInterval() {},
+      navigate: (target) => navigations.push(target), onFormData: (data) => { submittedData = data; },
+      submitCompanyCard: (args) => { submittedCard = args.card; return submitCompanyCard({ ...args, transport: () => pendingToken }); },
+    } });
+    await fillCard(f);
+    const pending = f.dispatch('card-form', 'submit', { preventDefault() {} });
+    if (departure === 'tab') await f.click('appointments-tab');
+    else if (departure === 'pagehide') f.dispatchWindow('pagehide');
+    else if (departure === 'logout') await f.click('logout');
+    else { now = 2000; timer(); }
+    assertCardCleared(f);
+    assert.ok(Object.values(submittedCard).every(value => value === ''));
+    assert.deepEqual([...submittedData.keys()], []);
+    if (departure === 'logout' || departure === 'expiry') assert.deepEqual(navigations, ['/support-management/login/']);
+    finish({ ok: true, json: async () => ({ id: 'token_example' }) });
+    await pending;
+    assertCardCleared(f);
+  });
+}
+
 test('administrator bootstrap caches only safe employee flags alongside booking authorization', async () => {
   const { createSupportClient } = loadClient(async () => ({ ok: true, json: async () => ({
     token: 'session-example', expiresAt: Date.now() + 60000,
@@ -993,17 +1158,23 @@ test('a permissions bootstrap renders immediately without an extra employee read
 });
 
 test('an administrator losing access during permission editing cannot retain active account mutation controls', async () => {
+  let deletions = 0;
   const f = await loadScheduler({
     config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
     permissions: async () => ({ employees }), updatePermissions: async () => { throw { status: 403 }; },
+    deleteCard: async () => { deletions++; return { card: null }; },
   });
   const checkbox = f.elements.get('permissions-list').children[0].children[0];
   checkbox.checked = true;
   await checkbox.listeners.change[0]();
+  await f.click('edit-card');
+  assert.equal(f.elements.get('card-delete-actions').hidden, false);
   await f.click('save-permissions');
-  for (const id of ['permissions-panel', 'edit-card', 'card-editor', 'retry-card-sync']) assert.equal(f.elements.get(id).hidden, true);
+  for (const id of ['permissions-panel', 'edit-card', 'card-editor', 'retry-card-sync', 'card-delete-actions']) assert.equal(f.elements.get(id).hidden, true);
   assert.equal(checkbox.disabled, true);
+  await f.click('confirm-delete-card');
+  assert.equal(deletions, 0);
 });
 
 for (const destination of ['save-button', 'other-control', 'other-tab']) {

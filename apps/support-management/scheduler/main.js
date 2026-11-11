@@ -10,10 +10,9 @@ const removeCard = document.getElementById('edit-card');
 const save = document.getElementById('save-card');
 const cancel = document.getElementById('cancel-card');
 const retrySync = document.getElementById('retry-card-sync');
-const deleteDialog = document.getElementById('delete-card-dialog');
+const deleteActions = document.getElementById('card-delete-actions');
 const confirmDelete = document.getElementById('confirm-delete-card');
 const cancelDelete = document.getElementById('cancel-delete-card');
-const deleteMessage = document.getElementById('delete-card-message');
 const introduction = document.querySelector('.intro');
 const footer = document.querySelector('.checkout-footer');
 const permissionsPanel = document.getElementById('permissions-panel');
@@ -40,6 +39,7 @@ let cardLoaded = false;
 let cardLoading;
 let cardSnapshot;
 let sessionTimer;
+let clearSubmittedCard;
 let permissionsLoaded = false;
 let permissionsLoading;
 let permissionsSnapshot;
@@ -62,7 +62,10 @@ async function selectTab(name, { calendar } = {}) {
     button.tabIndex = selected ? 0 : -1;
     document.getElementById(`${tab}-panel`).hidden = !selected;
   }
-  if (name !== 'card') clearCard();
+  if (name !== 'card') {
+    clearCard();
+    hideDeleteActions();
+  }
   if (!initialized) return;
   if (name === 'card') await Promise.all([loadCard(), loadPermissions()]);
   else await appointments.load(calendar);
@@ -114,7 +117,6 @@ function updateCardPreview() {
   cardInputs.cvv.maxLength = details.codeSize;
   cardInputs.cvv.pattern = details.brand === 'unknown' ? '[0-9]{3,4}' : `[0-9]{${details.codeSize}}`;
   cardInputs.cvv.value = formatSecurityCode(cardInputs.cvv.value, details);
-  if (cardInputs.cvv.value || cardInputs.cvv.getAttribute('aria-invalid') === 'true') showFieldError(cardInputs.cvv, cardErrors().cvv);
 }
 
 function bindFormatter(input, formatter, afterInput = () => {}) {
@@ -164,11 +166,13 @@ for (const [key, input] of Object.entries(cardInputs)) {
   if (input.tagName === 'SELECT') input.addEventListener('change', validate);
 }
 function clearCard() {
+  clearSubmittedCard?.();
   form.reset();
   for (const input of Object.values(cardInputs)) showFieldError(input);
   updateCardPreview();
 }
 window.addEventListener('pagehide', clearCard);
+window.addEventListener('pagehide', hideDeleteActions);
 window.addEventListener('pagehide', () => globalThis.clearInterval?.(sessionTimer));
 window.addEventListener('pagehide', () => document.body.setAttribute('aria-busy', 'false'));
 
@@ -178,6 +182,7 @@ function authFailure(error) {
   client.clearSession?.();
   globalThis.clearInterval?.(sessionTimer);
   clearCard();
+  hideDeleteActions();
   window.location.replace(LOGIN_PATH);
   return true;
 }
@@ -189,6 +194,7 @@ function handleReviewRequired(error) {
   retrySync.hidden = true;
   editor.hidden = true;
   clearCard();
+  hideDeleteActions();
   message.textContent = 'O cadastro precisa ser conferido no Pagar.me antes de uma nova tentativa. Entre em contato com o suporte.';
   return true;
 }
@@ -218,7 +224,7 @@ function renderCard(card, syncPending = false, verificationRequired = false, del
     document.getElementById('card-number').textContent = cardDeletionPending && administrator ? 'Exclusão do cartão pendente.' : '';
     document.getElementById('card-expiry').textContent = '';
   }
-  removeCard.hidden = !administrator || (!card && !cardDeletionPending) || !cardRevision || reviewRequired;
+  hideDeleteActions();
   retrySync.hidden = !administrator || !syncPending || cardDeletionPending;
   message.textContent = cardDeletionPending && administrator ? 'A exclusão do cartão está pendente. Tente excluí-lo novamente.'
     : verificationRequired ? 'O cartão precisa ser validado novamente. Cadastre-o abaixo.'
@@ -230,40 +236,44 @@ function renderCard(card, syncPending = false, verificationRequired = false, del
 document.getElementById('logout').addEventListener('click', async () => {
   leaving = true;
   clearCard();
+  hideDeleteActions();
   try { await client.logout(); }
   catch { /* Local session cleanup also applies when the connection fails. */ }
   finally { window.location.replace(LOGIN_PATH); }
 });
 
+function hideDeleteActions() {
+  deleteActions.hidden = true;
+  removeCard.setAttribute('aria-expanded', 'false');
+  removeCard.hidden = !administrator || (!hasCard && !cardDeletionPending) || !cardRevision || reviewRequired;
+}
+
 function dismissDelete() {
-  if (busy) return;
-  deleteDialog.close();
-  removeCard.focus({ preventScroll: true });
+  if (busy || deleteActions.hidden) return;
+  hideDeleteActions();
+  if (!removeCard.hidden) removeCard.focus({ preventScroll: true });
 }
 
 removeCard.addEventListener('click', () => {
   if (!administrator || busy || leaving || reviewRequired || !cardRevision || (!hasCard && !cardDeletionPending)) return;
   clearCard();
-  deleteMessage.textContent = '';
-  deleteDialog.showModal();
+  deleteActions.hidden = false;
+  removeCard.hidden = true;
+  removeCard.setAttribute('aria-expanded', 'true');
   cancelDelete.focus({ preventScroll: true });
 });
 cancelDelete.addEventListener('click', dismissDelete);
-deleteDialog.addEventListener('cancel', (event) => {
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape' || deleteActions.hidden) return;
   event.preventDefault();
   dismissDelete();
 });
-deleteDialog.addEventListener('click', (event) => {
-  if (event.target !== deleteDialog) return;
-  const bounds = deleteDialog.getBoundingClientRect();
-  if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dismissDelete();
-});
 confirmDelete.addEventListener('click', async () => {
-  if (!administrator || busy || leaving || reviewRequired || !cardRevision || !deleteDialog.open || (!hasCard && !cardDeletionPending)) return;
+  if (!administrator || busy || leaving || reviewRequired || !cardRevision || deleteActions.hidden || (!hasCard && !cardDeletionPending)) return;
   busy = true;
   removeCard.disabled = confirmDelete.disabled = cancelDelete.disabled = true;
-  deleteDialog.setAttribute('aria-busy', 'true');
-  message.textContent = deleteMessage.textContent = 'Excluindo cartão...';
+  deleteActions.setAttribute('aria-busy', 'true');
+  message.textContent = 'Excluindo cartão...';
   appointments.invalidate?.();
   try {
     const result = await client.deleteCard(cardRevision);
@@ -274,7 +284,6 @@ confirmDelete.addEventListener('click', async () => {
     cardLoaded = true;
     clearCard();
     renderCard(null);
-    deleteDialog.close();
     await appointments.load();
     if (!leaving) {
       message.textContent = '';
@@ -289,19 +298,19 @@ confirmDelete.addEventListener('click', async () => {
       document.getElementById('card-summary').hidden = !hasCard;
       document.getElementById('empty-card').hidden = hasCard;
       document.getElementById('member-notice').hidden = false;
-      deleteDialog.close();
+      hideDeleteActions();
       message.textContent = 'Somente administradores podem excluir o cartão.';
     } else if (error.code === 'support_management.card_changed') {
       cardLoaded = false;
       cardSnapshot = undefined;
-      message.textContent = deleteMessage.textContent = 'O cartão cadastrado mudou. Atualize a página antes de tentar novamente.';
+      message.textContent = 'O cartão cadastrado mudou. Atualize a página antes de tentar novamente.';
     } else {
-      message.textContent = deleteMessage.textContent = 'Não foi possível confirmar a exclusão do cartão. Tente novamente.';
+      message.textContent = 'Não foi possível confirmar a exclusão do cartão. Tente novamente.';
     }
   } finally {
     busy = false;
     removeCard.disabled = confirmDelete.disabled = cancelDelete.disabled = false;
-    deleteDialog.setAttribute('aria-busy', 'false');
+    deleteActions.setAttribute('aria-busy', 'false');
   }
 });
 cancel.addEventListener('click', closeEditor);
@@ -334,6 +343,7 @@ retrySync.addEventListener('click', async () => {
     if (error.status === 403) {
       administrator = false;
       retrySync.hidden = true;
+      hideDeleteActions();
     }
     message.textContent = 'Não foi possível sincronizar o cartão com BD - USUÁRIOS. Tente novamente.';
   } finally {
@@ -353,15 +363,19 @@ form.addEventListener('submit', async (event) => {
     message.textContent = 'Confira os campos indicados.';
     return;
   }
+  const data = new FormData(form);
+  const card = Object.fromEntries(['holderName', 'number', 'expMonth', 'expYear', 'cvv'].map((key) => [key, data.get(key)]));
+  clearSubmittedCard = () => {
+    for (const key of Object.keys(card)) card[key] = '';
+    for (const key of Array.from(data.keys())) data.delete(key);
+  };
   busy = true;
+  for (const input of Object.values(cardInputs)) input.disabled = true;
   save.disabled = true;
   cancel.disabled = true;
   removeCard.disabled = true;
   form.setAttribute('aria-busy', 'true');
   message.textContent = 'Salvando cartão...';
-  const data = new FormData(form);
-  const card = Object.fromEntries(['holderName', 'number', 'expMonth', 'expYear', 'cvv'].map((key) => [key, data.get(key)]));
-  clearCard();
   try {
     const result = await submitCompanyCard({ publicKey, card, client, clear: clearCard, isCurrent: () => !leaving });
     if (leaving) return;
@@ -384,9 +398,10 @@ form.addEventListener('submit', async (event) => {
       message.textContent = 'Não foi possível confirmar o cadastro. Atualize a página para consultar o cartão antes de tentar novamente.';
     }
   } finally {
-    for (const key of Object.keys(card)) card[key] = '';
-    for (const key of Array.from(data.keys())) data.delete(key);
+    clearCard();
+    clearSubmittedCard = undefined;
     busy = false;
+    for (const input of Object.values(cardInputs)) input.disabled = false;
     save.disabled = false;
     cancel.disabled = false;
     removeCard.disabled = false;
@@ -459,6 +474,7 @@ savePermissions.addEventListener('click', async () => {
       permissionsDirty = false;
       permissionsPanel.hidden = true;
       removeCard.hidden = retrySync.hidden = editor.hidden = true;
+      hideDeleteActions();
     } else if (error.code === 'support_management.employee_not_found') {
       permissionsRefreshRequired = true;
       permissionsMessage.textContent = 'A lista de colaboradores mudou. Atualize a página antes de salvar novamente.';
@@ -493,6 +509,7 @@ function loadPermissions() {
         administrator = false;
         permissionsPanel.hidden = true;
         removeCard.hidden = retrySync.hidden = editor.hidden = true;
+        hideDeleteActions();
       }
       else permissionsMessage.textContent = 'Não foi possível carregar as permissões. Atualize a página para tentar novamente.';
     } finally {
@@ -557,6 +574,7 @@ async function initializeSession(result, { fromCache = false } = {}) {
   if (!administrator) {
     permissionsDirty = false;
     removeCard.hidden = retrySync.hidden = editor.hidden = true;
+    hideDeleteActions();
   }
   updatePermissionControls();
   if (!permissionsDirty && !permissionsBusy && result.permissions !== undefined) permissionsSnapshot = result.permissions;
