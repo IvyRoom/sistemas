@@ -252,18 +252,28 @@ test('session expiry is delegated to authentication and malformed calendars fail
 });
 
 
-test('a missing company payment method shows the named administrator gate and hides appointment content', async () => {
-  const f = fixture({ calendar: async () => ({ days, paymentMethodRegistered: false, canBook: false, administratorName: 'Maria da Silva', userEmail: 'colleague@example.test' }) });
-  await f.app.load();
-  assert.equal(f.elements.get('appointments-gate').hidden, false);
-  assert.equal(f.elements.get('payment-administrator-name').textContent, 'Maria da Silva');
-  assert.equal(f.elements.get('appointments-intro').hidden, true);
-  assert.equal(f.elements.get('appointments-faq').hidden, true);
-  assert.equal(f.elements.get('appointment-calendar').hidden, true);
-  assert.equal(f.elements.get('appointment-details').open, false);
-  assert.equal(f.elements.get('calendar-legend').hidden, true);
-  assert.equal(f.elements.get('reserve-date').disabled, true);
-});
+for (const source of ['network', 'bootstrap']) {
+  for (const canBook of [false, true]) {
+    test(`a missing company card shows its administrator and blocks scheduling from ${source} even with canBook ${canBook}`, async () => {
+      let writes = 0;
+      let reads = 0;
+      const result = { days, today: '2026-11-09', paymentMethodRegistered: false, canBook, administratorName: 'Maria da Silva', userEmail: 'colleague@example.test' };
+      const f = fixture({ calendar: async () => { reads++; return result; }, reserveDate: async () => { writes++; } });
+      await f.app.load(source === 'bootstrap' ? result : undefined);
+      assert.equal(reads, source === 'bootstrap' ? 0 : 1);
+      assert.equal(f.elements.get('appointments-gate').hidden, false);
+      assert.equal(f.elements.get('payment-administrator-name').textContent, 'Maria da Silva');
+      for (const id of ['appointments-intro', 'appointments-faq', 'appointment-calendar', 'calendar-legend']) assert.equal(f.elements.get(id).hidden, true);
+      f.select();
+      await f.reserve();
+      assert.equal(f.elements.get('appointment-details').open, false);
+      assert.equal(f.elements.get('reserve-date').disabled, true);
+      assert.equal(f.elements.get('confirm-reservation').disabled, true);
+      assert.equal(writes, 0);
+      assert.equal(f.idCount(), 0);
+    });
+  }
+}
 
 test('selection opens its formatted dialog and the first reserve step requests confirmation without calling the API', async () => {
   let reads = 0;
