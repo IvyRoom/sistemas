@@ -255,13 +255,14 @@ function renderCard(card, syncPending = false, verificationRequired = false, del
   save.textContent = card ? 'Salvar cartão' : 'Cadastrar Cartão';
 }
 
-document.getElementById('logout').addEventListener('click', async () => {
+document.getElementById('logout').addEventListener('click', () => {
+  if (leaving) return;
   leaving = true;
+  globalThis.clearInterval?.(sessionTimer);
   clearCard();
   hideDeleteActions();
-  try { await client.logout(); }
-  catch { /* Local session cleanup also applies when the connection fails. */ }
-  finally { window.location.replace(LOGIN_PATH); }
+  void client.logout().catch(() => {});
+  window.location.replace(LOGIN_PATH);
 });
 
 function hideDeleteActions() {

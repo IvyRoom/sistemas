@@ -125,8 +125,25 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       return result;
     },
     async logout() {
-      try { await request('/logout', { method: 'POST' }); }
-      finally { clearSession(); }
+      const token = storage.getItem(TOKEN_KEY);
+      clearSession();
+      if (!token) return;
+      const response = await transport('/support-management/api/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'omit',
+        cache: 'no-store',
+        redirect: 'error',
+        keepalive: true,
+        signal: AbortSignal.timeout(20000)
+      });
+      if (!response.ok) {
+        const error = new Error('support_request_failed');
+        error.status = response.status;
+        try { error.code = (await response.json()).error; }
+        catch { /* An unavailable service may return a non-JSON error. */ }
+        throw error;
+      }
     }
   };
 }

@@ -95,6 +95,56 @@ test('expired sessions clear locally and failed logout also clears the session',
   assert.equal(values.size, 0);
 });
 
+for (const outcome of [204, 401, 503, 'network']) {
+  test(`logout clears local credentials before its request and preserves a new login after late ${outcome}`, async () => {
+    let finish;
+    const requests = [];
+    const revocation = new Promise((resolve, reject) => {
+      finish = () => outcome === 'network' ? reject(new Error('synthetic network failure'))
+        : resolve({ ok: outcome === 204, status: outcome,
+          json: async () => ({ error: outcome === 401 ? 'support_management.session_expired' : 'support_management.session_unavailable' }) });
+    });
+    const { createSupportClient, values } = loadClient(async (url, options) => {
+      requests.push({ url, options });
+      if (url.endsWith('/logout')) return revocation;
+      assert.ok(url.endsWith('/login'));
+      return { ok: true, json: async () => ({ token: 'replacement-session', expiresAt: Date.now() + 60000,
+        user: { name: 'Replacement', role: 'Usuário' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' } }) };
+    });
+    values.set('supportManagementToken', 'previous-session');
+    values.set('supportManagementContext', 'previous-context');
+    const client = createSupportClient();
+    const logout = client.logout().then(() => null, error => error);
+    assert.equal(values.size, 0, 'Local logout cannot wait for remote revocation');
+    assert.equal(requests.length, 1);
+    assert.equal(requests[0].url, '/support-management/api/logout');
+    assert.equal(requests[0].options.method, 'POST');
+    assert.equal(requests[0].options.headers.Authorization, 'Bearer previous-session');
+    assert.equal(requests[0].options.keepalive, true);
+    assert.equal(requests[0].options.credentials, 'omit');
+    assert.equal(requests[0].options.cache, 'no-store');
+    assert.equal(requests[0].options.body, undefined);
+    await client.login('replacement@example.test', 'synthetic-password');
+    const replacement = [...values.entries()];
+    assert.ok(values.has('supportManagementContext'));
+    finish();
+    const error = await logout;
+    if (outcome === 204) assert.equal(error, null);
+    else if (typeof outcome === 'number') {
+      assert.equal(error.status, outcome);
+      assert.equal(error.code, outcome === 401 ? 'support_management.session_expired' : 'support_management.session_unavailable');
+    } else assert.match(error.message, /synthetic network failure/u);
+    assert.deepEqual([...values.entries()], replacement, 'Old logout settlement must never clear the replacement session');
+  });
+}
+
+test('logout without a local token clears stale context without sending a revocation request', async () => {
+  const { createSupportClient, values } = loadClient(() => { throw new Error('Unexpected request'); });
+  values.set('supportManagementContext', 'stale-context');
+  await createSupportClient().logout();
+  assert.equal(values.size, 0);
+});
+
 test('configuration fails closed unless both environment and public key are test-only', async () => {
   for (const config of [{ environment: 'production', publicKey: 'pk_test_example' }, { environment: 'sandbox', publicKey: 'pk_live_example' }]) {
     const { createSupportClient } = loadClient(async () => ({ ok: true, json: async () => config }));
@@ -1184,6 +1234,50 @@ function assertCardCleared(f) {
   assert.equal(f.elements.get('card-preview-holder').textContent, 'NOME DO TITULAR');
   assert.equal(f.elements.get('card-preview-expiry').textContent, 'MM/AA');
   assert.equal(f.elements.get('card-preview-cvv').textContent, 'CVV ***');
+}
+
+for (const failed of [false, true]) {
+  test(`scheduler logout clears its card and navigates before ${failed ? 'failed' : 'successful'} revocation finishes`, async () => {
+    let finish;
+    let revocations = 0;
+    const navigations = [];
+    const stopped = [];
+    const revocation = new Promise((resolve, reject) => {
+      finish = () => failed ? reject(new Error('synthetic connection failure')) : resolve({ ok: true, status: 204 });
+    });
+    const { createSupportClient, values } = loadClient(async (url, options) => {
+      if (url.endsWith('/logout')) {
+        revocations++;
+        assert.equal(options.headers.Authorization, 'Bearer session-example');
+        assert.equal(options.keepalive, true);
+        return revocation;
+      }
+      if (url.endsWith('/session')) return { ok: true, json: async () => ({ expiresAt: Date.now() + 60000,
+        user: { name: 'Admin', role: 'Administrador' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' } }) };
+      if (url.endsWith('/card')) return { ok: true, json: async () => ({ card: null }) };
+      if (url.endsWith('/permissions')) return { ok: true, json: async () => ({ employees: [] }) };
+      throw new Error('Unexpected synthetic request');
+    });
+    values.set('supportManagementToken', 'session-example');
+    const f = await loadScheduler(createSupportClient(), { runtime: {
+      navigate: (target) => navigations.push(target), setInterval: () => 'session-timer', clearInterval: (timer) => stopped.push(timer),
+    } });
+    await fillCard(f);
+    assert.ok(values.has('supportManagementContext'));
+    const clicked = f.click('logout');
+    assert.deepEqual(navigations, ['/support-management/login/'], 'Navigation must happen in the click handler without awaiting the server');
+    assert.equal(values.size, 0);
+    assertCardCleared(f);
+    assert.ok(stopped.includes('session-timer'));
+    await clicked;
+    await f.click('logout');
+    assert.equal(revocations, 1);
+    assert.equal(navigations.length, 1);
+    finish();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(values.size, 0);
+    assert.equal(navigations.length, 1);
+  });
 }
 
 for (const phase of ['tokenization', 'backend']) {
