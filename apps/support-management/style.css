@@ -70,8 +70,8 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
 .card-panel h2, .card-panel h3, legend { font-size: 15px; font-weight: 400; color: #790d26; }
 .card-summary-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
 .card-edit { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 4px; border: 0; background: transparent; color: #790d26; }
-.card-delete-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; width: 232px; max-width: 100%; margin-left: auto; }
-.card-delete-button { height: 32px; min-width: 0; padding: 0 8px; border: 1px solid #c8b8bc; border-radius: 5px; background: #fff; color: #4a0816; font-size: 12px; }
+.card-delete-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; width: max-content; max-width: 100%; margin-left: auto; }
+.card-delete-button { min-width: 0; padding: 7px; border: 1px solid #c8b8bc; border-radius: 5px; background: #fff; color: #4a0816; font-size: 12px; line-height: 16px; white-space: nowrap; }
 .card-delete-button:hover { background: #f5eff1; }
 .card-delete-cancel { border-color: #4a0816; background: #4a0816; color: #fff; }
 .card-delete-cancel:hover { background: #790d26; }
