@@ -1,4 +1,4 @@
-import { createSupportClient, LOGIN_PATH, submitCompanyCard } from '../modules/client.js';
+import { createSupportClient, LOGIN_PATH, submitCompanyCard, validateSupportConfig } from '../modules/client.js';
 import { getCardDetails, formatCardNumber, formatCardholder, formatSecurityCode, normalizeText, validateCardFields } from '../modules/card-fields.js';
 import { createAppointments } from '../modules/appointments.js';
 
@@ -25,7 +25,7 @@ const cardInputs = Object.fromEntries([
   ['expYear', 'exp-year'], ['cvv', 'cvv']
 ].map(([key, id]) => [key, document.getElementById(id)]));
 const formatters = new Map();
-let publicKey;
+let paymentConfig;
 let administrator = false;
 let busy = false;
 let leaving = false;
@@ -405,7 +405,7 @@ form.addEventListener('submit', async (event) => {
   form.setAttribute('aria-busy', 'true');
   message.textContent = 'Salvando cartão...';
   try {
-    const result = await submitCompanyCard({ publicKey, card, client, clear: clearCard, isCurrent: () => !leaving && administrator });
+    const result = await submitCompanyCard({ publicKey: paymentConfig.publicKey, config: paymentConfig, card, client, clear: clearCard, isCurrent: () => !leaving && administrator });
     if (leaving || !administrator) return;
     cardVersion++;
     cardSnapshot = undefined;
@@ -592,9 +592,7 @@ function loadCard() {
 
 async function initializeSession(result, { fromCache = false, preserveCard = false } = {}) {
   const config = result.config || await client.config();
-  if (config.environment !== undefined && config.environment !== 'sandbox') throw new Error('sandbox_unavailable');
-  if (!/^pk_test_[A-Za-z0-9_-]+$/u.test(config.publicKey || '')) throw new Error('sandbox_unavailable');
-  publicKey = config.publicKey;
+  paymentConfig = validateSupportConfig(config);
   const { user } = result;
   document.getElementById('header-user-name').textContent = user.name || '';
   globalThis.clearInterval?.(sessionTimer);

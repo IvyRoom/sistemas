@@ -955,8 +955,10 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   );
 });
 
-test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () => {
-  const javaScriptSources = applicationJavaScriptSources();
+test("[ORIGIN-01] one shared origin serves exactly eight legacy runtime consumers", () => {
+  const javaScriptSources = applicationJavaScriptSources().filter(
+    ({ relativePath }) => !relativePath.startsWith("apps/support-management/")
+  );
   const combinedJavaScript = javaScriptSources.map(({ source }) => source).join("\n");
   const allApplicationFiles = regularFilesRecursively(applicationsRoot);
   const sharedImportPattern = /^\s*import\s+\{\s*BACKEND_ORIGIN\s*\}\s+from\s+["'][^"']*shared\/backend-origin\.js["'];\s*$/m;

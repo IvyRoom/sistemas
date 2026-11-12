@@ -38,7 +38,10 @@ repository separately.
   workbooks and Pagar.me test API. Authentication reads users A:H; approved card
   registration writes only reusable Pagar.me references/environment to I:K,
   never raw card data or CVV. Administrator-requested deletion revokes the
-  selected sandbox wallet card and clears the matching company references.
+  selected wallet card in the configured environment and clears the matching
+  company references. Production is explicitly enabled on the existing backend;
+  local development remains sandbox-only. Never mix metadata directories or let
+  sandbox operations overwrite production workbook references.
   Companies are identified by CNPJ. User-operated calendar access synchronizes
   managed availability in appointments B:C and adds
   missing dates through the end of next month, preserving manual entries and
@@ -179,12 +182,14 @@ match its existing style.
   stubbed or injected transports for request verification.
 - Stop every preview or stub server when verification finishes.
 
-The support-management app is a scoped sandbox exception to the production
-backend-origin rule. It uses only the same-origin `/support-management/api`,
-served by the backend's loopback-only `support-sandbox-server.js`; never add a
-production fallback. Its routes are `/support-management/login/` and
-`/support-management/scheduler/`. Do not connect automated browser checks to
-real Graph or Pagar.me; inject synthetic dependencies and intercept tokenization.
+The support-management app uses `/atendimentos/login/` and
+`/atendimentos/agendamento/`. On HTTP 127.0.0.1 it uses the same-origin
+`/atendimentos/api` with sandbox/test keys only. The canonical Machado HTTPS host
+uses the shared backend origin and `/atendimentos/api` with production/live keys
+only; preview and other hosts fail closed without a production fallback. Sources
+remain under `apps/support-management/`; the build maps them to Portuguese output
+directories. Do not connect automated browser checks to real Graph or Pagar.me;
+inject synthetic dependencies and intercept tokenization.
 
 Run the complete local suite:
 

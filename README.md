@@ -50,8 +50,8 @@ points. The deployment contract requires every listed route to return HTTP
 | Platform course content | [apps/learning-platform/course-content/index.html](apps/learning-platform/course-content/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
 | Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
 | Platform status report | [apps/learning-platform/status-report/index.html](apps/learning-platform/status-report/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
-| Support management login (sandbox) | [apps/support-management/login/index.html](apps/support-management/login/index.html) | [`/support-management/login/`](https://machadogestao.com/support-management/login/) |
-| Support management scheduler (sandbox) | [apps/support-management/scheduler/index.html](apps/support-management/scheduler/index.html) | [`/support-management/scheduler/`](https://machadogestao.com/support-management/scheduler/) |
+| Support management login | [apps/support-management/login/index.html](apps/support-management/login/index.html) | [`/atendimentos/login/`](https://machadogestao.com/atendimentos/login/) |
+| Support management scheduler | [apps/support-management/scheduler/index.html](apps/support-management/scheduler/index.html) | [`/atendimentos/agendamento/`](https://machadogestao.com/atendimentos/agendamento/) |
 
 The device/browser warning's exact visible message is "Acesse a plataforma em
 um computador com Windows, usando o Microsoft Edge." The viewport warning's
@@ -85,10 +85,17 @@ to the thirteen current non-root directory entries. It does not make explicit
 of the 64 explicit `404` paths. The three downloads use their exact file paths
 and are not subject to directory-slash normalization.
 
-Support management uses the dedicated same-origin sandbox API supplied by
-the companion backend's support sandbox entry point. The static pages remain
-unavailable for login when that API is absent; they never fall back to the
-production backend. See the [backend sandbox runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
+Support management keeps its source under `apps/support-management/` and
+publishes `/atendimentos/login/` and `/atendimentos/agendamento/`; both scheduler
+tabs share the latter URL. Assets and modules live under `/atendimentos/`.
+On `https://machadogestao.com`, the app requires explicit production configuration
+with a matching Pagar.me live public key and calls `/atendimentos/api` on the
+shared [backend origin](apps/shared/backend-origin.js). Only HTTP `127.0.0.1`
+uses the same-origin API with sandbox configuration and a test public key.
+Other hosts, including Azure previews, cannot call either API. There is no
+environment fallback. Live card tokenization requires the validated production
+configuration and is rejected on local hosts. See the
+[backend runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
 for configuration and testing. The scheduler uses burgundy-gradient sidebar/header
 bars, a white workspace and the course-content header arrangement: title, full
 name, with one-hour session expiry enforced in the background. It always shows

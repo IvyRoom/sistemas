@@ -6,16 +6,21 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 const CARD_REVISION = 'a'.repeat(64);
+const backendOriginSource = fs.readFileSync(path.join(__dirname, '../../apps/shared/backend-origin.js'), 'utf8');
+const BACKEND_ORIGIN = vm.runInNewContext(backendOriginSource.replace('export const BACKEND_ORIGIN =', 'globalThis.BACKEND_ORIGIN ='));
+const localLocation = new URL('http://127.0.0.1:4174');
+const productionLocation = new URL('https://machadogestao.com');
 
-function loadClient(transport = async () => ({ ok: true, json: async () => ({}) })) {
+function loadClient(transport = async () => ({ ok: true, json: async () => ({}) }), location = localLocation) {
   const values = new Map();
   const source = fs.readFileSync(path.join(__dirname, '../../apps/support-management/modules/client.js'), 'utf8');
-  const context = vm.createContext({ AbortSignal, fetch: transport, sessionStorage: {
+  const context = vm.createContext({ AbortSignal, BACKEND_ORIGIN, location, fetch: transport, sessionStorage: {
     getItem: (key) => values.get(key),
     setItem: (key, value) => values.set(key, value),
     removeItem: (key) => values.delete(key)
   } });
-  vm.runInContext(source.replace(/export /g, '') + '\nglobalThis.api = { createSupportClient, tokenizeCard, submitCompanyCard };', context);
+  vm.runInContext(source.replace(/^import .*;\r?\n/gmu, '').replace(/export /g, '')
+    + '\nglobalThis.api = { createSupportClient, tokenizeCard, submitCompanyCard, validateSupportConfig };', context);
   return { ...context.api, values };
 }
 
@@ -40,8 +45,8 @@ test('card data goes directly to Pagar.me without a bearer or secret key', async
 
 test('production or malformed keys prevent all card network requests', async () => {
   const { tokenizeCard } = loadClient();
-  for (const key of ['pk_live_example', 'sk_test_example', '', 'pk_test_x&other=value']) {
-    await assert.rejects(tokenizeCard(key, testCard, () => { throw new Error('network should not be called'); }), /sandbox_unavailable/);
+  for (const key of ['pk_live_example', 'pk_productionSynthetic', 'sk_test_example', '', 'pk_test_x&other=value']) {
+    await assert.rejects(tokenizeCard(key, testCard, () => { throw new Error('network should not be called'); }), /support_unavailable/);
   }
 });
 
@@ -61,7 +66,7 @@ test('only the token reaches the company backend, followed by clearing', async (
   });
   assert.equal(cleared, 1);
   assert.equal(calls.length, 1);
-  assert.equal(calls[0].url, '/support-management/api/card');
+  assert.equal(calls[0].url, '/atendimentos/api/card');
   assert.equal(calls[0].options.method, 'PUT');
   assert.equal(calls[0].options.headers.Authorization, 'Bearer session-example');
   assert.deepEqual(JSON.parse(calls[0].options.body), { token: 'token_example' });
@@ -117,7 +122,7 @@ for (const outcome of [204, 401, 503, 'network']) {
     const logout = client.logout().then(() => null, error => error);
     assert.equal(values.size, 0, 'Local logout cannot wait for remote revocation');
     assert.equal(requests.length, 1);
-    assert.equal(requests[0].url, '/support-management/api/logout');
+    assert.equal(requests[0].url, '/atendimentos/api/logout');
     assert.equal(requests[0].options.method, 'POST');
     assert.equal(requests[0].options.headers.Authorization, 'Bearer previous-session');
     assert.equal(requests[0].options.keepalive, true);
@@ -145,11 +150,123 @@ test('logout without a local token clears stale context without sending a revoca
   assert.equal(values.size, 0);
 });
 
-test('configuration fails closed unless both environment and public key are test-only', async () => {
+test('local configuration fails closed unless both environment and public key are test-only', async () => {
   for (const config of [{ environment: 'production', publicKey: 'pk_test_example' }, { environment: 'sandbox', publicKey: 'pk_live_example' }]) {
     const { createSupportClient } = loadClient(async () => ({ ok: true, json: async () => config }));
-    await assert.rejects(createSupportClient().config(), /sandbox_unavailable/);
+    await assert.rejects(createSupportClient().config(), /support_unavailable/);
   }
+});
+
+for (const [location, environment, publicKey, base] of [
+  [localLocation, 'sandbox', 'pk_test_synthetic', '/atendimentos/api'],
+  [productionLocation, 'production', 'pk_productionSynthetic', `${BACKEND_ORIGIN}/atendimentos/api`],
+]) {
+  test(`${environment} requests use only their explicit API origin and matching public configuration`, async () => {
+    const requests = [];
+    const config = { environment, publicKey };
+    const { createSupportClient, values } = loadClient(async (url, options) => {
+      requests.push({ url, options });
+      return url.endsWith('/logout') ? { ok: true, status: 204 }
+        : { ok: true, json: async () => url.endsWith('/config') ? config : { card: null } };
+    }, location);
+    const client = createSupportClient();
+    assert.deepEqual(JSON.parse(JSON.stringify(await client.config())), config);
+    values.set('supportManagementToken', 'synthetic-session');
+    await client.card();
+    await client.calendar();
+    await client.logout();
+    assert.deepEqual(requests.map(({ url }) => url), ['/config', '/card', '/calendar', '/logout'].map(path => base + path));
+    assert.equal(requests[1].options.headers.Authorization, 'Bearer synthetic-session');
+    assert.equal(requests[3].options.keepalive, true);
+    assert.equal(values.size, 0);
+  });
+}
+
+test('unsupported hosts fail before API or card transport and never fall back to a different environment', async () => {
+  for (const href of ['https://preview.azurestaticapps.net', 'https://www.machadogestao.com', 'http://machadogestao.com',
+    'http://localhost:4174', 'https://127.0.0.1:4174', 'https://machadogestao.com:444', 'https://example.test']) {
+    let requests = 0;
+    const transport = () => { requests++; throw new Error('Unexpected request'); };
+    const { createSupportClient, tokenizeCard } = loadClient(transport, new URL(href));
+    const client = createSupportClient();
+    await assert.rejects(client.config(), /support_unavailable/u);
+    await assert.rejects(client.login('synthetic@example.test', 'synthetic-password'), /support_unavailable/u);
+    await assert.rejects(tokenizeCard('pk_productionSynthetic', testCard, transport,
+      { environment: 'production', publicKey: 'pk_productionSynthetic' }), /support_unavailable/u);
+    assert.equal(requests, 0, href);
+  }
+  const requests = [];
+  const { createSupportClient } = loadClient(async url => { requests.push(url); return { ok: false, status: 503 }; });
+  await assert.rejects(createSupportClient().config(), error => error.status === 503);
+  assert.deepEqual(requests, ['/atendimentos/api/config']);
+});
+
+test('production configuration rejects test, missing and mismatched keys while local configuration rejects live keys', async () => {
+  for (const location of [localLocation, productionLocation]) {
+    const { validateSupportConfig } = loadClient(undefined, location);
+    const expected = location === localLocation ? 'sandbox' : 'production';
+    const wrong = expected === 'sandbox' ? 'production' : 'sandbox';
+    const prefix = expected === 'sandbox' ? 'pk_test_' : 'pk_live_';
+    for (const config of [undefined, {}, { publicKey: prefix + 'synthetic' }, { environment: expected, publicKey: 'sk_test_synthetic' },
+      { environment: wrong, publicKey: prefix + 'synthetic' }, { environment: expected, publicKey: expected === 'sandbox' ? 'pk_productionSynthetic' : 'pk_test_synthetic' },
+      { environment: expected, publicKey: prefix + 'bad&query' }]) {
+      assert.throws(() => validateSupportConfig(config), /support_unavailable/u);
+    }
+  }
+  const production = loadClient(undefined, productionLocation);
+  for (const publicKey of ['pk_productionSynthetic', 'pk_live_synthetic']) {
+    assert.doesNotThrow(() => production.validateSupportConfig({ environment: 'production', publicKey }));
+  }
+});
+
+test('live tokenization requires complete matching production configuration on the canonical host', async () => {
+  const requests = [];
+  const transport = async (url, options) => {
+    requests.push({ url, options });
+    return { ok: true, json: async () => ({ id: 'token_synthetic' }) };
+  };
+  const { tokenizeCard } = loadClient(undefined, productionLocation);
+  await assert.rejects(tokenizeCard('pk_productionSynthetic', testCard, transport), /support_unavailable/u);
+  await assert.rejects(tokenizeCard('pk_live_different', testCard, transport,
+    { environment: 'production', publicKey: 'pk_productionSynthetic' }), /support_unavailable/u);
+  assert.equal(requests.length, 0);
+  assert.equal(await tokenizeCard('pk_productionSynthetic', testCard, transport,
+    { environment: 'production', publicKey: 'pk_productionSynthetic' }), 'token_synthetic');
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].url, 'https://api.pagar.me/core/v5/tokens?appId=pk_productionSynthetic');
+  assert.equal(requests[0].options.headers.Authorization, undefined);
+  const local = loadClient();
+  await assert.rejects(local.tokenizeCard('pk_productionSynthetic', testCard, transport,
+    { environment: 'production', publicKey: 'pk_productionSynthetic' }), /support_unavailable/u);
+  assert.equal(requests.length, 1);
+});
+
+test('production bootstrap accepts its own live configuration and rejects a sandbox cache', () => {
+  const { createSupportClient, values } = loadClient(undefined, productionLocation);
+  values.set('supportManagementToken', 'synthetic-session');
+  const cached = { token: 'synthetic-session', fromLogin: true, savedAt: Date.now(), context: {
+    expiresAt: Date.now() + 60000, user: { name: 'Synthetic', role: 'Usuário' },
+    config: { environment: 'production', publicKey: 'pk_productionSynthetic' },
+  } };
+  values.set('supportManagementContext', JSON.stringify(cached));
+  assert.equal(createSupportClient().bootstrap().context.config.environment, 'production');
+  cached.context.config = { environment: 'sandbox', publicKey: 'pk_test_synthetic' };
+  values.set('supportManagementContext', JSON.stringify(cached));
+  assert.equal(createSupportClient().bootstrap(), null);
+  assert.equal(values.has('supportManagementContext'), false);
+  assert.equal(values.get('supportManagementToken'), 'synthetic-session');
+});
+
+test('Portuguese entry normalization preserves query and fragment and the backend origin is imported once', () => {
+  const script = fs.readFileSync(path.join(__dirname, '../../apps/support-management/modules/canonical.js'), 'utf8');
+  for (const pathname of ['/atendimentos/login', '/atendimentos/agendamento']) {
+    const targets = [];
+    vm.runInNewContext(script, { location: { pathname, search: '?next=calendar', hash: '#card', replace: target => targets.push(target) } });
+    assert.deepEqual(targets, [pathname + '/?next=calendar#card']);
+  }
+  const source = fs.readFileSync(path.join(__dirname, '../../apps/support-management/modules/client.js'), 'utf8');
+  assert.match(source, /^import \{ BACKEND_ORIGIN \} from '\.\.\/\.\.\/shared\/backend-origin\.js';/u);
+  assert.equal(source.includes(BACKEND_ORIGIN), false, 'The shared backend origin must not be duplicated in the support app');
 });
 
 test('workbook synchronization sends only the current authorization to its dedicated route', async () => {
@@ -160,7 +277,7 @@ test('workbook synchronization sends only the current authorization to its dedic
   });
   values.set('supportManagementToken', 'session-example');
   await createSupportClient().syncCard();
-  assert.equal(calls[0].url, '/support-management/api/card/sync');
+  assert.equal(calls[0].url, '/atendimentos/api/card/sync');
   assert.equal(calls[0].options.method, 'POST');
   assert.equal(calls[0].options.headers.Authorization, 'Bearer session-example');
   assert.equal(calls[0].options.body, undefined);
@@ -180,7 +297,7 @@ test('card deletion sends only authorization and its opaque expected revision an
     if (accepted) assert.equal((await deletion).card, null);
     else await assert.rejects(deletion, error => error.code === 'support_management.card_delete_failed');
     assert.equal(requests.length, 1);
-    assert.equal(requests[0].url, '/support-management/api/card');
+    assert.equal(requests[0].url, '/atendimentos/api/card');
     assert.equal(requests[0].options.method, 'DELETE');
     assert.equal(requests[0].options.headers.Authorization, 'Bearer session-example');
     assert.deepEqual(JSON.parse(requests[0].options.body), { expectedCardRevision: CARD_REVISION });
@@ -209,10 +326,10 @@ test('calendar reads and date reservations use the current session and send only
   await client.calendar();
   const reservation = { date: '2026-11-10', priceCents: 50000, requestId: '00000000-0000-4000-8000-000000000001' };
   await client.reserveDate(reservation);
-  assert.equal(calls[0].url, '/support-management/api/calendar');
+  assert.equal(calls[0].url, '/atendimentos/api/calendar');
   assert.equal(calls[0].options.method, 'GET');
   assert.equal(calls[0].options.body, undefined);
-  assert.equal(calls[1].url, '/support-management/api/reservations');
+  assert.equal(calls[1].url, '/atendimentos/api/reservations');
   assert.equal(calls[1].options.method, 'POST');
   assert.deepEqual(JSON.parse(calls[1].options.body), reservation);
   assert.ok(calls.every(({ options }) => options.headers.Authorization === 'Bearer session-example'));
@@ -230,7 +347,7 @@ async function loadLogin(client) {
   const listeners = {};
   const context = vm.createContext({ document: { body, getElementById: (id) => elements.get(id) },
     window: { addEventListener(name, callback) { listeners[name] = callback; }, location: { assign() { throw new Error('Unexpected navigation'); } } },
-    createSupportClient: () => client, SCHEDULER_PATH: '/support-management/scheduler/'
+    createSupportClient: () => client, SCHEDULER_PATH: '/atendimentos/agendamento/'
   });
   const source = fs.readFileSync(path.join(__dirname, '../../apps/support-management/login/main.js'), 'utf8');
   await vm.runInContext(`(async () => { ${source.replace(/^import .*;\r?\n/u, '')} })()`, context);
@@ -333,7 +450,8 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
       createElement: (tagName) => element(tagName) });
   const context = vm.createContext({ document,
     window: { addEventListener(name, callback) { const handlers = windowListeners.get(name) || []; handlers.push(callback); windowListeners.set(name, handlers); }, location: { replace: runtime.navigate || (() => { throw new Error('Unexpected navigation'); }) } },
-    createSupportClient: () => ({ permissions: async () => ({ employees: [] }), ...client }), LOGIN_PATH: '/support-management/login/',
+    createSupportClient: () => ({ permissions: async () => ({ employees: [] }), ...client }), LOGIN_PATH: '/atendimentos/login/',
+    validateSupportConfig: loadClient(undefined, runtime.location || localLocation).validateSupportConfig,
     createAppointments: () => appointmentController || ({ load: async () => {} }),
     submitCompanyCard: runtime.submitCompanyCard || (() => { throw new Error('Unexpected card registration'); }),
     FormData: class {
@@ -366,7 +484,7 @@ async function loadScheduler(client, { activateCard = true, appointmentControlle
 test('Agendamento is the default tab and card data loads only on the first card-tab activation', async () => {
   let reads = 0;
   const { elements, click } = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => { reads++; return { card: null }; },
   }, { activateCard: false });
@@ -393,7 +511,7 @@ for (const role of ['Administrador', 'Usuário']) {
     const calendar = { paymentMethodRegistered: true, canBook: true };
     const calendars = [];
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role }, calendar }),
       card: async () => { cardReads++; return { card: null }; },
       permissions: async () => { permissionReads++; return { employees: [] }; },
@@ -436,7 +554,7 @@ for (const deniedRead of ['card', 'permissions']) {
   test(`administrator access denied by ${deniedRead} hides its sidebar tools and returns to Agendamento`, async () => {
     let reads = 0;
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => { reads++; if (deniedRead === 'card') throw { status: 403 }; return { card: null }; },
       permissions: async () => { reads++; if (deniedRead === 'permissions') throw { status: 403 }; return { employees: [] }; },
     });
@@ -459,7 +577,7 @@ test('the session expires in the background without displaying a countdown', asy
   const stopped = [];
   const navigations = [];
   const { elements } = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ expiresAt, user: { name: 'Nome Completo', role: 'Administrador' } }),
     clearSession() { clearedSessions++; },
   }, { activateCard: false, runtime: {
@@ -477,7 +595,7 @@ test('the session expires in the background without displaying a countdown', asy
   now = expiresAt;
   timer();
   assert.equal(clearedSessions, 1);
-  assert.deepEqual(navigations, ['/support-management/login/']);
+  assert.deepEqual(navigations, ['/atendimentos/login/']);
   assert.ok(stopped.includes('expiry-timer'));
   timer();
   assert.equal(clearedSessions, 1, 'An expired session must redirect only once');
@@ -493,7 +611,7 @@ for (const dismissal of ['cancel', 'escape', 'tab']) {
   test(`inline card deletion defaults to Cancelar and ${dismissal} makes no deletion request`, async () => {
     let deletions = 0;
     const { elements, document, click, dispatchDocument } = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
       deleteCard: async () => { deletions++; return { card: null }; },
@@ -575,7 +693,7 @@ test('failed or unconfirmed deletions retain the masked summary and allow a safe
     let attempts = 0;
     const revisions = [];
     const { elements, click } = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
       deleteCard: async (revision) => {
@@ -609,7 +727,7 @@ test('a pending deletion gives only administrators a trash retry and blocks regi
   for (const role of ['Administrador', 'Usuário']) {
     let deletions = 0;
     const { elements, click, dispatch } = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role } }),
       card: async () => ({ card: null, cardDeletionPending: true, cardRevision: CARD_REVISION }),
       deleteCard: async () => { deletions++; return { card: null }; },
@@ -630,7 +748,7 @@ test('a pending deletion gives only administrators a trash retry and blocks regi
 test('members cannot reveal the deletion action or submit deletion for a registered card', async () => {
   let deletions = 0;
   const { elements, click } = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Usuário' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
     deleteCard: async () => { deletions++; },
@@ -645,7 +763,7 @@ test('members cannot reveal the deletion action or submit deletion for a registe
 test('an administrator can delete a verified registered card whose workbook synchronization is pending', async () => {
   let deletions = 0;
   const { elements, click } = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => pendingCompanyCard,
     syncCard: async () => { throw { status: 503, code: 'support_management.workbook_sync_failed' }; },
@@ -666,7 +784,7 @@ test('an in-flight card deletion prevents duplicate submissions and dismissal', 
   let resolveDelete;
   let deletions = 0;
   const { elements, click, dispatchDocument } = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
     deleteCard: () => { deletions++; return new Promise(resolve => { resolveDelete = resolve; }); },
@@ -692,7 +810,7 @@ for (const status of [401, 403]) {
     let failDelete;
     const navigations = [];
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }), clearSession() {},
       deleteCard: () => new Promise((resolve, reject) => { failDelete = reject; }),
     }, { runtime: { navigate: path => navigations.push(path) } });
@@ -705,7 +823,7 @@ for (const status of [401, 403]) {
     assert.equal(f.elements.get('card-delete-actions').hidden, true);
     assert.equal(f.elements.get('confirm-delete-card').disabled, false);
     assert.equal(f.elements.get('cancel-delete-card').disabled, false);
-    assert.deepEqual(navigations, status === 401 ? ['/support-management/login/'] : []);
+    assert.deepEqual(navigations, status === 401 ? ['/atendimentos/login/'] : []);
   });
 }
 
@@ -713,7 +831,7 @@ test('leaving the page hides pending deletion controls immediately and settlemen
   let finishDelete;
   let deletions = 0;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
     deleteCard: () => { deletions++; return new Promise(resolve => { finishDelete = resolve; }); },
   });
@@ -736,7 +854,7 @@ for (const phase of ['startup', 'retry']) {
       let reads = 0;
       let synchronizations = 0;
       const client = {
-        config: async () => ({ publicKey: 'pk_test_synthetic' }),
+        config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
         session: async () => ({ user: { role: 'Administrador' } }),
         card: async () => ++reads === 1 ? pendingCompanyCard : { card: null, verificationRequired: true },
         async syncCard() {
@@ -959,7 +1077,7 @@ test('a stale deletion keeps its original revision until the replacement card is
   const revisions = [];
   let reads = 0;
   const { elements, click } = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ++reads === 1 ? { card: registeredCompanyCard, cardRevision: CARD_REVISION }
       : { card: { ...registeredCompanyCard, lastFour: '2222' }, cardRevision: replacementRevision },
@@ -995,7 +1113,7 @@ test('permission requests use only the current authorization and the selected em
   const client = createSupportClient();
   await client.permissions();
   await client.updatePermissions([{ email: 'colleague@example.test', allowed: true }]);
-  assert.equal(requests[0].url, '/support-management/api/permissions');
+  assert.equal(requests[0].url, '/atendimentos/api/permissions');
   assert.equal(requests[0].options.method, 'GET');
   assert.equal(requests[1].options.method, 'PATCH');
   assert.deepEqual(JSON.parse(requests[1].options.body), { employees: [{ email: 'colleague@example.test', allowed: true }] });
@@ -1022,7 +1140,7 @@ test('checkbox edits reveal Salvar and pending feedback until an explicit succes
   let invalidated = 0;
   const writes = [];
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
     session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }),
     permissions: async () => { reads++; return { employees }; },
@@ -1089,7 +1207,7 @@ test('unchanged permission defaults keep Salvar hidden and never make a save req
   const allSelected = employees.map(employee => ({ ...employee, allowed: employee.active }));
   const writes = [];
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => ({ employees: allSelected }),
     updatePermissions: async selected => { writes.push(JSON.parse(JSON.stringify(selected))); return { employees: allSelected }; },
   });
@@ -1104,7 +1222,7 @@ test('unchanged permission defaults keep Salvar hidden and never make a save req
 test('reverting every changed permission hides Salvar and pending feedback without a request', async () => {
   const writes = [];
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: async selected => { writes.push(selected); return { employees }; },
   });
@@ -1126,7 +1244,7 @@ test('reverting every changed permission hides Salvar and pending feedback witho
 test('leaving the scheduler clears its permission wait presentation while the pending write stays guarded', async () => {
   let finish;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: () => new Promise(resolve => { finish = resolve; }),
   });
@@ -1150,7 +1268,7 @@ for (const status of [401, 403]) {
   test(`permission Save clears wait state after authorization failure ${status}`, async () => {
     const navigations = [];
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: null }), permissions: async () => ({ employees }),
       updatePermissions: async () => { throw { status }; },
     }, { runtime: { navigate: path => navigations.push(path) } });
@@ -1166,7 +1284,7 @@ for (const status of [401, 403]) {
       for (const id of ['admin-tools-divider', 'card-tab', 'card-panel']) assert.equal(f.elements.get(id).hidden, true);
       assert.equal(f.elements.get('appointments-panel').hidden, false);
     }
-    assert.deepEqual(navigations, status === 401 ? ['/support-management/login/'] : []);
+    assert.deepEqual(navigations, status === 401 ? ['/atendimentos/login/'] : []);
   });
 }
 
@@ -1174,7 +1292,7 @@ test('failed Save preserves the selected draft for an idempotent retry without c
   let reads = 0;
   let writes = 0;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => { reads++; return { employees }; },
     updatePermissions: async () => { if (++writes === 1) throw { status: 503 }; return { employees: employees.map(employee => ({ ...employee, allowed: employee.email === 'admin@example.test' })) }; },
   });
@@ -1203,7 +1321,7 @@ test('failed Save preserves the selected draft for an idempotent retry without c
 test('reverting the draft after a failed save clears pending feedback without a retry', async () => {
   let writes = 0;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: async () => { writes++; throw { status: 503 }; },
   });
@@ -1222,7 +1340,7 @@ test('members never request or display employee permissions', async () => {
   let reads = 0;
   let cardReads = 0;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Usuário' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Usuário' } }),
     card: async () => { cardReads++; return { card: null }; }, permissions: async () => { reads++; return { employees }; },
   });
   assert.equal(reads, 0);
@@ -1233,7 +1351,7 @@ test('members never request or display employee permissions', async () => {
 
 test('the card representation mirrors temporary entry but masks the CVV and clears with a tab change', async () => {
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }),
   });
   f.elements.get('number').value = '4000000000000010';
@@ -1258,7 +1376,7 @@ test('the card representation mirrors temporary entry but masks the CVV and clea
 
 test('CVV typing clears prior feedback and preview updates do not validate an unfinished code', async () => {
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }),
   });
   f.elements.get('number').value = '4000000000000010';
@@ -1296,6 +1414,29 @@ async function fillCard(f) {
   }
 }
 
+test('production scheduler passes its validated live configuration into direct card tokenization', async () => {
+  const { submitCompanyCard } = loadClient(undefined, productionLocation);
+  const tokens = [];
+  const providerRequests = [];
+  const f = await loadScheduler({
+    config: async () => ({ environment: 'production', publicKey: 'pk_productionSynthetic' }),
+    session: async () => ({ user: { name: 'Synthetic Admin', role: 'Administrador' } }),
+    card: async () => ({ card: null }),
+    saveCard: async token => { tokens.push(token); return { card: registeredCompanyCard, cardRevision: CARD_REVISION }; },
+  }, { runtime: { location: productionLocation, submitCompanyCard: args => submitCompanyCard({ ...args,
+    transport: async (url, options) => { providerRequests.push({ url, options }); return { ok: true, json: async () => ({ id: 'token_synthetic' }) }; },
+  }) } });
+  assert.equal(f.elements.get('card-editor').hidden, false);
+  await fillCard(f);
+  await f.dispatch('card-form', 'submit', { preventDefault() {} });
+  assert.deepEqual(tokens, ['token_synthetic']);
+  assert.equal(providerRequests.length, 1);
+  assert.equal(providerRequests[0].url, 'https://api.pagar.me/core/v5/tokens?appId=pk_productionSynthetic');
+  assert.equal(providerRequests[0].options.headers.Authorization, undefined);
+  assert.equal(f.elements.get('card-summary').hidden, false);
+  assertCardCleared(f);
+});
+
 function assertCardCleared(f) {
   for (const id of cardFieldIds) assert.equal(f.elements.get(id).value, '');
   assert.equal(f.elements.get('card-preview-number').textContent, '•••• •••• •••• ••••');
@@ -1326,7 +1467,7 @@ for (const mutation of ['registration', 'synchronization']) {
       },
     };
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => mutation === 'synchronization' ? pendingCompanyCard : { card: null },
       saveCard: async () => result,
       syncCard: async () => {
@@ -1364,7 +1505,7 @@ for (const role of ['Administrador', 'Usuário']) {
     let paymentRegistered;
     let prefetches = 0;
     const started = new Promise(resolve => { sessionStarted = resolve; });
-    const initial = { user: { name: 'Admin', role: 'Administrador' }, config: { publicKey: 'pk_test_synthetic' },
+    const initial = { user: { name: 'Admin', role: 'Administrador' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' },
       card: { card: null }, calendar: { paymentMethodRegistered: false } };
     const f = await loadScheduler({
       bootstrap: () => ({ context: initial, refresh: true }),
@@ -1439,7 +1580,7 @@ for (const failed of [false, true]) {
     await fillCard(f);
     assert.ok(values.has('supportManagementContext'));
     const clicked = f.click('logout');
-    assert.deepEqual(navigations, ['/support-management/login/'], 'Navigation must happen in the click handler without awaiting the server');
+    assert.deepEqual(navigations, ['/atendimentos/login/'], 'Navigation must happen in the click handler without awaiting the server');
     assert.equal(values.size, 0);
     assertCardCleared(f);
     assert.ok(stopped.includes('session-timer'));
@@ -1469,7 +1610,7 @@ for (const phase of ['tokenization', 'backend']) {
           : { card: registeredCompanyCard, cardRevision: CARD_REVISION }) : reject({ status: 503 });
       });
       const f = await loadScheduler({
-        config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+        config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
         card: async () => ({ card: null }),
         saveCard: async (token) => {
           registrations++;
@@ -1530,7 +1671,7 @@ for (const departure of ['tab', 'pagehide', 'logout', 'expiry', 'downgrade']) {
     const pendingToken = new Promise(resolve => { finish = resolve; });
     const navigations = [];
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }),
       session: async () => ({ user: { role: 'Administrador' }, expiresAt: 2000 }),
       card: async () => ({ card: null }), logout: async () => {}, clearSession() {},
       permissions: async () => ({ employees }), updatePermissions: async () => { throw { status: 403 }; },
@@ -1550,7 +1691,7 @@ for (const departure of ['tab', 'pagehide', 'logout', 'expiry', 'downgrade']) {
     assertCardCleared(f);
     assert.ok(Object.values(submittedCard).every(value => value === ''));
     assert.deepEqual([...submittedData.keys()], []);
-    if (departure === 'logout' || departure === 'expiry') assert.deepEqual(navigations, ['/support-management/login/']);
+    if (departure === 'logout' || departure === 'expiry') assert.deepEqual(navigations, ['/atendimentos/login/']);
     finish({ ok: true, json: async () => ({ id: 'token_example' }) });
     await pending;
     assertCardCleared(f);
@@ -1580,7 +1721,7 @@ test('administrator bootstrap caches only safe employee flags alongside booking 
 test('a permissions bootstrap renders immediately without an extra employee read on tab revisits', async () => {
   let reads = 0;
   const f = await loadScheduler({
-    bootstrap: () => ({ context: { user: { role: 'Administrador' }, config: { publicKey: 'pk_test_synthetic' },
+    bootstrap: () => ({ context: { user: { role: 'Administrador' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' },
       card: { card: null }, permissions: { employees } }, refresh: false }),
     permissions: async () => { reads++; throw new Error('Unexpected repeat read'); },
   });
@@ -1593,7 +1734,7 @@ test('a permissions bootstrap renders immediately without an extra employee read
 test('an administrator losing access during permission editing cannot retain active account mutation controls', async () => {
   let deletions = 0;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: registeredCompanyCard, cardRevision: CARD_REVISION }),
     permissions: async () => ({ employees }), updatePermissions: async () => { throw { status: 403 }; },
     deleteCard: async () => { deletions++; return { card: null }; },
@@ -1615,7 +1756,7 @@ for (const destination of ['save-button', 'other-control', 'other-tab']) {
   test(`permission Save restores focus only when the user has not moved away: ${destination}`, async () => {
     let finish;
     const f = await loadScheduler({
-      config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+      config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
       card: async () => ({ card: null }), permissions: async () => ({ employees }),
       updatePermissions: () => new Promise(resolve => { finish = resolve; }),
     });
@@ -1662,7 +1803,7 @@ for (const role of ['Administrador', 'Usuário']) {
     let finish;
     let entered;
     const started = new Promise(resolve => { entered = resolve; });
-    const initial = { user: { name: 'Admin', role: 'Administrador' }, config: { publicKey: 'pk_test_synthetic' },
+    const initial = { user: { name: 'Admin', role: 'Administrador' }, config: { environment: 'sandbox', publicKey: 'pk_test_synthetic' },
       card: { card: null }, permissions: { employees } };
     const f = await loadScheduler({
       bootstrap: () => ({ context: initial, refresh: true }),
@@ -1695,7 +1836,7 @@ for (const role of ['Administrador', 'Usuário']) {
 test('a stale employee list requires a refresh instead of replaying an obsolete permission batch', async () => {
   let writes = 0;
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: async () => { writes++; throw { status: 404, code: 'support_management.employee_not_found' }; },
   });
@@ -1715,7 +1856,7 @@ test('Save completion invalidates a calendar loaded while the permission request
   let finish;
   const events = [];
   const f = await loadScheduler({
-    config: async () => ({ publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
+    config: async () => ({ environment: 'sandbox', publicKey: 'pk_test_synthetic' }), session: async () => ({ user: { role: 'Administrador' } }),
     card: async () => ({ card: null }), permissions: async () => ({ employees }),
     updatePermissions: () => { events.push('save-pending'); return new Promise(resolve => { finish = resolve; }); },
   }, { appointmentController: { load: async () => { events.push('calendar-read'); }, invalidate: () => { events.push('invalidate'); } } });

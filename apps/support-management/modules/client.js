@@ -1,9 +1,29 @@
+import { BACKEND_ORIGIN } from '../../shared/backend-origin.js';
+
 export const TOKEN_KEY = 'supportManagementToken';
 const CONTEXT_KEY = 'supportManagementContext';
-export const LOGIN_PATH = '/support-management/login/';
-export const SCHEDULER_PATH = '/support-management/scheduler/';
+export const LOGIN_PATH = '/atendimentos/login/';
+export const SCHEDULER_PATH = '/atendimentos/agendamento/';
 
-export function createSupportClient({ fetch: transport = globalThis.fetch, storage = globalThis.sessionStorage } = {}) {
+function runtimeEnvironment(location) {
+  if (location?.protocol === 'http:' && location.hostname === '127.0.0.1') return 'sandbox';
+  if (location?.origin === 'https://machadogestao.com') return 'production';
+  throw new Error('support_unavailable');
+}
+
+export function validateSupportConfig(config, location = globalThis.location) {
+  const environment = runtimeEnvironment(location);
+  const keyPattern = environment === 'production' ? /^pk_(?!test_)[A-Za-z0-9_-]+$/u : /^pk_test_[A-Za-z0-9_-]+$/u;
+  if (config?.environment !== environment || typeof config.publicKey !== 'string'
+    || !keyPattern.test(config.publicKey)) throw new Error('support_unavailable');
+  return config;
+}
+
+export function createSupportClient({ fetch: transport = globalThis.fetch, storage = globalThis.sessionStorage, location = globalThis.location } = {}) {
+  function endpoint(path) {
+    const origin = runtimeEnvironment(location) === 'production' ? BACKEND_ORIGIN : '';
+    return `${origin}/atendimentos/api${path}`;
+  }
   function clearSession() {
     storage.removeItem(TOKEN_KEY);
     storage.removeItem(CONTEXT_KEY);
@@ -36,11 +56,11 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       const saved = JSON.parse(storage.getItem(CONTEXT_KEY) || 'null');
       const context = saved?.context;
       if (!saved || saved.token !== storage.getItem(TOKEN_KEY) || !Number.isFinite(context?.expiresAt) || context.expiresAt <= Date.now()
-        || typeof context.user?.name !== 'string' || typeof context.user?.role !== 'string'
-        || context.config?.environment !== 'sandbox' || !/^pk_test_[A-Za-z0-9_-]+$/u.test(context.config.publicKey || '')) {
+        || typeof context.user?.name !== 'string' || typeof context.user?.role !== 'string') {
         storage.removeItem(CONTEXT_KEY);
         return null;
       }
+      validateSupportConfig(context.config, location);
       const stalePermissions = context.permissions && context.permissions.saveMode !== 'explicit';
       if (stalePermissions) delete context.permissions;
       const refresh = Boolean(stalePermissions) || !saved.fromLogin || Date.now() - saved.savedAt > 60000;
@@ -55,7 +75,7 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
 
   async function request(path, { method = 'GET', body, timeoutMs = 20000 } = {}) {
     const token = storage.getItem(TOKEN_KEY);
-    const response = await transport(`/support-management/api${path}`, {
+    const response = await transport(endpoint(path), {
       method,
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -78,8 +98,7 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
   return {
     async config() {
       const config = await request('/config');
-      if (config.environment !== 'sandbox' || !/^pk_test_[A-Za-z0-9_-]+$/.test(config.publicKey)) throw new Error('sandbox_unavailable');
-      return config;
+      return validateSupportConfig(config, location);
     },
     async login(email, password) {
       const result = await request('/login', { method: 'POST', body: { email, password } });
@@ -128,7 +147,7 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
       const token = storage.getItem(TOKEN_KEY);
       clearSession();
       if (!token) return;
-      const response = await transport('/support-management/api/logout', {
+      const response = await transport(endpoint('/logout'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         credentials: 'omit',
@@ -148,8 +167,9 @@ export function createSupportClient({ fetch: transport = globalThis.fetch, stora
   };
 }
 
-export async function tokenizeCard(publicKey, card, transport = globalThis.fetch) {
-  if (!/^pk_test_[A-Za-z0-9_-]+$/.test(publicKey)) throw new Error('sandbox_unavailable');
+export async function tokenizeCard(publicKey, card, transport = globalThis.fetch, config = { environment: 'sandbox', publicKey }) {
+  validateSupportConfig(config);
+  if (config.publicKey !== publicKey) throw new Error('support_unavailable');
   const response = await transport(`https://api.pagar.me/core/v5/tokens?appId=${encodeURIComponent(publicKey)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -171,9 +191,9 @@ export async function tokenizeCard(publicKey, card, transport = globalThis.fetch
   return result.id;
 }
 
-export async function submitCompanyCard({ publicKey, card, client, transport, clear, isCurrent = () => true }) {
+export async function submitCompanyCard({ publicKey, config, card, client, transport, clear, isCurrent = () => true }) {
   try {
-    const token = await tokenizeCard(publicKey, card, transport);
+    const token = await tokenizeCard(publicKey, card, transport, config);
     if (!isCurrent()) throw new Error('session_ended');
     return await client.saveCard(token);
   } finally {

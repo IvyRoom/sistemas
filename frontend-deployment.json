@@ -197,18 +197,34 @@
       "id": "support-management",
       "mappings": [
         {
-          "source": "apps/support-management",
-          "output": "support-management"
+          "source": "apps/support-management/login",
+          "output": "atendimentos/login"
+        },
+        {
+          "source": "apps/support-management/scheduler",
+          "output": "atendimentos/agendamento"
+        },
+        {
+          "source": "apps/support-management/modules",
+          "output": "atendimentos/modules"
+        },
+        {
+          "source": "apps/support-management/img",
+          "output": "atendimentos/img"
+        },
+        {
+          "source": "apps/support-management/style.css",
+          "output": "atendimentos/style.css"
         }
       ],
       "publicEntries": [
         {
-          "path": "/support-management/login/",
-          "file": "support-management/login/index.html"
+          "path": "/atendimentos/login/",
+          "file": "atendimentos/login/index.html"
         },
         {
-          "path": "/support-management/scheduler/",
-          "file": "support-management/scheduler/index.html"
+          "path": "/atendimentos/agendamento/",
+          "file": "atendimentos/agendamento/index.html"
         }
       ],
       "publicDownloads": []

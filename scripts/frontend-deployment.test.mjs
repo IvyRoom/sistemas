@@ -453,8 +453,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       "/plataforma/estudo/",
       "/plataforma/login/",
       "/plataforma/statusreport/",
-      "/support-management/login/",
-      "/support-management/scheduler/"
+      "/atendimentos/login/",
+      "/atendimentos/agendamento/"
     ]
   );
   assert.equal(
@@ -478,8 +478,19 @@ test("real deployment manifest defines the reviewed route contract", async () =>
       }
     ]
   );
-  assert.equal(validation.mappings.length, 21);
-  assert.equal(validation.files.length, 271);
+  assert.equal(validation.mappings.length, 25);
+  assert.equal(validation.files.length, 272);
+  assert.deepEqual(
+    validation.mappings.filter(({ applicationId }) => applicationId === "support-management")
+      .map(({ source, output }) => ({ source, output })),
+    [
+      { source: "apps/support-management/login", output: "atendimentos/login" },
+      { source: "apps/support-management/scheduler", output: "atendimentos/agendamento" },
+      { source: "apps/support-management/modules", output: "atendimentos/modules" },
+      { source: "apps/support-management/img", output: "atendimentos/img" },
+      { source: "apps/support-management/style.css", output: "atendimentos/style.css" }
+    ]
+  );
   const outputPaths = validation.files.map(({ output }) => output).sort();
   assert.deepEqual(
     renamedCurrentWarningOutputs.filter((output) => outputPaths.includes(output)),
@@ -526,8 +537,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   ]);
   assert.equal(
     validation.files.filter(({ output }) => !publicContractFiles.has(output)).length,
-    254,
-    "The artifact must contain exactly 254 supporting files"
+    255,
+    "The artifact must contain exactly 255 supporting files"
   );
   assert.deepEqual(
     validation.mappings.filter(
@@ -715,8 +726,8 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   assert.ok(sourcePreviewReferences.htmlReferences > 0);
   assert.equal(
     sourcePreviewReferences.javascriptReferences,
-    80,
-    "The source graph must contain exactly 80 JavaScript imports"
+    82,
+    "The source graph must contain exactly 82 JavaScript imports"
   );
 
   const accentedPaths = publicEntries(manifest)
@@ -731,7 +742,7 @@ test("real deployment manifest defines the reviewed route contract", async () =>
   }
 });
 
-test("generated preview resolves exactly 80 JavaScript imports", async (context) => {
+test("generated preview resolves exactly 82 JavaScript imports", async (context) => {
   const artifactRoot = await mkdtemp(join(tmpdir(), "frontend-origin-artifact-"));
   context.after(() => rm(artifactRoot, { force: true, recursive: true }));
   const validation = await validateDeploymentManifest(await readDeploymentManifest());
@@ -747,8 +758,8 @@ test("generated preview resolves exactly 80 JavaScript imports", async (context)
   const references = await assertLocalReferences(artifactRoot);
   assert.equal(
     references.javascriptReferences,
-    80,
-    "The generated module graph must contain exactly 80 resolvable imports"
+    82,
+    "The generated module graph must contain exactly 82 resolvable imports"
   );
   assert.deepEqual(
     await readFile(join(artifactRoot, "shared", "backend-origin.js")),
@@ -831,6 +842,23 @@ test("source preview serves only manifest-mapped routes and files", async () => 
         assert.equal(response.headers["content-type"], "text/html; charset=utf-8", path);
         assert.deepEqual(response.body, source, path);
       }
+    }
+
+    for (const { sourceDirectory, publicSuffix } of [
+      { sourceDirectory: "login", publicSuffix: "login" },
+      { sourceDirectory: "scheduler", publicSuffix: "agendamento" }
+    ]) {
+      const source = await readFile(new URL(`../apps/support-management/${sourceDirectory}/index.html`, import.meta.url));
+      for (const route of [`/atendimentos/${publicSuffix}/`, `/atendimentos/${publicSuffix}?source=preview`]) {
+        const response = await requestPreview(server.baseUrl, route);
+        assert.equal(response.status, 200, route);
+        assert.equal(response.headers.location, undefined, route);
+        assert.deepEqual(response.body, source, route);
+      }
+    }
+    for (const route of ["/support-management/login/", "/support-management/scheduler/"]) {
+      const response = await requestPreview(server.baseUrl, route);
+      assert.equal(response.status, 404, route);
     }
 
     for (const { publicPath, sourcePath } of alignedLearningPlatformModulePaths) {
