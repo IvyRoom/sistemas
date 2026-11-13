@@ -579,9 +579,9 @@ export async function assertReadmeContract(manifest) {
   const manifestEntries = sourceContracts(validation.entries, validation.files);
   const manifestDownloads = sourceContracts(validation.downloads, validation.files);
 
-  invariant(readmeEntries.length === 12, `README must document exactly 12 page routes, found ${readmeEntries.length}.`);
+  invariant(readmeEntries.length === 14, `README must document exactly 14 page routes, found ${readmeEntries.length}.`);
   invariant(readmeDownloads.length === 3, `README must document exactly 3 downloads, found ${readmeDownloads.length}.`);
-  invariant(manifestEntries.length === 12, `Manifest must define exactly 12 page routes, found ${manifestEntries.length}.`);
+  invariant(manifestEntries.length === 14, `Manifest must define exactly 14 page routes, found ${manifestEntries.length}.`);
   invariant(manifestDownloads.length === 3, `Manifest must define exactly 3 downloads, found ${manifestDownloads.length}.`);
 
   assertContractMapsEqual(

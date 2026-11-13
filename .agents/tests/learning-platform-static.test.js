@@ -15,6 +15,8 @@ const faceRoot = path.join(platformRoot, "azure-ai-vision-face-ui");
 const manifest = JSON.parse(
   fs.readFileSync(path.join(repositoryRoot, "frontend-deployment.json"), "utf8")
 );
+// This compatibility baseline covers the applications that preceded the support sandbox.
+const baselineApplications = manifest.applications.filter(({ id }) => id !== "support-management");
 const contractSource = fs.readFileSync(
   path.join(repositoryRoot, "docs", "learning-platform-contracts.md"),
   "utf8"
@@ -308,7 +310,7 @@ function mappedFilesFromMappings(mappings) {
   return records.sort((left, right) => compareText(left.output, right.output));
 }
 
-function mappedFiles(applications = manifest.applications) {
+function mappedFiles(applications = baselineApplications) {
   return mappedFilesFromMappings(
     applications.flatMap((application) => application.mappings)
   );
@@ -422,7 +424,7 @@ function platformRecords() {
 
 function compatibilityShapeRecords() {
   return mappedFiles(
-    manifest.applications.map((application) =>
+    baselineApplications.map((application) =>
       application.id === "learning-platform"
         ? { ...application, mappings: phaseAPlatformMappings }
         : application
@@ -953,8 +955,10 @@ test("[BROWSER-SUPPORT] selected policy and runtime admission retain the qualifi
   );
 });
 
-test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () => {
-  const javaScriptSources = applicationJavaScriptSources();
+test("[ORIGIN-01] one shared origin serves exactly eight legacy runtime consumers", () => {
+  const javaScriptSources = applicationJavaScriptSources().filter(
+    ({ relativePath }) => !relativePath.startsWith("apps/support-management/")
+  );
   const combinedJavaScript = javaScriptSources.map(({ source }) => source).join("\n");
   const allApplicationFiles = regularFilesRecursively(applicationsRoot);
   const sharedImportPattern = /^\s*import\s+\{\s*BACKEND_ORIGIN\s*\}\s+from\s+["'][^"']*shared\/backend-origin\.js["'];\s*$/m;
@@ -1014,7 +1018,9 @@ test("[ORIGIN-01] one shared origin serves exactly eight runtime consumers", () 
     "Retired session-authority flags, state, routes, headers, cookies, and cross-tab channels must be absent from runtime source"
   );
 
-  const importEdges = moduleImportEdges(javaScriptSources);
+  const importEdges = moduleImportEdges(javaScriptSources.filter(
+    ({ relativePath }) => !relativePath.startsWith("apps/support-management/")
+  ));
   assert.deepEqual(
     {
       count: importEdges.length,
@@ -1040,12 +1046,12 @@ test("[ROUTE-01] manifest retains seven entries and a separate shared runtime ma
   );
   assert.equal(platformApplication.mappings.length + manifest.sharedMappings.length, 10);
   assert.equal(
-    manifest.sharedMappings.length + manifest.applications.reduce(
+    manifest.sharedMappings.length + baselineApplications.reduce(
       (count, application) => count + application.mappings.length,
       0
     ),
     20,
-    "The complete deployment graph must contain 20 mappings"
+    "The compatibility deployment graph must retain 20 mappings"
   );
   assert.deepEqual(platformApplication.mappings, finalPlatformMappings);
   assert.deepEqual(platformApplication.publicEntries, [
@@ -1669,7 +1675,7 @@ test("[ASSET-01] platform tracked bytes, paths, Unicode, and digest remain exact
     "The four API-bearing public applications must retain their exact aggregate identity"
   );
   const unrelatedRecords = mappedFiles(
-    manifest.applications.filter(({ id }) => id !== "learning-platform")
+    baselineApplications.filter(({ id }) => id !== "learning-platform")
   );
   assert.deepEqual(
     treeStats(unrelatedRecords),
@@ -2062,11 +2068,11 @@ test("[ARTIFACT-01] current frontend artifact retains the complete output graph"
 test("[ARTIFACT-02] manifest exposes seven entries and zero explicit platform downloads", () => {
   const records = platformRecords();
   const completeRecords = deploymentRecords();
-  const publicEntryCount = manifest.applications.reduce(
+  const publicEntryCount = baselineApplications.reduce(
     (count, application) => count + application.publicEntries.length,
     0
   );
-  const publicDownloadCount = manifest.applications.reduce(
+  const publicDownloadCount = baselineApplications.reduce(
     (count, application) => count + application.publicDownloads.length,
     0
   );

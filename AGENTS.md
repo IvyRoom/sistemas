@@ -34,6 +34,32 @@ repository separately.
   prohibited Git operations or external side effects.
 
 ### Git and publication
+- Support-management exception: iterate locally with the users/appointments
+  workbooks and Pagar.me test API. Authentication reads users A:H; approved card
+  registration writes only reusable Pagar.me references/environment to I:K,
+  never raw card data or CVV. Administrator-requested deletion revokes the
+  selected wallet card in the configured environment and clears the matching
+  company references. Production is explicitly enabled on the existing backend;
+  local development remains sandbox-only. Never mix metadata directories or let
+  sandbox operations overwrite production workbook references.
+  Companies are identified by CNPJ. User-operated calendar access synchronizes
+  managed availability in appointments B:C and adds
+  missing dates through the end of next month, preserving manual entries and
+  formulas.
+  User-operated administrator permission saves update only matching company
+  employees in users H, AUTORIZADO A CONTRATAR ATENDIMENTOS. Sim and blank values
+  allow booking by default; Não denies it. Card references remain in I:K.
+  Reservations update the selected appointment row and send the requested
+  confirmation/invitation to the authenticated user and contato. Automated checks
+  use synthetic bookings/messages and never exercise those real writes. Keep
+  local feature-branch checkpoint commits; do
+  not push, open or update publication PRs, mark drafts ready, or deploy until Lucas
+  explicitly requests publication. Existing support-management PRs stay
+  parked as drafts during iteration; draft status does not prevent preview
+  deployment after a push. Run focused support checks during ordinary edits;
+  run relevant cross-application regression checks for shared changes and the
+  complete required suites before publication. This exception changes no
+  publication or integration safety rule for the other applications.
 - The agent owns feature-branch implementation, verification, commits, normal
   push, and a ready-for-review PR; the repository owner alone merges. Never
   commit on `main`, merge, or enable auto-merge.
@@ -155,6 +181,15 @@ match its existing style.
   denial before application scripts execute, and use synthetic origins with
   stubbed or injected transports for request verification.
 - Stop every preview or stub server when verification finishes.
+
+The support-management app uses `/atendimentos/login/` and
+`/atendimentos/agendamento/`. On HTTP 127.0.0.1 it uses the same-origin
+`/atendimentos/api` with sandbox/test keys only. The canonical Machado HTTPS host
+uses the shared backend origin and `/atendimentos/api` with production/live keys
+only; preview and other hosts fail closed without a production fallback. Sources
+remain under `apps/support-management/`; the build maps them to Portuguese output
+directories. Do not connect automated browser checks to real Graph or Pagar.me;
+inject synthetic dependencies and intercept tokenization.
 
 Run the complete local suite:
 
