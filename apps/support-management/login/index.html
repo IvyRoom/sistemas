@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Atendimentos | Machado</title>
+  <script src="/atendimentos/modules/canonical.js"></script>
+  <link rel="icon" href="../img/FAVICON.ico">
+  <link rel="stylesheet" href="../style.css">
+  <script type="module" src="./main.js"></script>
+</head>
+<body class="login-page">
+  <main class="login-layout">
+    <img class="logo" src="../img/LOGO_MACHADO.png" alt="Machado">
+    <div class="login-form-layout">
+      <section class="login-panel" aria-labelledby="login-title">
+        <h1 id="login-title" class="login-tool-title">Ferramenta de Agendamento:<br>Atendimentos Consultivos</h1>
+        <form id="login-form" aria-busy="false">
+          <label for="email">E-mail</label>
+          <input id="email" name="email" type="email" autocomplete="username" maxlength="254" required aria-describedby="login-message">
+          <label for="password">Senha</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" maxlength="128" required aria-describedby="login-message">
+          <div class="login-actions">
+            <button class="primary login-submit" id="login-submit" type="submit" disabled>Entrar</button>
+            <p class="login-progress" id="login-progress" role="status" aria-live="polite" hidden>Entrando...</p>
+          </div>
+          <p class="message" id="login-message" role="status" aria-live="polite">Carregando...</p>
+        </form>
+      </section>
+    </div>
+    <footer>Machado | Método Gerencial para Empresas® - Todos os direitos reservados.</footer>
+  </main>
+</body>
+</html>

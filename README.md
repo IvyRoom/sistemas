@@ -50,6 +50,8 @@ points. The deployment contract requires every listed route to return HTTP
 | Platform course content | [apps/learning-platform/course-content/index.html](apps/learning-platform/course-content/index.html) | [`/plataforma/estudo/`](https://machadogestao.com/plataforma/estudo/) |
 | Platform login | [apps/learning-platform/login/index.html](apps/learning-platform/login/index.html) | [`/plataforma/login/`](https://machadogestao.com/plataforma/login/) |
 | Platform status report | [apps/learning-platform/status-report/index.html](apps/learning-platform/status-report/index.html) | [`/plataforma/statusreport/`](https://machadogestao.com/plataforma/statusreport/) |
+| Support management login | [apps/support-management/login/index.html](apps/support-management/login/index.html) | [`/atendimentos/login/`](https://machadogestao.com/atendimentos/login/) |
+| Support management scheduler | [apps/support-management/scheduler/index.html](apps/support-management/scheduler/index.html) | [`/atendimentos/agendamento/`](https://machadogestao.com/atendimentos/agendamento/) |
 
 The device/browser warning's exact visible message is "Acesse a plataforma em
 um computador com Windows, usando o Microsoft Edge." The viewport warning's
@@ -58,7 +60,7 @@ para continuar."
 
 ### Canonical navigation behavior
 
-The marketing entry is canonical at `/`; each of the other eleven page entries
+The marketing entry is canonical at `/`; each of the other thirteen page entries
 is canonical at its exact trailing-slash path in the table. Direct entry and
 refresh at a canonical URL return HTTP `200` without redirect and rerun that
 page's normal boot and any entry-specific minimum-viewport, browser, query,
@@ -73,14 +75,69 @@ handling then differs by application group:
 | Entry group | Browser-visible slashless behavior | Browser-history effect |
 | --- | --- | --- |
 | Quote request, client intake, Conecta referral, and certificate validation | A parser-blocking inline script calls `location.replace` to change only the current slashless path to its trailing-slash canonical path and preserve the exact query string and fragment. | The correction replaces the current entry, so Back skips the slashless spelling and returns to the preceding document. Refresh and Forward retain the canonical URL. |
+| Two support-management entries | A parser-blocking external script normalizes the slashless path to its trailing-slash path, preserving query and fragment. | The correction replaces the current history entry. |
 | Seven learning-platform entries | There is no route normalizer. The slashless path, query string, and fragment remain visible and survive refresh when existing page-lifecycle logic does not navigate away. | The route layer adds no normalization entry. Admission transitions to either warning use `location.replace`, and validated viewport-warning recovery also replaces the warning. Ordinary login, registration, study, logout, and content navigation still use `window.location.href` and add one document-history entry. |
 
 Slashless spellings are compatibility inputs, not authoring destinations; new
 or updated links must use the canonical paths. This compatibility applies only
-to the eleven current non-root directory entries. It does not make explicit
+to the thirteen current non-root directory entries. It does not make explicit
 `index.html` spellings public contracts, create an SPA fallback, or alter any
 of the 64 explicit `404` paths. The three downloads use their exact file paths
 and are not subject to directory-slash normalization.
+
+Support management keeps its source under `apps/support-management/` and
+publishes `/atendimentos/login/` and `/atendimentos/agendamento/`; both scheduler
+tabs share the latter URL. Assets and modules live under `/atendimentos/`.
+On `https://machadogestao.com`, the app requires explicit production configuration
+with a matching Pagar.me live public key and calls `/atendimentos/api` on the
+shared [backend origin](apps/shared/backend-origin.js). Only HTTP `127.0.0.1`
+uses the same-origin API with sandbox configuration and a test public key.
+Other hosts, including Azure previews, cannot call either API. There is no
+environment fallback. Live card tokenization requires the validated production
+configuration and is rejected on local hosts. See the
+[backend runbook](https://github.com/IvyRoom/backend/blob/main/docs/runbooks/support-management-sandbox.md)
+for configuration and testing. The scheduler uses burgundy-gradient sidebar/header
+bars, a white workspace and the course-content header arrangement: title, full
+name, with one-hour session expiry enforced in the background. It always shows
+the current and next month, with square day tiles and Sunday–Saturday columns;
+unavailable dates are gray.
+Bookable dates run from tomorrow through the end of next month, excluding weekends and
+national/Curitiba holidays. A verified active company card and administrator-granted
+employee permission are required to see
+availability and reserve. Selecting a date opens its details in a popup and dims
+the other tiles. Reservar Agenda reveals the warning and Confirmar/Cancelar
+actions; Cancelar is the default, and only Confirmar submits the reservation.
+Appointments start at 09:00 Brasília time
+in Microsoft Teams, with a three-hour calendar hold and confirmation email. A short
+selection instruction, calendar legend and expandable FAQ provide the appointment
+information.
+Configurações da Conta PJ places Cadastro de Cartão and employee Permissões side
+by side on wide screens, centered vertically. Permission checkboxes start from
+the workbook's AUTORIZADO A CONTRATAR ATENDIMENTOS values (Sim by default);
+edits stay local until Save persists the selection. Saving uses a page-wide wait
+cursor with no routine progress/success copy. Card entry includes a live representation
+with a masked CVV and no billing-address section. It uses Pagar.me test keys and test cards; reservations and
+nonattendance do not automatically charge a card.
+Its administrator trash action confirms deletion, clears the selected company
+card, and returns to the registration form.
+
+Login preloads public configuration, masked card and calendar context. A
+token-bound sessionStorage cache avoids repeating those requests during the
+login-to-scheduler transition; reused context refreshes in the background.
+The cache expires with the one-hour session and clears on logout or HTTP 401.
+Authorization and reservation decisions remain on the backend.
+
+For daily support-management development, run `npm run support:dev` from the
+sibling `backend` checkout and open its printed local URL. The server reads these
+frontend sources directly: save an edit and refresh the browser, without a build
+or deployment. Backend code changes restart that local backend while preserving
+valid login sessions. This connected local workflow reads user access/prices,
+maintains dates through the end of next month in BD - ATENDIMENTOS, reserves real rows and
+sends notifications when the user clicks Reservar Agenda. Card references are
+grouped by CNPJ and use the Pagar.me test API
+after test-key and permitted-origin setup. Automated checks simulate all writes. Run
+`npm run support:test` from `backend` for focused checks. Keep commits local and
+existing PRs parked until Lucas explicitly requests publication.
 
 These are URL entry points, not statements about anonymous access. A page's
 JavaScript may still apply minimum-viewport, browser, query-parameter,

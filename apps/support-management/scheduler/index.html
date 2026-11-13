@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>Atendimentos | Machado</title>
+  <script src="/atendimentos/modules/canonical.js"></script>
+  <link rel="icon" href="../img/FAVICON.ico">
+  <link rel="stylesheet" href="../style.css">
+  <script type="module" src="./main.js"></script>
+</head>
+<body class="scheduler-page">
+  <div class="scheduler-layout">
+    <aside class="sidebar" aria-label="Ferramentas">
+      <button id="logout" class="logout" type="button">« sair</button>
+      <img class="logo" src="../img/LOGO_MACHADO.png" alt="Machado">
+      <nav aria-label="Agendamento" role="tablist" aria-orientation="vertical">
+        <button id="appointments-tab" class="scheduler-tab" type="button" role="tab" aria-selected="true" aria-controls="appointments-panel">Agendamento</button>
+        <p id="admin-tools-divider" class="admin-tools-divider" role="presentation" hidden>Ferramentas do Administrador</p>
+        <button id="card-tab" class="scheduler-tab" type="button" role="tab" aria-selected="false" aria-controls="card-panel" tabindex="-1" hidden>Configurações da Conta PJ</button>
+      </nav>
+    </aside>
+    <div class="scheduler-workspace">
+      <header class="scheduler-header">
+        <h1 id="header-title">Agendamento: Atendimentos Consultivos</h1>
+        <div class="scheduler-user">
+          <p id="header-user-name"></p>
+        </div>
+      </header>
+      <main class="scheduler-main">
+      <section id="appointments-panel" class="checkout-panel appointment-panel" role="tabpanel" aria-labelledby="appointments-tab">
+        <div id="appointments-stage" class="calendar-stage">
+          <p class="message" id="appointments-message" role="status" aria-live="polite">Carregando...</p>
+          <div id="appointments-intro" class="appointments-intro tool-intro" hidden>
+            <p>Selecione a data em que deseja realizar o atendimento consultivo:</p>
+          </div>
+          <div id="appointments-gate" class="payment-gate" role="status" hidden><p>Configurações da Conta PJ pendentes.</p><p>Por favor entre em contato com o administrador da conta da sua empresa: <span id="payment-administrator-name"></span>.</p></div>
+          <div id="appointment-calendar" class="appointment-calendar" role="group" aria-label="Calendário de atendimentos" aria-busy="true" tabindex="-1" hidden></div>
+          <div id="calendar-legend" class="calendar-legend" aria-label="Legenda do calendário" hidden>
+            <p class="calendar-legend-item"><span class="legend-range" aria-hidden="true"><span class="legend-swatch legend-price-high"></span><span class="legend-swatch legend-price-middle"></span><span class="legend-swatch legend-price-low"></span></span>Datas Disponíveis</p>
+            <p class="calendar-legend-item"><span class="legend-swatch legend-unavailable" aria-hidden="true"></span>Datas Reservadas / Indisponíveis</p>
+          </div>
+        </div>
+        <dialog id="appointment-details" class="appointment-details" aria-label="Reserva de agenda" aria-describedby="reservation-instructions">
+          <button id="close-reservation" class="dialog-close" type="button" aria-label="Fechar reserva">×</button>
+          <div id="reservation-content" class="reservation-content" data-active-step="initial">
+            <section id="reservation-initial-step" class="reservation-step" aria-hidden="false">
+              <div id="reservation-overview">
+                <p><b>Data e Hora:</b> <span id="selected-appointment-date"></span></p>
+                <p><b>Investimento por Hora Consultiva:</b> <span id="selected-appointment-price"></span></p>
+                <p id="reservation-instructions">Ao "Reservar Agenda", você receberá todas as orientações pertinentes por e-mail.</p>
+              </div>
+              <div class="reservation-actions"><button id="reserve-date" class="primary" type="button" disabled>Reservar Agenda</button></div>
+            </section>
+            <section id="reservation-confirm-step" class="reservation-step" aria-hidden="true" inert>
+              <p id="reservation-warning" role="alert"><b>Atenção:</b> a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro agendado, será cobrada 1h de atendimento.</p>
+              <p id="reservation-message" class="message" role="status" aria-live="polite" hidden></p>
+              <div class="reservation-actions">
+                <button id="confirm-reservation" class="primary" type="button">Confirmar</button>
+                <button id="cancel-reservation" class="secondary" type="button">Cancelar</button>
+              </div>
+            </section>
+            <section id="reservation-status-step" class="reservation-step" aria-hidden="true" inert>
+              <p id="reservation-status" role="status" aria-live="polite" tabindex="-1"></p>
+            </section>
+          </div>
+        </dialog>
+        <section id="appointments-faq" class="appointments-faq" aria-labelledby="appointments-faq-title" hidden>
+          <h2 id="appointments-faq-title">Perguntas Frequentes</h2>
+          <details name="appointment-faq"><summary>Quem faz o pagamento pelo atendimento?</summary><p>O pagamento pelo serviço é realizado pela empresa onde você atua.</p></details>
+          <details name="appointment-faq"><summary>Qual o horário de início de um atendimento?</summary><p>Todos os atendimentos iniciam às 09:00 no horário de Brasília.</p></details>
+          <details name="appointment-faq"><summary>Quanto tempo dura um atendimento?</summary><p>Não há um tempo de duração pré-determinado. Cada encontro pode durar até 3h, conforme necessário.</p></details>
+          <details name="appointment-faq"><summary>Quanto custa um atendimento?</summary><p>No calendário acima, estão listados os investimentos por hora cobrados, dependendo da data escolhida. O custo de um atendimento é: valor por hora x tempo de duração.</p></details>
+          <details name="appointment-faq"><summary>O que acontece depois que reservo uma data?</summary><p>Você receberá todas as orientações pertinentes em seu e-mail cadastrado (<span id="appointment-confirmation-email"></span>).</p></details>
+          <details name="appointment-faq"><summary>É possível cancelar uma reserva de agenda?</summary><p>Não. Por questões operacionais internas à Machado, a reserva de agenda não pode ser desfeita. Em caso de não comparecimento no encontro, será cobrada 1h de atendimento.</p></details>
+          <details name="appointment-faq"><summary>Onde / como acontecem os atendimentos?</summary><p>Via Microsoft Teams.</p></details>
+          <details name="appointment-faq"><summary>Quem conduz os atendimentos?</summary><p>Todos os atendimentos são conduzidos por nosso diretor, Lucas Machado.</p></details>
+        </section>
+      </section>
+      <section id="card-panel" class="checkout-panel card-tool-panel" role="tabpanel" aria-labelledby="card-tab" hidden>
+        <div class="account-settings-grid">
+        <section class="account-tool" aria-labelledby="card-registration-title">
+        <h2 id="card-registration-title" class="account-tool-title">Cadastro de Cartão</h2>
+        <p class="intro">Cadastre aqui o cartão de crédito corporativo que será utilizado para a contratação dos atendimentos consultivos:</p>
+        <div class="card-tool-content">
+        <p class="message" id="scheduler-message" role="status" aria-live="polite">Carregando...</p>
+        <section id="card-summary" class="card-panel" aria-labelledby="card-title" hidden>
+          <div class="card-summary-heading">
+            <h2 id="card-title">Cartão cadastrado</h2>
+            <button id="edit-card" class="card-edit" type="button" aria-label="Excluir cartão" aria-expanded="false" aria-controls="card-delete-actions" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"></path></svg></button>
+            <div id="card-delete-actions" class="card-delete-actions" role="group" aria-label="Exclusão do cartão" hidden>
+              <button id="confirm-delete-card" class="card-delete-button" type="button">Deletar Cartão</button>
+              <button id="cancel-delete-card" class="card-delete-button card-delete-cancel" type="button">Cancelar</button>
+            </div>
+          </div>
+          <p class="card-number" id="card-number"></p>
+          <p class="card-expiry" id="card-expiry"></p>
+        </section>
+        <p id="empty-card" class="empty-card" hidden>Nenhum cartão cadastrado para sua empresa.</p>
+        <p id="member-notice" class="muted" hidden>O administrador da sua empresa pode cadastrar ou excluir o cartão.</p>
+        <button id="retry-card-sync" class="secondary" type="button" hidden>Sincronizar cadastro</button>
+        <section id="card-editor" aria-labelledby="card-registration-title" hidden>
+          <form id="card-form" autocomplete="off" aria-busy="false" novalidate>
+            <fieldset><legend>Dados do cartão</legend>
+              <div class="card-details">
+                <div class="card-fields">
+                  <div class="card-number-label"><label for="number">Número do Cartão</label><span id="card-brand-status" class="field-hint" role="status" aria-live="polite" hidden></span></div>
+                  <input id="number" name="number" type="text" inputmode="numeric" pattern="[0-9 ]{12,19}" maxlength="19" placeholder="0000 0000 0000 0000" aria-describedby="number-error card-brand-status" required>
+                  <p class="field-error" id="number-error" aria-live="polite" hidden></p>
+                  <label for="holder-name">Nome do Titular</label><input id="holder-name" name="holderName" type="text" maxlength="64" placeholder="Nome do Titular" aria-describedby="holder-name-error" required>
+                  <p class="field-error" id="holder-name-error" aria-live="polite" hidden></p>
+                  <div class="form-row">
+                    <div><label for="exp-month">Mês</label><select id="exp-month" name="expMonth" aria-describedby="exp-month-error" required><option value="">MM</option><option value="1">01</option><option value="2">02</option><option value="3">03</option><option value="4">04</option><option value="5">05</option><option value="6">06</option><option value="7">07</option><option value="8">08</option><option value="9">09</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select><p class="field-error" id="exp-month-error" aria-live="polite" hidden></p></div>
+                    <div><label for="exp-year">Ano</label><select id="exp-year" name="expYear" aria-describedby="exp-year-error" required><option value="">AA</option></select><p class="field-error" id="exp-year-error" aria-live="polite" hidden></p></div>
+                    <div><label for="cvv">CVV</label><input id="cvv" name="cvv" type="password" inputmode="numeric" pattern="[0-9]{3,4}" maxlength="4" placeholder="CVV" aria-describedby="cvv-error" required><p class="field-error" id="cvv-error" aria-live="polite" hidden></p></div>
+                  </div>
+                </div>
+                <div class="card-preview" aria-hidden="true"><span class="card-chip"></span><span id="card-brand" class="card-brand" hidden></span><span id="card-preview-number" class="card-preview-number">•••• •••• •••• ••••</span><span id="card-preview-holder" class="card-preview-holder">NOME DO TITULAR</span><span id="card-preview-expiry" class="card-preview-expiry">MM/AA</span><span id="card-preview-cvv" class="card-preview-cvv">CVV ***</span></div>
+              </div>
+            </fieldset>
+            <button id="save-card" class="primary" type="submit">Cadastrar Cartão</button>
+            <button id="cancel-card" class="secondary" type="button" hidden>Cancelar</button>
+          </form>
+        </section>
+        <footer class="checkout-footer">
+          <div class="checkout-security"><img src="../img/checkout-lock.webp" alt=""><p>Ambiente seguro.</p></div>
+          <div class="checkout-provider"><p>Powered by</p><img src="../img/checkout-pagarme.webp" alt="Pagar.me"></div>
+        </footer>
+        </div>
+        </section>
+        <section id="permissions-panel" class="account-tool" aria-labelledby="permissions-title">
+          <h2 id="permissions-title" class="account-tool-title">Permissões</h2>
+          <p class="intro">Selecione os colaboradores que estão autorizados a contratar atendimentos consultivos:</p>
+          <div class="permissions-content">
+            <p id="permissions-message" class="message" role="status" aria-live="polite"></p>
+            <div id="permissions-list" class="permissions-list"></div>
+            <button id="save-permissions" class="primary" type="button" disabled hidden>Salvar</button>
+            <p id="permissions-pending" class="permissions-pending" role="status" hidden>Salvamento pendente.</p>
+          </div>
+        </section>
+        </div>
+      </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
